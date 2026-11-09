@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:38" hostname="YEISON" time="0.297">
+  <properties/>
+  <testcase name="1 debe abortar y solicitar reintento si no hay conectividad de red()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.273"/>
+  <testcase name="3 debe despachar exitosamente, firmar peticion y marcar como DISPATCHED ante HTTP 202()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.009"/>
+  <testcase name="2 debe retornar exito con cero despachos si la cola esta vacia()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.001"/>
+  <testcase name="4 debe solicitar reintento e incrementar contador de fallos ante error de servidor 5xx()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.004"/>
+  <testcase name="6 debe despachar en orden FIFO un lote de notificaciones acumuladas offline()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.002"/>
+  <testcase name="5 debe marcar falla fatal ante error de cliente 401 Dispositivo no reconocido()" classname="com.transferya.sentinel.dispatcher.NotificationDispatcherTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

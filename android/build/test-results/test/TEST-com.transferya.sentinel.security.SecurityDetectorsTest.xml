@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.security.SecurityDetectorsTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:38" hostname="YEISON" time="0.045">
+  <properties/>
+  <testcase name="3 EmulatorDetector debe detectar emuladores de terceros como BlueStacks o Genymotion()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.036"/>
+  <testcase name="4 EmulatorDetector debe detectar presencia del pipe de comunicacion qemu en el filesystem()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.001"/>
+  <testcase name="5 IntegrityDetector debe retornar false en un dispositivo comercial integro y sin root()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.003"/>
+  <testcase name="7 IntegrityDetector debe reportar comprometido si detecta binario su en system o sbin()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.0"/>
+  <testcase name="1 EmulatorDetector debe retornar false para celulares fisicos reales (Samsung A14 y Xiaomi Redmi)()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.0"/>
+  <testcase name="2 EmulatorDetector debe detectar emuladores oficiales de Android Studio (Ranchu y QEMU)()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.0"/>
+  <testcase name="6 IntegrityDetector debe reportar comprometido si la ROM fue compilada con test-keys()" classname="com.transferya.sentinel.security.SecurityDetectorsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

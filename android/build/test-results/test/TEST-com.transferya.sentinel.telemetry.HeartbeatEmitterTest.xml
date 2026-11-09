@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.telemetry.HeartbeatEmitterTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:39" hostname="YEISON" time="0.009">
+  <properties/>
+  <testcase name="2 debe retornar false y manejar fallos de conexion sin lanzar excepciones()" classname="com.transferya.sentinel.telemetry.HeartbeatEmitterTest" time="0.007"/>
+  <testcase name="1 debe emitir ping de telemetria firmado hacia el backend exitosamente ante HTTP 200()" classname="com.transferya.sentinel.telemetry.HeartbeatEmitterTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

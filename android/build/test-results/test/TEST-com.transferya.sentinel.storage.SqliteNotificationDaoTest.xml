@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.storage.SqliteNotificationDaoTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:39" hostname="YEISON" time="0.031">
+  <properties/>
+  <testcase name="5 debe ser thread-safe permitiendo inserciones concurrentes sin bloqueo ni corrupcion()" classname="com.transferya.sentinel.storage.SqliteNotificationDaoTest" time="0.021"/>
+  <testcase name="4 debe incrementar contador de reintentos y persistir mensaje de ultimo error()" classname="com.transferya.sentinel.storage.SqliteNotificationDaoTest" time="0.003"/>
+  <testcase name="1 debe insertar atómicamente una notificacion en estado PENDING y retornar ID generado()" classname="com.transferya.sentinel.storage.SqliteNotificationDaoTest" time="0.002"/>
+  <testcase name="2 debe consultar las notificaciones en estado PENDING en orden cronologico()" classname="com.transferya.sentinel.storage.SqliteNotificationDaoTest" time="0.001"/>
+  <testcase name="3 debe marcar como DISPATCHED y registrar dispatchedAt excluyendo de pendientes()" classname="com.transferya.sentinel.storage.SqliteNotificationDaoTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

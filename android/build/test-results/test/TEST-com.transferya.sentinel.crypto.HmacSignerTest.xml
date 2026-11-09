@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.crypto.HmacSignerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:38" hostname="YEISON" time="0.091">
+  <properties/>
+  <testcase name="2 debe generar nonces criptograficos unicos y sin colisiones()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.017"/>
+  <testcase name="6 debe almacenar y recuperar secretos correctamente en AndroidKeyStoreVault()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.043"/>
+  <testcase name="1 debe construir la cadena canonica idéntica al formato de Node (Ticket 01)()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.016"/>
+  <testcase name="5 debe lanzar excepcion si la clave secreta no existe en el Vault()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.002"/>
+  <testcase name="3 debe firmar con HMAC-SHA256 produciendo firma hexadecimal valida()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.005"/>
+  <testcase name="4 debe generar las cabeceras HTTP firmadas completas()" classname="com.transferya.sentinel.crypto.HmacSignerTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

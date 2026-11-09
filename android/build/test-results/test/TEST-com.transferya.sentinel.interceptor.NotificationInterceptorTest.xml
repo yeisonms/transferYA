@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.interceptor.NotificationInterceptorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:39" hostname="YEISON" time="0.014">
+  <properties/>
+  <testcase name="4 debe garantizar la liberacion del WakeLock en bloque finally si ocurre una excepcion()" classname="com.transferya.sentinel.interceptor.NotificationInterceptorTest" time="0.006"/>
+  <testcase name="5 debe inicializar y verificar el Foreground Service persistente para supervivencia del proceso()" classname="com.transferya.sentinel.interceptor.NotificationInterceptorTest" time="0.0"/>
+  <testcase name="2 debe adquirir WakeLock de 15s, persistir en SQLite y liberar WakeLock para notificacion de Nequi()" classname="com.transferya.sentinel.interceptor.NotificationInterceptorTest" time="0.002"/>
+  <testcase name="3 debe procesar y persistir exitosamente notificaciones de Daviplata()" classname="com.transferya.sentinel.interceptor.NotificationInterceptorTest" time="0.002"/>
+  <testcase name="1 debe ignorar silenciosamente notificaciones ajenas a Nequi y Daviplata sin activar WakeLock()" classname="com.transferya.sentinel.interceptor.NotificationInterceptorTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

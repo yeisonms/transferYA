@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-05T20:36:39" hostname="YEISON" time="0.015">
+  <properties/>
+  <testcase name="7 Reset de enrolamiento debe purgar KeyStore y SharedPreferences retornando a UNENROLLED()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.004"/>
+  <testcase name="2 Parser de QR debe rechazar URIs con esquema invalido o parametros incompletos()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.003"/>
+  <testcase name="4 Flujo Feliz de Enrolamiento debe almacenar secreto en KeyStore y transicionar a ACTIVE_SENTINEL()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.002"/>
+  <testcase name="5 Enrolamiento con QR malformado debe fallar sin contactar al servidor()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.0"/>
+  <testcase name="1 Parser de QR debe extraer correctamente token y deviceId del protocolo transferya()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.0"/>
+  <testcase name="3 Dispositivo sin credenciales debe reportar estado UNENROLLED()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.0"/>
+  <testcase name="6 Fallo de red o token expirado en servidor debe retornar error y no alterar KeyStore()" classname="com.transferya.sentinel.onboarding.DeviceEnrollmentManagerTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

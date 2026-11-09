@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    TransferYA Network Security Configuration (ADR-0005).
+    - Desactiva totalmente el tráfico en texto plano HTTP no seguro.
+    - Confía exclusivamente en certificados de autoridades raíz de sistema.
+    - Rechaza certificados de usuario para bloquear ataques Man-in-the-Middle y proxies de intercepción.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
+

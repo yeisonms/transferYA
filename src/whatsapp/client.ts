@@ -1,0 +1,213 @@
+import type { ParsedPaymentReceipt } from '../domain/parser/types.js';
+import {
+  formatCapturedTime,
+  formatCopCurrency,
+  formatRecipientForMeta,
+  formatWalletDisplayName,
+} from './formatter.js';
+import type {
+  IHttpClient,
+  IWhatsAppCloudApiClient,
+  PaymentAlertOptions,
+  TemplateComponent,
+  WhatsAppSendResult,
+  WhatsAppTemplatePayload,
+} from './types.js';
+
+export interface WhatsAppCloudApiClientConfig {
+  phoneNumberId: string;
+  accessToken: string;
+  apiVersion?: string; // Default: 'v21.0'
+  httpClient: IHttpClient;
+  maxRetries?: number; // Default: 3
+  initialBackoffMs?: number; // Default: 100ms
+  sleepProvider?: (ms: number) => Promise<void>;
+}
+
+/**
+ * Cliente para Meta WhatsApp Cloud API (Graph API) optimizado para alta concurrencia
+ * y resiliencia ante rate limits (HTTP 429).
+ */
+export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
+  private readonly apiVersion: string;
+  private readonly maxRetries: number;
+  private readonly initialBackoffMs: number;
+  private readonly sleep: (ms: number) => Promise<void>;
+
+  constructor(private readonly config: WhatsAppCloudApiClientConfig) {
+    this.apiVersion = config.apiVersion ?? 'v21.0';
+    this.maxRetries = config.maxRetries ?? 3;
+    this.initialBackoffMs = config.initialBackoffMs ?? 100;
+    this.sleep =
+      config.sleepProvider ??
+      ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+  }
+
+  async sendTemplate(
+    to: string,
+    templateName: string,
+    components: TemplateComponent[],
+    languageCode = 'es',
+  ): Promise<WhatsAppSendResult> {
+    const formattedTo = formatRecipientForMeta(to);
+    const url = `https://graph.facebook.com/${this.apiVersion}/${this.config.phoneNumberId}/messages`;
+
+    const payload: WhatsAppTemplatePayload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: formattedTo,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: languageCode,
+        },
+        components,
+      },
+    };
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.config.accessToken}`,
+      'Content-Type': 'application/json',
+    };
+
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const response = await this.config.httpClient.post(url, payload, headers);
+
+        if (response.status === 200) {
+          const messageId =
+            response.data?.messages?.[0]?.id ?? 'UNKNOWN_MESSAGE_ID';
+          return {
+            success: true,
+            messageId,
+          };
+        }
+
+        if (response.status === 400) {
+          return {
+            success: false,
+            error: 'BAD_REQUEST',
+            statusCode: 400,
+            message:
+              response.data?.error?.message ??
+              'Error en los parámetros de la plantilla',
+            details: response.data,
+          };
+        }
+
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: 'UNAUTHORIZED',
+            statusCode: 401,
+            message:
+              response.data?.error?.message ??
+              'Token de acceso de Meta expirado o inválido',
+            details: response.data,
+          };
+        }
+
+        if (response.status === 429) {
+          if (attempt < this.maxRetries) {
+            const delay = this.initialBackoffMs * Math.pow(2, attempt - 1);
+            await this.sleep(delay);
+            continue;
+          }
+          return {
+            success: false,
+            error: 'RATE_LIMITED',
+            statusCode: 429,
+            message:
+              response.data?.error?.message ??
+              'Límite de tasa excedido en Meta Cloud API',
+            details: response.data,
+          };
+        }
+
+        // Otros códigos de error HTTP
+        if (attempt < this.maxRetries) {
+          const delay = this.initialBackoffMs * Math.pow(2, attempt - 1);
+          await this.sleep(delay);
+          continue;
+        }
+
+        return {
+          success: false,
+          error: 'UNKNOWN_ERROR',
+          statusCode: response.status,
+          message: response.data?.error?.message ?? `Error HTTP ${response.status}`,
+          details: response.data,
+        };
+      } catch (error) {
+        if (attempt < this.maxRetries) {
+          const delay = this.initialBackoffMs * Math.pow(2, attempt - 1);
+          await this.sleep(delay);
+          continue;
+        }
+
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Error de conexión de red con Meta Cloud API',
+          details: error,
+        };
+      }
+    }
+
+    return {
+      success: false,
+      error: 'UNKNOWN_ERROR',
+      message: 'Reintentos agotados sin respuesta concluyente',
+    };
+  }
+
+  async sendPaymentAlert(
+    to: string,
+    payment: ParsedPaymentReceipt,
+    options: PaymentAlertOptions,
+  ): Promise<WhatsAppSendResult> {
+    const formattedAmount = formatCopCurrency(payment.amount);
+    const formattedWallet = formatWalletDisplayName(payment.wallet);
+    const formattedTime = formatCapturedTime(options.capturedAt);
+
+    if (!options.isStale) {
+      // Plantilla regular de confirmación de pago
+      const components: TemplateComponent[] = [
+        {
+          type: 'body',
+          parameters: [
+            { type: 'text', text: formattedAmount },
+            { type: 'text', text: payment.senderName },
+            { type: 'text', text: formattedWallet },
+            { type: 'text', text: formattedTime },
+          ],
+        },
+      ];
+
+      return this.sendTemplate(to, 'transferya_payment_alert_v1', components);
+    }
+
+    // Plantilla con advertencia visual de retraso de red (Stale Alert)
+    const latencySeconds = Math.round((options.latencyMs ?? 0) / 1000);
+    const latencyParam = `${latencySeconds}s de retraso`;
+
+    const components: TemplateComponent[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: formattedAmount },
+          { type: 'text', text: payment.senderName },
+          { type: 'text', text: formattedWallet },
+          { type: 'text', text: formattedTime },
+          { type: 'text', text: latencyParam },
+        ],
+      },
+    ];
+
+    return this.sendTemplate(to, 'transferya_stale_alert_v1', components);
+  }
+}
