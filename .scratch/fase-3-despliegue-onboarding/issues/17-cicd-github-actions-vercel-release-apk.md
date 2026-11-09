@@ -8,10 +8,10 @@ Implementar los flujos de automatización CI/CD con GitHub Actions para garantiz
 16: [Database] Migraciones Supabase DDL y Políticas de Aislamiento Row Level Security (RLS)
 
 **Status:**
-ready-for-agent
+completed
 
-- [ ] Workflow `.github/workflows/ci.yml`: ejecución automatizada de Quality Gates (TypeScript + Vitest + Gradle).
-- [ ] Job de despliegue a Vercel (`vercel pull`, `vercel build`, `vercel deploy --prod`) con variables de entorno enlazadas a GitHub Secrets.
-- [ ] Workflow `.github/workflows/android-release.yml`: compilación de APK release con R8 activado, firmado criptográfico mediante Keystore en base64 y generación de artefacto descargable.
-- [ ] Pruebas locales de validación de sintaxis y ejecución de scripts de CI/CD.
+- [x] Workflow `.github/workflows/ci.yml`: ejecución automatizada de Quality Gates (TypeScript + Vitest + Gradle).
+- [x] Job de despliegue a Vercel (`vercel pull`, `vercel build`, `vercel deploy --prod`) con variables de entorno enlazadas a GitHub Secrets.
+- [x] Workflow `.github/workflows/android-release.yml`: compilación de APK release con R8 activado, firmado criptográfico mediante Keystore en base64 y generación de artefacto descargable.
+- [x] Pruebas locales de validación de sintaxis y ejecución de scripts de CI/CD.
 

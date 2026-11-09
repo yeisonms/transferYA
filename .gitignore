@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Production & Build outputs
+dist/
+build/
+android/build/
+android/app/build/
+
+# Gradle caches and metadata
+.gradle/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/captures/
+android/.cxx/
+
+# Test caches
+.vite/
+.vitest-cache/
+coverage/
+
+# Environment files and credentials
+.env
+.env.local
+.env.*.local
+*.keystore
+*.jks
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp

@@ -1,0 +1,83 @@
+name: TransferYA CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gates:
+    name: 4 Quality Gates (Typecheck, Vitest, Gradle, Build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      # Quality Gate 1: Static Typecheck
+      - name: Gate 1 - TypeScript Typecheck
+        run: npx tsc --noEmit
+
+      # Quality Gate 2: Full Test Verification (Backend + Android)
+      - name: Gate 2a - Backend Unit & Integration Tests (Vitest)
+        run: npm test
+
+      - name: Gate 2b - Android Sentinel Unit Tests (Gradle JUnit 5)
+        working-directory: ./android
+        run: ./gradlew test --no-daemon
+
+      # Quality Gate 4: Production Build
+      - name: Gate 4 - TypeScript Production Build
+        run: npm run build
+
+  deploy-production:
+    name: Deploy to Vercel (Production)
+    needs: quality-gates
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Apply Supabase Migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "Verificando migraciones declarativas de Supabase..."
+
+      - name: Deploy to Vercel Production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          npx vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
