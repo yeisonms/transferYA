@@ -28,6 +28,10 @@ coverage/
 *.keystore
 *.jks
 
+# Supabase CLI temp files
+supabase/.temp/
+.temp/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
