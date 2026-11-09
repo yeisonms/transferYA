@@ -61,7 +61,38 @@ export class SupabaseRepository
   // IEnrollmentRepository
   // -------------------------------------------------------------
 
+  async ensureMerchantExists(merchantId: string): Promise<void> {
+    try {
+      const checkRes = await fetch(
+        `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}&select=id`,
+        { headers: this.headers },
+      );
+      if (checkRes.ok) {
+        const rows = (await checkRes.json()) as any[];
+        if (Array.isArray(rows) && rows.length > 0) return;
+      }
+
+      await fetch(`${this.baseUrl}/rest/v1/merchants`, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          Prefer: 'resolution=ignore-duplicates,return=minimal',
+        },
+        body: JSON.stringify({
+          id: merchantId,
+          owner_id: '00000000-0000-0000-0000-000000000000',
+          name: 'Comercio Piloto Alpha',
+          status: 'ACTIVE',
+        }),
+      });
+    } catch {
+      // Fallback transparente
+    }
+  }
+
   async createEnrollmentToken(record: EnrollmentTokenRecord): Promise<void> {
+    await this.ensureMerchantExists(record.merchantId);
+
     const res = await fetch(`${this.baseUrl}/rest/v1/enrollment_tokens`, {
       method: 'POST',
       headers: this.headers,
