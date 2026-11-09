@@ -252,6 +252,29 @@
       </div>
     </div>
 
+    <div class="endpoints-card" style="margin-bottom: 2rem;">
+      <div class="endpoints-header">
+        <h2>Generador de Código QR de Enrolamiento Zero-Trust</h2>
+        <span style="font-size: 0.75rem; color: #00d26a;">● Panel Alpha</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Genera un token efímero de un solo uso (TTL: 5 min) para emparejar físicamente tu teléfono Centinela con la caja registradora.
+      </p>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <input id="merchantIdInput" type="text" value="a0000000-0000-0000-0000-000000000001" placeholder="ID Comercio" style="flex: 1; min-width: 220px; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <input id="deviceIdInput" type="text" value="dev_centinela_caja_1" placeholder="ID Caja" style="flex: 1; min-width: 160px; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <button id="genQrBtn" style="padding: 0.6rem 1.25rem; background: #00d26a; color: #090d16; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">Generar QR</button>
+      </div>
+
+      <div id="qrResultArea" style="display: none; text-align: center; padding: 1.5rem; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
+        <div id="qrImageContainer" style="margin-bottom: 1rem;"></div>
+        <div style="font-size: 0.85rem; color: #00d26a; font-weight: 600; margin-bottom: 0.5rem;" id="qrTimer">Token activo por 5 minutos</div>
+        <div style="font-family: monospace; font-size: 0.8rem; word-break: break-all; background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; color: #e5e7eb;" id="qrUriText"></div>
+        <button id="copyUriBtn" style="padding: 0.4rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📋 Copiar URI para la App</button>
+      </div>
+    </div>
+
     <div class="endpoints-card">
       <div class="endpoints-header">
         <h2>Rutas del API Gateway</h2>
@@ -298,6 +321,62 @@
       TransferYA SaaS Platform &copy; 2026. Todos los derechos reservados.
     </footer>
   </div>
+
+  <script>
+    const genQrBtn = document.getElementById('genQrBtn');
+    const qrResultArea = document.getElementById('qrResultArea');
+    const qrImageContainer = document.getElementById('qrImageContainer');
+    const qrUriText = document.getElementById('qrUriText');
+    const copyUriBtn = document.getElementById('copyUriBtn');
+
+    genQrBtn.addEventListener('click', async () => {
+      const merchantId = document.getElementById('merchantIdInput').value.trim();
+      const deviceId = document.getElementById('deviceIdInput').value.trim();
+
+      if (!merchantId || !deviceId) {
+        alert('Por favor ingresa merchantId y deviceId');
+        return;
+      }
+
+      genQrBtn.disabled = true;
+      genQrBtn.innerText = 'Generando...';
+
+      try {
+        const res = await fetch('/api/v1/devices/enrollment-tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ merchantId, deviceId, ttlSeconds: 300 })
+        });
+
+        const json = await res.json();
+        if (!json.success || !json.data) {
+          alert('Error: ' + (json.message || json.error || 'No se pudo generar el token'));
+          return;
+        }
+
+        const uri = json.data.qrPayload;
+        qrUriText.innerText = uri;
+
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(uri)}`;
+        qrImageContainer.innerHTML = `<img src="${qrUrl}" alt="QR Enrolamiento" style="border-radius: 8px; border: 4px solid #fff; background: #fff; padding: 4px;" />`;
+        qrResultArea.style.display = 'block';
+
+      } catch (err) {
+        alert('Error de red al conectar con el servidor: ' + err.message);
+      } finally {
+        genQrBtn.disabled = false;
+        genQrBtn.innerText = 'Generar QR';
+      }
+    });
+
+    copyUriBtn.addEventListener('click', () => {
+      const uri = qrUriText.innerText;
+      navigator.clipboard.writeText(uri).then(() => {
+        copyUriBtn.innerText = '✅ ¡Copiado!';
+        setTimeout(() => { copyUriBtn.innerText = '📋 Copiar URI para la App'; }, 2000);
+      });
+    });
+  </script>
 </body>
 </html>
 

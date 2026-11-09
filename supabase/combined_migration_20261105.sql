@@ -201,3 +201,4 @@ CREATE POLICY enrollment_tokens_owner_insert ON enrollment_tokens
               AND merchants.owner_id = auth.uid()
         )
     );
+
