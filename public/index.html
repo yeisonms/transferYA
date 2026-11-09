@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransferYA Core Engine | Verificación de Pagos en Tiempo Real</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%22><text y=%2226%22 font-size=%2226%22>⚡</text></svg>">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #00d26a;
+      --primary-glow: rgba(0, 210, 106, 0.25);
+      --accent: #2563eb;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(0, 210, 106, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 40%);
+    }
+
+    .container {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(0, 210, 106, 0.12);
+      border: 1px solid rgba(0, 210, 106, 0.3);
+      color: #00d26a;
+      margin-bottom: 1rem;
+    }
+
+    .status-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00d26a;
+      box-shadow: 0 0 10px #00d26a;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 40%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .card-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .endpoints-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .endpoints-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+
+    .endpoints-header h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .endpoint-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    .endpoint-item:last-child {
+      border-bottom: none;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      margin-right: 0.75rem;
+    }
+
+    .method.post {
+      background: rgba(37, 99, 235, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(37, 99, 235, 0.4);
+    }
+
+    .method.get {
+      background: rgba(0, 210, 106, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(0, 210, 106, 0.4);
+    }
+
+    .endpoint-path {
+      color: #e5e7eb;
+    }
+
+    .endpoint-tag {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge-status">
+        <div class="status-pulse"></div>
+        Core Engine Operativo
+      </div>
+      <h1>TransferYA 🇨🇴⚡</h1>
+      <p class="subtitle">
+        Plataforma B2B SaaS de verificación en tiempo real de transferencias bancarias móviles (Nequi y Daviplata) para comercios físicos en Colombia.
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Nodo A: Centinela Android</div>
+        <div class="card-desc">
+          Captura background de notificaciones P2P, firmado criptográfico hardware con Android KeyStore HMAC-SHA256 y resiliencia offline FIFO.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Nodo B: Motor SaaS Core</div>
+        <div class="card-desc">
+          Anti-replay con ventana de ±30s, parsing regex determinista, fingerprinting con bucket de 5 min y multi-tenancy con Supabase RLS.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">Nodo C: Despachador WhatsApp</div>
+        <div class="card-desc">
+          Meta Cloud API Graph v21+ entregando plantillas de utilidad para alertas inmediatas a cajeros y detección de transacciones retrasadas (>90s).
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoints-card">
+      <div class="endpoints-header">
+        <h2>Rutas del API Gateway</h2>
+        <span style="font-size: 0.75rem; color: #00d26a;">● v1 Ready</span>
+      </div>
+      <div class="endpoint-item">
+        <div>
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/v1/webhooks/notifications</span>
+        </div>
+        <span class="endpoint-tag">HMAC-SHA256 Ingest</span>
+      </div>
+      <div class="endpoint-item">
+        <div>
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/v1/devices/heartbeat</span>
+        </div>
+        <span class="endpoint-tag">Sentinel Health & Telemetry</span>
+      </div>
+      <div class="endpoint-item">
+        <div>
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/v1/devices/enrollment-tokens</span>
+        </div>
+        <span class="endpoint-tag">Zero-Trust QR Pairing</span>
+      </div>
+      <div class="endpoint-item">
+        <div>
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/v1/devices/enroll</span>
+        </div>
+        <span class="endpoint-tag">Secret Exchange</span>
+      </div>
+      <div class="endpoint-item">
+        <div>
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/health</span>
+        </div>
+        <span class="endpoint-tag">Service Health Probe</span>
+      </div>
+    </div>
+
+    <footer>
+      TransferYA SaaS Platform &copy; 2026. Todos los derechos reservados.
+    </footer>
+  </div>
+</body>
+</html>
+
