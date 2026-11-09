@@ -42,9 +42,9 @@ class SharedPreferencesCredentialsStorage(context: Context) : IDeviceCredentials
         prefs.edit().remove("merchant_id").apply()
     }
 
-    fun getServerUrl(): String = prefs.getString("server_url", "https://transfer-1b8dr7rdh-redfits-projects-6226d031.vercel.app")!!
+    fun getServerUrl(): String = prefs.getString("server_url", "https://transferya.vercel.app")!!
     fun saveServerUrl(url: String) {
-        prefs.edit().putString("server_url", url).apply()
+        prefs.edit().putString("server_url", url.trim().trimEnd('/')).apply()
     }
 }
 
