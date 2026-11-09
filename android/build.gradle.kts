@@ -1,17 +1,73 @@
 plugins {
-    kotlin("jvm") version "2.0.20"
+    id("com.android.application") version "8.7.2"
+    kotlin("android") version "2.0.20"
 }
 
-repositories {
-    mavenCentral()
+android {
+    namespace = "com.transferya.sentinel"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.transferya.sentinel"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "0.1.0-alpha"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystoreFile = file("transferya-release.keystore")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "7SRYEWT3U6xOLt9mOczHHy9e"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "transferya-sentinel"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "7SRYEWT3U6xOLt9mOczHHy9e"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning != null && file("transferya-release.keystore").exists()) {
+                signingConfig = releaseSigning
+            }
+        }
+        debug {
+            isMinifyEnabled = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("org.xerial:sqlite-jdbc:3.47.1.0")
+
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
