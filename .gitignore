@@ -27,6 +27,8 @@ coverage/
 .env.*.local
 *.keystore
 *.jks
+*-credentials.txt
+*keystore-base64.txt
 
 # Supabase CLI temp files
 supabase/.temp/
