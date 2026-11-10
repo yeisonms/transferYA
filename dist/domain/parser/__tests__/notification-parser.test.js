@@ -59,6 +59,27 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
                 expect(res.payment.senderName).toBe('Andres Felipe Ruiz');
             }
         });
+        it('debe parsear notificacion estandar y referencia: Te acaban de enviar $1.000 en Nequi. Ref: M78998319', () => {
+            const rawText = 'Te acaban de enviar $1.000 en Nequi. Ref: M78998319';
+            const res = parseBankingNotification(rawText, 'Nequi', 'com.nequi.MobileApp');
+            expect(res.success).toBe(true);
+            if (res.success) {
+                expect(res.payment.wallet).toBe('NEQUI');
+                expect(res.payment.amount).toBe(1000);
+                expect(res.payment.senderName).toBe('Nequi');
+                expect(res.payment.reference).toBe('M78998319');
+            }
+        });
+        it('debe parsear notificacion generica de Nequi sin remitente explicito', () => {
+            const rawText = '¡Te llegó plata! Te enviaron $10.000 a tu Nequi.';
+            const res = parseBankingNotification(rawText, 'Nequi', 'com.nequi.MobileApp');
+            expect(res.success).toBe(true);
+            if (res.success) {
+                expect(res.payment.wallet).toBe('NEQUI');
+                expect(res.payment.amount).toBe(10000);
+                expect(res.payment.senderName).toBe('Nequi');
+            }
+        });
     });
     describe('3. Extracción Exitosa en Daviplata', () => {
         it('debe parsear abono oficial: DaviPlata le informa que recibio $25.000 de Laura Gomez', () => {

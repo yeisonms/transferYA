@@ -30,3 +30,4 @@ CREATE POLICY "alpha_service_payment_fingerprints" ON payment_fingerprints FOR A
 
 DROP POLICY IF EXISTS "alpha_service_enrollment_tokens" ON enrollment_tokens;
 CREATE POLICY "alpha_service_enrollment_tokens" ON enrollment_tokens FOR ALL TO anon USING (true) WITH CHECK (true);
+

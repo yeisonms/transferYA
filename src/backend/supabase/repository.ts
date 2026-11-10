@@ -23,6 +23,10 @@ import type {
   INotificationRepository,
   StoredNotificationRecord,
 } from '../webhook/types.js';
+import type {
+  IPipelineNotificationRepository,
+  PipelineNotificationUpdate,
+} from '../pipeline/types.js';
 
 export interface SupabaseConfig {
   supabaseUrl: string;
@@ -38,6 +42,7 @@ export class SupabaseRepository
     IEnrollmentRepository,
     IDeviceRepository,
     INotificationRepository,
+    IPipelineNotificationRepository,
     IDeviceHealthRepository,
     IPaymentFingerprintRepository,
     IMerchantRoutingRepository,
@@ -266,6 +271,58 @@ export class SupabaseRepository
 
     const inserted = (await res.json()) as any[];
     return { id: inserted[0]?.id ?? 'saved' };
+  }
+
+  async getNotificationById(id: string): Promise<StoredNotificationRecord | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/captured_notifications?id=eq.${encodeURIComponent(id)}&select=*`,
+      { headers: this.headers }
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+    const r = rows[0];
+    return {
+      id: r.id,
+      deviceId: r.device_id,
+      walletPackage: r.wallet_package,
+      rawTitle: r.raw_title,
+      rawText: r.raw_text,
+      capturedAt: Number(r.captured_at),
+      dispatchedAt: Number(r.dispatched_at),
+      receivedAt: Number(r.received_at),
+      latencyMs: Number(r.latency_ms),
+      isStale: Boolean(r.is_stale),
+      status: r.status,
+      amount: r.amount ? Number(r.amount) : null,
+      senderName: r.sender_name ?? null,
+      paymentReference: r.payment_reference ?? null,
+    };
+  }
+
+  async updateNotification(
+    id: string,
+    update: PipelineNotificationUpdate,
+  ): Promise<void> {
+    const body: Record<string, any> = {
+      status: update.status,
+      updated_at: new Date().toISOString(),
+    };
+    if (update.amount !== undefined) body.amount = update.amount;
+    if (update.senderName !== undefined) body.sender_name = update.senderName;
+    if (update.paymentReference !== undefined) body.payment_reference = update.paymentReference;
+    if (update.whatsappMessageIds !== undefined) body.whatsapp_message_ids = update.whatsappMessageIds;
+    if (update.processedAt !== undefined) body.processed_at = new Date(update.processedAt).toISOString();
+    if (update.failureReason !== undefined) body.failure_reason = update.failureReason;
+
+    await fetch(
+      `${this.baseUrl}/rest/v1/captured_notifications?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: 'PATCH',
+        headers: this.headers,
+        body: JSON.stringify(body),
+      }
+    );
   }
 
   // -------------------------------------------------------------

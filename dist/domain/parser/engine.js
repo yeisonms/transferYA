@@ -45,6 +45,14 @@ const NEGATIVE_PATTERNS = [
 ];
 const PARSING_RULES = [
     // --- REGLAS NEQUI ---
+    // Te acaban de enviar $1.000 en Nequi. Ref: M78998319
+    {
+        wallet: 'NEQUI',
+        pattern: /(?:¡?Te acaban de enviar!?|Te acaban de enviar|Te enviaron)\s+([\$\d.,\s]+?)\s+en Nequi(?:\s+de\s+(.*?))?(?:\.|\s*Ref:|\s*\(|$)/i,
+        amountGroup: 1,
+        senderGroup: 2,
+        defaultSender: 'Nequi',
+    },
     // ¡Plata recibida! Juan Perez te envió $15.000 a tu Nequi.
     {
         wallet: 'NEQUI',
@@ -73,6 +81,14 @@ const PARSING_RULES = [
         amountGroup: 1,
         senderGroup: 2,
     },
+    // ¡Te llegó plata! Te enviaron $10.000 a tu Nequi.
+    {
+        wallet: 'NEQUI',
+        pattern: /(?:¡?Te lleg[oó] plata!?\s*)?Te enviaron\s+([\$\d.,\s]+?)\s+a tu Nequi(?:\s+de\s+(.*?))?(?:\.|$)/i,
+        amountGroup: 1,
+        senderGroup: 2,
+        defaultSender: 'Nequi',
+    },
     // --- REGLAS DAVIPLATA ---
     // DaviPlata le informa que recibio $25.000 de Laura Gomez
     {
@@ -80,6 +96,13 @@ const PARSING_RULES = [
         pattern: /DaviPlata le informa que recibi[oó]\s+([\$\d.,\s]+?)\s+de\s+(.*?)(?:\.|$|\s*\(.*?\))/i,
         amountGroup: 1,
         senderGroup: 2,
+    },
+    // DaviPlata le informa que recibio $25.000 (sin remitente explicito)
+    {
+        wallet: 'DAVIPLATA',
+        pattern: /DaviPlata le informa que recibi[oó]\s+([\$\d.,]+)(?:\.|$|\s*\(.*?\))/i,
+        amountGroup: 1,
+        defaultSender: 'DaviPlata',
     },
     // Recibiste una transferencia de $50.000 de MARIA GOMEZ
     {
@@ -138,9 +161,21 @@ export function parseBankingNotification(rawText, rawTitle = '', walletPackage) 
         const match = rawText.match(rule.pattern) ?? combinedText.match(rule.pattern);
         if (match) {
             const rawAmount = match[rule.amountGroup];
-            const rawSender = match[rule.senderGroup];
+            const rawSender = rule.senderGroup !== undefined ? match[rule.senderGroup] : undefined;
+            const rawRef = rule.referenceGroup !== undefined ? match[rule.referenceGroup] : undefined;
             const amount = cleanCopAmount(rawAmount);
-            const senderName = normalizeSenderName(rawSender);
+            let senderName = rawSender ? normalizeSenderName(rawSender) : '';
+            if (!senderName && rule.defaultSender) {
+                senderName = rule.defaultSender;
+            }
+            // Buscar referencia explícita en el texto si no vino por grupo de captura
+            let reference = rawRef ? rawRef.trim() : null;
+            if (!reference) {
+                const refMatch = combinedText.match(/(?:ref(?:erencia)?[:\s]+)([a-zA-Z0-9]+)/i);
+                if (refMatch) {
+                    reference = refMatch[1].trim();
+                }
+            }
             if (amount > 0 && senderName.length > 0) {
                 return {
                     success: true,
@@ -148,7 +183,7 @@ export function parseBankingNotification(rawText, rawTitle = '', walletPackage) 
                         wallet: rule.wallet,
                         amount,
                         senderName,
-                        reference: null,
+                        reference,
                         rawText,
                     },
                 };

@@ -1,4 +1,21 @@
 import { formatCapturedTime, formatCopCurrency, formatRecipientForMeta, formatWalletDisplayName, } from './formatter.js';
+export class DefaultFetchHttpClient {
+    async post(url, body, headers) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+        let data;
+        try {
+            data = await res.json();
+        }
+        catch {
+            data = null;
+        }
+        return { status: res.status, data };
+    }
+}
 /**
  * Cliente para Meta WhatsApp Cloud API (Graph API) optimizado para alta concurrencia
  * y resiliencia ante rate limits (HTTP 429).
@@ -9,6 +26,7 @@ export class WhatsAppCloudApiClient {
     maxRetries;
     initialBackoffMs;
     sleep;
+    httpClient;
     constructor(config) {
         this.config = config;
         this.apiVersion = config.apiVersion ?? 'v21.0';
@@ -17,6 +35,7 @@ export class WhatsAppCloudApiClient {
         this.sleep =
             config.sleepProvider ??
                 ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+        this.httpClient = config.httpClient ?? new DefaultFetchHttpClient();
     }
     async sendTemplate(to, templateName, components, languageCode = 'es') {
         const formattedTo = formatRecipientForMeta(to);
@@ -40,7 +59,7 @@ export class WhatsAppCloudApiClient {
         };
         for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
             try {
-                const response = await this.config.httpClient.post(url, payload, headers);
+                const response = await this.httpClient.post(url, payload, headers);
                 if (response.status === 200) {
                     const messageId = response.data?.messages?.[0]?.id ?? 'UNKNOWN_MESSAGE_ID';
                     return {

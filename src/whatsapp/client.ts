@@ -6,6 +6,7 @@ import {
   formatWalletDisplayName,
 } from './formatter.js';
 import type {
+  HttpResponseData,
   IHttpClient,
   IWhatsAppCloudApiClient,
   PaymentAlertOptions,
@@ -14,11 +15,32 @@ import type {
   WhatsAppTemplatePayload,
 } from './types.js';
 
+export class DefaultFetchHttpClient implements IHttpClient {
+  async post<T = any>(
+    url: string,
+    body: unknown,
+    headers: Record<string, string>,
+  ): Promise<HttpResponseData<T>> {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+    return { status: res.status, data };
+  }
+}
+
 export interface WhatsAppCloudApiClientConfig {
   phoneNumberId: string;
   accessToken: string;
   apiVersion?: string; // Default: 'v21.0'
-  httpClient: IHttpClient;
+  httpClient?: IHttpClient;
   maxRetries?: number; // Default: 3
   initialBackoffMs?: number; // Default: 100ms
   sleepProvider?: (ms: number) => Promise<void>;
@@ -33,6 +55,7 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
   private readonly maxRetries: number;
   private readonly initialBackoffMs: number;
   private readonly sleep: (ms: number) => Promise<void>;
+  private readonly httpClient: IHttpClient;
 
   constructor(private readonly config: WhatsAppCloudApiClientConfig) {
     this.apiVersion = config.apiVersion ?? 'v21.0';
@@ -41,6 +64,7 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
     this.sleep =
       config.sleepProvider ??
       ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.httpClient = config.httpClient ?? new DefaultFetchHttpClient();
   }
 
   async sendTemplate(
@@ -73,7 +97,7 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        const response = await this.config.httpClient.post(url, payload, headers);
+        const response = await this.httpClient.post(url, payload, headers);
 
         if (response.status === 200) {
           const messageId =

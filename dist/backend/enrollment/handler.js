@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 /**
  * Manejador HTTP desacoplado para la ceremonia de enrolamiento Zero-Trust (QR Handshake)
  * y revocación de Dispositivos Centinela.
@@ -116,10 +116,7 @@ export class DeviceEnrollmentHandler {
             };
         }
         const deviceSecret = this.secretGenerator();
-        const secretHash = createHash('sha256')
-            .update(deviceSecret, 'utf-8')
-            .digest('hex');
-        await this.deps.enrollmentRepository.registerDeviceSecret(body.deviceId, stored.merchantId, secretHash, stored.label);
+        await this.deps.enrollmentRepository.registerDeviceSecret(body.deviceId, stored.merchantId, deviceSecret, stored.label);
         return {
             statusCode: 200,
             body: {
