@@ -147,14 +147,11 @@ export class DeviceEnrollmentHandler {
     }
 
     const deviceSecret = this.secretGenerator();
-    const secretHash = createHash('sha256')
-      .update(deviceSecret, 'utf-8')
-      .digest('hex');
 
     await this.deps.enrollmentRepository.registerDeviceSecret(
       body.deviceId,
       stored.merchantId,
-      secretHash,
+      deviceSecret,
       stored.label,
     );
 

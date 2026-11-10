@@ -41,7 +41,11 @@ export function computeHmacSignature(
   secret: string,
   canonicalString: string,
 ): string {
-  return createHmac('sha256', secret)
+  const key =
+    typeof secret === 'string' && /^[0-9a-fA-F]{64}$/.test(secret)
+      ? Buffer.from(secret, 'hex')
+      : secret;
+  return createHmac('sha256', key)
     .update(canonicalString, 'utf8')
     .digest('hex');
 }
