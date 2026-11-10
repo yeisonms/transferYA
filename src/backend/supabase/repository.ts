@@ -306,13 +306,12 @@ export class SupabaseRepository
   ): Promise<void> {
     const body: Record<string, any> = {
       status: update.status,
-      updated_at: new Date().toISOString(),
     };
     if (update.amount !== undefined) body.amount = update.amount;
     if (update.senderName !== undefined) body.sender_name = update.senderName;
     if (update.paymentReference !== undefined) body.payment_reference = update.paymentReference;
     if (update.whatsappMessageIds !== undefined) body.whatsapp_message_ids = update.whatsappMessageIds;
-    if (update.processedAt !== undefined) body.processed_at = new Date(update.processedAt).toISOString();
+    if (update.processedAt !== undefined) body.processed_at = update.processedAt;
     if (update.failureReason !== undefined) body.failure_reason = update.failureReason;
 
     await fetch(
