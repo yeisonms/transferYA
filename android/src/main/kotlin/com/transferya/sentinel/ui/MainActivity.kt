@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         credentialsStorage = SharedPreferencesCredentialsStorage(this)
-        keyStoreVault = AndroidKeyStoreVault()
+        keyStoreVault = AndroidKeyStoreVault(this)
         val httpClient = NativeEnrollmentHttpClient { credentialsStorage.getServerUrl() }
         enrollmentManager = DeviceEnrollmentManager(
             httpClient = httpClient,
