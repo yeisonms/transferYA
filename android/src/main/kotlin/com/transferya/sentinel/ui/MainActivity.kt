@@ -99,6 +99,13 @@ class MainActivity : AppCompatActivity() {
             credentialsStorage = credentialsStorage
         )
 
+        // Solicitar permiso de notificaciones de sistema en Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
         setupView()
         updateUI()
     }
@@ -169,6 +176,26 @@ class MainActivity : AppCompatActivity() {
         val space2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
         rootLayout.addView(space2)
 
+        val batteryButton = Button(this).apply {
+            text = "🔋 Batería e Inicio Automático (Xiaomi/OEM)"
+            setBackgroundColor(Color.parseColor("#334155"))
+            setTextColor(Color.WHITE)
+            setOnClickListener {
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.fromParts("package", packageName, null)
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    startActivity(Intent(Settings.ACTION_SETTINGS))
+                }
+            }
+        }
+        rootLayout.addView(batteryButton)
+
+        val space2b = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
+        rootLayout.addView(space2b)
+
         simulateButton = Button(this).apply {
             text = "🧪 Simular Notificación Nequi ($1.000)"
             setBackgroundColor(Color.parseColor("#2563EB"))
@@ -204,6 +231,11 @@ class MainActivity : AppCompatActivity() {
         val pendingCount = sqliteDao.getCountByStatus(NotificationStatus.PENDING)
         val dispatchedCount = sqliteDao.getCountByStatus(NotificationStatus.DISPATCHED)
 
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+        val isIgnoringBattery = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && powerManager != null) {
+            powerManager.isIgnoringBatteryOptimizations(packageName)
+        } else true
+
         if (state == SentinelState.ACTIVE_SENTINEL) {
             val deviceId = credentialsStorage.getDeviceId() ?: "Desconocido"
             val merchantId = credentialsStorage.getMerchantId() ?: "Desconocido"
@@ -219,10 +251,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         val permText = if (isPermGranted) "✅ ACTIVO (Escuchando)" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
-        val permColor = if (isPermGranted) "#00D26A" else "#EF4444"
+        val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' + 'Inicio Automático' Requerido"
 
-        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados"
-        diagnosticView.setTextColor(Color.parseColor(permColor))
+        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados"
+        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isIgnoringBattery) "#00D26A" else "#F59E0B"))
     }
 
     private fun simulateIncomingPayment() {
