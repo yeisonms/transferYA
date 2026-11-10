@@ -80,6 +80,16 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
                 expect(res.payment.senderName).toBe('Nequi');
             }
         });
+        it('debe parsear formato real de produccion Nequi: EDWIN MURCIA te envió 100000, ¡lo mejor!', () => {
+            const rawText = 'EDWIN MURCIA te envió 100000, ¡lo mejor!';
+            const res = parseBankingNotification(rawText, 'Envío', 'com.nequi.MobileApp');
+            expect(res.success).toBe(true);
+            if (res.success) {
+                expect(res.payment.wallet).toBe('NEQUI');
+                expect(res.payment.amount).toBe(100000);
+                expect(res.payment.senderName).toBe('Edwin Murcia');
+            }
+        });
     });
     describe('3. Extracción Exitosa en Daviplata', () => {
         it('debe parsear abono oficial: DaviPlata le informa que recibio $25.000 de Laura Gomez', () => {

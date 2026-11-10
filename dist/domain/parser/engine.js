@@ -60,6 +60,13 @@ const PARSING_RULES = [
         amountGroup: 2,
         senderGroup: 1,
     },
+    // Formato oficial Nequi: EDWIN MURCIA te envió 100000, ¡lo mejor!
+    {
+        wallet: 'NEQUI',
+        pattern: /(?:¡?Plata recibida!?\s*)?(.*?)\s+te envi[oó]\s+([\$\d.,]+)(?:,\s*¡?lo mejor!?|\.|$)/i,
+        amountGroup: 2,
+        senderGroup: 1,
+    },
     // Te transfirieron $50.000 de Pepito Pérez (Saldo: $150.000)
     {
         wallet: 'NEQUI',
