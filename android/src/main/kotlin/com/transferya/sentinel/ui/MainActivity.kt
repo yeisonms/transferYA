@@ -159,6 +159,11 @@ class MainActivity : AppCompatActivity() {
             setPadding(28, 20, 28, 20)
             gravity = Gravity.START
             setBackgroundColor(Color.parseColor("#172033"))
+            setOnClickListener {
+                SentinelNotificationListener.forceRebind(this@MainActivity)
+                Toast.makeText(this@MainActivity, "🔄 Re-conectando escucha con el sistema...", Toast.LENGTH_SHORT).show()
+                postDelayed({ updateUI() }, 1000)
+            }
         }
         rootLayout.addView(diagnosticView)
 
@@ -166,10 +171,11 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(space1)
 
         val permissionButton = Button(this).apply {
-            text = "🔔 Configurar Permiso de Notificaciones"
+            text = "🔔 Reconectar Permiso de Notificaciones"
             setBackgroundColor(Color.parseColor("#1E293B"))
             setTextColor(Color.WHITE)
             setOnClickListener {
+                SentinelNotificationListener.forceRebind(this@MainActivity)
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             }
         }
@@ -252,11 +258,13 @@ class MainActivity : AppCompatActivity() {
             enrollButton.text = "⚡ Emparejar Dispositivo (QR / Token)"
         }
 
-        val permText = if (isPermGranted) "✅ ACTIVO (Escuchando)" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
-        val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' + 'Inicio Automático' Requerido"
+        val isListenerBound = SentinelNotificationListener.isConnected
+        val listenerText = if (isListenerBound) "🟢 VINCULADO (Recibiendo)" else "🔴 DESCONECTADO (Toca para Reconectar)"
+        val permText = if (isPermGranted) "✅ ACTIVO" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
+        val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' Requerido"
 
-        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados"
-        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isIgnoringBattery) "#00D26A" else "#F59E0B"))
+        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados"
+        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery) "#00D26A" else "#F59E0B"))
     }
 
     private fun simulateIncomingPayment() {

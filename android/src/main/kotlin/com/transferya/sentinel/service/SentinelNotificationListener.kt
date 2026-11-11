@@ -32,6 +32,9 @@ class SentinelNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "SentinelListener"
 
+        @Volatile
+        var isConnected: Boolean = false
+
         fun rebind(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 try {
@@ -76,6 +79,7 @@ class SentinelNotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        isConnected = true
         Log.i(TAG, "NotificationListener conectado con el sistema operativo")
         initPipeline()
         thread {
@@ -85,6 +89,13 @@ class SentinelNotificationListener : NotificationListenerService() {
                 Log.e(TAG, "Error despachando notificaciones pendientes al conectar", e)
             }
         }
+    }
+
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        isConnected = false
+        Log.w(TAG, "NotificationListener desconectado por el sistema operativo. Solicitando re-conexión inmediata...")
+        rebind(this)
     }
 
     private fun initPipeline() {

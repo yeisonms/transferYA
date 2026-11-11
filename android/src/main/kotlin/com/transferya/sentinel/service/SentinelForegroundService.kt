@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import com.transferya.sentinel.ui.MainActivity
+import kotlin.concurrent.thread
 
 /**
  * Servicio Foreground persistente para mitigar agresividad de batería OEM (ADR-0003).
@@ -38,6 +39,32 @@ class SentinelForegroundService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
+        startWatchdog()
+    }
+
+    private var watchdogRunning = true
+
+    private fun startWatchdog() {
+        thread(start = true, isDaemon = true) {
+            while (watchdogRunning) {
+                try {
+                    Thread.sleep(10000)
+                    if (!SentinelNotificationListener.isConnected) {
+                        Log.w(TAG, "Watchdog: NotificationListener desconectado. Forzando re-conexión...")
+                        SentinelNotificationListener.forceRebind(applicationContext)
+                    }
+                } catch (_: InterruptedException) {
+                    break
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error en watchdog de listener", e)
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        watchdogRunning = false
+        super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
