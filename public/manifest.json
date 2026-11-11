@@ -1,0 +1,19 @@
+{
+  "name": "TransferYA | Cockpit de Pagos",
+  "short_name": "TransferYA",
+  "description": "Verificación y alerta en tiempo real de pagos Nequi y Daviplata para comercios en Colombia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090D16",
+  "theme_color": "#090D16",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "utilities"]
+}

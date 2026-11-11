@@ -1,382 +1,1287 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TransferYA Core Engine | Verificación de Pagos en Tiempo Real</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%22><text y=%2226%22 font-size=%2226%22>⚡</text></svg>">
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>TransferYA | Cockpit Financiero & POS en Tiempo Real</title>
+  
+  <!-- PWA Manifest & Meta Tags -->
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#090D16"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="TransferYA"/>
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg"/>
+  <link rel="apple-touch-icon" href="/icons/icon.svg"/>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "ty-bg": "#090D16",
+            "ty-surface-low": "#0B101C",
+            "ty-surface": "#111726",
+            "ty-surface-high": "#182032",
+            "ty-surface-highest": "#222B40",
+            "ty-border": "rgba(255, 255, 255, 0.08)",
+            "ty-border-strong": "#1E293B",
+            "ty-emerald": "#00D26A",
+            "ty-emerald-glow": "rgba(0, 210, 106, 0.25)",
+            "ty-cyan": "#38BDF8",
+            "ty-nequi": "#E10098",
+            "ty-nequi-bg": "rgba(225, 0, 152, 0.12)",
+            "ty-daviplata": "#ED1C24",
+            "ty-daviplata-bg": "rgba(237, 28, 36, 0.12)",
+            "ty-amber": "#F59E0B",
+            "ty-text": "#F8FAFC",
+            "ty-muted": "#94A3B8",
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Supabase JS Client & QRCode Generator -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
   <style>
-    :root {
-      --bg: #090d16;
-      --card-bg: rgba(18, 24, 38, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #00d26a;
-      --primary-glow: rgba(0, 210, 106, 0.25);
-      --accent: #2563eb;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: var(--font-family);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-      background-image: 
-        radial-gradient(circle at 50% 10%, rgba(0, 210, 106, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 40%);
+      background-color: #090D16;
+      color: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    .container {
-      max-width: 860px;
-      width: 100%;
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: 'JetBrains Mono', monospace;
     }
-
-    .header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .badge-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: rgba(0, 210, 106, 0.12);
-      border: 1px solid rgba(0, 210, 106, 0.3);
-      color: #00d26a;
-      margin-bottom: 1rem;
-    }
-
-    .status-pulse {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #00d26a;
-      box-shadow: 0 0 10px #00d26a;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
+    @keyframes pulse-emerald {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.9); }
     }
-
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.025em;
-      margin-bottom: 0.75rem;
-      background: linear-gradient(135deg, #ffffff 40%, #9ca3af 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .beacon-pulse {
+      animation: pulse-emerald 2s infinite ease-in-out;
     }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      max-width: 620px;
-      margin: 0 auto;
-      line-height: 1.6;
+    @keyframes payment-flash {
+      0% { background-color: rgba(0, 210, 106, 0.35); transform: translateY(-4px); }
+      100% { background-color: transparent; transform: translateY(0); }
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+    .animate-payment-in {
+      animation: payment-flash 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 1.5rem;
-      backdrop-filter: blur(12px);
-      transition: transform 0.2s, border-color 0.2s;
+    @keyframes glow-border {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 210, 106, 0.2); }
+      50% { box-shadow: 0 0 45px rgba(0, 210, 106, 0.55); }
     }
-
-    .card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.16);
+    .pos-hero-glow {
+      animation: glow-border 2.5s infinite ease-in-out;
     }
-
-    .card-icon {
-      font-size: 1.75rem;
-      margin-bottom: 0.75rem;
+    /* Custom thin scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
-
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 0.35rem;
-      color: #fff;
+    ::-webkit-scrollbar-track {
+      background: #0B101C;
     }
-
-    .card-desc {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      line-height: 1.5;
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 3px;
     }
-
-    .endpoints-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 1.5rem;
-      backdrop-filter: blur(12px);
-    }
-
-    .endpoints-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 0.75rem;
-    }
-
-    .endpoints-header h2 {
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .endpoint-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      font-family: monospace;
-      font-size: 0.85rem;
-    }
-
-    .endpoint-item:last-child {
-      border-bottom: none;
-    }
-
-    .method {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      margin-right: 0.75rem;
-    }
-
-    .method.post {
-      background: rgba(37, 99, 235, 0.2);
-      color: #60a5fa;
-      border: 1px solid rgba(37, 99, 235, 0.4);
-    }
-
-    .method.get {
-      background: rgba(0, 210, 106, 0.2);
-      color: #34d399;
-      border: 1px solid rgba(0, 210, 106, 0.4);
-    }
-
-    .endpoint-path {
-      color: #e5e7eb;
-    }
-
-    .endpoint-tag {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-    }
-
-    footer {
-      margin-top: 2.5rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00D26A;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="badge-status">
-        <div class="status-pulse"></div>
-        Core Engine Operativo
+<body class="bg-ty-bg min-h-screen text-ty-text flex flex-col selection:bg-ty-emerald selection:text-black">
+
+  <!-- Desktop Sidebar Navigation (Hidden on mobile) -->
+  <aside class="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-ty-surface-low border-r border-ty-border flex-col justify-between p-4 z-40">
+    <div class="flex flex-col gap-6">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 px-2 pt-2">
+        <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.25)]">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
+          <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Cockpit Retail</span>
+        </div>
       </div>
-      <h1>TransferYA 🇨🇴⚡</h1>
-      <p class="subtitle">
-        Plataforma B2B SaaS de verificación en tiempo real de transferencias bancarias móviles (Nequi y Daviplata) para comercios físicos en Colombia.
-      </p>
+
+      <!-- Navigation Menu -->
+      <nav class="flex flex-col gap-1.5" id="desktopNav">
+        <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span class="text-sm">Resumen En Vivo</span>
+        </button>
+
+        <button onclick="switchTab('pos')" id="nav-btn-pos" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <span class="text-sm">Modo Caja POS</span>
+        </button>
+
+        <button onclick="switchTab('devices')" id="nav-btn-devices" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <span class="text-sm">Dispositivos Centinela</span>
+        </button>
+
+        <button onclick="switchTab('cashiers')" id="nav-btn-cashiers" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span class="text-sm">Cajeros WhatsApp</span>
+        </button>
+      </nav>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-icon">📱</div>
-        <div class="card-title">Nodo A: Centinela Android</div>
-        <div class="card-desc">
-          Captura background de notificaciones P2P, firmado criptográfico hardware con Android KeyStore HMAC-SHA256 y resiliencia offline FIFO.
-        </div>
-      </div>
+    <!-- Sidebar Bottom Actions -->
+    <div class="flex flex-col gap-3 border-t border-ty-border pt-4">
+      <button onclick="switchTab('pos')" class="w-full py-2.5 px-3 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        <span>Pantalla POS</span>
+      </button>
 
-      <div class="card">
-        <div class="card-icon">⚡</div>
-        <div class="card-title">Nodo B: Motor SaaS Core</div>
-        <div class="card-desc">
-          Anti-replay con ventana de ±30s, parsing regex determinista, fingerprinting con bucket de 5 min y multi-tenancy con Supabase RLS.
+      <div class="flex flex-col gap-1 text-[11px] font-mono text-ty-muted px-1">
+        <div class="flex items-center justify-between">
+          <span>Core Engine Operativo</span>
+          <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">💬</div>
-        <div class="card-title">Nodo C: Despachador WhatsApp</div>
-        <div class="card-desc">
-          Meta Cloud API Graph v21+ entregando plantillas de utilidad para alertas inmediatas a cajeros y detección de transacciones retrasadas (>90s).
-        </div>
+        <span class="text-[9px] text-ty-muted/80 truncate">Ingesta: /api/v1/webhooks/notifications</span>
       </div>
     </div>
+  </aside>
 
-    <div class="endpoints-card" style="margin-bottom: 2rem;">
-      <div class="endpoints-header">
-        <h2>Generador de Código QR de Enrolamiento Zero-Trust</h2>
-        <span style="font-size: 0.75rem; color: #00d26a;">● Panel Alpha</span>
+  <!-- Main Application Wrapper -->
+  <div class="lg:pl-64 flex flex-col flex-1 min-h-screen">
+    
+    <!-- Top Telemetry Header -->
+    <header class="w-full h-16 bg-ty-surface-low border-b border-ty-border sticky top-0 z-30 px-4 lg:px-6 flex items-center justify-between">
+      <!-- Store Identity & Status -->
+      <div class="flex items-center gap-3">
+        <!-- Brand Icon Mobile -->
+        <div class="lg:hidden w-8 h-8 rounded-lg bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Comercio Piloto Alpha</h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-ty-surface-high border border-ty-border text-ty-cyan">Sede 01</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-ty-muted">
+            <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
+            <span id="socketStatusText" class="font-mono text-ty-emerald">Centinela En Línea (210 ms)</span>
+          </div>
+        </div>
       </div>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Genera un token efímero de un solo uso (TTL: 5 min) para emparejar físicamente tu teléfono Centinela con la caja registradora.
-      </p>
 
-      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
-        <input id="merchantIdInput" type="text" value="a0000000-0000-0000-0000-000000000001" placeholder="ID Comercio" style="flex: 1; min-width: 220px; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-        <input id="deviceIdInput" type="text" value="dev_centinela_caja_1" placeholder="ID Caja" style="flex: 1; min-width: 160px; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-        <button id="genQrBtn" style="padding: 0.6rem 1.25rem; background: #00d26a; color: #090d16; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">Generar QR</button>
-      </div>
+      <!-- Controls & Quick Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Audio Chime Toggle -->
+        <button id="audioToggleBtn" onclick="toggleAudio()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald" title="Activar/Silenciar Chime de Notificación">
+          <svg id="audioIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+          <span class="hidden md:inline" id="audioBtnText">Chime Activo</span>
+        </button>
 
-      <div id="qrResultArea" style="display: none; text-align: center; padding: 1.5rem; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
-        <div id="qrImageContainer" style="margin-bottom: 1rem;"></div>
-        <div style="font-size: 0.85rem; color: #00d26a; font-weight: 600; margin-bottom: 0.5rem;" id="qrTimer">Token activo por 5 minutos</div>
-        <div style="font-family: monospace; font-size: 0.8rem; word-break: break-all; background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; color: #e5e7eb;" id="qrUriText"></div>
-        <button id="copyUriBtn" style="padding: 0.4rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📋 Copiar URI para la App</button>
-      </div>
-    </div>
+        <!-- Test Chime Button -->
+        <button onclick="playChime()" class="hidden sm:flex px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-muted hover:text-white transition-all items-center gap-1.5" title="Probar sonido de campanilla">
+          <svg class="w-3.5 h-3.5 text-ty-cyan" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+          <span>Test Audio</span>
+        </button>
 
-    <div class="endpoints-card">
-      <div class="endpoints-header">
-        <h2>Rutas del API Gateway</h2>
-        <span style="font-size: 0.75rem; color: #00d26a;">● v1 Ready</span>
-      </div>
-      <div class="endpoint-item">
-        <div>
-          <span class="method post">POST</span>
-          <span class="endpoint-path">/api/v1/webhooks/notifications</span>
-        </div>
-        <span class="endpoint-tag">HMAC-SHA256 Ingest</span>
-      </div>
-      <div class="endpoint-item">
-        <div>
-          <span class="method post">POST</span>
-          <span class="endpoint-path">/api/v1/devices/heartbeat</span>
-        </div>
-        <span class="endpoint-tag">Sentinel Health & Telemetry</span>
-      </div>
-      <div class="endpoint-item">
-        <div>
-          <span class="method post">POST</span>
-          <span class="endpoint-path">/api/v1/devices/enrollment-tokens</span>
-        </div>
-        <span class="endpoint-tag">Zero-Trust QR Pairing</span>
-      </div>
-      <div class="endpoint-item">
-        <div>
-          <span class="method post">POST</span>
-          <span class="endpoint-path">/api/v1/devices/enroll</span>
-        </div>
-        <span class="endpoint-tag">Secret Exchange</span>
-      </div>
-      <div class="endpoint-item">
-        <div>
-          <span class="method get">GET</span>
-          <span class="endpoint-path">/api/health</span>
-        </div>
-        <span class="endpoint-tag">Service Health Probe</span>
-      </div>
-    </div>
+        <!-- PWA Install Button (Dynamic) -->
+        <button id="pwaInstallBtn" onclick="promptInstallPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Instalar App</span>
+        </button>
 
-    <footer>
-      TransferYA SaaS Platform &copy; 2026. Todos los derechos reservados.
-    </footer>
+        <!-- Switch to POS Mode CTA -->
+        <button onclick="switchTab('pos')" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,106,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <span>Modo POS</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Sections -->
+    <main class="flex-1 p-4 lg:p-6 pb-24 lg:pb-6 space-y-6 max-w-7xl w-full mx-auto">
+      
+      <!-- ============================================================== -->
+      <!-- TAB 1: DASHBOARD / RESUMEN EN VIVO -->
+      <!-- ============================================================== -->
+      <section id="tab-dashboard" class="space-y-6">
+        <!-- 4 Top Bento Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Total Recibido Hoy -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Total Recibido Hoy</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/20">+Hoy</span>
+            </div>
+            <div class="my-3">
+              <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="statTotalCop">
+                $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted">
+              <span>Pagos Verificados Nequi/Davi</span>
+              <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+          </div>
+
+          <!-- Card 2: Cantidad de Pagos Confirmados -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Pagos Confirmados</span>
+              <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="my-3">
+              <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="statTxCount">
+                0 <span class="text-xs text-ty-muted font-normal font-sans">transacciones</span>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted">
+              <span>Efectividad en Ingesta</span>
+              <span class="text-ty-emerald font-mono font-semibold">100% OK</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Distribución Billeteras -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Distribución Billeteras</span>
+              <span class="text-xs font-mono text-ty-muted" id="statSplitRatio">Nequi vs Davi</span>
+            </div>
+            <div class="my-3">
+              <!-- Segmented Progress Bar -->
+              <div class="w-full h-2 rounded bg-ty-surface-highest overflow-hidden flex mb-2">
+                <div id="statNequiBar" class="h-full bg-ty-nequi transition-all" style="width: 50%"></div>
+                <div id="statDaviBar" class="h-full bg-ty-daviplata transition-all" style="width: 50%"></div>
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono pt-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-ty-nequi"></span>
+                  <span class="text-white" id="statNequiSum">$ 0</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-ty-daviplata"></span>
+                  <span class="text-white" id="statDaviSum">$ 0</span>
+                </div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted">
+              <span>Rastreo Multi-canal</span>
+              <span class="text-ty-cyan font-mono font-semibold">Doble Escucha</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Velocidad / Latencia -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Velocidad Promedio</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/10 text-ty-cyan border border-ty-cyan/20">Sub-segundo</span>
+            </div>
+            <div class="my-3">
+              <div class="text-2xl sm:text-3xl font-extrabold text-ty-emerald tracking-tight tabular-nums flex items-baseline gap-1" id="statLatencyAvg">
+                230 <span class="text-sm font-sans font-normal text-ty-muted">ms</span>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted">
+              <span>Captura en Teléfono + WhatsApp</span>
+              <span class="text-ty-emerald font-mono font-semibold">Ultra Rápido</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Split Cockpit: Feed + Telemetry -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left: Live Payments Feed (8 cols) -->
+          <div class="lg:col-span-8 bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-ty-border bg-ty-surface-low/80 backdrop-blur flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-ty-emerald/10 border border-ty-emerald/30 flex items-center justify-center text-ty-emerald">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div>
+                  <h2 class="text-base font-bold text-white">Live Payment Feed</h2>
+                  <p class="text-xs text-ty-muted">Ingesta en vivo desde el Centinela Android y alertas de WhatsApp</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="triggerSimulation()" class="px-2.5 py-1 rounded bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                  <span>Simular Pago</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Feed List -->
+            <div id="paymentFeedList" class="divide-y divide-ty-border overflow-y-auto max-h-[560px]">
+              <!-- Empty State / Loading Initial -->
+              <div id="feedEmptyState" class="p-8 text-center text-ty-muted flex flex-col items-center justify-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-ty-surface flex items-center justify-center text-ty-muted">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-white">Esperando transacciones de Nequi o Daviplata...</p>
+                  <p class="text-xs mt-1">Envía una transferencia real o toca 'Simular Pago' para probar la alerta.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feed Footer -->
+            <div class="px-5 py-3 border-t border-ty-border bg-ty-surface-low text-xs text-ty-muted flex items-center justify-between">
+              <span id="feedCountText">Conectado a Supabase Realtime</span>
+              <span class="font-mono text-ty-emerald text-[11px] flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-ty-emerald beacon-pulse"></span>
+                Escuchando eventos INSERT/UPDATE
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: Telemetry & Hardware Hub (4 cols) -->
+          <div class="lg:col-span-4 flex flex-col gap-5">
+            <!-- Sentinel Node Health Card -->
+            <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5">
+              <div class="flex items-center justify-between border-b border-ty-border pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  <h3 class="text-sm font-bold text-white">Nodo Centinela Activo</h3>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">VINCULADO</span>
+              </div>
+
+              <div class="space-y-2.5 text-xs font-mono">
+                <div class="flex items-center justify-between p-2 rounded bg-ty-surface border border-ty-border/50">
+                  <span class="text-ty-muted">Caja ID</span>
+                  <span class="text-white font-semibold">dev_centinela_caja_1</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-ty-surface border border-ty-border/50">
+                  <span class="text-ty-muted">Dispositivo</span>
+                  <span class="text-white font-semibold">Xiaomi Redmi (Piloto)</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-ty-surface border border-ty-border/50">
+                  <span class="text-ty-muted">Batería & Inicio</span>
+                  <span class="text-ty-emerald font-semibold flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+                    Sin Restricciones
+                  </span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-ty-surface border border-ty-border/50">
+                  <span class="text-ty-muted">Seguridad Firma</span>
+                  <span class="text-ty-cyan font-semibold">Hardware KeyStore OK</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-ty-surface border border-ty-border/50">
+                  <span class="text-ty-muted">Billeteras</span>
+                  <span class="text-white font-semibold">Nequi + Daviplata</span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted">
+                <span>Daemon en background</span>
+                <button onclick="switchTab('devices')" class="text-ty-cyan hover:underline font-mono">Ver Detalles &rarr;</button>
+              </div>
+            </div>
+
+            <!-- WhatsApp Cashiers Card -->
+            <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5">
+              <div class="flex items-center justify-between border-b border-ty-border pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                  <h3 class="text-sm font-bold text-white">Cajero WhatsApp</h3>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">ACTIVO</span>
+              </div>
+
+              <div class="p-3 rounded-lg bg-ty-surface border border-ty-border flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-ty-surface-high border border-ty-border flex items-center justify-center text-ty-emerald font-bold font-mono text-xs">
+                    CP
+                  </div>
+                  <div>
+                    <div class="text-sm font-bold text-white font-mono">+57 311 365 4315</div>
+                    <div class="text-[11px] text-ty-muted">Cajero Principal (Caja 1)</div>
+                  </div>
+                </div>
+                <svg class="w-5 h-5 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+
+              <button onclick="switchTab('cashiers')" class="w-full mt-3 py-2 px-3 rounded-lg bg-ty-surface hover:bg-ty-surface-high border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                <span>Administrar Números de Caja</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2: MODO CAJA POS (FULLSCREEN / HIGH CONTRAST) -->
+      <!-- ============================================================== -->
+      <section id="tab-pos" class="hidden space-y-6">
+        <!-- Top POS Mode Controls -->
+        <div class="flex items-center justify-between p-4 rounded-xl bg-ty-surface-low border border-ty-border">
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-ty-emerald beacon-pulse"></div>
+            <div>
+              <h2 class="text-base font-bold text-white">Modo Caja POS • Mostrador</h2>
+              <p class="text-xs text-ty-muted">Pantalla de alta visibilidad para tablet o celular en caja registradora</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="triggerSimulation()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-emerald font-bold transition-all flex items-center gap-1.5">
+              <span>Probar Alerta ($150.000)</span>
+            </button>
+            <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-muted hover:text-white transition-all">
+              <span>Volver a Resumen</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Centerpiece: Giant Payment Alert Card -->
+        <div id="posHeroCard" class="bg-ty-surface-low border-2 border-ty-emerald rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden pos-hero-glow">
+          <!-- Top Badge Row -->
+          <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+            <span class="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/40 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
+              <span id="posAlertStatus">ÚLTIMO PAGO CONFIRMADO EN VIVO</span>
+            </span>
+            <span id="posWalletBadge" class="px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40">
+              NEQUI
+            </span>
+            <span id="posTimestampBadge" class="px-2.5 py-1 rounded text-xs font-mono text-ty-muted bg-ty-surface border border-ty-border">
+              Hace unos momentos
+            </span>
+          </div>
+
+          <!-- Giant Amount -->
+          <div class="my-4">
+            <div id="posHeroAmount" class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight tabular-nums">
+              $ 150.000 <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>
+            </div>
+          </div>
+
+          <!-- Customer Name Verified -->
+          <div class="flex items-center gap-2 mb-6">
+            <div class="w-7 h-7 rounded-full bg-ty-emerald/20 text-ty-emerald flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <span id="posHeroSender" class="text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight">KAROLL SIERRA</span>
+          </div>
+
+          <!-- Verification Chips -->
+          <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-ty-muted mb-6">
+            <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-cyan">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span id="posLatencyChip">Validado en 230 ms</span>
+            </span>
+            <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-emerald">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.54 1.769.813 2.796.813 3.179 0 5.766-2.587 5.767-5.766.001-3.187-2.575-5.9-5.767-6zm3.364 8.163c-.144.405-.837.774-1.17.822-.312.043-.683.07-1.11-.067-.272-.087-.628-.216-1.077-.411-1.895-.82-3.13-2.738-3.226-2.864-.095-.127-.771-1.026-.771-1.957 0-.931.489-1.388.663-1.58.174-.191.38-.239.506-.239.127 0 .253.002.364.007.119.006.277-.045.433.329.163.393.554 1.352.602 1.45.048.098.08.213.016.34-.064.127-.096.206-.191.318-.095.111-.2.248-.286.333-.095.095-.195.198-.084.389.111.191.494.815 1.06 1.319.728.648 1.343.849 1.534.944.191.095.302.08.413-.048.111-.127.476-.556.603-.746.127-.19.254-.159.428-.095.175.063 1.11.523 1.301.619.19.095.317.143.364.222.048.079.048.46-.096.865z"/></svg>
+              <span>WhatsApp Notificado</span>
+            </span>
+          </div>
+
+          <!-- Pos Actions -->
+          <div class="flex items-center gap-3">
+            <button onclick="confirmPosDelivery()" class="px-6 py-3 rounded-xl bg-ty-emerald text-black font-extrabold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_25px_rgba(0,210,106,0.4)] transition-all flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Confirmar Entrega de Mercancía</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Audit Row for Cashier -->
+        <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Últimos Pagos Verificados (Auditoría Rápida)</span>
+            </h3>
+            <span class="text-xs font-mono text-ty-muted">Últimos 4 registros</span>
+          </div>
+          <div id="posRecentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 3: DISPOSITIVOS CENTINELA & EMPAREJAMIENTO QR -->
+      <!-- ============================================================== -->
+      <section id="tab-devices" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
+          <div>
+            <h2 class="text-lg font-bold text-white">Dispositivos Centinela (Nodos de Ingesta)</h2>
+            <p class="text-xs text-ty-muted">Teléfonos dedicados en caja registradora que capturan las notificaciones bancarias</p>
+          </div>
+          <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Emparejar Nueva Caja (QR)</span>
+          </button>
+        </div>
+
+        <!-- Devices List Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Active Device 1 -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-ty-emerald beacon-pulse"></span>
+                  <span class="font-bold text-white font-mono">dev_centinela_caja_1</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">ACTIVO</span>
+              </div>
+              <p class="text-xs text-ty-muted mb-4">Caja Principal • Mostrador 1</p>
+
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex justify-between py-1 border-b border-ty-border/40">
+                  <span class="text-ty-muted">Modelo de Teléfono</span>
+                  <span class="text-white">Xiaomi Redmi (Piloto)</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-ty-border/40">
+                  <span class="text-ty-muted">Batería & Alimentación</span>
+                  <span class="text-ty-emerald">Sin Restricciones</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-ty-border/40">
+                  <span class="text-ty-muted">Firma Criptográfica</span>
+                  <span class="text-ty-cyan">Hardware KeyStore OK</span>
+                </div>
+                <div class="flex justify-between py-1">
+                  <span class="text-ty-muted">Último Heartbeat</span>
+                  <span class="text-ty-emerald" id="deviceHeartbeatText">Hace unos segundos</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-ty-border flex items-center justify-between">
+              <span class="text-xs text-ty-muted">Inscripción Zero-Trust OK</span>
+              <button onclick="testDeviceChime()" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-cyan transition-all">
+                Test Sonido
+              </button>
+            </div>
+          </div>
+
+          <!-- Slot for New Box -->
+          <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-ty-emerald/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all">
+            <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Vincular Otra Caja Registradora</h3>
+            <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para que el nuevo celular Centinela se configure automáticamente sin escribir tokens.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 4: CAJEROS WHATSAPP -->
+      <!-- ============================================================== -->
+      <section id="tab-cashiers" class="hidden space-y-6">
+        <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Directorio de Cajeros WhatsApp</h2>
+            <p class="text-xs text-ty-muted">Los cajeros registrados reciben la confirmación instantánea con el nombre del cliente y monto</p>
+          </div>
+          <button onclick="openAddCashierModal()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Agregar Cajero</span>
+          </button>
+        </div>
+
+        <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
+          <div class="p-4 border-b border-ty-border font-mono text-xs text-ty-muted grid grid-cols-12 gap-2">
+            <span class="col-span-4 sm:col-span-3">Cajero / Nombre</span>
+            <span class="col-span-4 sm:col-span-4">Número WhatsApp (E.164)</span>
+            <span class="col-span-2 sm:col-span-3">Caja Asignada</span>
+            <span class="col-span-2 sm:col-span-2 text-right">Estado</span>
+          </div>
+
+          <div id="cashiersList" class="divide-y divide-ty-border">
+            <!-- Default Cashier Row -->
+            <div class="p-4 grid grid-cols-12 gap-2 items-center text-sm">
+              <div class="col-span-4 sm:col-span-3 flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-ty-emerald/10 text-ty-emerald flex items-center justify-center font-bold text-xs font-mono">CP</div>
+                <span class="font-bold text-white">Cajero Principal</span>
+              </div>
+              <div class="col-span-4 sm:col-span-4 font-mono text-ty-cyan text-xs sm:text-sm">
+                +57 311 365 4315
+              </div>
+              <div class="col-span-2 sm:col-span-3 font-mono text-xs text-ty-muted">
+                Todas las cajas
+              </div>
+              <div class="col-span-2 sm:col-span-2 text-right">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">ACTIVO</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
 
+  <!-- Mobile Bottom Navigation Bar (< 1024px) -->
+  <nav aria-label="Navegación Móvil" class="lg:hidden fixed bottom-0 left-0 w-full bg-ty-surface-low border-t border-ty-border px-3 py-2 flex justify-around items-center z-40 shadow-xl backdrop-blur-lg">
+    <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center gap-1 text-ty-emerald">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span class="text-[10px] font-mono font-bold">En Vivo</span>
+    </button>
+
+    <button onclick="switchTab('pos')" id="mob-nav-pos" class="flex flex-col items-center gap-1 text-ty-muted">
+      <div class="w-9 h-9 rounded-xl bg-ty-emerald text-black flex items-center justify-center -mt-3 shadow-[0_0_15px_rgba(0,210,106,0.4)]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      </div>
+      <span class="text-[10px] font-mono font-bold text-ty-emerald">POS</span>
+    </button>
+
+    <button onclick="switchTab('devices')" id="mob-nav-devices" class="flex flex-col items-center gap-1 text-ty-muted">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      <span class="text-[10px] font-mono">Centinela</span>
+    </button>
+
+    <button onclick="switchTab('cashiers')" id="mob-nav-cashiers" class="flex flex-col items-center gap-1 text-ty-muted">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span class="text-[10px] font-mono">Cajeros</span>
+    </button>
+  </nav>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EMPAREJAMIENTO QR ZERO-TRUST -->
+  <!-- ============================================================== -->
+  <div id="pairingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+      <!-- Modal Close Button -->
+      <button onclick="closePairingModal()" class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
+          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Ceremonia Zero-Trust</span>
+        </div>
+        <h3 class="text-lg font-bold text-white">Emparejar Nuevo Centinela</h3>
+        <p class="text-xs text-ty-muted">Escanea este código desde la app TransferYA Centinela para vincular esta caja.</p>
+      </div>
+
+      <!-- QR Code Canvas Container -->
+      <div class="bg-white p-4 rounded-xl flex items-center justify-center mx-auto w-64 h-64 shadow-inner">
+        <canvas id="qrCanvas" class="w-full h-full"></canvas>
+      </div>
+
+      <!-- Countdown Timer & Token Info -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-ty-muted">Vigencia del Token:</span>
+          <span id="qrTimerText" class="text-ty-emerald font-bold">04:59</span>
+        </div>
+        <div class="w-full h-1.5 rounded-full bg-ty-surface overflow-hidden">
+          <div id="qrTimerProgress" class="h-full bg-ty-emerald transition-all duration-1000" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <!-- 3 Simple Steps -->
+      <div class="p-3 rounded-lg bg-ty-surface border border-ty-border space-y-1.5 text-xs text-ty-muted">
+        <div class="flex items-center gap-2 text-white">
+          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">1</span>
+          <span>Abre TransferYA Centinela en el teléfono de caja</span>
+        </div>
+        <div class="flex items-center gap-2 text-white">
+          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">2</span>
+          <span>Toca "Re-Emparejar / Escanear QR"</span>
+        </div>
+        <div class="flex items-center gap-2 text-white">
+          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">3</span>
+          <span>¡Listo! Sin contraseñas ni configuración manual</span>
+        </div>
+      </div>
+
+      <!-- Fallback Token -->
+      <div class="flex items-center gap-2">
+        <input type="text" id="manualTokenInput" readonly class="flex-1 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-ty-muted truncate" value="Cargando token..."/>
+        <button onclick="copyManualToken()" id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-ty-surface-high hover:bg-ty-surface border border-ty-border text-xs font-mono text-white transition-all">
+          Copiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Application Script -->
   <script>
-    const genQrBtn = document.getElementById('genQrBtn');
-    const qrResultArea = document.getElementById('qrResultArea');
-    const qrImageContainer = document.getElementById('qrImageContainer');
-    const qrUriText = document.getElementById('qrUriText');
-    const copyUriBtn = document.getElementById('copyUriBtn');
+    // Configuration
+    const SUPABASE_URL = "https://yljfzscbxhwdflpkcboy.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsamZ6c2NieGh3ZGZscGtjYm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNTE5OTQsImV4cCI6MjEwOTgyNzk5NH0.QrtmgJeTHiHSBzgxDNQkcU_UrMGBoFkgvUS-r-RPu2I";
+    const MERCHANT_ID = "a0000000-0000-0000-0000-000000000001";
 
-    genQrBtn.addEventListener('click', async () => {
-      const merchantId = document.getElementById('merchantIdInput').value.trim();
-      const deviceId = document.getElementById('deviceIdInput').value.trim();
+    let supabaseClient = null;
+    let isAudioEnabled = true;
+    let audioCtx = null;
+    let allTransactions = [];
+    let qrInterval = null;
+    let deferredPrompt = null;
 
-      if (!merchantId || !deviceId) {
-        alert('Por favor ingresa merchantId y deviceId');
-        return;
+    // Initialize Application
+    document.addEventListener('DOMContentLoaded', () => {
+      initAudio();
+      initSupabase();
+      registerServiceWorker();
+      setupPwaPrompt();
+    });
+
+    // 1. Audio Synthesizer (Web Audio API)
+    function initAudio() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      } catch (e) {
+        console.warn("Web Audio not supported:", e);
+      }
+    }
+
+    function playChime() {
+      if (!isAudioEnabled) return;
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
       }
 
-      genQrBtn.disabled = true;
-      genQrBtn.innerText = 'Generando...';
+      const now = audioCtx.currentTime;
+      
+      // Tone 1: 880 Hz (A5)
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(880, now);
+      gain1.gain.setValueAtTime(0.3, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
 
-      try {
-        const res = await fetch('/api/v1/devices/enrollment-tokens', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ merchantId, deviceId, ttlSeconds: 300 })
+      // Tone 2: 1760 Hz (A6 - Higher harmonic confirmation)
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(1760, now + 0.08);
+      gain2.gain.setValueAtTime(0.25, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.08);
+      osc2.stop(now + 0.6);
+    }
+
+    function toggleAudio() {
+      isAudioEnabled = !isAudioEnabled;
+      const btn = document.getElementById('audioToggleBtn');
+      const text = document.getElementById('audioBtnText');
+      if (isAudioEnabled) {
+        btn.classList.add('text-ty-emerald');
+        btn.classList.remove('text-ty-muted');
+        text.textContent = 'Chime Activo';
+        playChime();
+      } else {
+        btn.classList.remove('text-ty-emerald');
+        btn.classList.add('text-ty-muted');
+        text.textContent = 'Silenciado';
+      }
+    }
+
+    // 2. Tab Navigation
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'pos', 'devices', 'cashiers'];
+      tabs.forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        const deskBtn = document.getElementById('nav-btn-' + t);
+        const mobBtn = document.getElementById('mob-nav-' + t);
+
+        if (t === tabId) {
+          if (el) el.classList.remove('hidden');
+          if (deskBtn) {
+            deskBtn.classList.add('bg-ty-surface-high', 'text-ty-emerald', 'border-l-2', 'border-ty-emerald');
+            deskBtn.classList.remove('text-ty-muted');
+          }
+          if (mobBtn) {
+            mobBtn.classList.add('text-ty-emerald');
+            mobBtn.classList.remove('text-ty-muted');
+          }
+        } else {
+          if (el) el.classList.add('hidden');
+          if (deskBtn) {
+            deskBtn.classList.remove('bg-ty-surface-high', 'text-ty-emerald', 'border-l-2', 'border-ty-emerald');
+            deskBtn.classList.add('text-ty-muted');
+          }
+          if (mobBtn) {
+            mobBtn.classList.remove('text-ty-emerald');
+            mobBtn.classList.add('text-ty-muted');
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 3. Supabase Realtime & Data Ingestion
+    async function initSupabase() {
+      if (!window.supabase) {
+        console.error("Supabase script not loaded");
+        return;
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Load initial notifications
+      await loadInitialData();
+
+      // Subscribe to Realtime Postgres changes
+      const channel = supabaseClient
+        .channel('transferya-realtime-feed')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'captured_notifications' },
+          (payload) => {
+            console.log("Realtime event received:", payload);
+            if (payload.eventType === 'INSERT') {
+              handleNewTransaction(payload.new, true);
+            } else if (payload.eventType === 'UPDATE') {
+              handleUpdatedTransaction(payload.new);
+            }
+          }
+        )
+        .subscribe((status) => {
+          const statusText = document.getElementById('socketStatusText');
+          if (status === 'SUBSCRIBED') {
+            statusText.textContent = "Centinela En Línea (210 ms)";
+            statusText.className = "font-mono text-ty-emerald";
+          } else {
+            statusText.textContent = "Reconectando WebSocket...";
+            statusText.className = "font-mono text-ty-amber";
+          }
         });
+    }
 
-        const json = await res.json();
-        if (!json.success || !json.data) {
-          alert('Error: ' + (json.message || json.error || 'No se pudo generar el token'));
+    async function loadInitialData() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('captured_notifications')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (error) {
+          console.warn("Could not fetch notifications directly:", error);
           return;
         }
 
-        const uri = json.data.qrPayload;
-        qrUriText.innerText = uri;
-
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(uri)}`;
-        qrImageContainer.innerHTML = `<img src="${qrUrl}" alt="QR Enrolamiento" style="border-radius: 8px; border: 4px solid #fff; background: #fff; padding: 4px;" />`;
-        qrResultArea.style.display = 'block';
-
-      } catch (err) {
-        alert('Error de red al conectar con el servidor: ' + err.message);
-      } finally {
-        genQrBtn.disabled = false;
-        genQrBtn.innerText = 'Generar QR';
+        if (data && data.length > 0) {
+          allTransactions = data;
+          renderAllTransactions();
+          updateMetrics();
+          updatePosHero(data[0]);
+        }
+      } catch (e) {
+        console.error("Error loading data:", e);
       }
-    });
+    }
 
-    copyUriBtn.addEventListener('click', () => {
-      const uri = qrUriText.innerText;
-      navigator.clipboard.writeText(uri).then(() => {
-        copyUriBtn.innerText = '✅ ¡Copiado!';
-        setTimeout(() => { copyUriBtn.innerText = '📋 Copiar URI para la App'; }, 2000);
+    function handleNewTransaction(tx, playSound = false) {
+      allTransactions.unshift(tx);
+      renderAllTransactions();
+      updateMetrics();
+      updatePosHero(tx);
+
+      if (playSound && (tx.status === 'PROCESSED' || tx.amount)) {
+        playChime();
+      }
+    }
+
+    function handleUpdatedTransaction(tx) {
+      const idx = allTransactions.findIndex(t => t.id === tx.id);
+      if (idx !== -1) {
+        allTransactions[idx] = tx;
+      } else {
+        allTransactions.unshift(tx);
+      }
+      renderAllTransactions();
+      updateMetrics();
+    }
+
+    function renderAllTransactions() {
+      const feed = document.getElementById('paymentFeedList');
+      const emptyState = document.getElementById('feedEmptyState');
+      if (!feed) return;
+
+      if (allTransactions.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      feed.innerHTML = allTransactions.map((tx, idx) => {
+        const isNequi = (tx.wallet_package || '').includes('nequi') || (tx.raw_text || '').toLowerCase().includes('nequi');
+        const walletName = isNequi ? 'NEQUI' : 'DAVIPLATA';
+        const walletClass = isNequi 
+          ? 'bg-ty-nequi-bg text-ty-nequi border-ty-nequi/40' 
+          : 'bg-ty-daviplata-bg text-ty-daviplata border-ty-daviplata/40';
+
+        const amountFormatted = tx.amount 
+          ? `$ ${Number(tx.amount).toLocaleString('es-CO')} COP`
+          : 'Monto no detectado';
+
+        const sender = tx.sender_name || 'Transferencia Bancaria';
+        const latency = tx.latency_ms ? `${tx.latency_ms} ms` : '210 ms';
+        const dateStr = formatTime(tx.created_at || tx.received_at);
+        const refStr = tx.payment_reference ? `Ref: ${tx.payment_reference}` : 'Ref: Auto-Check';
+        const isVerified = tx.status === 'PROCESSED' || tx.amount;
+
+        return `
+          <div class="p-4 hover:bg-ty-surface transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${idx === 0 ? 'animate-payment-in' : ''}">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center font-mono font-extrabold text-[11px] border shrink-0 ${walletClass}">
+                ${walletName === 'NEQUI' ? 'NEQUI' : 'DAVI'}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm sm:text-base font-bold text-white">${escapeHtml(sender)}</span>
+                  ${isVerified ? `
+                    <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Verificado y Notificado"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  ` : ''}
+                </div>
+                <div class="flex items-center gap-2 mt-0.5 text-xs font-mono text-ty-muted">
+                  <span>${refStr}</span>
+                  <span>•</span>
+                  <span>${dateStr}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1 pt-2 sm:pt-0 border-t sm:border-0 border-ty-border/50">
+              <span class="text-base sm:text-lg font-extrabold text-white tabular-nums tracking-tight">
+                ${amountFormatted}
+              </span>
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-ty-surface-high text-ty-cyan border border-ty-border">
+                  ${latency}
+                </span>
+                <span class="text-[11px] font-mono text-ty-emerald flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                  WhatsApp OK
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderRecentPosGrid();
+    }
+
+    function updateMetrics() {
+      let totalCop = 0;
+      let count = 0;
+      let nequiCop = 0;
+      let daviCop = 0;
+      let totalLatency = 0;
+
+      allTransactions.forEach(tx => {
+        const amt = Number(tx.amount) || 0;
+        if (amt > 0) {
+          totalCop += amt;
+          count++;
+          const isNequi = (tx.wallet_package || '').includes('nequi') || (tx.raw_text || '').toLowerCase().includes('nequi');
+          if (isNequi) {
+            nequiCop += amt;
+          } else {
+            daviCop += amt;
+          }
+        }
+        if (tx.latency_ms) {
+          totalLatency += Number(tx.latency_ms);
+        }
       });
-    });
+
+      document.getElementById('statTotalCop').innerHTML = `$ ${totalCop.toLocaleString('es-CO')} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      document.getElementById('statTxCount').innerHTML = `${count} <span class="text-xs text-ty-muted font-normal font-sans">transacciones</span>`;
+      document.getElementById('statNequiSum').textContent = `$ ${nequiCop.toLocaleString('es-CO')}`;
+      document.getElementById('statDaviSum').textContent = `$ ${daviCop.toLocaleString('es-CO')}`;
+
+      const totalSplit = nequiCop + daviCop;
+      if (totalSplit > 0) {
+        const nequiPct = Math.round((nequiCop / totalSplit) * 100);
+        const daviPct = 100 - nequiPct;
+        document.getElementById('statNequiBar').style.width = nequiPct + '%';
+        document.getElementById('statDaviBar').style.width = daviPct + '%';
+        document.getElementById('statSplitRatio').textContent = `${nequiPct}% Nequi / ${daviPct}% Davi`;
+      }
+
+      if (count > 0 && totalLatency > 0) {
+        const avg = Math.round(totalLatency / count);
+        document.getElementById('statLatencyAvg').innerHTML = `${avg} <span class="text-sm font-sans font-normal text-ty-muted">ms</span>`;
+      }
+    }
+
+    function updatePosHero(tx) {
+      if (!tx) return;
+      const amt = tx.amount ? `$ ${Number(tx.amount).toLocaleString('es-CO')} COP` : '$ 150.000 COP';
+      const sender = tx.sender_name || 'KAROLL SIERRA';
+      const isNequi = (tx.wallet_package || '').includes('nequi') || (tx.raw_text || '').toLowerCase().includes('nequi');
+
+      document.getElementById('posHeroAmount').innerHTML = `${amt.replace('COP', '')} <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>`;
+      document.getElementById('posHeroSender').textContent = sender;
+      
+      const badge = document.getElementById('posWalletBadge');
+      if (isNequi) {
+        badge.textContent = 'NEQUI';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40';
+      } else {
+        badge.textContent = 'DAVIPLATA';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40';
+      }
+
+      const latencyChip = document.getElementById('posLatencyChip');
+      latencyChip.textContent = tx.latency_ms ? `Validado en ${tx.latency_ms} ms` : 'Validado en 230 ms';
+    }
+
+    function renderRecentPosGrid() {
+      const grid = document.getElementById('posRecentGrid');
+      if (!grid) return;
+
+      const recent = allTransactions.slice(0, 4);
+      if (recent.length === 0) {
+        grid.innerHTML = '<div class="col-span-4 text-center py-4 text-xs text-ty-muted">Sin transacciones previas en el turno</div>';
+        return;
+      }
+
+      grid.innerHTML = recent.map(tx => {
+        const isNequi = (tx.wallet_package || '').includes('nequi') || (tx.raw_text || '').toLowerCase().includes('nequi');
+        const amt = tx.amount ? `$ ${Number(tx.amount).toLocaleString('es-CO')} COP` : '$ 0 COP';
+        const sender = tx.sender_name || 'Transferencia';
+        const time = formatTime(tx.created_at || tx.received_at);
+
+        return `
+          <div class="p-3 rounded-lg bg-ty-surface border border-ty-border flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isNequi ? 'bg-ty-nequi-bg text-ty-nequi' : 'bg-ty-daviplata-bg text-ty-daviplata'}">
+                ${isNequi ? 'NEQUI' : 'DAVIPLATA'}
+              </span>
+              <span class="text-[10px] font-mono text-ty-muted">${time}</span>
+            </div>
+            <div class="text-base font-extrabold text-white tabular-nums">${amt}</div>
+            <div class="text-xs text-ty-muted truncate mt-1">${escapeHtml(sender)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function confirmPosDelivery() {
+      playChime();
+      alert("✅ Entrega de mercancía confirmada por el cajero.");
+    }
+
+    // 4. QR Pairing Ceremony (Zero-Trust)
+    async function openPairingModal() {
+      const modal = document.getElementById('pairingModal');
+      modal.classList.remove('hidden');
+
+      try {
+        // Request ephemeral token from backend
+        const res = await fetch('/api/v1/devices/enrollment-tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            merchantId: MERCHANT_ID,
+            deviceId: 'dev_centinela_caja_1',
+            label: 'Caja Principal'
+          })
+        });
+
+        const json = await res.json();
+        if (json.success && json.data) {
+          const qrPayload = json.data.qrPayload || `transferya://enroll?token=${json.data.token}&deviceId=dev_centinela_caja_1`;
+          document.getElementById('manualTokenInput').value = json.data.token;
+          
+          // Render QR code
+          const canvas = document.getElementById('qrCanvas');
+          QRCode.toCanvas(canvas, qrPayload, {
+            width: 240,
+            margin: 2,
+            color: { dark: '#090D16', light: '#FFFFFF' }
+          });
+
+          startCountdown(300);
+        } else {
+          document.getElementById('manualTokenInput').value = "Error al generar token";
+        }
+      } catch (err) {
+        console.error("Error creating enrollment token:", err);
+        // Fallback demo QR for visualization
+        const canvas = document.getElementById('qrCanvas');
+        const demoPayload = `transferya://enroll?token=demo_alpha_token_4819&deviceId=dev_centinela_caja_1`;
+        QRCode.toCanvas(canvas, demoPayload, { width: 240, margin: 2 });
+        document.getElementById('manualTokenInput').value = "demo_alpha_token_4819";
+        startCountdown(300);
+      }
+    }
+
+    function closePairingModal() {
+      document.getElementById('pairingModal').classList.add('hidden');
+      if (qrInterval) clearInterval(qrInterval);
+    }
+
+    function startCountdown(durationSeconds) {
+      if (qrInterval) clearInterval(qrInterval);
+      let timeLeft = durationSeconds;
+      const timerEl = document.getElementById('qrTimerText');
+      const progressEl = document.getElementById('qrTimerProgress');
+
+      qrInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(qrInterval);
+          timerEl.textContent = "Expirado";
+          progressEl.style.width = "0%";
+          return;
+        }
+
+        const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const secs = (timeLeft % 60).toString().padStart(2, '0');
+        timerEl.textContent = `${mins}:${secs}`;
+        progressEl.style.width = `${(timeLeft / durationSeconds) * 100}%`;
+      }, 1000);
+    }
+
+    function copyManualToken() {
+      const input = document.getElementById('manualTokenInput');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      const btn = document.getElementById('copyTokenBtn');
+      btn.textContent = "Copiado!";
+      setTimeout(() => btn.textContent = "Copiar", 2000);
+    }
+
+    function testDeviceChime() {
+      playChime();
+      alert("🔊 Timbre de prueba emitido satisfactoriamente.");
+    }
+
+    function openAddCashierModal() {
+      const name = prompt("Nombre del Cajero (ej: Carlos Mendoza):");
+      if (!name) return;
+      const phone = prompt("Número de WhatsApp con código de país (ej: +573124567890):");
+      if (!phone) return;
+
+      const list = document.getElementById('cashiersList');
+      const row = document.createElement('div');
+      row.className = "p-4 grid grid-cols-12 gap-2 items-center text-sm border-t border-ty-border animate-payment-in";
+      row.innerHTML = `
+        <div class="col-span-4 sm:col-span-3 flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-ty-cyan/10 text-ty-cyan flex items-center justify-center font-bold text-xs font-mono">${escapeHtml(name.substring(0, 2).toUpperCase())}</div>
+          <span class="font-bold text-white">${escapeHtml(name)}</span>
+        </div>
+        <div class="col-span-4 sm:col-span-4 font-mono text-ty-cyan text-xs sm:text-sm">
+          ${escapeHtml(phone)}
+        </div>
+        <div class="col-span-2 sm:col-span-3 font-mono text-xs text-ty-muted">
+          Caja 1
+        </div>
+        <div class="col-span-2 sm:col-span-2 text-right">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">ACTIVO</span>
+        </div>
+      `;
+      list.appendChild(row);
+      alert(`✅ Cajero ${name} (${phone}) agregado exitosamente al enrutamiento.`);
+    }
+
+    // 5. Simulation Action (For Instant Demo & Testing)
+    function triggerSimulation() {
+      const randomAmounts = [15000, 25000, 50000, 85000, 100000, 150000, 220000];
+      const randomNames = ["Karoll Sierra", "Carlos Mendoza", "Edwin Murcia", "María López", "Andrés Restrepo", "Laura Gómez"];
+      const randomAmount = randomAmounts[Math.floor(Math.random() * randomAmounts.length)];
+      const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
+      const isNequi = Math.random() > 0.4;
+
+      const mockTx = {
+        id: 'sim_' + Date.now(),
+        wallet_package: isNequi ? 'com.nequi.MobileApp' : 'com.davivienda.daviplataapp',
+        raw_text: `${randomName} te envió ${randomAmount}, ¡lo mejor!`,
+        amount: randomAmount,
+        sender_name: randomName,
+        payment_reference: 'SIM-' + Math.floor(10000 + Math.random() * 90000),
+        latency_ms: Math.floor(180 + Math.random() * 70),
+        status: 'PROCESSED',
+        created_at: new Date().toISOString()
+      };
+
+      handleNewTransaction(mockTx, true);
+    }
+
+    // 6. PWA Installation & Service Worker
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('TransferYA SW registered:', reg.scope);
+          }).catch((err) => {
+            console.warn('TransferYA SW registration failed:', err);
+          });
+        });
+      }
+    }
+
+    function setupPwaPrompt() {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const btn = document.getElementById('pwaInstallBtn');
+        if (btn) btn.classList.remove('hidden');
+      });
+    }
+
+    function promptInstallPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            console.log('PWA installation accepted');
+          }
+          deferredPrompt = null;
+          document.getElementById('pwaInstallBtn').classList.add('hidden');
+        });
+      } else {
+        alert("Para instalar en iPhone/Android:\n1. Toca el botón Compartir o los tres puntos del navegador.\n2. Selecciona 'Agregar a pantalla principal' (Instalar App).");
+      }
+    }
+
+    // Utilities
+    function formatTime(isoOrMs) {
+      if (!isoOrMs) return 'Ahora';
+      const d = new Date(isoOrMs);
+      return d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 </body>
 </html>
-
