@@ -39,7 +39,9 @@ jobs:
 
       - name: Gate 2b - Android Sentinel Unit Tests (Gradle JUnit 5)
         working-directory: ./android
-        run: ./gradlew test --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew test --no-daemon
 
       # Quality Gate 4: Production Build
       - name: Gate 4 - TypeScript Production Build

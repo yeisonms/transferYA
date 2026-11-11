@@ -33,6 +33,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
       - name: Upload Signed Sentinel APK
