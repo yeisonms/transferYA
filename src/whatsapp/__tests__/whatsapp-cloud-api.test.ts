@@ -119,7 +119,7 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
           type: 'template',
           template: {
             name: 'transferya_payment_alert_v1',
-            language: { code: 'es' },
+            language: { code: 'es_CO' },
             components: [
               {
                 type: 'body',

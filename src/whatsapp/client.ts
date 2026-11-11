@@ -262,7 +262,11 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
         },
       ];
 
-      templateResult = await this.sendTemplate(to, 'transferya_payment_alert_v1', components);
+      // Probar con es_CO (Spanish COL) y fallback a es
+      templateResult = await this.sendTemplate(to, 'transferya_payment_alert_v1', components, 'es_CO');
+      if (!templateResult.success) {
+        templateResult = await this.sendTemplate(to, 'transferya_payment_alert_v1', components, 'es');
+      }
     } else {
       // Plantilla con advertencia visual de retraso de red (Stale Alert)
       const latencySeconds = Math.round((options.latencyMs ?? 0) / 1000);
@@ -281,7 +285,10 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
         },
       ];
 
-      templateResult = await this.sendTemplate(to, 'transferya_stale_alert_v1', components);
+      templateResult = await this.sendTemplate(to, 'transferya_stale_alert_v1', components, 'es_CO');
+      if (!templateResult.success) {
+        templateResult = await this.sendTemplate(to, 'transferya_stale_alert_v1', components, 'es');
+      }
     }
 
     if (templateResult.success) {
