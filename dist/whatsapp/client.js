@@ -163,7 +163,7 @@ export class WhatsAppCloudApiClient {
             }
             return {
                 success: false,
-                error: 'DIRECT_MESSAGE_FAILED',
+                error: 'UNKNOWN_ERROR',
                 statusCode: response.status,
                 message: response.data?.error?.message ?? `Error HTTP ${response.status}`,
                 details: response.data,
