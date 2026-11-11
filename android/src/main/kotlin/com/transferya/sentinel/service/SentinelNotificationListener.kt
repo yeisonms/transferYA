@@ -1,6 +1,10 @@
 package com.transferya.sentinel.service
 
 import android.app.Notification
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -27,6 +31,39 @@ class SentinelNotificationListener : NotificationListenerService() {
 
     companion object {
         private const val TAG = "SentinelListener"
+
+        fun rebind(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                try {
+                    val component = ComponentName(context, SentinelNotificationListener::class.java)
+                    requestRebind(component)
+                    Log.i(TAG, "requestRebind invocado exitosamente")
+                } catch (e: Exception) {
+                    Log.w(TAG, "requestRebind falló: ${e.message}")
+                }
+            }
+        }
+
+        fun forceRebind(context: Context) {
+            try {
+                val component = ComponentName(context, SentinelNotificationListener::class.java)
+                val pm = context.packageManager
+                pm.setComponentEnabledSetting(
+                    component,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+                pm.setComponentEnabledSetting(
+                    component,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+                rebind(context)
+                Log.i(TAG, "forceRebind completado para re-enganchar NotificationListener en MIUI")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error en forceRebind", e)
+            }
+        }
     }
 
     private var interceptor: NotificationInterceptor? = null
@@ -103,8 +140,14 @@ class SentinelNotificationListener : NotificationListenerService() {
         }
 
         val extras = sbn.notification?.extras ?: return
-        val rawTitle = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-        val rawText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+        val rawTitle = (extras.getCharSequence(Notification.EXTRA_TITLE)
+            ?: extras.getCharSequence("android.title.big")
+            ?: sbn.notification?.tickerText)?.toString() ?: ""
+
+        val rawText = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
+            ?: extras.getCharSequence(Notification.EXTRA_TEXT)
+            ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)
+            ?: sbn.notification?.tickerText)?.toString() ?: ""
 
         Log.i(TAG, "Notificación bancaria detectada de [$packageName]: $rawTitle | $rawText")
 

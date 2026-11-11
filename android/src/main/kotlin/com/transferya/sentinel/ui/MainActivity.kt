@@ -22,6 +22,7 @@ import com.transferya.sentinel.dispatcher.NativeSentinelHttpClient
 import com.transferya.sentinel.dispatcher.NotificationDispatcher
 import com.transferya.sentinel.onboarding.*
 import com.transferya.sentinel.service.SentinelForegroundService
+import com.transferya.sentinel.service.SentinelNotificationListener
 import com.transferya.sentinel.storage.AndroidSqliteNotificationDao
 import com.transferya.sentinel.storage.CapturedNotificationEntity
 import com.transferya.sentinel.storage.NotificationStatus
@@ -112,6 +113,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        SentinelNotificationListener.rebind(this)
         updateUI()
     }
 
