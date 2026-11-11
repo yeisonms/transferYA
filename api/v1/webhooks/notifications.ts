@@ -47,8 +47,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         try {
           const routingService = new MerchantRoutingService({ repository });
           const whatsappClient = new WhatsAppCloudApiClient({
-            accessToken: process.env.META_WHATSAPP_TOKEN || 'test_token',
-            phoneNumberId: process.env.META_PHONE_NUMBER_ID || 'test_phone_id',
+            accessToken:
+              process.env.META_WHATSAPP_TOKEN ||
+              'EAAaBHwM4MzYBS8loAKerpsudpUNnIT9sDQPescxFLSe8AGzntvlupW1ifb3cy0YBqUCs9I7xR8m8gUOsr6PgsxJUp1fjOB9wgVW7HADYb5NT28beLsrFtVxQLyebMceek63F92fP1HGAnnOZABlmD28ppKn0bZC36GfmAtkLTLdpPD9ncRNuiIQyQIRfc79anWWY3W26OS2f0AMQ81mFcvdN2Aq8s1iTX8MZAVYCgmlXhUeOSEk0zwkZBV9j5KZAV0qsSAVYLZBJaw0cSoRmXUUIcHeSMkl9GCLAZDZD',
+            phoneNumberId:
+              process.env.META_PHONE_NUMBER_ID || '1404825876052179',
           });
 
           const pipeline = new PaymentProcessingPipeline({

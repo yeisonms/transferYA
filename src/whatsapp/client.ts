@@ -189,6 +189,54 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
     };
   }
 
+  async sendTextMessage(to: string, text: string): Promise<WhatsAppSendResult> {
+    const formattedTo = formatRecipientForMeta(to);
+    const url = `https://graph.facebook.com/${this.apiVersion}/${this.config.phoneNumberId}/messages`;
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: formattedTo,
+      type: 'text',
+      text: { body: text },
+    };
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.config.accessToken}`,
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const response = await this.httpClient.post(url, payload, headers);
+      if (response.status === 200) {
+        const messageId =
+          response.data?.messages?.[0]?.id ?? 'UNKNOWN_MESSAGE_ID';
+        return {
+          success: true,
+          messageId,
+        };
+      }
+
+      return {
+        success: false,
+        error: 'DIRECT_MESSAGE_FAILED',
+        statusCode: response.status,
+        message:
+          response.data?.error?.message ?? `Error HTTP ${response.status}`,
+        details: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Error de conexión de red con Meta Cloud API',
+      };
+    }
+  }
+
   async sendPaymentAlert(
     to: string,
     payment: ParsedPaymentReceipt,
@@ -197,6 +245,8 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
     const formattedAmount = formatCopCurrency(payment.amount);
     const formattedWallet = formatWalletDisplayName(payment.wallet);
     const formattedTime = formatCapturedTime(options.capturedAt);
+
+    let templateResult: WhatsAppSendResult;
 
     if (!options.isStale) {
       // Plantilla regular de confirmación de pago
@@ -212,26 +262,45 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
         },
       ];
 
-      return this.sendTemplate(to, 'transferya_payment_alert_v1', components);
+      templateResult = await this.sendTemplate(to, 'transferya_payment_alert_v1', components);
+    } else {
+      // Plantilla con advertencia visual de retraso de red (Stale Alert)
+      const latencySeconds = Math.round((options.latencyMs ?? 0) / 1000);
+      const latencyParam = `${latencySeconds}s de retraso`;
+
+      const components: TemplateComponent[] = [
+        {
+          type: 'body',
+          parameters: [
+            { type: 'text', text: formattedAmount },
+            { type: 'text', text: payment.senderName },
+            { type: 'text', text: formattedWallet },
+            { type: 'text', text: formattedTime },
+            { type: 'text', text: latencyParam },
+          ],
+        },
+      ];
+
+      templateResult = await this.sendTemplate(to, 'transferya_stale_alert_v1', components);
     }
 
-    // Plantilla con advertencia visual de retraso de red (Stale Alert)
-    const latencySeconds = Math.round((options.latencyMs ?? 0) / 1000);
-    const latencyParam = `${latencySeconds}s de retraso`;
+    if (templateResult.success) {
+      return templateResult;
+    }
 
-    const components: TemplateComponent[] = [
-      {
-        type: 'body',
-        parameters: [
-          { type: 'text', text: formattedAmount },
-          { type: 'text', text: payment.senderName },
-          { type: 'text', text: formattedWallet },
-          { type: 'text', text: formattedTime },
-          { type: 'text', text: latencyParam },
-        ],
-      },
-    ];
+    // Fallback de alta resiliencia: si la plantilla está en revisión o no aprobada aún,
+    // enviar mensaje directo formateado para que el cajero no pierda la alerta
+    const refText = payment.reference ? `\nRef: ${payment.reference}` : '';
+    const staleWarning = options.isStale
+      ? `\n⚠️ Advertencia: ${Math.round((options.latencyMs ?? 0) / 1000)}s de retraso en red.`
+      : '';
+    const fallbackText = `⚡ *TransferYA - Pago Confirmado*\n\n💰 Monto: *${formattedAmount}*\n👤 De: *${payment.senderName}*\n🏦 Billetera: *${formattedWallet}*\n⏰ Hora: *${formattedTime}*${refText}${staleWarning}`;
 
-    return this.sendTemplate(to, 'transferya_stale_alert_v1', components);
+    const textResult = await this.sendTextMessage(to, fallbackText);
+    if (textResult.success) {
+      return textResult;
+    }
+
+    return templateResult;
   }
 }
