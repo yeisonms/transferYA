@@ -36,11 +36,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       path: '/api/v1/webhooks/notifications',
     });
 
-    // Responder de inmediato al cliente Centinela (HTTP 202)
-    res.statusCode = result.statusCode;
-    res.end(JSON.stringify(result.body));
-
-    // Si la notificación fue aceptada (202), procesarla asíncronamente en el pipeline
+    // Si la notificación fue aceptada (202), procesar el pipeline de pagos y despacho a WhatsApp
     if (result.statusCode === 202) {
       const notificationId = (result.body.data as any)?.id;
       if (notificationId) {
@@ -61,19 +57,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             whatsappClient,
           });
 
-          pipeline
-            .processCapturedNotification(notificationId)
-            .then((pipelineResult) => {
-              console.log('Resultado del Pipeline:', JSON.stringify(pipelineResult));
-            })
-            .catch((err) => {
-              console.error('Error procesando en pipeline asíncrono:', err);
-            });
+          const pipelineResult = await pipeline.processCapturedNotification(notificationId);
+          console.log('Resultado del Pipeline:', JSON.stringify(pipelineResult));
         } catch (pipelineErr) {
-          console.error('Error inicializando pipeline:', pipelineErr);
+          console.error('Error en pipeline:', pipelineErr);
         }
       }
     }
+
+    // Responder al cliente Centinela (HTTP 202)
+    res.statusCode = result.statusCode;
+    res.end(JSON.stringify(result.body));
   } catch (error: any) {
     res.statusCode = 500;
     res.end(
