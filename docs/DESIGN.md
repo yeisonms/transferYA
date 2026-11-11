@@ -146,3 +146,4 @@ TransferYA is a high-velocity, mission-critical financial cockpit for retail sto
 - No generic placeholder names ("John Doe" -> use realistic Colombian names like "Karoll Sierra", "Carlos Mendoza", "María Gómez").
 - No fake round statistics.
 - No light mode default (retail counters need high contrast dark mode to reduce glare and battery drain).
+

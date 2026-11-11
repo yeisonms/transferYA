@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v1';
+const CACHE_NAME = 'transferya-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -34,16 +34,40 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests that are not API calls or Supabase WebSockets
+  const url = new URL(event.request.url);
+
+  // Nunca cachear llamadas API, Supabase REST o WebSockets
   if (
     event.request.method !== 'GET' ||
-    event.request.url.includes('/api/') ||
-    event.request.url.includes('.supabase.co') ||
+    url.pathname.startsWith('/api/') ||
+    url.hostname.includes('supabase.co') ||
     event.request.url.startsWith('ws')
   ) {
     return;
   }
 
+  // Network-First para documentos HTML / navegación principal (garantiza ver siempre la última versión)
+  const isNavigationOrHtml =
+    event.request.mode === 'navigate' ||
+    url.pathname === '/' ||
+    url.pathname === '/index.html';
+
+  if (isNavigationOrHtml) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-First para librerías CDN, fuentes e íconos estáticos
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return (

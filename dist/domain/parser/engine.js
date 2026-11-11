@@ -4,7 +4,7 @@
 export function cleanCopAmount(rawAmountStr) {
     if (!rawAmountStr)
         return 0;
-    let cleaned = rawAmountStr.trim();
+    let cleaned = rawAmountStr.trim().replace(/[.,]+$/, '');
     // Remover sufijos de decimales comunes en Colombia (,00 o .00)
     cleaned = cleaned.replace(/[,.]00$/, '');
     // Extraer únicamente los dígitos numéricos
@@ -35,11 +35,11 @@ export function normalizeSenderName(rawName) {
 // Patrones de descarte para evitar falsos positivos
 const NEGATIVE_PATTERNS = [
     // Promociones y publicidad
-    /\b(pide tu tarjeta|disfruta de descuentos|cr[eé]dito salvavidas|conoce el nuevo cr[eé]dito)\b/i,
+    /\b(pide tu tarjeta|disfruta de descuentos|cr[eé]dito salvavidas|conoce el nuevo cr[eé]dito|desbloqueaste|bolsillos interesantes|haz crecer tu plata|aplican tyc)\b/i,
     // Retiros de efectivo
     /\b(retiro exitoso|sacaste\s+\$|retiro en cajero|en cajero bancolombia)\b/i,
     // Pagos salientes / débitos
-    /\b(enviaste plata|pagaste\s+\$|enviaste\s+\$|compraste\s+\$|transferiste\s+\$)\b/i,
+    /\b(enviaste plata|pagaste\s+\$|enviaste\s+\$|compraste\s+\$|transferiste\s+\$|env[ií]o de plata(?:\s+exitoso|\s+por\s+[\$\d.,]+\s+fue\s+exitoso)|el env[ií]o de plata por|detalle del env[ií]o)\b/i,
     // Avisos de seguridad y claves dinámicas
     /\b(clave din[aá]mica|nuevo inicio de sesi[oó]n|detectamos un nuevo)\b/i,
 ];
@@ -96,6 +96,20 @@ const PARSING_RULES = [
         senderGroup: 2,
         defaultSender: 'Nequi',
     },
+    // Bre-B en Nequi: Título "Te enviaron plata por Bre-B" + Texto "Te enviaron $66.000. Entra a tu app y revisa tu saldo."
+    {
+        wallet: 'NEQUI',
+        pattern: /Te enviaron plata por Bre-B[\s\S]*?Te enviaron\s+([\$\d.,]+)/i,
+        amountGroup: 1,
+        defaultSender: 'Transferencia Bre-B',
+    },
+    // Genérico Nequi sin remitente: "Te enviaron $66.000. Entra a tu app y revisa tu saldo."
+    {
+        wallet: 'NEQUI',
+        pattern: /^Te enviaron\s+([\$\d.,]+?)(?:\.\s*|\s+)(?:Entra a tu app|revisa tu saldo|por Bre-B|$)/i,
+        amountGroup: 1,
+        defaultSender: 'Transferencia Nequi',
+    },
     // --- REGLAS DAVIPLATA ---
     // DaviPlata le informa que recibio $25.000 de Laura Gomez
     {
@@ -132,6 +146,13 @@ const PARSING_RULES = [
         amountGroup: 1,
         senderGroup: 2,
     },
+    // Fallback DaviPlata (incluye Bre-B entrante): "Recibiste $50.000" / "Te enviaron $50.000"
+    {
+        wallet: 'DAVIPLATA',
+        pattern: /(?:DaviPlata:?\s*)?(?:Te enviaron plata por Bre-B[\s\S]*?Te enviaron|Recibiste)\s+([\$\d.,]+)(?:\s+por\s+Bre-B)?(?:\.\s*|\s+|$)/i,
+        amountGroup: 1,
+        defaultSender: 'DaviPlata',
+    },
 ];
 /**
  * Motor determinista de parsing para notificaciones bancarias de Nequi y Daviplata.
@@ -148,16 +169,18 @@ export function parseBankingNotification(rawText, rawTitle = '', walletPackage) 
             };
         }
     }
-    // 2. Determinar filtro de billetera si viene explícito
+    // 2. Determinar filtro de billetera si viene explícito (paquete Android tiene prioridad sobre texto)
     let expectedWallet = null;
-    if (walletPackage === 'com.nequi.MobileApp' ||
-        /nequi/i.test(rawTitle) ||
-        /nequi/i.test(rawText)) {
+    if (walletPackage === 'com.nequi.MobileApp') {
         expectedWallet = 'NEQUI';
     }
-    else if (walletPackage === 'com.davivienda.daviplata' ||
-        /daviplata/i.test(rawTitle) ||
-        /daviplata/i.test(rawText)) {
+    else if (walletPackage === 'com.davivienda.daviplata') {
+        expectedWallet = 'DAVIPLATA';
+    }
+    else if (/nequi/i.test(rawTitle) || /nequi/i.test(rawText)) {
+        expectedWallet = 'NEQUI';
+    }
+    else if (/daviplata/i.test(rawTitle) || /daviplata/i.test(rawText)) {
         expectedWallet = 'DAVIPLATA';
     }
     // 3. Evaluar reglas de extracción

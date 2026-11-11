@@ -312,9 +312,10 @@ export class SupabaseRepository
     if (update.paymentReference !== undefined) body.payment_reference = update.paymentReference;
     if (update.whatsappMessageIds !== undefined) body.whatsapp_message_ids = update.whatsappMessageIds;
     if (update.processedAt !== undefined) body.processed_at = update.processedAt;
-    if (update.failureReason !== undefined) body.failure_reason = update.failureReason;
+    // Nota: `captured_notifications` no tiene columna `failure_reason` en el esquema actual;
+    // evitamos enviarla para que PostgREST no rechace el PATCH con 400 y deje el estado en PROCESSING.
 
-    await fetch(
+    const res = await fetch(
       `${this.baseUrl}/rest/v1/captured_notifications?id=eq.${encodeURIComponent(id)}`,
       {
         method: 'PATCH',
@@ -322,6 +323,11 @@ export class SupabaseRepository
         body: JSON.stringify(body),
       }
     );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`Error actualizando notificación ${id} (${res.status}): ${errText}`);
+    }
   }
 
   // -------------------------------------------------------------
@@ -420,11 +426,54 @@ export class SupabaseRepository
     });
 
     if (!res.ok) {
-      // Si falló por restricción única (409 / conflict)
-      return { isDuplicate: true };
+      // Si falló por restricción única (409 / conflict) por condición de carrera, recuperar el registro ganador
+      const conflictRecord = await this.findByFingerprint(
+        record.deviceId,
+        record.fingerprint,
+      );
+      return {
+        isDuplicate: true,
+        existingRecord: conflictRecord ?? record,
+      };
     }
 
     return { isDuplicate: false };
+  }
+
+  /**
+   * Formatea (limpia) las tablas operativas de pruebas (`payment_fingerprints` y
+   * `captured_notifications`) para un Dispositivo Centinela específico.
+   */
+  async resetDeviceTestData(deviceId: string): Promise<{
+    deletedFingerprints: number;
+    deletedNotifications: number;
+  }> {
+    const encodedDeviceId = encodeURIComponent(deviceId);
+
+    const fpRes = await fetch(
+      `${this.baseUrl}/rest/v1/payment_fingerprints?device_id=eq.${encodedDeviceId}`,
+      { method: 'DELETE', headers: this.headers },
+    );
+    if (!fpRes.ok) {
+      const errText = await fpRes.text();
+      throw new Error(`Error eliminando huellas de idempotencia: ${errText}`);
+    }
+    const deletedFp = (await fpRes.json()) as any[];
+
+    const notifRes = await fetch(
+      `${this.baseUrl}/rest/v1/captured_notifications?device_id=eq.${encodedDeviceId}`,
+      { method: 'DELETE', headers: this.headers },
+    );
+    if (!notifRes.ok) {
+      const errText = await notifRes.text();
+      throw new Error(`Error eliminando notificaciones capturadas: ${errText}`);
+    }
+    const deletedNotifs = (await notifRes.json()) as any[];
+
+    return {
+      deletedFingerprints: Array.isArray(deletedFp) ? deletedFp.length : 0,
+      deletedNotifications: Array.isArray(deletedNotifs) ? deletedNotifs.length : 0,
+    };
   }
 
   async findByFingerprint(

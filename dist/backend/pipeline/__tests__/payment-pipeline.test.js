@@ -266,4 +266,26 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         const updated = await notificationRepo.getNotificationById('notif_meta_down');
         expect(updated?.status).toBe('DISPATCH_FAILED');
     });
+    it('7. Condición de Carrera 409 Conflict (isDuplicate: true sin existingRecord igual bloquea duplicado)', async () => {
+        const notification = {
+            id: 'notif_race_dup',
+            deviceId,
+            walletPackage: 'com.nequi.MobileApp',
+            rawTitle: 'Envío',
+            rawText: 'KAROLL SIERRA te envió 200, ¡lo mejor!',
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 50,
+            isStale: false,
+            status: 'RECEIVED',
+        };
+        notificationRepo.seed(notification);
+        vi.spyOn(fingerprintRepo, 'registerFingerprint').mockResolvedValueOnce({
+            isDuplicate: true,
+        });
+        const result = await pipeline.processCapturedNotification('notif_race_dup');
+        expect(result.status).toBe('DUPLICATE_PAYMENT');
+        expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    });
 });

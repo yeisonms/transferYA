@@ -61,5 +61,45 @@ describe('SupabaseRepository REST Adapter', () => {
     const differentNonce = await repository.acquireNonce('dev_1', 'nonce_2', 60);
     expect(differentNonce).toBe(true);
   });
+
+  it('debe omitir failure_reason en updateNotification para evitar rechazo 400 de PostgREST', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{}],
+      text: async () => '',
+    } as any);
+
+    await repository.updateNotification('notif_1', {
+      status: 'IGNORED_NON_PAYMENT',
+      failureReason: 'Promoción',
+    });
+
+    const callOptions = fetchSpy.mock.calls[0]?.[1] as RequestInit;
+    const sentBody = JSON.parse(callOptions.body as string);
+    expect(sentBody.status).toBe('IGNORED_NON_PAYMENT');
+    expect(sentBody.failure_reason).toBeUndefined();
+    fetchSpy.mockRestore();
+  });
+
+  it('debe formatear huellas y notificaciones de un dispositivo en resetDeviceTestData', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 'fp1' }],
+        text: async () => '',
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 'n1' }, { id: 'n2' }],
+        text: async () => '',
+      } as any);
+
+    const result = await repository.resetDeviceTestData('dev_centinela_caja_1');
+    expect(result.deletedFingerprints).toBe(1);
+    expect(result.deletedNotifications).toBe(2);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    fetchSpy.mockRestore();
+  });
 });
 

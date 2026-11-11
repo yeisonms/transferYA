@@ -90,6 +90,16 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
                 expect(res.payment.senderName).toBe('Edwin Murcia');
             }
         });
+        it('debe parsear transferencia entrante por Bre-B en Nequi', () => {
+            const rawText = 'Te enviaron $66.000. Entra a tu app y revisa tu saldo.';
+            const res = parseBankingNotification(rawText, 'Te enviaron plata por Bre-B', 'com.nequi.MobileApp');
+            expect(res.success).toBe(true);
+            if (res.success) {
+                expect(res.payment.wallet).toBe('NEQUI');
+                expect(res.payment.amount).toBe(66000);
+                expect(res.payment.senderName).toBe('Transferencia Bre-B');
+            }
+        });
     });
     describe('3. Extracción Exitosa en Daviplata', () => {
         it('debe parsear abono oficial: DaviPlata le informa que recibio $25.000 de Laura Gomez', () => {
@@ -185,6 +195,14 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
             if (!res2.success) {
                 expect(res2.error).toBe('NOT_A_PAYMENT');
             }
+        });
+        it('debe rechazar envíos de plata salientes exitosos y promos de Bolsillos Nequi', () => {
+            const envioSaliente = 'Te contamos que el envío de plata por $71.100 fue exitoso. Puedes revisar en tus movimientos el detalle del envío.';
+            const promoBolsillos = 'Por eso, desbloqueaste los nuevos Bolsillos Interesantes de Nequi. 💜 Crea uno y haz crecer tu plata hasta un 10 % E.A. 💸 Hazlo aquí. Aplican TyC.';
+            const resSaliente = parseBankingNotification(envioSaliente, 'Envío de plata exitoso', 'com.nequi.MobileApp');
+            const resPromo = parseBankingNotification(promoBolsillos, 'Tu nos interesas 😏', 'com.nequi.MobileApp');
+            expect(resSaliente.success).toBe(false);
+            expect(resPromo.success).toBe(false);
         });
     });
 });

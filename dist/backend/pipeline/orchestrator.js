@@ -62,7 +62,7 @@ export class PaymentProcessingPipeline {
                 capturedAt: notification.capturedAt,
                 id: notification.id,
             });
-            if (fpResult.isDuplicate && fpResult.existingRecord) {
+            if (fpResult.isDuplicate) {
                 await this.deps.notificationRepository.updateNotification(notificationId, {
                     status: 'DUPLICATE_PAYMENT',
                     amount: receipt.amount,
@@ -73,7 +73,15 @@ export class PaymentProcessingPipeline {
                     status: 'DUPLICATE_PAYMENT',
                     notificationId,
                     fingerprint,
-                    existingFingerprintRecord: fpResult.existingRecord,
+                    existingFingerprintRecord: fpResult.existingRecord ?? {
+                        id: notification.id,
+                        deviceId: notification.deviceId,
+                        fingerprint,
+                        wallet: receipt.wallet,
+                        amount: receipt.amount,
+                        senderName: receipt.senderName,
+                        capturedAt: notification.capturedAt,
+                    },
                 };
             }
             // 4. Resolver enrutamiento Comercio-Centinela-Cajeros
