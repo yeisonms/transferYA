@@ -132,6 +132,18 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
           };
         }
 
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: 'TEMPLATE_NOT_FOUND',
+            statusCode: 404,
+            message:
+              response.data?.error?.message ??
+              'Plantilla no encontrada o aún en revisión por Meta',
+            details: response.data,
+          };
+        }
+
         if (response.status === 429) {
           if (attempt < this.maxRetries) {
             const delay = this.initialBackoffMs * Math.pow(2, attempt - 1);

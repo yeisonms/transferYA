@@ -32,120 +32,129 @@ export class PaymentProcessingPipeline {
         if (!notification) {
             throw new Error(`Notificación capturada no encontrada: ${notificationId}`);
         }
-        // 1. Marcar como PROCESSING
-        await this.deps.notificationRepository.updateNotification(notificationId, {
-            status: 'PROCESSING',
-        });
-        // 2. Ejecutar motor de parsing
-        const parseResult = this.parser(notification.rawText, notification.rawTitle, notification.walletPackage);
-        if (!parseResult.success) {
+        try {
+            // 1. Marcar como PROCESSING
             await this.deps.notificationRepository.updateNotification(notificationId, {
-                status: 'IGNORED_NON_PAYMENT',
-                failureReason: parseResult.reason,
+                status: 'PROCESSING',
             });
-            return {
-                status: 'IGNORED_NON_PAYMENT',
-                notificationId,
-                reason: parseResult.reason,
-            };
-        }
-        const receipt = parseResult.payment;
-        // 3. Generar y evaluar Huella de Idempotencia
-        const fingerprint = this.fingerprintGenerator(receipt, notification.capturedAt);
-        const fpResult = await this.deps.fingerprintRepository.registerFingerprint({
-            deviceId: notification.deviceId,
-            fingerprint,
-            wallet: receipt.wallet,
-            amount: receipt.amount,
-            senderName: receipt.senderName,
-            capturedAt: notification.capturedAt,
-            id: notification.id,
-        });
-        if (fpResult.isDuplicate && fpResult.existingRecord) {
-            await this.deps.notificationRepository.updateNotification(notificationId, {
-                status: 'DUPLICATE_PAYMENT',
-                amount: receipt.amount,
-                senderName: receipt.senderName,
-                paymentReference: receipt.reference,
-            });
-            return {
-                status: 'DUPLICATE_PAYMENT',
-                notificationId,
+            // 2. Ejecutar motor de parsing
+            const parseResult = this.parser(notification.rawText, notification.rawTitle, notification.walletPackage);
+            if (!parseResult.success) {
+                await this.deps.notificationRepository.updateNotification(notificationId, {
+                    status: 'IGNORED_NON_PAYMENT',
+                    failureReason: parseResult.reason,
+                });
+                return {
+                    status: 'IGNORED_NON_PAYMENT',
+                    notificationId,
+                    reason: parseResult.reason,
+                };
+            }
+            const receipt = parseResult.payment;
+            // 3. Generar y evaluar Huella de Idempotencia
+            const fingerprint = this.fingerprintGenerator(receipt, notification.capturedAt);
+            const fpResult = await this.deps.fingerprintRepository.registerFingerprint({
+                deviceId: notification.deviceId,
                 fingerprint,
-                existingFingerprintRecord: fpResult.existingRecord,
-            };
-        }
-        // 4. Resolver enrutamiento Comercio-Centinela-Cajeros
-        const routeResult = await this.deps.routingService.resolveRoute(notification.deviceId);
-        if (!routeResult.success) {
-            await this.deps.notificationRepository.updateNotification(notificationId, {
-                status: 'ROUTING_FAILED',
+                wallet: receipt.wallet,
                 amount: receipt.amount,
                 senderName: receipt.senderName,
-                paymentReference: receipt.reference,
-                failureReason: routeResult.message,
-            });
-            return {
-                status: 'ROUTING_FAILED',
-                notificationId,
-                reason: routeResult.reason,
-                details: routeResult.message,
-            };
-        }
-        // 5. Despachar a WhatsApp a los destinatarios de caja autorizados
-        const dispatches = [];
-        for (const recipient of routeResult.recipients) {
-            const sendResult = await this.deps.whatsappClient.sendPaymentAlert(recipient.phoneNumber, receipt, {
-                isStale: notification.isStale,
                 capturedAt: notification.capturedAt,
-                latencyMs: notification.latencyMs,
-                cashierName: recipient.name,
+                id: notification.id,
             });
-            dispatches.push({
-                recipientId: recipient.id,
-                phoneNumber: recipient.phoneNumber,
-                success: sendResult.success,
-                messageId: sendResult.success ? sendResult.messageId : undefined,
-                error: !sendResult.success ? sendResult.message : undefined,
-            });
-        }
-        const successfulDispatches = dispatches.filter((d) => d.success);
-        // 6. Actualización en base de datos
-        if (successfulDispatches.length > 0) {
-            const messageIds = successfulDispatches
-                .map((d) => d.messageId)
-                .filter((id) => Boolean(id));
+            if (fpResult.isDuplicate && fpResult.existingRecord) {
+                await this.deps.notificationRepository.updateNotification(notificationId, {
+                    status: 'DUPLICATE_PAYMENT',
+                    amount: receipt.amount,
+                    senderName: receipt.senderName,
+                    paymentReference: receipt.reference,
+                });
+                return {
+                    status: 'DUPLICATE_PAYMENT',
+                    notificationId,
+                    fingerprint,
+                    existingFingerprintRecord: fpResult.existingRecord,
+                };
+            }
+            // 4. Resolver enrutamiento Comercio-Centinela-Cajeros
+            const routeResult = await this.deps.routingService.resolveRoute(notification.deviceId);
+            if (!routeResult.success) {
+                await this.deps.notificationRepository.updateNotification(notificationId, {
+                    status: 'ROUTING_FAILED',
+                    amount: receipt.amount,
+                    senderName: receipt.senderName,
+                    paymentReference: receipt.reference,
+                    failureReason: routeResult.message,
+                });
+                return {
+                    status: 'ROUTING_FAILED',
+                    notificationId,
+                    reason: routeResult.reason,
+                    details: routeResult.message,
+                };
+            }
+            // 5. Despachar a WhatsApp a los destinatarios de caja autorizados
+            const dispatches = [];
+            for (const recipient of routeResult.recipients) {
+                const sendResult = await this.deps.whatsappClient.sendPaymentAlert(recipient.phoneNumber, receipt, {
+                    isStale: notification.isStale,
+                    capturedAt: notification.capturedAt,
+                    latencyMs: notification.latencyMs,
+                    cashierName: recipient.name,
+                });
+                dispatches.push({
+                    recipientId: recipient.id,
+                    phoneNumber: recipient.phoneNumber,
+                    success: sendResult.success,
+                    messageId: sendResult.success ? sendResult.messageId : undefined,
+                    error: !sendResult.success ? sendResult.message : undefined,
+                });
+            }
+            const successfulDispatches = dispatches.filter((d) => d.success);
+            // 6. Actualización en base de datos
+            if (successfulDispatches.length > 0) {
+                const messageIds = successfulDispatches
+                    .map((d) => d.messageId)
+                    .filter((id) => Boolean(id));
+                await this.deps.notificationRepository.updateNotification(notificationId, {
+                    status: 'PROCESSED',
+                    amount: receipt.amount,
+                    senderName: receipt.senderName,
+                    paymentReference: receipt.reference,
+                    whatsappMessageIds: messageIds,
+                    processedAt: now,
+                });
+                return {
+                    status: 'PROCESSED',
+                    notificationId,
+                    fingerprint,
+                    receipt,
+                    merchantId: routeResult.merchant.id,
+                    dispatches,
+                };
+            }
+            // Todos los despachos a WhatsApp fallaron
             await this.deps.notificationRepository.updateNotification(notificationId, {
-                status: 'PROCESSED',
+                status: 'DISPATCH_FAILED',
                 amount: receipt.amount,
                 senderName: receipt.senderName,
                 paymentReference: receipt.reference,
-                whatsappMessageIds: messageIds,
-                processedAt: now,
+                failureReason: 'Todos los despachos a WhatsApp fallaron',
             });
             return {
-                status: 'PROCESSED',
+                status: 'DISPATCH_FAILED',
                 notificationId,
-                fingerprint,
                 receipt,
-                merchantId: routeResult.merchant.id,
                 dispatches,
+                error: 'Todos los despachos a WhatsApp fallaron',
             };
         }
-        // Todos los despachos a WhatsApp fallaron
-        await this.deps.notificationRepository.updateNotification(notificationId, {
-            status: 'DISPATCH_FAILED',
-            amount: receipt.amount,
-            senderName: receipt.senderName,
-            paymentReference: receipt.reference,
-            failureReason: 'Todos los despachos a WhatsApp fallaron',
-        });
-        return {
-            status: 'DISPATCH_FAILED',
-            notificationId,
-            receipt,
-            dispatches,
-            error: 'Todos los despachos a WhatsApp fallaron',
-        };
+        catch (err) {
+            await this.deps.notificationRepository.updateNotification(notificationId, {
+                status: 'DISPATCH_FAILED',
+                failureReason: err instanceof Error ? err.message : String(err),
+            });
+            throw err;
+        }
     }
 }

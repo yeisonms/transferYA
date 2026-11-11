@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(space2b)
 
         simulateButton = Button(this).apply {
-            text = "🧪 Simular Notificación Nequi ($1.000)"
+            text = "🧪 Simular Notificación Nequi (Aleatorio)"
             setBackgroundColor(Color.parseColor("#2563EB"))
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
@@ -291,11 +291,16 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 val ref = "M" + (System.currentTimeMillis() % 100000000).toString()
+                val amounts = listOf(5000, 10000, 15000, 20000, 25000, 50000, 80000, 100000)
+                val simAmount = amounts.random()
+                val formattedAmount = java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CO")).format(simAmount)
+                val senders = listOf("Carlos Perez", "Maria Lopez", "Andres Gomez", "Laura Restrepo", "Juan Martinez")
+                val simSender = senders.random()
                 val entity = CapturedNotificationEntity(
                     deviceId = deviceId,
                     walletPackage = "com.nequi.MobileApp",
                     rawTitle = "Nequi",
-                    rawText = "Te acaban de enviar $1.000 en Nequi. Ref: $ref",
+                    rawText = "$simSender te envió $formattedAmount, ¡lo mejor!",
                     capturedAt = System.currentTimeMillis()
                 )
 
@@ -309,7 +314,7 @@ class MainActivity : AppCompatActivity() {
                         is DispatchResult.Success -> {
                             AlertDialog.Builder(this)
                                 .setTitle("✅ ¡Simulación Exitosa!")
-                                .setMessage("La notificación se firmó con tu KeyStore y fue ACEPTADA por Vercel (HTTP 202).\n\nRef: $ref\nMonto: $1.000 COP\n\nRevisa la tabla captured_notifications en Supabase o tu WhatsApp.")
+                                .setMessage("La notificación se firmó con tu KeyStore y fue ACEPTADA por Vercel (HTTP 202).\n\nDe: $simSender\nMonto: \$$formattedAmount COP\n\nRevisa la tabla captured_notifications en Supabase o tu WhatsApp.")
                                 .setPositiveButton("Aceptar", null)
                                 .show()
                         }

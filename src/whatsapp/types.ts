@@ -15,6 +15,7 @@ export type WhatsAppSendResult =
         | 'UNAUTHORIZED'
         | 'RATE_LIMITED'
         | 'NETWORK_ERROR'
+        | 'TEMPLATE_NOT_FOUND'
         | 'UNKNOWN_ERROR';
       statusCode?: number;
       message: string;

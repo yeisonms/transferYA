@@ -59,10 +59,11 @@ export class PaymentProcessingPipeline {
       );
     }
 
-    // 1. Marcar como PROCESSING
-    await this.deps.notificationRepository.updateNotification(notificationId, {
-      status: 'PROCESSING',
-    });
+    try {
+      // 1. Marcar como PROCESSING
+      await this.deps.notificationRepository.updateNotification(notificationId, {
+        status: 'PROCESSING',
+      });
 
     // 2. Ejecutar motor de parsing
     const parseResult = this.parser(
@@ -222,5 +223,12 @@ export class PaymentProcessingPipeline {
       dispatches,
       error: 'Todos los despachos a WhatsApp fallaron',
     };
+  } catch (err: any) {
+    await this.deps.notificationRepository.updateNotification(notificationId, {
+      status: 'DISPATCH_FAILED',
+      failureReason: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
   }
+}
 }
