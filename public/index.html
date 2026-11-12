@@ -55,9 +55,9 @@
     };
   </script>
 
-  <!-- Supabase JS Client & QRCode Generator -->
+  <!-- Supabase JS Client & Local QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="/vendor/qrcode-generator.js"></script>
 
   <style>
     body {
@@ -65,6 +65,11 @@
       color: #F8FAFC;
       font-family: 'Plus Jakarta Sans', sans-serif;
       -webkit-tap-highlight-color: transparent;
+    }
+    #qrCodeContainer svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
     .tabular-nums {
       font-variant-numeric: tabular-nums;
@@ -742,14 +747,14 @@
         <p class="text-xs text-ty-muted">Escanea este código desde la app TransferYA Centinela para vincular esta caja.</p>
       </div>
 
-      <div class="bg-white p-4 rounded-xl flex items-center justify-center mx-auto w-64 h-64 shadow-inner">
-        <canvas id="qrCanvas" class="w-full h-full"></canvas>
+      <div id="qrCodeContainer" class="bg-white p-3 rounded-xl flex items-center justify-center mx-auto w-64 h-64 shadow-inner">
+        <span class="text-xs font-mono text-gray-500">Generando QR seguro...</span>
       </div>
 
       <div class="space-y-2">
         <div class="flex items-center justify-between text-xs font-mono">
           <span class="text-ty-muted">Vigencia del Token:</span>
-          <span id="qrTimerText" class="text-ty-emerald font-bold">04:59</span>
+          <span id="qrTimerText" class="text-ty-emerald font-bold">05:00</span>
         </div>
         <div class="w-full h-1.5 rounded-full bg-ty-surface overflow-hidden">
           <div id="qrTimerProgress" class="h-full bg-ty-emerald transition-all duration-1000" style="width: 100%"></div>
@@ -763,13 +768,17 @@
         </div>
         <div class="flex items-center gap-2 text-white">
           <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">2</span>
-          <span>Toca "Re-Emparejar / Escanear QR"</span>
+          <span>Toca "Emparejar / Re-emparejar con Código QR"</span>
         </div>
         <div class="flex items-center gap-2 text-white">
           <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">3</span>
-          <span>Listo: queda operando automáticamente sin contraseñas</span>
+          <span>Apunta la cámara al QR y quedará vinculado al instante</span>
         </div>
       </div>
+
+      <a id="qrDeepLinkBtn" href="#" class="hidden w-full py-2.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald/25 text-ty-emerald text-xs font-mono font-bold text-center transition-all">
+        Abrir directo en TransferYA Sentinel (si estás en ese celular)
+      </a>
 
       <div class="flex items-center gap-2">
         <input type="text" id="manualTokenInput" readonly class="flex-1 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-ty-muted truncate" value="Cargando token..."/>
@@ -1744,7 +1753,13 @@
     // CEREMONIA DE EMPAREJAMIENTO QR ZERO-TRUST
     // =========================================================================
     async function openPairingModal() {
+      const container = document.getElementById("qrCodeContainer");
+      const deepLinkBtn = document.getElementById("qrDeepLinkBtn");
+      container.innerHTML = `<span class="text-xs font-mono text-gray-600">Generando código QR...</span>`;
+      deepLinkBtn.classList.add("hidden");
+      document.getElementById("manualTokenInput").value = "Generando...";
       document.getElementById("pairingModal").classList.remove("hidden");
+
       try {
         const res = await fetch("/api/v1/devices/enrollment-tokens", {
           method: "POST",
@@ -1756,19 +1771,29 @@
           })
         });
         const json = await res.json();
-        if (json.success && json.data) {
-          const qrPayload = json.data.qrPayload || `transferya://enroll?token=${json.data.token}&deviceId=${DEVICE_ID}`;
-          document.getElementById("manualTokenInput").value = json.data.token;
-          QRCode.toCanvas(document.getElementById("qrCanvas"), qrPayload, {
-            width: 240,
-            margin: 2,
-            color: { dark: "#090D16", light: "#FFFFFF" }
-          });
-          startCountdown(300);
+        if (!json.success || !json.data) {
+          throw new Error(json.message || "Respuesta inválida al generar token");
         }
+
+        const qrPayload = json.data.qrPayload || `transferya://enroll?token=${json.data.token}&deviceId=${DEVICE_ID}`;
+        document.getElementById("manualTokenInput").value = qrPayload;
+        deepLinkBtn.href = qrPayload;
+        deepLinkBtn.classList.remove("hidden");
+
+        if (typeof window.qrcode !== "function") {
+          throw new Error("Librería QR local no disponible");
+        }
+
+        const qr = window.qrcode(0, "M");
+        qr.addData(qrPayload);
+        qr.make();
+        container.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
+
+        startCountdown(300);
       } catch (err) {
         console.error("Error creando token de emparejamiento:", err);
-        showToast("Error generando token QR", true);
+        container.innerHTML = `<span class="text-xs font-mono text-red-600 text-center px-3">No se pudo dibujar el QR (${escapeHtml(err.message)})</span>`;
+        showToast("Error generando código QR: " + err.message, true);
       }
     }
 

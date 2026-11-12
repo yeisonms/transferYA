@@ -1,14 +1,14 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v2';
+const CACHE_NAME = 'transferya-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icons/icon.svg',
+  '/vendor/qrcode-generator.js',
   'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
   'https://cdn.tailwindcss.com?plugins=forms,container-queries',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
-  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
 ];
 
 self.addEventListener('install', (event) => {
