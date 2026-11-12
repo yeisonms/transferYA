@@ -13,6 +13,7 @@ import type { StoredNotificationRecord } from '../webhook/types.js';
 export type PipelineStatus =
   | 'PROCESSED'
   | 'IGNORED_NON_PAYMENT'
+  | 'IGNORED_SUSPENDED_ACCOUNT'
   | 'DUPLICATE_PAYMENT'
   | 'ROUTING_FAILED'
   | 'DISPATCH_FAILED';
@@ -30,6 +31,7 @@ export interface PipelineNotificationUpdate {
     | 'PROCESSING'
     | 'PROCESSED'
     | 'IGNORED_NON_PAYMENT'
+    | 'IGNORED_SUSPENDED_ACCOUNT'
     | 'DUPLICATE_PAYMENT'
     | 'ROUTING_FAILED'
     | 'DISPATCH_FAILED'
@@ -71,6 +73,14 @@ export type PipelineResult =
       existingFingerprintRecord: PaymentFingerprintRecord;
     }
   | {
+      status: 'IGNORED_SUSPENDED_ACCOUNT';
+      notificationId: string;
+      receipt: ParsedPaymentReceipt;
+      merchantId: string;
+      reason: 'SUBSCRIPTION_PAST_DUE' | 'SUBSCRIPTION_SUSPENDED';
+      billingNoticeSent: boolean;
+    }
+  | {
       status: 'ROUTING_FAILED';
       notificationId: string;
       reason: string;
@@ -99,5 +109,7 @@ export interface PaymentPipelineDependencies {
     captureTimestamp: number,
   ) => string;
   nowProvider?: () => number;
+  billingNoticeCooldownMs?: number;
+  renewalPriceCop?: number;
 }
 

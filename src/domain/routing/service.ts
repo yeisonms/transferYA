@@ -40,13 +40,17 @@ export class MerchantRoutingService {
     const effectiveSubStatus = evaluateEffectiveSubscriptionStatus(merchant, now);
     if (!isSubscriptionAllowedToDispatch(effectiveSubStatus)) {
       const isSuspended =
-        merchant.status !== 'ACTIVE' || effectiveSubStatus === 'SUSPENDED';
+        merchant.status === 'SUSPENDED' ||
+        merchant.status === 'CANCELLED' ||
+        effectiveSubStatus === 'SUSPENDED';
       return {
         success: false,
-        reason: 'MERCHANT_INACTIVE',
+        reason: isSuspended
+          ? 'SUBSCRIPTION_SUSPENDED'
+          : 'SUBSCRIPTION_PAST_DUE',
         message: isSuspended
-          ? 'El comercio no se encuentra activo'
-          : 'Suscripcion del comercio expirada',
+          ? 'El comercio se encuentra pausado o suspendido'
+          : 'Suscripcion del comercio expirada o en mora',
         merchant,
       };
     }

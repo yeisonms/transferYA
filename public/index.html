@@ -1783,6 +1783,7 @@
     function getStatusBadgeHtml(tx) {
       if (tx.status === "PROCESSED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Válido • WA OK</span>`;
       if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-amber/15 text-ty-amber border border-ty-amber/30">Dinero OK • WA Falló</span>`;
+      if (tx.status === "IGNORED_SUSPENDED_ACCOUNT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-rose/15 text-ty-rose border border-ty-rose/30">Plan Vencido</span>`;
       if (tx.status === "DUPLICATE_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado</span>`;
       if (tx.status === "IGNORED_NON_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Ignorado</span>`;
       return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-cyan border border-ty-border">${escapeHtml(tx.status || "PROCESSING")}</span>`;

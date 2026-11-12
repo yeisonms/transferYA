@@ -45,7 +45,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           const whatsappClient = new WhatsAppCloudApiClient({
             accessToken:
               process.env.META_WHATSAPP_TOKEN ||
-              'EAAaBHwM4MzYBS3VfF9WRomwhIMoaLieb4JEyrRqj3X5ZBZBZAlmANZAZCgoJAXpYczchyiYZCvJt18V5DgTwIv9OTJAROcWX6mRkva4frr4OySNrj8caMToIlXO82aITwZBTXfZB23HdbAcrberePu58WITAGZBDv4JTNIfCmpNZANQ7YHT5x3CfLJDa2XcgO8YALcMge6oGHxfwZCUO2CRRtlQODclZBKiMw5d0tNrGpUsLkqQKnEn4YPS31cni5FQ95DG4qFWEZAVn4NCnge5cxYXSRu5slNLluVKZB6wQZDZD',
+              'EAAaBHwM4MzYBSZBnq7g2sSzZAWTaoNbsLeSiB2yjZB8K7NyjJmUTCQd8L1TetbsPIbmiFWsf464BphHe88JvFwZBi2UGt1GspRa2pnr2G9Fyliar7yNMSjW14YT1HlAfdPi0L6R09ZAA9268t7zOdTqMXke7yEVvZAKZAZBv4e2pv1VhY6MOdgipv7IUYYkp4bfQv2quWBS7p3SeB0T9RT3Gw5s7znKAZABGqzzgzBahZBxAfLTUzunI3q9Y8esI4qDKUiSNykTV9MXZAQ2t69v7tL8PfCtzL5gtfoSZBAZDZD',
             phoneNumberId:
               process.env.META_PHONE_NUMBER_ID || '1404825876052179',
           });

@@ -10,6 +10,7 @@ import type {
   IHttpClient,
   IWhatsAppCloudApiClient,
   PaymentAlertOptions,
+  SubscriptionNoticeOptions,
   TemplateComponent,
   WhatsAppSendResult,
   WhatsAppTemplatePayload,
@@ -316,6 +317,50 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
     const fallbackText = `⚡ *TransferYA - Pago Confirmado*\n\n💰 Monto: *${formattedAmount}*\n👤 De: *${payment.senderName}*\n🏦 Billetera: *${formattedWallet}*\n⏰ Hora: *${formattedTime}*${refText}${staleWarning}`;
 
     const textResult = await this.sendTextMessage(to, fallbackText);
+    if (textResult.success) {
+      return textResult;
+    }
+
+    return templateResult;
+  }
+
+  async sendSubscriptionNotice(
+    to: string,
+    options: SubscriptionNoticeOptions,
+  ): Promise<WhatsAppSendResult> {
+    const formattedAmount = formatCopCurrency(options.amount);
+    const renewalPrice = options.renewalPriceCop ?? 50000;
+    const formattedRenewal = formatCopCurrency(renewalPrice);
+    const storeLabel = options.storeName ? ` (${options.storeName})` : '';
+
+    const text = options.isSuspended
+      ? `⚠️ TransferYA detectó un pago de ${formattedAmount} en tu caja${storeLabel}, pero tu comercio se encuentra pausado. Reactiva tu servicio en el panel para que tus cajeros sigan recibiendo las confirmaciones.`
+      : `⚠️ TransferYA detectó un pago de ${formattedAmount} en tu caja${storeLabel}, pero tu suscripción está vencida. Renueva tu plan por ${formattedRenewal} para que tus cajeros sigan recibiendo las confirmaciones.`;
+
+    const templateName = options.isSuspended
+      ? 'transferya_account_suspended_notice_v1'
+      : 'transferya_subscription_past_due_v1';
+
+    const components: TemplateComponent[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: formattedAmount },
+          { type: 'text', text: formattedRenewal },
+        ],
+      },
+    ];
+
+    let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+    if (!templateResult.success) {
+      templateResult = await this.sendTemplate(to, templateName, components, 'es');
+    }
+
+    if (templateResult.success) {
+      return templateResult;
+    }
+
+    const textResult = await this.sendTextMessage(to, text);
     if (textResult.success) {
       return textResult;
     }

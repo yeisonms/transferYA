@@ -4,6 +4,8 @@ import type {
   ParsedPaymentReceipt,
   ParseResult,
 } from '../../domain/parser/types.js';
+import { normalizePhoneNumberE164 } from '../../domain/routing/phone-utils.js';
+import type { Merchant } from '../../domain/routing/types.js';
 import type {
   DispatchSummary,
   PaymentPipelineDependencies,
@@ -32,12 +34,76 @@ export class PaymentProcessingPipeline {
     captureTimestamp: number,
   ) => string;
   private readonly nowProvider: () => number;
+  private readonly billingNoticeCooldownMs: number;
+  private readonly renewalPriceCop: number;
+  private readonly billingNoticeTimestamps = new Map<string, number>();
 
   constructor(private readonly deps: PaymentPipelineDependencies) {
     this.parser = deps.parser ?? parseBankingNotification;
     this.fingerprintGenerator =
       deps.fingerprintGenerator ?? generatePaymentFingerprint;
     this.nowProvider = deps.nowProvider ?? (() => Date.now());
+    this.billingNoticeCooldownMs =
+      deps.billingNoticeCooldownMs ?? 6 * 60 * 60 * 1000;
+    this.renewalPriceCop = deps.renewalPriceCop ?? 50_000;
+  }
+
+  private async handleBlockedSubscription(
+    notificationId: string,
+    receipt: ParsedPaymentReceipt,
+    merchant: Merchant,
+    reason: 'SUBSCRIPTION_PAST_DUE' | 'SUBSCRIPTION_SUSPENDED',
+    failureMessage: string,
+    now: number,
+  ): Promise<PipelineResult> {
+    let billingNoticeSent = false;
+    let noticeMessageId: string | undefined;
+
+    const lastSentAt = this.billingNoticeTimestamps.get(merchant.id) ?? 0;
+    const isWithinCooldown =
+      lastSentAt > 0 && now - lastSentAt < this.billingNoticeCooldownMs;
+
+    if (!isWithinCooldown && merchant.billingPhone) {
+      try {
+        const ownerPhone = normalizePhoneNumberE164(merchant.billingPhone);
+        const sendRes = await this.deps.whatsappClient.sendSubscriptionNotice(
+          ownerPhone,
+          {
+            amount: receipt.amount,
+            wallet: receipt.wallet,
+            storeName: merchant.name,
+            isSuspended: reason === 'SUBSCRIPTION_SUSPENDED',
+            renewalPriceCop: this.renewalPriceCop,
+          },
+        );
+        if (sendRes.success) {
+          this.billingNoticeTimestamps.set(merchant.id, now);
+          billingNoticeSent = true;
+          noticeMessageId = sendRes.messageId;
+        }
+      } catch {
+        // Ignorar teléfono de facturación inválido sin interrumpir el Kill Switch
+      }
+    }
+
+    await this.deps.notificationRepository.updateNotification(notificationId, {
+      status: 'IGNORED_SUSPENDED_ACCOUNT',
+      amount: receipt.amount,
+      senderName: receipt.senderName,
+      paymentReference: receipt.reference,
+      failureReason: failureMessage,
+      whatsappMessageIds: noticeMessageId ? [noticeMessageId] : undefined,
+      processedAt: now,
+    });
+
+    return {
+      status: 'IGNORED_SUSPENDED_ACCOUNT',
+      notificationId,
+      receipt,
+      merchantId: merchant.id,
+      reason,
+      billingNoticeSent,
+    };
   }
 
   /**
@@ -139,6 +205,21 @@ export class PaymentProcessingPipeline {
     );
 
     if (!routeResult.success) {
+      if (
+        (routeResult.reason === 'SUBSCRIPTION_PAST_DUE' ||
+          routeResult.reason === 'SUBSCRIPTION_SUSPENDED') &&
+        routeResult.merchant
+      ) {
+        return this.handleBlockedSubscription(
+          notificationId,
+          receipt,
+          routeResult.merchant,
+          routeResult.reason,
+          routeResult.message,
+          now,
+        );
+      }
+
       await this.deps.notificationRepository.updateNotification(
         notificationId,
         {

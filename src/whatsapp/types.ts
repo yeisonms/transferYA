@@ -70,6 +70,17 @@ export interface PaymentAlertOptions {
 }
 
 /**
+ * Parámetros para la notificación de cobro/retención comercial al dueño.
+ */
+export interface SubscriptionNoticeOptions {
+  amount: number;
+  wallet?: SupportedWallet;
+  storeName?: string;
+  isSuspended?: boolean;
+  renewalPriceCop?: number;
+}
+
+/**
  * Abstracción de cliente HTTP para desacoplar de bibliotecas externas (fetch, axios, got).
  */
 export interface HttpResponseData<T = any> {
@@ -107,6 +118,15 @@ export interface IWhatsAppCloudApiClient {
     to: string,
     payment: ParsedPaymentReceipt,
     options: PaymentAlertOptions,
+  ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía la alerta de cobro/retención comercial directamente al WhatsApp del dueño
+   * cuando un pago ingresa pero la suscripción está vencida (PAST_DUE) o pausada (SUSPENDED).
+   */
+  sendSubscriptionNotice(
+    to: string,
+    options: SubscriptionNoticeOptions,
   ): Promise<WhatsAppSendResult>;
 }
 

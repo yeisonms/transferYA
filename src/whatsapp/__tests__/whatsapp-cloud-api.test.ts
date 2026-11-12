@@ -309,6 +309,36 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
       }
       expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
     });
+
+    it('debe despachar la alerta de retención comercial al dueño (fallback a texto) cuando la cuenta está vencida', async () => {
+      vi.spyOn(mockHttpClient, 'post')
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } }) // es_CO template no existe
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } }) // es template no existe
+        .mockResolvedValueOnce({ status: 200, data: { messages: [{ id: 'wamid.BILLING_NOTICE_1' }] } }); // Fallback texto
+
+      const result = await client.sendSubscriptionNotice('+573113654315', {
+        amount: 15000,
+        storeName: 'Mursat Solutions',
+        isSuspended: false,
+        renewalPriceCop: 50000,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.messageId).toBe('wamid.BILLING_NOTICE_1');
+      }
+      const lastCall = vi.mocked(mockHttpClient.post).mock.calls[2];
+      expect(lastCall?.[1]).toEqual(
+        expect.objectContaining({
+          to: '573113654315',
+          type: 'text',
+          text: {
+            body: expect.stringContaining('$ 15.000'),
+          },
+        }),
+      );
+      expect((lastCall?.[1] as any).text.body).toContain('$ 50.000');
+    });
   });
 });
 

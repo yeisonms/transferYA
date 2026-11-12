@@ -100,6 +100,10 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
     mockWhatsappClient = {
       sendTemplate: vi.fn(),
       sendPaymentAlert: vi.fn(),
+      sendSubscriptionNotice: vi.fn().mockResolvedValue({
+        success: true,
+        messageId: 'wamid.BILLING_NOTICE_DEFAULT',
+      }),
     };
 
     pipeline = new PaymentProcessingPipeline({
@@ -290,17 +294,10 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
     expect(updatedDup?.status).toBe('DUPLICATE_PAYMENT');
   });
 
-  it('5. Fallo de Enrutamiento (Comercio Inactivo o Suspendido -> ROUTING_FAILED)', async () => {
-    const suspendedMerchant: Merchant = {
-      ...merchant,
-      id: 'merchant_suspendido_id',
-      status: 'SUSPENDED',
-    };
-    routingRepo.registerDeviceMerchant('dev_suspendido', suspendedMerchant);
-
+  it('5. Fallo de Enrutamiento (Dispositivo no mapeado -> ROUTING_FAILED)', async () => {
     const notification: StoredNotificationRecord & { id: string } = {
-      id: 'notif_merchant_suspendido',
-      deviceId: 'dev_suspendido',
+      id: 'notif_merchant_unmapped',
+      deviceId: 'dev_no_registrado',
       walletPackage: 'com.nequi.MobileApp',
       rawTitle: 'Nequi',
       rawText: 'Laura te envio $25.000 a tu Nequi',
@@ -315,14 +312,14 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
     notificationRepo.seed(notification);
 
     const result = await pipeline.processCapturedNotification(
-      'notif_merchant_suspendido',
+      'notif_merchant_unmapped',
     );
 
     expect(result.status).toBe('ROUTING_FAILED');
     expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
 
     const updated = await notificationRepo.getNotificationById(
-      'notif_merchant_suspendido',
+      'notif_merchant_unmapped',
     );
     expect(updated?.status).toBe('ROUTING_FAILED');
   });
@@ -382,5 +379,149 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
     const result = await pipeline.processCapturedNotification('notif_race_dup');
     expect(result.status).toBe('DUPLICATE_PAYMENT');
     expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+  });
+
+  it('8. Kill Switch (PAST_DUE -> IGNORED_SUSPENDED_ACCOUNT, cero mensajes a cajeros, alerta al dueño)', async () => {
+    const pastDueMerchant: Merchant = {
+      ...merchant,
+      id: 'merchant_vencido_id',
+      name: 'Tienda La Esquina',
+      status: 'ACTIVE',
+      subscriptionStatus: 'PAST_DUE',
+      subscriptionEndsAt: now - 3600_000,
+      billingPhone: '+573113654315',
+    };
+    routingRepo.registerDeviceMerchant('dev_vencido_kill', pastDueMerchant);
+    routingRepo.registerCashierRecipient({
+      id: 'cajero_vencido_1',
+      merchantId: pastDueMerchant.id,
+      deviceId: 'dev_vencido_kill',
+      name: 'Cajero Bloqueado',
+      phoneNumber: '+573001112233',
+      isActive: true,
+    });
+
+    const notification: StoredNotificationRecord & { id: string } = {
+      id: 'notif_kill_past_due',
+      deviceId: 'dev_vencido_kill',
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Pedro Gomez te envió $15.000 a tu Nequi',
+      capturedAt: now,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 80,
+      isStale: false,
+      status: 'RECEIVED',
+    };
+    notificationRepo.seed(notification);
+
+    const result = await pipeline.processCapturedNotification('notif_kill_past_due');
+
+    expect(result.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    if (result.status === 'IGNORED_SUSPENDED_ACCOUNT') {
+      expect(result.reason).toBe('SUBSCRIPTION_PAST_DUE');
+      expect(result.receipt.amount).toBe(15000);
+      expect(result.billingNoticeSent).toBe(true);
+    }
+    expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledTimes(1);
+    expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledWith(
+      '+573113654315',
+      expect.objectContaining({
+        amount: 15000,
+        storeName: 'Tienda La Esquina',
+        isSuspended: false,
+        renewalPriceCop: 50000,
+      }),
+    );
+
+    const updated = await notificationRepo.getNotificationById('notif_kill_past_due');
+    expect(updated?.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    expect(updated?.amount).toBe(15000);
+    expect(updated?.senderName).toBe('Pedro Gomez');
+  });
+
+  it('9. Kill Switch aplica cooldown anti-spam de 6h en avisos de cobro al dueño', async () => {
+    const pastDueMerchant: Merchant = {
+      ...merchant,
+      id: 'merchant_cooldown_id',
+      status: 'ACTIVE',
+      subscriptionStatus: 'TRIAL',
+      subscriptionEndsAt: now - 1000, // Venció hace 1s -> PAST_DUE efectivo
+      billingPhone: '+573113654315',
+    };
+    routingRepo.registerDeviceMerchant('dev_cooldown', pastDueMerchant);
+
+    notificationRepo.seed({
+      id: 'notif_cd_1',
+      deviceId: 'dev_cooldown',
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Ana te envió $15.000 a tu Nequi',
+      capturedAt: now - 1000,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 50,
+      isStale: false,
+      status: 'RECEIVED',
+    });
+    notificationRepo.seed({
+      id: 'notif_cd_2',
+      deviceId: 'dev_cooldown',
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Luis te envió $22.000 a tu Nequi',
+      capturedAt: now,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 50,
+      isStale: false,
+      status: 'RECEIVED',
+    });
+
+    const r1 = await pipeline.processCapturedNotification('notif_cd_1');
+    const r2 = await pipeline.processCapturedNotification('notif_cd_2');
+
+    expect(r1.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    expect(r2.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    if (r1.status === 'IGNORED_SUSPENDED_ACCOUNT') expect(r1.billingNoticeSent).toBe(true);
+    if (r2.status === 'IGNORED_SUSPENDED_ACCOUNT') expect(r2.billingNoticeSent).toBe(false);
+    expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledTimes(1);
+    expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+  });
+
+  it('10. Kill Switch en cuenta SUSPENDED sin billingPhone aborta despacho sin error', async () => {
+    const pausedMerchant: Merchant = {
+      ...merchant,
+      id: 'merchant_paused_nophone',
+      status: 'SUSPENDED',
+      subscriptionStatus: 'SUSPENDED',
+      billingPhone: null,
+    };
+    routingRepo.registerDeviceMerchant('dev_paused', pausedMerchant);
+
+    notificationRepo.seed({
+      id: 'notif_paused_1',
+      deviceId: 'dev_paused',
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Maria te envió $30.000 a tu Nequi',
+      capturedAt: now,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 50,
+      isStale: false,
+      status: 'RECEIVED',
+    });
+
+    const result = await pipeline.processCapturedNotification('notif_paused_1');
+    expect(result.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    if (result.status === 'IGNORED_SUSPENDED_ACCOUNT') {
+      expect(result.reason).toBe('SUBSCRIPTION_SUSPENDED');
+      expect(result.billingNoticeSent).toBe(false);
+    }
+    expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    expect(mockWhatsappClient.sendSubscriptionNotice).not.toHaveBeenCalled();
   });
 });
