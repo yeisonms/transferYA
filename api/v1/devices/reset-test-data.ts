@@ -1,5 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
+import { requireMerchantOwner } from '../../../src/backend/auth/supabase-auth.js';
+import {
+  createUserScopedRepository,
+  getSupabaseEnvConfig,
+  getSupabaseRepository,
+} from '../../../src/backend/supabase/client.js';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -34,21 +39,32 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return;
     }
 
-    const repository = getSupabaseRepository();
-    const merchant = await repository.getMerchantByDeviceId(deviceId);
-    if (!merchant || merchant.id !== merchantId) {
-      res.statusCode = 404;
+    const { supabaseUrl, anonKey } = getSupabaseEnvConfig();
+    const ownership = await requireMerchantOwner(
+      { headers: req.headers as Record<string, string | undefined> },
+      { supabaseUrl, supabaseKey: anonKey },
+      async (accessToken) => {
+        const userRepo = createUserScopedRepository(accessToken);
+        return userRepo.getMerchantByDeviceWithOwner(deviceId);
+      },
+      merchantId,
+    );
+
+    if (!ownership.authorized) {
+      res.statusCode = ownership.statusCode;
       res.end(
         JSON.stringify({
           success: false,
-          error: 'DEVICE_NOT_FOUND',
-          message: 'El dispositivo no pertenece al comercio indicado.',
+          error: ownership.error,
+          message: ownership.message,
         }),
       );
       return;
     }
 
-    const result = await repository.resetDeviceTestData(deviceId);
+    const serviceRepo = getSupabaseRepository();
+    const result = await serviceRepo.resetDeviceTestData(deviceId);
+
     res.statusCode = 200;
     res.end(
       JSON.stringify({
@@ -67,4 +83,3 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     );
   }
 }
-

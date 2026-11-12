@@ -1,6 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { requireMerchantOwner } from '../../../src/backend/auth/supabase-auth.js';
 import { DeviceEnrollmentHandler } from '../../../src/backend/enrollment/handler.js';
-import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
+import {
+  createUserScopedRepository,
+  getSupabaseEnvConfig,
+} from '../../../src/backend/supabase/client.js';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -19,14 +23,54 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const rawBody = Buffer.concat(chunks).toString('utf-8');
     const body = rawBody ? JSON.parse(rawBody) : {};
 
-    const repository = getSupabaseRepository();
+    const merchantId =
+      typeof body.merchantId === 'string' ? body.merchantId.trim() : '';
+    const deviceId =
+      typeof body.deviceId === 'string' ? body.deviceId.trim() : '';
+
+    if (!merchantId || !deviceId) {
+      res.statusCode = 400;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: 'MISSING_FIELDS',
+          message: 'merchantId y deviceId son obligatorios',
+        }),
+      );
+      return;
+    }
+
+    const { supabaseUrl, anonKey } = getSupabaseEnvConfig();
+    const ownership = await requireMerchantOwner(
+      { headers: req.headers as Record<string, string | undefined> },
+      { supabaseUrl, supabaseKey: anonKey },
+      async (accessToken) => {
+        const userRepo = createUserScopedRepository(accessToken);
+        return userRepo.getMerchantWithOwner(merchantId);
+      },
+      merchantId,
+    );
+
+    if (!ownership.authorized) {
+      res.statusCode = ownership.statusCode;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: ownership.error,
+          message: ownership.message,
+        }),
+      );
+      return;
+    }
+
+    const userRepo = createUserScopedRepository(ownership.accessToken);
     const enrollmentHandler = new DeviceEnrollmentHandler({
-      enrollmentRepository: repository,
+      enrollmentRepository: userRepo,
     });
 
     const result = await enrollmentHandler.createEnrollmentToken({
       headers: req.headers as Record<string, string | undefined>,
-      body,
+      body: { ...body, merchantId, deviceId },
       method: req.method,
       path: '/api/v1/devices/enrollment-tokens',
     });
@@ -44,4 +88,3 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     );
   }
 }
-

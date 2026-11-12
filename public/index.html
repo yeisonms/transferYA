@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-  <title>TransferYA | Cockpit Financiero, Arqueo & POS en Tiempo Real</title>
+  <title>TransferYA | Cockpit Financiero Multi-Comercio &amp; POS</title>
 
   <!-- PWA Manifest & Meta Tags -->
   <link rel="manifest" href="/manifest.json"/>
@@ -96,583 +96,611 @@
     .pos-hero-glow {
       animation: glow-border 2.5s infinite ease-in-out;
     }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0B101C;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1E293B;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #00D26A;
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0B101C; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00D26A; }
   </style>
 </head>
 <body class="bg-ty-bg min-h-screen text-ty-text flex flex-col selection:bg-ty-emerald selection:text-black">
 
-  <!-- Desktop Sidebar Navigation -->
-  <aside class="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-ty-surface-low border-r border-ty-border flex-col justify-between p-4 z-40">
-    <div class="flex flex-col gap-6">
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3 px-2 pt-2">
-        <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.25)]">
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-          </svg>
+  <!-- ================================================================== -->
+  <!-- PANTALLA DE CARGA INICIAL -->
+  <!-- ================================================================== -->
+  <div id="loadingScreen" class="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_20px_rgba(0,210,106,0.25)]">
+      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <p class="text-xs font-mono text-ty-muted tracking-wider uppercase">Verificando sesión segura...</p>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- PANTALLA DE AUTENTICACIÓN MULTI-COMERCIO (SUPABASE AUTH) -->
+  <!-- ================================================================== -->
+  <section id="authScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.25)]">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <div>
           <span class="text-xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
-          <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Cockpit &amp; Arqueo</span>
+          <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Acceso Seguro de Comercios</span>
         </div>
       </div>
 
-      <!-- Navigation Menu -->
-      <nav class="flex flex-col gap-1.5" id="desktopNav">
-        <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-          <span class="text-sm">Resumen y Caja</span>
-        </button>
-
-        <button onclick="switchTab('history')" id="nav-btn-history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span class="text-sm">Historial de Cierres</span>
-        </button>
-
-        <button onclick="switchTab('pos')" id="nav-btn-pos" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          <span class="text-sm">Modo Caja POS</span>
-        </button>
-
-        <button onclick="switchTab('devices')" id="nav-btn-devices" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          <span class="text-sm">Dispositivos Centinela</span>
-        </button>
-
-        <button onclick="switchTab('cashiers')" id="nav-btn-cashiers" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-          <span class="text-sm">Cajeros WhatsApp</span>
-        </button>
-      </nav>
-    </div>
-
-    <!-- Sidebar Bottom Actions -->
-    <div class="flex flex-col gap-3 border-t border-ty-border pt-4">
-      <button onclick="switchTab('pos')" class="w-full py-2.5 px-3 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-        <span>Pantalla POS</span>
-      </button>
-
-      <div class="flex flex-col gap-1 text-[11px] font-mono text-ty-muted px-1">
-        <div class="flex items-center justify-between">
-          <span>Core Engine Operativo</span>
-          <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
-        </div>
-        <span class="text-[9px] text-ty-muted/80 truncate">Ingesta: /api/v1/webhooks/notifications</span>
+      <!-- Mode Switch -->
+      <div class="grid grid-cols-2 gap-1.5 bg-ty-surface p-1 rounded-xl border border-ty-border">
+        <button id="authTabLogin" onclick="setAuthMode('login')" class="py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all">Iniciar Sesión</button>
+        <button id="authTabSignup" onclick="setAuthMode('signup')" class="py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all">Crear Comercio</button>
       </div>
-    </div>
-  </aside>
 
-  <!-- Main Application Wrapper -->
-  <div class="lg:pl-64 flex flex-col flex-1 min-h-screen">
-
-    <!-- Top Telemetry Header -->
-    <header class="w-full h-16 bg-ty-surface-low border-b border-ty-border sticky top-0 z-30 px-4 lg:px-6 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="lg:hidden w-8 h-8 rounded-lg bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <!-- Form -->
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div id="signupStoreField" class="hidden">
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Comercio</label>
+          <input type="text" id="authStoreName" placeholder="Ej: Minimarket La 14" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
         </div>
+
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Comercio Piloto Alpha</h1>
-            <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-ty-surface-high border border-ty-border text-ty-cyan">Caja 1 • GMT-5</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs text-ty-muted">
-            <span id="socketBeacon" class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
-            <span id="socketStatusText" class="font-mono text-ty-emerald">Sincronizando Realtime...</span>
-          </div>
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Correo Electrónico</label>
+          <input type="email" id="authEmail" required placeholder="dueno@tucomercio.com" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
         </div>
+
+        <div id="authPasswordGroup">
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Contraseña</label>
+          <input type="password" id="authPassword" minlength="6" placeholder="Mínimo 6 caracteres" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+        </div>
+
+        <div id="authFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
+
+        <button id="authSubmitBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.25)] transition-all">
+          Entrar al Cockpit
+        </button>
+      </form>
+
+      <div class="pt-3 border-t border-ty-border flex flex-col gap-2.5 text-center">
+        <button onclick="sendMagicLink()" type="button" class="w-full py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all">
+          Enviar Magic Link (Acceso sin contraseña)
+        </button>
+        <p class="text-[11px] font-mono text-ty-muted">Aislamiento Row Level Security activo • Core Engine Operativo</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <!-- PANTALLA ONBOARDING (SI EL USUARIO AUTENTICADO AÚN NO TIENE COMERCIO) -->
+  <!-- ================================================================== -->
+  <section id="onboardingScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Paso Final de Registro</span>
+          <h2 class="text-xl font-bold text-white mt-1">Configura tu Comercio</h2>
+        </div>
+        <button onclick="signOutUser()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white">Cerrar Sesión</button>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button id="audioToggleBtn" onclick="toggleAudio()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald" title="Activar/Silenciar Chime">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-          <span class="hidden md:inline" id="audioBtnText">Chime Activo</span>
-        </button>
+      <p class="text-xs text-ty-muted leading-relaxed">
+        Tu cuenta (<span id="onboardingUserEmail" class="font-mono text-white"></span>) aún no tiene un comercio asignado en esta base de datos aislada.
+      </p>
 
-        <button onclick="refreshFromDatabase()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5" title="Recargar saldos desde Supabase">
-          <svg class="w-3.5 h-3.5 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          <span class="hidden sm:inline">Actualizar</span>
+      <form onsubmit="handleProvisionMerchant(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre Comercial</label>
+          <input type="text" id="provisionStoreName" required placeholder="Ej: Droguería Central" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
+        </div>
+        <button id="provisionBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 transition-all">
+          Crear Comercio y Entrar
         </button>
+      </form>
 
-        <button id="pwaInstallBtn" onclick="promptInstallPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          <span>Instalar App</span>
-        </button>
-
-        <button onclick="switchTab('pos')" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,106,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          <span>Modo POS</span>
+      <div class="p-3.5 rounded-xl bg-ty-surface border border-ty-border space-y-2 text-[11px] font-mono text-ty-muted">
+        <div class="text-ty-cyan font-bold uppercase">Nota para dueño del Piloto Alpha:</div>
+        <p class="leading-relaxed">Si estás reclamando tu caja existente <span class="text-white">Comercio Piloto Alpha</span>, ejecuta en Supabase SQL Editor el UPDATE con tu correo o User ID:</p>
+        <div class="p-2 rounded bg-ty-bg text-[10px] text-white select-all break-all" id="onboardingClaimSql"></div>
+        <button onclick="checkMerchantReload()" class="w-full py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-ty-emerald text-xs transition-all">
+          Ya asigné mi comercio, verificar de nuevo
         </button>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <!-- Content Sections -->
-    <main class="flex-1 p-4 lg:p-6 pb-24 lg:pb-8 space-y-6 max-w-7xl w-full mx-auto">
+  <!-- ================================================================== -->
+  <!-- SHELL PRINCIPAL DEL COMERCIANTE AUTENTICADO -->
+  <!-- ================================================================== -->
+  <div id="appShell" class="hidden flex-1 flex flex-col">
 
-      <!-- ============================================================== -->
-      <!-- TAB 1: RESUMEN Y CAJA (MULTI-PERÍODO + TABLA FORMATEADA + ARQUEO) -->
-      <!-- ============================================================== -->
-      <section id="tab-dashboard" class="space-y-5">
-
-        <!-- Row 1: 4 Multi-Period Financial Cards (Hoy, Semana, Mes, Billeteras) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <!-- Card 1: HOY -->
-          <div onclick="setPeriodFilter('today')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-emerald/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Recibido Hoy</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25" id="kpiTodayDate">Hoy</span>
-            </div>
-            <div class="my-2.5">
-              <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiTodayTotal">
-                $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-              <span id="kpiTodayCount">0 pagos reales</span>
-              <span class="text-ty-emerald" id="kpiTodayBreakdown">Nequi $0 / Davi $0</span>
-            </div>
+    <!-- Desktop Sidebar Navigation -->
+    <aside class="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-ty-surface-low border-r border-ty-border flex-col justify-between p-4 z-40">
+      <div class="flex flex-col gap-6">
+        <div class="flex items-center gap-3 px-2 pt-2">
+          <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.25)]">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           </div>
-
-          <!-- Card 2: ESTA SEMANA -->
-          <div onclick="setPeriodFilter('week')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Esta Semana</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-cyan border border-ty-border">Lun - Hoy</span>
-            </div>
-            <div class="my-2.5">
-              <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiWeekTotal">
-                $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-              <span id="kpiWeekCount">0 pagos reales</span>
-              <span class="text-ty-cyan" id="kpiWeekBreakdown">Nequi $0 / Davi $0</span>
-            </div>
+          <div>
+            <span class="text-xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Multi-Comercio RLS</span>
           </div>
+        </div>
 
-          <!-- Card 3: ESTE MES -->
-          <div onclick="setPeriodFilter('month')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Este Mes</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-muted border border-ty-border" id="kpiMonthLabel">Mes Actual</span>
-            </div>
-            <div class="my-2.5">
-              <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiMonthTotal">
-                $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-              <span id="kpiMonthCount">0 pagos reales</span>
-              <span class="text-white/80" id="kpiMonthBreakdown">Nequi $0 / Davi $0</span>
-            </div>
+        <nav class="flex flex-col gap-1.5" id="desktopNav">
+          <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span class="text-sm">Resumen y Caja</span>
+          </button>
+
+          <button onclick="switchTab('history')" id="nav-btn-history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-sm">Historial de Cierres</span>
+          </button>
+
+          <button onclick="switchTab('pos')" id="nav-btn-pos" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            <span class="text-sm">Modo Caja POS</span>
+          </button>
+
+          <button onclick="switchTab('devices')" id="nav-btn-devices" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            <span class="text-sm">Cajas Centinela</span>
+          </button>
+
+          <button onclick="switchTab('cashiers')" id="nav-btn-cashiers" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <span class="text-sm">Cajeros WhatsApp</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Sidebar Bottom Actions -->
+      <div class="flex flex-col gap-3 border-t border-ty-border pt-4">
+        <div class="px-1">
+          <div class="text-[11px] font-mono text-white truncate" id="sidebarUserEmail">-</div>
+          <button onclick="signOutUser()" class="text-[11px] font-mono text-ty-rose hover:underline mt-1">Cerrar Sesión</button>
+        </div>
+
+        <button onclick="switchTab('pos')" class="w-full py-2.5 px-3 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span>Pantalla POS</span>
+        </button>
+
+        <div class="flex flex-col gap-1 text-[11px] font-mono text-ty-muted px-1">
+          <div class="flex items-center justify-between">
+            <span>Core Engine Operativo</span>
+            <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
           </div>
+          <span class="text-[9px] text-ty-muted/80 truncate">Ingesta: /api/v1/webhooks/notifications</span>
+        </div>
+      </div>
+    </aside>
 
-          <!-- Card 4: DISTRIBUCIÓN DEL FILTRO ACTIVO & VELOCIDAD -->
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Balance Billeteras</span>
-              <span class="text-[11px] font-mono text-ty-emerald" id="statLatencyAvg">230 ms</span>
+    <!-- Main Application Wrapper -->
+    <div class="lg:pl-64 flex flex-col flex-1 min-h-screen">
+
+      <!-- Top Telemetry Header -->
+      <header class="w-full min-h-[4rem] py-2 bg-ty-surface-low border-b border-ty-border sticky top-0 z-30 px-4 lg:px-6 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+          <div class="lg:hidden w-8 h-8 rounded-lg bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-bold text-white tracking-tight" id="merchantNameTitle">Mi Comercio</h1>
+              <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-ty-surface-high border border-ty-border text-ty-cyan">GMT-5</span>
             </div>
-            <div class="my-2.5">
-              <div class="w-full h-2.5 rounded bg-ty-surface-highest overflow-hidden flex mb-2.5">
-                <div id="statNequiBar" class="h-full bg-ty-nequi transition-all duration-300" style="width: 50%"></div>
-                <div id="statDaviBar" class="h-full bg-ty-daviplata transition-all duration-300" style="width: 50%"></div>
-              </div>
-              <div class="flex items-center justify-between text-xs font-mono">
-                <div class="flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-ty-nequi"></span>
-                  <span class="text-white" id="statNequiSum">Nequi: $ 0</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-ty-daviplata"></span>
-                  <span class="text-white" id="statDaviSum">Davi: $ 0</span>
-                </div>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-              <span id="statSplitRatio">0% / 0%</span>
-              <span class="text-ty-cyan">Solo Ingresos Válidos</span>
+            <div class="flex items-center gap-2 text-xs text-ty-muted">
+              <span id="socketBeacon" class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
+              <span id="socketStatusText" class="font-mono text-ty-emerald">Conectando Realtime...</span>
             </div>
           </div>
         </div>
 
-        <!-- Reconciliation Banner ("Lo que debe haber en cuenta") -->
-        <div class="bg-ty-surface-low border border-ty-emerald/30 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-start sm:items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-ty-emerald/15 border border-ty-emerald/30 flex items-center justify-center text-ty-emerald shrink-0">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-              <div class="text-xs font-mono uppercase tracking-wider text-ty-emerald" id="arqueoFilterBadge">ARQUEO FILTRADO: HOY • TODAS LAS BILLETERAS</div>
-              <div class="text-sm sm:text-base text-white font-semibold mt-0.5">
-                Debería haber en tu cuenta: <span id="arqueoExactTotal" class="text-ty-emerald font-extrabold tabular-nums text-lg ml-1">$ 0 COP</span>
-                <span id="arqueoTxSummary" class="text-xs font-mono text-ty-muted ml-2">(0 transferencias válidas)</span>
-              </div>
-            </div>
-          </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <!-- Dynamic Multi-Caja Selector -->
+          <select id="activeDeviceSelector" onchange="onDeviceSelectorChange()" class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0 max-w-[190px]">
+            <option value="ALL">Todas las cajas</option>
+          </select>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <button onclick="exportFilteredCsv()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Exportar CSV</span>
-            </button>
-            <button onclick="openResetModal()" class="px-3 py-1.5 rounded-lg bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5" title="Limpiar notificaciones de prueba de esta caja">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              <span>Formatear Tabla</span>
-            </button>
+          <button id="audioToggleBtn" onclick="toggleAudio()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald" title="Activar/Silenciar Chime">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <span class="hidden md:inline" id="audioBtnText">Chime</span>
+          </button>
+
+          <button onclick="refreshMerchantData()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5" title="Recargar datos">
+            <svg class="w-3.5 h-3.5 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+
+          <button id="pwaInstallBtn" onclick="promptInstallPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all items-center gap-1.5">
+            <span>Instalar</span>
+          </button>
+
+          <button onclick="switchTab('pos')" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,106,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5">
+            <span>Modo POS</span>
+          </button>
+
+          <button onclick="signOutUser()" class="lg:hidden px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-rose/30 text-xs font-mono text-ty-rose">
+            Salir
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Sections -->
+      <main class="flex-1 p-4 lg:p-6 pb-24 lg:pb-8 space-y-6 max-w-7xl w-full mx-auto">
+
+        <!-- Banner si aún no hay dispositivos Centinela vinculados -->
+        <div id="noDevicesBanner" class="hidden p-4 rounded-xl bg-ty-amber/10 border border-ty-amber/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-mono font-bold uppercase text-ty-amber">Sin Dispositivo Centinela Vinculado</div>
+            <p class="text-xs text-white/90 mt-0.5">Vincula tu celular Android de caja registradora con código QR para empezar a recibir pagos en tiempo real.</p>
           </div>
+          <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase shrink-0">
+            Emparejar Caja 1 (QR)
+          </button>
         </div>
 
-        <!-- Master Filter Bar + Formatted Table -->
-        <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col">
-          <!-- Controls & Filters Header -->
-          <div class="p-4 border-b border-ty-border space-y-3 bg-ty-surface/50">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-              <!-- Period Pills -->
-              <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtro de período">
-                <button onclick="setPeriodFilter('today')" id="filter-period-today" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-ty-emerald text-black transition-all">Hoy</button>
-                <button onclick="setPeriodFilter('week')" id="filter-period-week" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Esta Semana</button>
-                <button onclick="setPeriodFilter('month')" id="filter-period-month" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Este Mes</button>
-                <button onclick="setPeriodFilter('all')" id="filter-period-all" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Todo</button>
-                <button onclick="setPeriodFilter('custom')" id="filter-period-custom" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Por Fechas</button>
+        <!-- ============================================================ -->
+        <!-- TAB 1: RESUMEN Y CAJA -->
+        <!-- ============================================================ -->
+        <section id="tab-dashboard" class="space-y-5">
+          <!-- KPIs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div onclick="setPeriodFilter('today')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-emerald/60 rounded-xl p-4 flex flex-col justify-between transition-all">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Recibido Hoy</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25" id="kpiTodayDate">Hoy</span>
               </div>
-
-              <!-- Wallet Pills & Search -->
-              <div class="flex flex-wrap items-center gap-2">
-                <div class="flex items-center gap-1 bg-ty-surface-low p-1 rounded-lg border border-ty-border" role="group" aria-label="Filtro de billetera">
-                  <button onclick="setWalletFilter('ALL')" id="filter-wallet-ALL" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all">Todas</button>
-                  <button onclick="setWalletFilter('NEQUI')" id="filter-wallet-NEQUI" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-nequi transition-all">Nequi</button>
-                  <button onclick="setWalletFilter('DAVIPLATA')" id="filter-wallet-DAVIPLATA" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-daviplata transition-all">Daviplata</button>
-                </div>
-
-                <!-- Audit Mode Toggle -->
-                <button onclick="toggleAuditMode()" id="auditModeBtn" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all" title="Alternar entre solo transferencias reales válidas o incluir duplicados/ignorados">
-                  Solo Válidos
-                </button>
+              <div class="my-2.5">
+                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiTodayTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
+              </div>
+              <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
+                <span id="kpiTodayCount">0 pagos reales</span>
+                <span class="text-ty-emerald" id="kpiTodayBreakdown">Nequi $0 / Davi $0</span>
               </div>
             </div>
 
-            <!-- Custom Date Range & Search Row -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <div id="customDateRangeRow" class="hidden flex flex-wrap items-center gap-2 text-xs font-mono">
-                <label class="text-ty-muted">Desde:</label>
-                <input type="date" id="dateFromInput" onchange="applyFiltersAndRender()" class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
-                <label class="text-ty-muted">Hasta:</label>
-                <input type="date" id="dateToInput" onchange="applyFiltersAndRender()" class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+            <div onclick="setPeriodFilter('week')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Esta Semana</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-cyan border border-ty-border">Lun - Hoy</span>
               </div>
-
-              <div class="relative flex-1 max-w-md">
-                <svg class="w-4 h-4 text-ty-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" id="searchQueryInput" oninput="applyFiltersAndRender()" placeholder="Buscar por nombre del cliente, monto o texto..." class="w-full bg-ty-surface border border-ty-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+              <div class="my-2.5">
+                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiWeekTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
               </div>
+              <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
+                <span id="kpiWeekCount">0 pagos reales</span>
+                <span class="text-ty-cyan" id="kpiWeekBreakdown">Nequi $0 / Davi $0</span>
+              </div>
+            </div>
 
-              <button onclick="triggerVisualSimulation()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-muted hover:text-ty-emerald transition-all flex items-center justify-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
-                <span>Test Sonido/Alerta POS</span>
+            <div onclick="setPeriodFilter('month')" class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Este Mes</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-muted border border-ty-border" id="kpiMonthLabel">Mes Actual</span>
+              </div>
+              <div class="my-2.5">
+                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiMonthTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
+              </div>
+              <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
+                <span id="kpiMonthCount">0 pagos reales</span>
+                <span class="text-white/80" id="kpiMonthBreakdown">Nequi $0 / Davi $0</span>
+              </div>
+            </div>
+
+            <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Balance Billeteras</span>
+                <span class="text-[11px] font-mono text-ty-emerald" id="statLatencyAvg">-- ms</span>
+              </div>
+              <div class="my-2.5">
+                <div class="w-full h-2.5 rounded bg-ty-surface-highest overflow-hidden flex mb-2.5">
+                  <div id="statNequiBar" class="h-full bg-ty-nequi transition-all duration-300" style="width: 50%"></div>
+                  <div id="statDaviBar" class="h-full bg-ty-daviplata transition-all duration-300" style="width: 50%"></div>
+                </div>
+                <div class="flex items-center justify-between text-xs font-mono">
+                  <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-ty-nequi"></span><span class="text-white" id="statNequiSum">Nequi: $ 0</span></div>
+                  <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-ty-daviplata"></span><span class="text-white" id="statDaviSum">Davi: $ 0</span></div>
+                </div>
+              </div>
+              <div class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
+                <span id="statSplitRatio">0% / 0%</span>
+                <span class="text-ty-cyan">Solo Ingresos Válidos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reconciliation Banner -->
+          <div class="bg-ty-surface-low border border-ty-emerald/30 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start sm:items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-ty-emerald/15 border border-ty-emerald/30 flex items-center justify-center text-ty-emerald shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-mono uppercase tracking-wider text-ty-emerald" id="arqueoFilterBadge">ARQUEO FILTRADO: HOY • TODAS LAS CAJAS</div>
+                <div class="text-sm sm:text-base text-white font-semibold mt-0.5">
+                  Debería haber en tu cuenta: <span id="arqueoExactTotal" class="text-ty-emerald font-extrabold tabular-nums text-lg ml-1">$ 0 COP</span>
+                  <span id="arqueoTxSummary" class="text-xs font-mono text-ty-muted ml-2">(0 transferencias válidas)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="exportFilteredCsv()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Exportar CSV</span>
+              </button>
+              <button onclick="openResetModal()" class="px-3 py-1.5 rounded-lg bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>Formatear Tabla</span>
               </button>
             </div>
           </div>
 
-          <!-- Responsive Formatted Financial Table (Desktop/Tablet) -->
-          <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
-                  <th class="py-3 px-4 font-semibold">Fecha / Hora (COT)</th>
-                  <th class="py-3 px-4 font-semibold">Billetera</th>
-                  <th class="py-3 px-4 font-semibold">Pagador / Remitente</th>
-                  <th class="py-3 px-4 font-semibold">Caja / Ref</th>
-                  <th class="py-3 px-4 font-semibold">Estado &amp; WhatsApp</th>
-                  <th class="py-3 px-4 font-semibold text-right">Latencia</th>
-                  <th class="py-3 px-4 font-semibold text-right">Valor (COP)</th>
-                </tr>
-              </thead>
-              <tbody id="ledgerTableBody" class="divide-y divide-ty-border text-sm">
-                <!-- Populated by JS -->
-              </tbody>
-              <tfoot class="bg-ty-surface border-t-2 border-ty-border-strong font-mono">
-                <tr>
-                  <td colspan="4" class="py-3.5 px-4 text-xs text-ty-muted" id="tableFooterCount">Mostrando 0 movimientos</td>
-                  <td colspan="2" class="py-3.5 px-4 text-xs text-right uppercase tracking-wider text-ty-muted">Total Verificado Filtrado:</td>
-                  <td class="py-3.5 px-4 text-right text-base font-extrabold text-ty-emerald tabular-nums" id="tableFooterTotal">$ 0 COP</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+          <!-- Filter Bar + Formatted Ledger Table -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-ty-border space-y-3 bg-ty-surface/50">
+              <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtro de período">
+                  <button onclick="setPeriodFilter('today')" id="filter-period-today" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-ty-emerald text-black transition-all">Hoy</button>
+                  <button onclick="setPeriodFilter('week')" id="filter-period-week" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Esta Semana</button>
+                  <button onclick="setPeriodFilter('month')" id="filter-period-month" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Este Mes</button>
+                  <button onclick="setPeriodFilter('all')" id="filter-period-all" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Todo</button>
+                  <button onclick="setPeriodFilter('custom')" id="filter-period-custom" class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Por Fechas</button>
+                </div>
 
-          <!-- Mobile Card List (< 768px) -->
-          <div id="mobileLedgerList" class="md:hidden divide-y divide-ty-border">
-            <!-- Populated by JS -->
-          </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="flex items-center gap-1 bg-ty-surface-low p-1 rounded-lg border border-ty-border" role="group" aria-label="Filtro de billetera">
+                    <button onclick="setWalletFilter('ALL')" id="filter-wallet-ALL" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all">Todas</button>
+                    <button onclick="setWalletFilter('NEQUI')" id="filter-wallet-NEQUI" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-nequi transition-all">Nequi</button>
+                    <button onclick="setWalletFilter('DAVIPLATA')" id="filter-wallet-DAVIPLATA" class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-daviplata transition-all">Daviplata</button>
+                  </div>
 
-          <!-- Empty State -->
-          <div id="feedEmptyState" class="hidden p-10 text-center text-ty-muted flex flex-col items-center justify-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-ty-surface border border-ty-border flex items-center justify-center text-ty-muted">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <button onclick="toggleAuditMode()" id="auditModeBtn" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+                    Solo Válidos
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div id="customDateRangeRow" class="hidden flex flex-wrap items-center gap-2 text-xs font-mono">
+                  <label class="text-ty-muted">Desde:</label>
+                  <input type="date" id="dateFromInput" onchange="applyFiltersAndRender()" class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+                  <label class="text-ty-muted">Hasta:</label>
+                  <input type="date" id="dateToInput" onchange="applyFiltersAndRender()" class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+                </div>
+
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-ty-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="searchQueryInput" oninput="applyFiltersAndRender()" placeholder="Buscar por nombre del cliente, monto o caja..." class="w-full bg-ty-surface border border-ty-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+                </div>
+
+                <button onclick="triggerVisualSimulation()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-muted hover:text-ty-emerald transition-all flex items-center justify-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                  <span>Test Sonido/POS</span>
+                </button>
+              </div>
             </div>
+
+            <div class="hidden md:block overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
+                    <th class="py-3 px-4 font-semibold">Fecha / Hora (COT)</th>
+                    <th class="py-3 px-4 font-semibold">Billetera</th>
+                    <th class="py-3 px-4 font-semibold">Pagador / Remitente</th>
+                    <th class="py-3 px-4 font-semibold">Caja / Ref</th>
+                    <th class="py-3 px-4 font-semibold">Estado &amp; WhatsApp</th>
+                    <th class="py-3 px-4 font-semibold text-right">Latencia</th>
+                    <th class="py-3 px-4 font-semibold text-right">Valor (COP)</th>
+                  </tr>
+                </thead>
+                <tbody id="ledgerTableBody" class="divide-y divide-ty-border text-sm"></tbody>
+                <tfoot class="bg-ty-surface border-t-2 border-ty-border-strong font-mono">
+                  <tr>
+                    <td colspan="4" class="py-3.5 px-4 text-xs text-ty-muted" id="tableFooterCount">Mostrando 0 movimientos</td>
+                    <td colspan="2" class="py-3.5 px-4 text-xs text-right uppercase tracking-wider text-ty-muted">Total Verificado Filtrado:</td>
+                    <td class="py-3.5 px-4 text-right text-base font-extrabold text-ty-emerald tabular-nums" id="tableFooterTotal">$ 0 COP</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div id="mobileLedgerList" class="md:hidden divide-y divide-ty-border"></div>
+
+            <div id="feedEmptyState" class="hidden p-10 text-center text-ty-muted flex flex-col items-center justify-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-ty-surface border border-ty-border flex items-center justify-center text-ty-muted">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <div>
+                <p class="font-bold text-white">No hay transferencias registradas para este filtro</p>
+                <p class="text-xs mt-1 max-w-sm mx-auto">Envía una transferencia real por Nequi o Daviplata, o cambia el período / caja arriba.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: HISTORIAL DE CIERRES POR DÍA -->
+        <!-- ============================================================ -->
+        <section id="tab-history" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
             <div>
-              <p class="font-bold text-white" id="emptyStateTitle">No hay transferencias registradas para este filtro</p>
-              <p class="text-xs mt-1 max-w-sm mx-auto" id="emptyStateSubtitle">Envía una transferencia real por Nequi o Daviplata, o cambia el período arriba para ver otros días.</p>
+              <h2 class="text-lg font-bold text-white">Historial y Cierre Diario por Fecha</h2>
+              <p class="text-xs text-ty-muted">Consolidado exacto de dinero que entró cada día según la caja seleccionada</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- TAB 2: HISTORIAL DE CIERRES POR DÍA -->
-      <!-- ============================================================== -->
-      <section id="tab-history" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
-          <div>
-            <h2 class="text-lg font-bold text-white">Historial y Cierre Diario por Fecha</h2>
-            <p class="text-xs text-ty-muted">Consolidado exacto de dinero que entró cada día para cuadrar tu Nequi y Daviplata</p>
-          </div>
-          <div class="flex items-center gap-2">
             <button onclick="exportDailyClosingCsv()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
               <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span>Descargar Cierres CSV</span>
             </button>
           </div>
-        </div>
 
-        <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
-                  <th class="py-3 px-4">Fecha (Colombia)</th>
-                  <th class="py-3 px-4 text-right">Nequi (# / COP)</th>
-                  <th class="py-3 px-4 text-right">Daviplata (# / COP)</th>
-                  <th class="py-3 px-4 text-right">Total Pagos</th>
-                  <th class="py-3 px-4 text-right">Total Recibido Día</th>
-                  <th class="py-3 px-4 text-right">Detalle</th>
-                </tr>
-              </thead>
-              <tbody id="dailyClosingBody" class="divide-y divide-ty-border text-sm">
-                <!-- Populated by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- TAB 3: MODO CAJA POS (HIGH CONTRAST) -->
-      <!-- ============================================================== -->
-      <section id="tab-pos" class="hidden space-y-6">
-        <div class="flex items-center justify-between p-4 rounded-xl bg-ty-surface-low border border-ty-border">
-          <div class="flex items-center gap-3">
-            <div class="w-3 h-3 rounded-full bg-ty-emerald beacon-pulse"></div>
-            <div>
-              <h2 class="text-base font-bold text-white">Modo Caja POS • Mostrador</h2>
-              <p class="text-xs text-ty-muted">Pantalla de alta visibilidad para tablet o celular en caja registradora</p>
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
+                    <th class="py-3 px-4">Fecha (Colombia)</th>
+                    <th class="py-3 px-4 text-right">Nequi (# / COP)</th>
+                    <th class="py-3 px-4 text-right">Daviplata (# / COP)</th>
+                    <th class="py-3 px-4 text-right">Total Pagos</th>
+                    <th class="py-3 px-4 text-right">Total Recibido Día</th>
+                    <th class="py-3 px-4 text-right">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="dailyClosingBody" class="divide-y divide-ty-border text-sm"></tbody>
+              </table>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="triggerVisualSimulation()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-emerald font-bold transition-all">
-              <span>Probar Timbre POS</span>
-            </button>
-            <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-muted hover:text-white transition-all">
-              <span>Volver a Resumen</span>
-            </button>
-          </div>
-        </div>
+        </section>
 
-        <div id="posHeroCard" class="bg-ty-surface-low border-2 border-ty-emerald rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden pos-hero-glow">
-          <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
-            <span class="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/40 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
-              <span id="posAlertStatus">ÚLTIMO PAGO CONFIRMADO EN VIVO</span>
-            </span>
-            <span id="posWalletBadge" class="px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40">
-              ESPERANDO
-            </span>
-            <span id="posTimestampBadge" class="px-2.5 py-1 rounded text-xs font-mono text-ty-muted bg-ty-surface border border-ty-border">
-              En espera de pago
-            </span>
-          </div>
-
-          <div class="my-4">
-            <div id="posHeroAmount" class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight tabular-nums">
-              $ 0 <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 mb-6">
-            <div class="w-7 h-7 rounded-full bg-ty-emerald/20 text-ty-emerald flex items-center justify-center">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-            </div>
-            <span id="posHeroSender" class="text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight">Sin pagos aún en la caja</span>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-ty-muted mb-6">
-            <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-cyan">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              <span id="posLatencyChip">Centinela Listo</span>
-            </span>
-            <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-emerald" id="posWhatsappChip">
-              <span>WhatsApp Cajero Sincronizado</span>
-            </span>
-          </div>
-
-          <button onclick="confirmPosDelivery()" class="px-6 py-3 rounded-xl bg-ty-emerald text-black font-extrabold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_25px_rgba(0,210,106,0.4)] transition-all flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            <span>Confirmar Entrega de Mercancía</span>
-          </button>
-        </div>
-
-        <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold text-white">Últimos 4 Pagos Verificados</h3>
-            <span class="text-xs font-mono text-ty-emerald" id="posTurnSummary">Turno Hoy: $ 0 COP</span>
-          </div>
-          <div id="posRecentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- TAB 4: DISPOSITIVOS CENTINELA & QR PAIRING -->
-      <!-- ============================================================== -->
-      <section id="tab-devices" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
-          <div>
-            <h2 class="text-lg font-bold text-white">Dispositivos Centinela (Nodos de Ingesta)</h2>
-            <p class="text-xs text-ty-muted">Teléfonos dedicados en caja registradora que capturan las notificaciones bancarias</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="openResetModal()" class="px-3.5 py-2.5 rounded-lg bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all">
-              <span>Formatear Datos de Caja</span>
-            </button>
-            <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <span>Emparejar Nueva Caja (QR)</span>
-            </button>
-          </div>
-        </div>
-
-        <div id="devicesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-ty-emerald beacon-pulse"></span>
-                  <span class="font-bold text-white font-mono">dev_centinela_caja_1</span>
-                </div>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30">ACTIVO</span>
-              </div>
-              <p class="text-xs text-ty-muted mb-4">Caja Principal • Mostrador 1</p>
-
-              <div class="space-y-2 text-xs font-mono">
-                <div class="flex justify-between py-1 border-b border-ty-border/40">
-                  <span class="text-ty-muted">Dispositivo</span>
-                  <span class="text-white">Android Centinela (Caja 1)</span>
-                </div>
-                <div class="flex justify-between py-1 border-b border-ty-border/40">
-                  <span class="text-ty-muted">Firma Criptográfica</span>
-                  <span class="text-ty-cyan">Hardware KeyStore OK</span>
-                </div>
-                <div class="flex justify-between py-1">
-                  <span class="text-ty-muted">Última Sincronización</span>
-                  <span class="text-ty-emerald" id="deviceLastSyncText">Activo</span>
-                </div>
+        <!-- ============================================================ -->
+        <!-- TAB 3: MODO CAJA POS -->
+        <!-- ============================================================ -->
+        <section id="tab-pos" class="hidden space-y-6">
+          <div class="flex items-center justify-between p-4 rounded-xl bg-ty-surface-low border border-ty-border">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-ty-emerald beacon-pulse"></div>
+              <div>
+                <h2 class="text-base font-bold text-white">Modo Caja POS • Mostrador</h2>
+                <p class="text-xs text-ty-muted">Pantalla de alta visibilidad para tablet o celular en caja registradora</p>
               </div>
             </div>
-
-            <div class="mt-4 pt-3 border-t border-ty-border flex items-center justify-between">
-              <span class="text-xs text-ty-muted">Nequi (Incl. Bre-B) + Daviplata</span>
-              <button onclick="playChime()" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-cyan transition-all">
-                Probar Audio
+            <div class="flex items-center gap-2">
+              <button onclick="triggerVisualSimulation()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-emerald font-bold transition-all">
+                <span>Probar Timbre POS</span>
+              </button>
+              <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-mono text-ty-muted hover:text-white transition-all">
+                <span>Volver a Resumen</span>
               </button>
             </div>
           </div>
 
-          <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-ty-emerald/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all">
-            <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <div id="posHeroCard" class="bg-ty-surface-low border-2 border-ty-emerald rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden pos-hero-glow">
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/40 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
+                <span id="posAlertStatus">ÚLTIMO PAGO CONFIRMADO EN VIVO</span>
+              </span>
+              <span id="posWalletBadge" class="px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40">ESPERANDO</span>
+              <span id="posTimestampBadge" class="px-2.5 py-1 rounded text-xs font-mono text-ty-muted bg-ty-surface border border-ty-border">En espera de pago</span>
             </div>
-            <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Vincular Otra Caja Registradora</h3>
-            <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para que el nuevo celular Centinela se configure automáticamente sin escribir tokens.</p>
+
+            <div class="my-4">
+              <div id="posHeroAmount" class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight tabular-nums">$ 0 <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span></div>
+            </div>
+
+            <div class="flex items-center gap-2 mb-6">
+              <div class="w-7 h-7 rounded-full bg-ty-emerald/20 text-ty-emerald flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <span id="posHeroSender" class="text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight">Sin pagos aún</span>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-ty-muted mb-6">
+              <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-cyan">
+                <span id="posLatencyChip">Centinela Listo</span>
+              </span>
+              <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-emerald">
+                <span>WhatsApp Cajero Sincronizado</span>
+              </span>
+            </div>
+
+            <button onclick="confirmPosDelivery()" class="px-6 py-3 rounded-xl bg-ty-emerald text-black font-extrabold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_25px_rgba(0,210,106,0.4)] transition-all flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Confirmar Entrega de Mercancía</span>
+            </button>
           </div>
+
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-white">Últimos 4 Pagos Verificados</h3>
+              <span class="text-xs font-mono text-ty-emerald" id="posTurnSummary">Hoy: $ 0 COP</span>
+            </div>
+            <div id="posRecentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: CAJAS CENTINELA (MULTI-CAJA DINÁMICO) -->
+        <!-- ============================================================ -->
+        <section id="tab-devices" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
+            <div>
+              <h2 class="text-lg font-bold text-white">Cajas y Dispositivos Centinela</h2>
+              <p class="text-xs text-ty-muted">Administra una o múltiples cajas registradoras conectadas a tu comercio</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Emparejar Nueva Caja (QR)</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="devicesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5: CAJEROS WHATSAPP -->
+        <!-- ============================================================ -->
+        <section id="tab-cashiers" class="hidden space-y-6">
+          <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-white">Directorio de Cajeros WhatsApp</h2>
+              <p class="text-xs text-ty-muted">Asigna cajeros a todas las cajas o a una caja específica del comercio</p>
+            </div>
+            <button onclick="openAddCashierModal()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Agregar Cajero</span>
+            </button>
+          </div>
+
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
+            <div class="p-4 border-b border-ty-border font-mono text-xs text-ty-muted grid grid-cols-12 gap-2">
+              <span class="col-span-4 sm:col-span-3">Cajero / Nombre</span>
+              <span class="col-span-4 sm:col-span-4">Número WhatsApp</span>
+              <span class="col-span-2 sm:col-span-3">Caja Asignada</span>
+              <span class="col-span-2 sm:col-span-2 text-right">Estado</span>
+            </div>
+            <div id="cashiersList" class="divide-y divide-ty-border"></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav aria-label="Navegación Móvil" class="lg:hidden fixed bottom-0 left-0 w-full bg-ty-surface-low border-t border-ty-border px-2 py-2 flex justify-around items-center z-40 shadow-xl backdrop-blur-lg">
+      <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center gap-1 text-ty-emerald min-w-[52px]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <span class="text-[10px] font-mono font-bold">Caja</span>
+      </button>
+
+      <button onclick="switchTab('history')" id="mob-nav-history" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="text-[10px] font-mono">Cierres</span>
+      </button>
+
+      <button onclick="switchTab('pos')" id="mob-nav-pos" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        <div class="w-9 h-9 rounded-xl bg-ty-emerald text-black flex items-center justify-center -mt-3 shadow-[0_0_15px_rgba(0,210,106,0.4)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
         </div>
-      </section>
+        <span class="text-[10px] font-mono font-bold text-ty-emerald">POS</span>
+      </button>
 
-      <!-- ============================================================== -->
-      <!-- TAB 5: CAJEROS WHATSAPP (CONECTADO A SUPABASE) -->
-      <!-- ============================================================== -->
-      <section id="tab-cashiers" class="hidden space-y-6">
-        <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-white">Directorio de Cajeros WhatsApp</h2>
-            <p class="text-xs text-ty-muted">Los cajeros activos reciben la confirmación instantánea con nombre del cliente y monto</p>
-          </div>
-          <button onclick="openAddCashierModal()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span>Agregar Cajero</span>
-          </button>
-        </div>
+      <button onclick="switchTab('devices')" id="mob-nav-devices" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <span class="text-[10px] font-mono">Nodos</span>
+      </button>
 
-        <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
-          <div class="p-4 border-b border-ty-border font-mono text-xs text-ty-muted grid grid-cols-12 gap-2">
-            <span class="col-span-4 sm:col-span-3">Cajero / Nombre</span>
-            <span class="col-span-4 sm:col-span-4">Número WhatsApp</span>
-            <span class="col-span-2 sm:col-span-3">Caja Asignada</span>
-            <span class="col-span-2 sm:col-span-2 text-right">Estado</span>
-          </div>
-
-          <div id="cashiersList" class="divide-y divide-ty-border">
-            <div class="p-6 text-center text-xs font-mono text-ty-muted">Cargando cajeros registrados...</div>
-          </div>
-        </div>
-      </section>
-
-    </main>
+      <button onclick="switchTab('cashiers')" id="mob-nav-cashiers" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span class="text-[10px] font-mono">Cajeros</span>
+      </button>
+    </nav>
   </div>
 
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav aria-label="Navegación Móvil" class="lg:hidden fixed bottom-0 left-0 w-full bg-ty-surface-low border-t border-ty-border px-2 py-2 flex justify-around items-center z-40 shadow-xl backdrop-blur-lg">
-    <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center gap-1 text-ty-emerald min-w-[52px]">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-      <span class="text-[10px] font-mono font-bold">Caja</span>
-    </button>
-
-    <button onclick="switchTab('history')" id="mob-nav-history" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      <span class="text-[10px] font-mono">Cierres</span>
-    </button>
-
-    <button onclick="switchTab('pos')" id="mob-nav-pos" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
-      <div class="w-9 h-9 rounded-xl bg-ty-emerald text-black flex items-center justify-center -mt-3 shadow-[0_0_15px_rgba(0,210,106,0.4)]">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-      </div>
-      <span class="text-[10px] font-mono font-bold text-ty-emerald">POS</span>
-    </button>
-
-    <button onclick="switchTab('devices')" id="mob-nav-devices" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-      <span class="text-[10px] font-mono">Nodos</span>
-    </button>
-
-    <button onclick="switchTab('cashiers')" id="mob-nav-cashiers" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-      <span class="text-[10px] font-mono">Cajeros</span>
-    </button>
-  </nav>
-
-  <!-- MODAL: FORMATEAR / REINICIAR PRUEBAS DE CAJA -->
+  <!-- MODAL: FORMATEAR / REINICIAR PRUEBAS POR CAJA -->
   <div id="resetModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-ty-surface-low border border-ty-rose/40 rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
       <button onclick="closeResetModal()" class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface">
@@ -680,16 +708,22 @@
       </button>
 
       <div>
-        <div class="text-xs font-mono uppercase tracking-wider text-ty-rose font-bold mb-1">Reinicio de Caja de Pruebas</div>
-        <h3 class="text-lg font-bold text-white">Formatear Tabla de Transferencias</h3>
+        <div class="text-xs font-mono uppercase tracking-wider text-ty-rose font-bold mb-1">Reinicio de Pruebas</div>
+        <h3 class="text-lg font-bold text-white">Formatear Tabla de Caja</h3>
         <p class="text-xs text-ty-muted mt-1 leading-relaxed">
-          Esta acción eliminará todas las notificaciones capturadas y huellas de duplicados registradas en <span class="font-mono text-white">dev_centinela_caja_1</span> para iniciar el arqueo en <span class="font-mono text-ty-emerald">$ 0 COP</span>.
+          Elimina las notificaciones y huellas de duplicados de la caja seleccionada para iniciar sus pruebas en <span class="font-mono text-ty-emerald">$ 0 COP</span>.
         </p>
       </div>
 
-      <div class="space-y-2">
-        <label class="block text-xs font-mono text-ty-muted">Escribe <span class="text-white font-bold">FORMATEAR</span> para confirmar:</label>
-        <input type="text" id="resetConfirmInput" placeholder="FORMATEAR" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-sm font-mono text-white uppercase focus:border-ty-rose focus:ring-0"/>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-mono text-ty-muted mb-1">Selecciona la Caja a formatear</label>
+          <select id="resetDeviceSelect" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-rose focus:ring-0"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-mono text-ty-muted mb-1">Escribe <span class="text-white font-bold">FORMATEAR</span> para confirmar:</label>
+          <input type="text" id="resetConfirmInput" placeholder="FORMATEAR" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-sm font-mono text-white uppercase focus:border-ty-rose focus:ring-0"/>
+        </div>
       </div>
 
       <div class="flex items-center justify-end gap-2 pt-2">
@@ -716,11 +750,17 @@
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-mono text-ty-muted mb-1">Nombre del Cajero o Turno</label>
-          <input type="text" id="newCashierName" placeholder="Ej: Cajero Turno Tarde" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
+          <input type="text" id="newCashierName" placeholder="Ej: Cajero Caja 2" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
         </div>
         <div>
           <label class="block text-xs font-mono text-ty-muted mb-1">Teléfono WhatsApp (Formato E.164)</label>
           <input type="tel" id="newCashierPhone" placeholder="+573113654315" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-sm font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+        </div>
+        <div>
+          <label class="block text-xs font-mono text-ty-muted mb-1">Caja Asignada</label>
+          <select id="newCashierDeviceSelect" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0">
+            <option value="">Todas las cajas del comercio</option>
+          </select>
         </div>
       </div>
 
@@ -731,9 +771,9 @@
     </div>
   </div>
 
-  <!-- MODAL: EMPAREJAMIENTO QR ZERO-TRUST -->
-  <div id="pairingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+  <!-- MODAL: EMPAREJAMIENTO QR MULTI-CAJA (AUTENTICADO) -->
+  <div id="pairingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-md w-full p-6 space-y-4 relative shadow-2xl my-auto">
       <button onclick="closePairingModal()" class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
@@ -743,15 +783,32 @@
           <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
           <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Ceremonia Zero-Trust</span>
         </div>
-        <h3 class="text-lg font-bold text-white">Emparejar Nuevo Centinela</h3>
-        <p class="text-xs text-ty-muted">Escanea este código desde la app TransferYA Centinela para vincular esta caja.</p>
+        <h3 class="text-lg font-bold text-white">Emparejar Caja Centinela</h3>
+        <p class="text-xs text-ty-muted">Elige si vas a vincular una caja nueva o re-emparejar una existente.</p>
       </div>
 
-      <div id="qrCodeContainer" class="bg-white p-3 rounded-xl flex items-center justify-center mx-auto w-64 h-64 shadow-inner">
+      <!-- Configuración de Caja antes de generar QR -->
+      <div class="space-y-2.5 p-3 rounded-xl bg-ty-surface border border-ty-border">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">ID de Caja</label>
+            <input type="text" id="pairingDeviceIdInput" class="w-full bg-ty-bg border border-ty-border rounded px-2.5 py-1.5 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">Nombre de Caja</label>
+            <input type="text" id="pairingDeviceLabelInput" placeholder="Caja 2" class="w-full bg-ty-bg border border-ty-border rounded px-2.5 py-1.5 text-xs text-white focus:border-ty-emerald focus:ring-0"/>
+          </div>
+        </div>
+        <button onclick="generatePairingQrNow()" class="w-full py-2 rounded-lg bg-ty-surface-high border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all">
+          Regenerar Código QR para esta Caja
+        </button>
+      </div>
+
+      <div id="qrCodeContainer" class="bg-white p-3 rounded-xl flex items-center justify-center mx-auto w-56 h-56 shadow-inner">
         <span class="text-xs font-mono text-gray-500">Generando QR seguro...</span>
       </div>
 
-      <div class="space-y-2">
+      <div class="space-y-1.5">
         <div class="flex items-center justify-between text-xs font-mono">
           <span class="text-ty-muted">Vigencia del Token:</span>
           <span id="qrTimerText" class="text-ty-emerald font-bold">05:00</span>
@@ -761,27 +818,12 @@
         </div>
       </div>
 
-      <div class="p-3 rounded-lg bg-ty-surface border border-ty-border space-y-1.5 text-xs text-ty-muted">
-        <div class="flex items-center gap-2 text-white">
-          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">1</span>
-          <span>Abre TransferYA Centinela en el teléfono de caja</span>
-        </div>
-        <div class="flex items-center gap-2 text-white">
-          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">2</span>
-          <span>Toca "Emparejar / Re-emparejar con Código QR"</span>
-        </div>
-        <div class="flex items-center gap-2 text-white">
-          <span class="w-4 h-4 rounded-full bg-ty-surface-highest text-ty-cyan flex items-center justify-center text-[10px] font-bold font-mono">3</span>
-          <span>Apunta la cámara al QR y quedará vinculado al instante</span>
-        </div>
-      </div>
-
-      <a id="qrDeepLinkBtn" href="#" class="hidden w-full py-2.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald/25 text-ty-emerald text-xs font-mono font-bold text-center transition-all">
-        Abrir directo en TransferYA Sentinel (si estás en ese celular)
+      <a id="qrDeepLinkBtn" href="#" class="hidden w-full py-2 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald/25 text-ty-emerald text-xs font-mono font-bold text-center block transition-all">
+        Abrir directo en TransferYA Sentinel (este celular)
       </a>
 
       <div class="flex items-center gap-2">
-        <input type="text" id="manualTokenInput" readonly class="flex-1 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-ty-muted truncate" value="Cargando token..."/>
+        <input type="text" id="manualTokenInput" readonly class="flex-1 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-ty-muted truncate" value="Cargando..."/>
         <button onclick="copyManualToken()" id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-ty-surface-high hover:bg-ty-surface border border-ty-border text-xs font-mono text-white transition-all">
           Copiar
         </button>
@@ -789,38 +831,42 @@
     </div>
   </div>
 
-  <!-- Floating Non-Blocking Toast Banner -->
+  <!-- Toast Banner -->
   <div id="toastBanner" class="hidden fixed bottom-20 lg:bottom-6 right-4 z-50 px-4 py-3 rounded-xl bg-ty-surface-high border border-ty-emerald/50 text-xs font-mono text-white shadow-2xl flex items-center gap-2.5 max-w-sm">
     <span class="w-2 h-2 rounded-full bg-ty-emerald shrink-0"></span>
     <span id="toastMessage">Actualizado</span>
   </div>
 
-  <!-- Client Application Logic -->
+  <!-- ================================================================== -->
+  <!-- CLIENT APPLICATION LOGIC (MULTI-COMERCIO + AUTH + REALTIME) -->
+  <!-- ================================================================== -->
   <script>
-    // =========================================================================
-    // CONFIGURACIÓN SUPABASE Y CONSTANTES DE NEGOCIO
-    // =========================================================================
     const SUPABASE_URL = "https://yljfzscbxhwdflpkcboy.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsamZ6c2NieGh3ZGZscGtjYm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNTE5OTQsImV4cCI6MjEwOTgyNzk5NH0.QrtmgJeTHiHSBzgxDNQkcU_UrMGBoFkgvUS-r-RPu2I";
-    const MERCHANT_ID = "a0000000-0000-0000-0000-000000000001";
-    const DEVICE_ID = "dev_centinela_caja_1";
     const VALID_PAYMENT_STATUSES = new Set(["PROCESSED", "DISPATCH_FAILED", "ROUTING_FAILED"]);
 
     let supabaseClient = null;
-    let isAudioEnabled = true;
-    let audioCtx = null;
+    let currentSession = null;
+    let currentUser = null;
+    let currentMerchant = null;
+    let merchantDevices = [];
+    let cashierRecords = [];
     let allTransactions = [];
     let filteredTransactions = [];
-    let cashierRecords = [];
+    let realtimeChannel = null;
+
+    let isAudioEnabled = true;
+    let audioCtx = null;
     let qrInterval = null;
     let deferredPrompt = null;
     let toastTimer = null;
+    let authMode = "login";
 
-    // Filter state
     const filterState = {
+      deviceId: "ALL",   // 'ALL' | device.id
       period: "today",   // 'today' | 'week' | 'month' | 'all' | 'custom'
       wallet: "ALL",     // 'ALL' | 'NEQUI' | 'DAVIPLATA'
-      auditMode: false,  // false = solo pagos válidos reales | true = incluye duplicados / ignorados
+      auditMode: false,
       search: "",
       dateFrom: "",
       dateTo: ""
@@ -829,233 +875,367 @@
     document.addEventListener("DOMContentLoaded", () => {
       initDateDefaults();
       initAudio();
-      initSupabase();
+      bootstrapAuth();
       registerServiceWorker();
       setupPwaPrompt();
     });
 
     // =========================================================================
-    // UTILIDADES DE FECHA EN HORA EXACTA DE COLOMBIA (America/Bogota UTC-5)
+    // 1. AUTENTICACIÓN MULTI-COMERCIO (SUPABASE AUTH)
     // =========================================================================
-    function getColombiaDateKey(isoOrEpoch) {
-      const date = isoOrEpoch ? new Date(isoOrEpoch) : new Date();
-      return new Intl.DateTimeFormat("en-CA", {
-        timeZone: "America/Bogota",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).format(date);
-    }
-
-    function getColombiaDateTimeLabel(isoOrEpoch) {
-      if (!isoOrEpoch) return "Ahora";
-      const d = new Date(isoOrEpoch);
-      const datePart = new Intl.DateTimeFormat("es-CO", {
-        timeZone: "America/Bogota",
-        day: "2-digit",
-        month: "short"
-      }).format(d);
-      const timePart = new Intl.DateTimeFormat("es-CO", {
-        timeZone: "America/Bogota",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-      }).format(d);
-      return `${datePart} • ${timePart}`;
-    }
-
-    function getColombiaFriendlyDay(dayKey) {
-      const [y, m, d] = dayKey.split("-").map(Number);
-      const noonUtc = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
-      return new Intl.DateTimeFormat("es-CO", {
-        timeZone: "UTC",
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }).format(noonUtc);
-    }
-
-    function getPeriodBounds() {
-      const todayKey = getColombiaDateKey(new Date());
-      const [y, m, d] = todayKey.split("-").map(Number);
-      const noonUtc = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
-      const utcDay = noonUtc.getUTCDay(); // 0=Dom, 1=Lun..6=Sab
-      const diffToMonday = utcDay === 0 ? 6 : utcDay - 1;
-      const mondayUtc = new Date(noonUtc.getTime() - diffToMonday * 86400000);
-      const weekStartKey = mondayUtc.toISOString().slice(0, 10);
-      const monthPrefix = todayKey.slice(0, 7);
-      return { todayKey, weekStartKey, monthPrefix };
-    }
-
-    function initDateDefaults() {
-      const { todayKey } = getPeriodBounds();
-      document.getElementById("dateFromInput").value = todayKey;
-      document.getElementById("dateToInput").value = todayKey;
-      document.getElementById("kpiTodayDate").textContent = todayKey;
-      const monthName = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", month: "short", year: "numeric" }).format(new Date());
-      document.getElementById("kpiMonthLabel").textContent = monthName;
-    }
-
-    // =========================================================================
-    // DETECCIÓN DE BILLETERA Y REGLA CONTABLE DE ARQUEO
-    // =========================================================================
-    function getTxTimestamp(tx) {
-      if (tx.captured_at && Number(tx.captured_at) > 0) return Number(tx.captured_at);
-      return new Date(tx.created_at || Date.now()).getTime();
-    }
-
-    function detectWallet(tx) {
-      const pkg = (tx.wallet_package || "").toLowerCase();
-      const title = (tx.raw_title || "").toLowerCase();
-      const text = (tx.raw_text || "").toLowerCase();
-      if (pkg.includes("daviplata") || title.includes("daviplata") || text.includes("daviplata")) {
-        return "DAVIPLATA";
-      }
-      return "NEQUI";
-    }
-
-    function isCountableMoney(tx) {
-      return VALID_PAYMENT_STATUSES.has(tx.status) && Number(tx.amount) > 0;
-    }
-
-    // =========================================================================
-    // SINTETIZADOR DE AUDIO NATIVO Y NOTIFICACIONES UI
-    // =========================================================================
-    function initAudio() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-      } catch (e) {
-        console.warn("Web Audio no soportado:", e);
-      }
-    }
-
-    function playChime() {
-      if (!isAudioEnabled) return;
-      if (!audioCtx) initAudio();
-      if (!audioCtx) return;
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-      const now = audioCtx.currentTime;
-
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.type = "sine";
-      osc1.frequency.setValueAtTime(880, now);
-      gain1.gain.setValueAtTime(0.3, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc1.connect(gain1);
-      gain1.connect(audioCtx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.35);
-
-      const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
-      osc2.type = "triangle";
-      osc2.frequency.setValueAtTime(1760, now + 0.08);
-      gain2.gain.setValueAtTime(0.25, now + 0.08);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
-      osc2.start(now + 0.08);
-      osc2.stop(now + 0.6);
-    }
-
-    function toggleAudio() {
-      isAudioEnabled = !isAudioEnabled;
-      const btn = document.getElementById("audioToggleBtn");
-      const text = document.getElementById("audioBtnText");
-      if (isAudioEnabled) {
-        btn.classList.add("text-ty-emerald");
-        btn.classList.remove("text-ty-muted");
-        text.textContent = "Chime Activo";
-        playChime();
-      } else {
-        btn.classList.remove("text-ty-emerald");
-        btn.classList.add("text-ty-muted");
-        text.textContent = "Silenciado";
-      }
-    }
-
-    function showToast(msg, isError = false) {
-      const banner = document.getElementById("toastBanner");
-      const textEl = document.getElementById("toastMessage");
-      textEl.textContent = msg;
-      banner.className = `fixed bottom-20 lg:bottom-6 right-4 z-50 px-4 py-3 rounded-xl bg-ty-surface-high border ${isError ? "border-ty-rose text-ty-rose" : "border-ty-emerald/50 text-white"} text-xs font-mono shadow-2xl flex items-center gap-2.5 max-w-sm`;
-      banner.classList.remove("hidden");
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => banner.classList.add("hidden"), 4000);
-    }
-
-    // =========================================================================
-    // NAVEGACIÓN DE PESTAÑAS
-    // =========================================================================
-    function switchTab(tabId) {
-      const tabs = ["dashboard", "history", "pos", "devices", "cashiers"];
-      tabs.forEach((t) => {
-        const el = document.getElementById("tab-" + t);
-        const deskBtn = document.getElementById("nav-btn-" + t);
-        const mobBtn = document.getElementById("mob-nav-" + t);
-
-        if (t === tabId) {
-          if (el) el.classList.remove("hidden");
-          if (deskBtn) {
-            deskBtn.classList.add("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
-            deskBtn.classList.remove("text-ty-muted");
-          }
-          if (mobBtn) {
-            mobBtn.classList.add("text-ty-emerald");
-            mobBtn.classList.remove("text-ty-muted");
-          }
-        } else {
-          if (el) el.classList.add("hidden");
-          if (deskBtn) {
-            deskBtn.classList.remove("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
-            deskBtn.classList.add("text-ty-muted");
-          }
-          if (mobBtn) {
-            mobBtn.classList.remove("text-ty-emerald");
-            mobBtn.classList.add("text-ty-muted");
-          }
-        }
-      });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    // =========================================================================
-    // CONEXIÓN A SUPABASE Y REALTIME WEBSOCKET
-    // =========================================================================
-    async function initSupabase() {
+    async function bootstrapAuth() {
       if (!window.supabase) {
         showToast("Error cargando librería Supabase JS", true);
         return;
       }
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      await refreshFromDatabase();
 
-      supabaseClient
-        .channel("transferya-realtime-feed")
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      await applySessionState(session);
+
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
+          await applySessionState(session);
+        }
+      });
+    }
+
+    async function applySessionState(session) {
+      currentSession = session;
+      currentUser = session?.user ?? null;
+      document.getElementById("loadingScreen").classList.add("hidden");
+
+      if (!currentUser) {
+        teardownRealtime();
+        currentMerchant = null;
+        merchantDevices = [];
+        allTransactions = [];
+        document.getElementById("appShell").classList.add("hidden");
+        document.getElementById("onboardingScreen").classList.add("hidden");
+        document.getElementById("authScreen").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("authScreen").classList.add("hidden");
+      await loadAuthenticatedMerchant();
+    }
+
+    async function loadAuthenticatedMerchant() {
+      const { data: merchants, error } = await supabaseClient
+        .from("merchants")
+        .select("*")
+        .eq("owner_id", currentUser.id)
+        .limit(1);
+
+      if (error) {
+        showToast("Error consultando comercio: " + error.message, true);
+        return;
+      }
+
+      if (!merchants || merchants.length === 0) {
+        // Si registró nombre de tienda al crear cuenta, provisionar automáticamente
+        const pendingStore = currentUser.user_metadata?.store_name || localStorage.getItem("ty_pending_store_name");
+        if (pendingStore) {
+          const created = await insertMerchantForCurrentUser(pendingStore);
+          if (created) {
+            localStorage.removeItem("ty_pending_store_name");
+            currentMerchant = created;
+          }
+        }
+      } else {
+        currentMerchant = merchants[0];
+      }
+
+      if (!currentMerchant) {
+        showOnboardingScreen();
+        return;
+      }
+
+      document.getElementById("onboardingScreen").classList.add("hidden");
+      document.getElementById("appShell").classList.remove("hidden");
+      document.getElementById("merchantNameTitle").textContent = currentMerchant.name;
+      document.getElementById("sidebarUserEmail").textContent = currentUser.email || currentUser.id;
+
+      await refreshMerchantData();
+      setupRealtimeSubscription();
+    }
+
+    async function insertMerchantForCurrentUser(storeName) {
+      const { data, error } = await supabaseClient
+        .from("merchants")
+        .insert({
+          owner_id: currentUser.id,
+          name: storeName.trim(),
+          status: "ACTIVE"
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.warn("No se pudo provisionar automáticamente:", error.message);
+        return null;
+      }
+      return data;
+    }
+
+    function showOnboardingScreen() {
+      document.getElementById("appShell").classList.add("hidden");
+      document.getElementById("onboardingScreen").classList.remove("hidden");
+      document.getElementById("onboardingUserEmail").textContent = currentUser.email || currentUser.id;
+      document.getElementById("onboardingClaimSql").textContent =
+        `UPDATE merchants SET owner_id = '${currentUser.id}' WHERE id = 'a0000000-0000-0000-0000-000000000001';`;
+    }
+
+    async function handleProvisionMerchant(e) {
+      e.preventDefault();
+      const name = document.getElementById("provisionStoreName").value.trim();
+      if (!name) return;
+
+      const btn = document.getElementById("provisionBtn");
+      btn.disabled = true;
+      btn.textContent = "Creando Comercio...";
+
+      const created = await insertMerchantForCurrentUser(name);
+      btn.disabled = false;
+      btn.textContent = "Crear Comercio y Entrar";
+
+      if (!created) {
+        showToast("Error creando el comercio. Revisa permisos RLS en Supabase.", true);
+        return;
+      }
+      currentMerchant = created;
+      await loadAuthenticatedMerchant();
+    }
+
+    async function checkMerchantReload() {
+      await loadAuthenticatedMerchant();
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const loginBtn = document.getElementById("authTabLogin");
+      const signupBtn = document.getElementById("authTabSignup");
+      const storeField = document.getElementById("signupStoreField");
+      const submitBtn = document.getElementById("authSubmitBtn");
+
+      document.getElementById("authFeedbackBox").classList.add("hidden");
+
+      if (mode === "signup") {
+        signupBtn.className = "py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all";
+        loginBtn.className = "py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        storeField.classList.remove("hidden");
+        submitBtn.textContent = "Crear Cuenta de Comercio";
+      } else {
+        loginBtn.className = "py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all";
+        signupBtn.className = "py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        storeField.classList.add("hidden");
+        submitBtn.textContent = "Entrar al Cockpit";
+      }
+    }
+
+    function showAuthFeedback(msg, isError = false) {
+      const box = document.getElementById("authFeedbackBox");
+      box.textContent = msg;
+      box.className = `p-3 rounded-lg text-xs font-mono border ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.classList.remove("hidden");
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      const storeName = document.getElementById("authStoreName").value.trim();
+      const btn = document.getElementById("authSubmitBtn");
+
+      if (!email || !password || password.length < 6) {
+        showAuthFeedback("Ingresa correo y contraseña (mínimo 6 caracteres).", true);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Validando...";
+
+      try {
+        if (authMode === "signup") {
+          if (!storeName) {
+            showAuthFeedback("Ingresa el nombre de tu comercio.", true);
+            return;
+          }
+          localStorage.setItem("ty_pending_store_name", storeName);
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+              data: { store_name: storeName }
+            }
+          });
+          if (error) {
+            showAuthFeedback(error.message, true);
+            return;
+          }
+          if (!data.session) {
+            showAuthFeedback("Cuenta creada. Revisa tu bandeja de correo para confirmar tu enlace de acceso.", false);
+            return;
+          }
+        } else {
+          const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) {
+            showAuthFeedback("Credenciales inválidas: " + error.message, true);
+            return;
+          }
+        }
+      } finally {
+        btn.disabled = false;
+        setAuthMode(authMode);
+      }
+    }
+
+    async function sendMagicLink() {
+      const email = document.getElementById("authEmail").value.trim();
+      if (!email) {
+        showAuthFeedback("Escribe primero tu correo electrónico arriba para enviarte el enlace mágico.", true);
+        return;
+      }
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin }
+      });
+      if (error) {
+        showAuthFeedback("No se pudo enviar Magic Link: " + error.message, true);
+        return;
+      }
+      showAuthFeedback("Enlace mágico enviado. Abre tu correo en este dispositivo y haz clic para entrar sin contraseña.", false);
+    }
+
+    async function signOutUser() {
+      teardownRealtime();
+      await supabaseClient.auth.signOut();
+      showToast("Sesión cerrada");
+    }
+
+    // =========================================================================
+    // 2. CARGA DE CAJAS, TRANSACCIONES Y REALTIME POR COMERCIO
+    // =========================================================================
+    async function refreshMerchantData() {
+      if (!supabaseClient || !currentMerchant) return;
+
+      const [{ data: devicesData, error: devErr }, { data: cashiersData }] = await Promise.all([
+        supabaseClient
+          .from("devices")
+          .select("*")
+          .eq("merchant_id", currentMerchant.id)
+          .order("created_at", { ascending: true }),
+        supabaseClient
+          .from("cashier_recipients")
+          .select("*")
+          .eq("merchant_id", currentMerchant.id)
+          .order("created_at", { ascending: true })
+      ]);
+
+      if (devErr) {
+        showToast("Error cargando cajas del comercio", true);
+        return;
+      }
+
+      merchantDevices = devicesData || [];
+      cashierRecords = cashiersData || [];
+
+      populateDeviceSelectors();
+      renderDevicesGrid();
+      renderCashiersList();
+
+      const noDevicesBanner = document.getElementById("noDevicesBanner");
+      if (merchantDevices.length === 0) {
+        noDevicesBanner.classList.remove("hidden");
+        allTransactions = [];
+        recomputeAllViews();
+        return;
+      }
+      noDevicesBanner.classList.add("hidden");
+
+      const deviceIds = merchantDevices.map((d) => d.id);
+      const { data: notifData, error: notifErr } = await supabaseClient
+        .from("captured_notifications")
+        .select("*")
+        .in("device_id", deviceIds)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+
+      if (notifErr) {
+        showToast("Error leyendo movimientos: " + notifErr.message, true);
+        return;
+      }
+
+      allTransactions = notifData || [];
+      recomputeAllViews();
+    }
+
+    function populateDeviceSelectors() {
+      const topSel = document.getElementById("activeDeviceSelector");
+      const resetSel = document.getElementById("resetDeviceSelect");
+      const cashierSel = document.getElementById("newCashierDeviceSelect");
+
+      const prevTop = filterState.deviceId;
+      topSel.innerHTML = `<option value="ALL">Todas las cajas (${merchantDevices.length})</option>` +
+        merchantDevices.map((d) => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.label || d.id)}</option>`).join("");
+
+      if (prevTop !== "ALL" && merchantDevices.some((d) => d.id === prevTop)) {
+        topSel.value = prevTop;
+      } else {
+        filterState.deviceId = "ALL";
+        topSel.value = "ALL";
+      }
+
+      resetSel.innerHTML = merchantDevices.length > 0
+        ? merchantDevices.map((d) => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.label || d.id)} (${escapeHtml(d.id)})</option>`).join("")
+        : `<option value="">Sin cajas registradas</option>`;
+
+      cashierSel.innerHTML = `<option value="">Todas las cajas del comercio</option>` +
+        merchantDevices.map((d) => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.label || d.id)}</option>`).join("");
+    }
+
+    function onDeviceSelectorChange() {
+      filterState.deviceId = document.getElementById("activeDeviceSelector").value || "ALL";
+      recomputeAllViews();
+    }
+
+    function getDeviceLabel(deviceId) {
+      const found = merchantDevices.find((d) => d.id === deviceId);
+      return found?.label || deviceId || "Caja";
+    }
+
+    function setupRealtimeSubscription() {
+      teardownRealtime();
+
+      realtimeChannel = supabaseClient
+        .channel(`merchant-live-${currentMerchant.id}`)
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "captured_notifications" },
           (payload) => {
-            if (payload.eventType === "INSERT") {
-              upsertRealtimeTx(payload.new, true);
-            } else if (payload.eventType === "UPDATE") {
-              upsertRealtimeTx(payload.new, true);
-            } else if (payload.eventType === "DELETE") {
-              refreshFromDatabase();
+            if (payload.eventType === "DELETE") {
+              refreshMerchantData();
+              return;
             }
+            const tx = payload.new;
+            if (!merchantDevices.some((d) => d.id === tx.device_id)) return;
+            upsertRealtimeTx(tx, true);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "devices", filter: `merchant_id=eq.${currentMerchant.id}` },
+          () => {
+            refreshMerchantData();
           }
         )
         .subscribe((status) => {
           const statusText = document.getElementById("socketStatusText");
           const beacon = document.getElementById("socketBeacon");
           if (status === "SUBSCRIBED") {
-            statusText.textContent = "Centinela En Línea • Tiempo Real";
+            statusText.textContent = "En Línea • Multi-Caja Realtime";
             statusText.className = "font-mono text-ty-emerald";
             beacon.className = "w-2 h-2 rounded-full bg-ty-emerald beacon-pulse";
           } else {
@@ -1066,56 +1246,25 @@
         });
     }
 
-    async function refreshFromDatabase() {
-      if (!supabaseClient) return;
-      try {
-        const [{ data: notifData, error: notifErr }, { data: cashierData }] = await Promise.all([
-          supabaseClient
-            .from("captured_notifications")
-            .select("*")
-            .eq("device_id", DEVICE_ID)
-            .order("created_at", { ascending: false })
-            .limit(2000),
-          supabaseClient
-            .from("cashier_recipients")
-            .select("*")
-            .eq("merchant_id", MERCHANT_ID)
-            .order("created_at", { ascending: true })
-        ]);
-
-        if (notifErr) {
-          console.error("Error leyendo captured_notifications:", notifErr);
-          showToast("Error consultando historial en Supabase", true);
-          return;
-        }
-
-        allTransactions = notifData || [];
-        if (cashierData) {
-          cashierRecords = cashierData;
-          renderCashiersList();
-        }
-
-        recomputeAllViews();
-      } catch (err) {
-        console.error("Error cargando datos:", err);
+    function teardownRealtime() {
+      if (realtimeChannel && supabaseClient) {
+        supabaseClient.removeChannel(realtimeChannel);
+        realtimeChannel = null;
       }
     }
 
     function upsertRealtimeTx(tx, isLiveEvent) {
-      if (tx.device_id && tx.device_id !== DEVICE_ID) return;
       const idx = allTransactions.findIndex((t) => t.id === tx.id);
       const wasCountableBefore = idx !== -1 ? isCountableMoney(allTransactions[idx]) : false;
 
-      if (idx !== -1) {
-        allTransactions[idx] = tx;
-      } else {
-        allTransactions.unshift(tx);
-      }
+      if (idx !== -1) allTransactions[idx] = tx;
+      else allTransactions.unshift(tx);
 
-      const isNowCountable = isCountableMoney(tx);
-      if (isLiveEvent && !wasCountableBefore && isNowCountable) {
-        playChime();
-        showToast(`Pago verificado: $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
+      if (isLiveEvent && !wasCountableBefore && isCountableMoney(tx)) {
+        if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
+          playChime();
+        }
+        showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
       }
 
       recomputeAllViews(tx.id);
@@ -1129,37 +1278,91 @@
     }
 
     // =========================================================================
-    // CÁLCULO EXACTOS POR PERÍODO (HOY / SEMANA / MES EN HORA COLOMBIA)
+    // 3. UTILIDADES COLOMBIA (GMT-5), ARQUEO Y FILTROS MULTI-CAJA
     // =========================================================================
+    function getColombiaDateKey(isoOrEpoch) {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(isoOrEpoch ? new Date(isoOrEpoch) : new Date());
+    }
+
+    function getColombiaDateTimeLabel(isoOrEpoch) {
+      if (!isoOrEpoch) return "Ahora";
+      const d = new Date(isoOrEpoch);
+      const datePart = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", day: "2-digit", month: "short" }).format(d);
+      const timePart = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(d);
+      return `${datePart} • ${timePart}`;
+    }
+
+    function getColombiaFriendlyDay(dayKey) {
+      const [y, m, d] = dayKey.split("-").map(Number);
+      const noonUtc = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      return new Intl.DateTimeFormat("es-CO", { timeZone: "UTC", weekday: "short", day: "2-digit", month: "short", year: "numeric" }).format(noonUtc);
+    }
+
+    function getPeriodBounds() {
+      const todayKey = getColombiaDateKey(new Date());
+      const [y, m, d] = todayKey.split("-").map(Number);
+      const noonUtc = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      const utcDay = noonUtc.getUTCDay();
+      const diffToMonday = utcDay === 0 ? 6 : utcDay - 1;
+      const mondayUtc = new Date(noonUtc.getTime() - diffToMonday * 86400000);
+      return { todayKey, weekStartKey: mondayUtc.toISOString().slice(0, 10), monthPrefix: todayKey.slice(0, 7) };
+    }
+
+    function initDateDefaults() {
+      const { todayKey } = getPeriodBounds();
+      document.getElementById("dateFromInput").value = todayKey;
+      document.getElementById("dateToInput").value = todayKey;
+      document.getElementById("kpiTodayDate").textContent = todayKey;
+      document.getElementById("kpiMonthLabel").textContent = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", month: "short", year: "numeric" }).format(new Date());
+    }
+
+    function getTxTimestamp(tx) {
+      if (tx.captured_at && Number(tx.captured_at) > 0) return Number(tx.captured_at);
+      return new Date(tx.created_at || Date.now()).getTime();
+    }
+
+    function detectWallet(tx) {
+      const pkg = (tx.wallet_package || "").toLowerCase();
+      const title = (tx.raw_title || "").toLowerCase();
+      const text = (tx.raw_text || "").toLowerCase();
+      if (pkg.includes("daviplata") || title.includes("daviplata") || text.includes("daviplata")) return "DAVIPLATA";
+      return "NEQUI";
+    }
+
+    function isCountableMoney(tx) {
+      return VALID_PAYMENT_STATUSES.has(tx.status) && Number(tx.amount) > 0;
+    }
+
+    function getScopedTransactions() {
+      if (filterState.deviceId === "ALL") return allTransactions;
+      return allTransactions.filter((tx) => tx.device_id === filterState.deviceId);
+    }
+
     function updateMultiPeriodKpis() {
       const { todayKey, weekStartKey, monthPrefix } = getPeriodBounds();
-
       const stats = {
         today: { total: 0, nequi: 0, davi: 0, count: 0 },
         week:  { total: 0, nequi: 0, davi: 0, count: 0 },
         month: { total: 0, nequi: 0, davi: 0, count: 0 }
       };
 
-      for (const tx of allTransactions) {
+      for (const tx of getScopedTransactions()) {
         if (!isCountableMoney(tx)) continue;
         const amt = Number(tx.amount);
         const dayKey = getColombiaDateKey(getTxTimestamp(tx));
         const wallet = detectWallet(tx);
-
-        const addToBucket = (b) => {
-          b.total += amt;
-          b.count += 1;
-          if (wallet === "NEQUI") b.nequi += amt;
-          else b.davi += amt;
-        };
-
-        if (dayKey === todayKey) addToBucket(stats.today);
-        if (dayKey >= weekStartKey && dayKey <= todayKey) addToBucket(stats.week);
-        if (dayKey.startsWith(monthPrefix)) addToBucket(stats.month);
+        const add = (b) => { b.total += amt; b.count++; if (wallet === "NEQUI") b.nequi += amt; else b.davi += amt; };
+        if (dayKey === todayKey) add(stats.today);
+        if (dayKey >= weekStartKey && dayKey <= todayKey) add(stats.week);
+        if (dayKey.startsWith(monthPrefix)) add(stats.month);
       }
 
       const fmt = (n) => Number(n).toLocaleString("es-CO");
-
       document.getElementById("kpiTodayTotal").innerHTML = `$ ${fmt(stats.today.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
       document.getElementById("kpiTodayCount").textContent = `${stats.today.count} ${stats.today.count === 1 ? "pago real" : "pagos reales"}`;
       document.getElementById("kpiTodayBreakdown").textContent = `Nequi $${fmt(stats.today.nequi)} / Davi $${fmt(stats.today.davi)}`;
@@ -1175,23 +1378,14 @@
       document.getElementById("posTurnSummary").textContent = `Hoy: $ ${fmt(stats.today.total)} COP (${stats.today.count} pagos)`;
     }
 
-    // =========================================================================
-    // FILTROS INTERACTIVOS Y TABLA FORMATEADA DE ARQUEO
-    // =========================================================================
     function setPeriodFilter(period) {
       filterState.period = period;
       document.querySelectorAll(".period-pill").forEach((btn) => {
         btn.className = "period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all";
       });
       const activeBtn = document.getElementById("filter-period-" + period);
-      if (activeBtn) {
-        activeBtn.className = "period-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-ty-emerald text-black transition-all";
-      }
-
-      const customRow = document.getElementById("customDateRangeRow");
-      if (period === "custom") customRow.classList.remove("hidden");
-      else customRow.classList.add("hidden");
-
+      if (activeBtn) activeBtn.className = "period-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-ty-emerald text-black transition-all";
+      document.getElementById("customDateRangeRow").classList.toggle("hidden", period !== "custom");
       applyFiltersAndRender();
     }
 
@@ -1202,8 +1396,8 @@
       });
       const activeBtn = document.getElementById("filter-wallet-" + wallet);
       if (activeBtn) {
-        const activeColor = wallet === "NEQUI" ? "text-ty-nequi" : wallet === "DAVIPLATA" ? "text-ty-daviplata" : "text-white";
-        activeBtn.className = `wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-highest ${activeColor} transition-all`;
+        const c = wallet === "NEQUI" ? "text-ty-nequi" : wallet === "DAVIPLATA" ? "text-ty-daviplata" : "text-white";
+        activeBtn.className = `wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-highest ${c} transition-all`;
       }
       applyFiltersAndRender();
     }
@@ -1234,13 +1428,8 @@
       filterState.dateFrom = document.getElementById("dateFromInput")?.value || todayKey;
       filterState.dateTo = document.getElementById("dateToInput")?.value || todayKey;
 
-      filteredTransactions = allTransactions.filter((tx) => {
-        // 1. Filtro de validez contable vs auditoría
-        if (!filterState.auditMode && !isCountableMoney(tx)) {
-          return false;
-        }
-
-        // 2. Filtro de período en zona horaria Colombia
+      filteredTransactions = getScopedTransactions().filter((tx) => {
+        if (!filterState.auditMode && !isCountableMoney(tx)) return false;
         const dayKey = getColombiaDateKey(getTxTimestamp(tx));
         if (filterState.period === "today" && dayKey !== todayKey) return false;
         if (filterState.period === "week" && (dayKey < weekStartKey || dayKey > todayKey)) return false;
@@ -1249,105 +1438,61 @@
           if (filterState.dateFrom && dayKey < filterState.dateFrom) return false;
           if (filterState.dateTo && dayKey > filterState.dateTo) return false;
         }
-
-        // 3. Filtro de billetera
-        const wallet = detectWallet(tx);
-        if (filterState.wallet !== "ALL" && wallet !== filterState.wallet) return false;
-
-        // 4. Buscador
+        if (filterState.wallet !== "ALL" && detectWallet(tx) !== filterState.wallet) return false;
         if (filterState.search) {
-          const hay = [
-            tx.sender_name || "",
-            tx.payment_reference || "",
-            tx.raw_title || "",
-            tx.raw_text || "",
-            String(tx.amount || "")
-          ].join(" ").toLowerCase();
+          const hay = [tx.sender_name || "", tx.payment_reference || "", tx.raw_title || "", tx.raw_text || "", getDeviceLabel(tx.device_id), String(tx.amount || "")].join(" ").toLowerCase();
           if (!hay.includes(filterState.search)) return false;
         }
-
         return true;
       });
 
-      // Calcular totales EXACTOS del subconjunto filtrado (sumando SOLO ingresos reales válidos)
-      let validSum = 0;
-      let validCount = 0;
-      let nequiSum = 0;
-      let daviSum = 0;
-      let latencySum = 0;
-      let latencyCount = 0;
-
+      let validSum = 0, validCount = 0, nequiSum = 0, daviSum = 0, latencySum = 0, latencyCount = 0;
       for (const tx of filteredTransactions) {
         if (isCountableMoney(tx)) {
           const amt = Number(tx.amount);
           validSum += amt;
           validCount++;
-          if (detectWallet(tx) === "NEQUI") nequiSum += amt;
-          else daviSum += amt;
-
+          if (detectWallet(tx) === "NEQUI") nequiSum += amt; else daviSum += amt;
           const lat = Number(tx.latency_ms);
-          if (lat > 0 && lat < 60000) {
-            latencySum += lat;
-            latencyCount++;
-          }
+          if (lat > 0 && lat < 60000) { latencySum += lat; latencyCount++; }
         }
       }
 
       const fmt = (n) => Number(n).toLocaleString("es-CO");
-      const periodLabels = {
-        today: "HOY",
-        week: "ESTA SEMANA",
-        month: "ESTE MES",
-        all: "HISTORIAL COMPLETO",
-        custom: `${filterState.dateFrom} A ${filterState.dateTo}`
-      };
-      const walletLabels = {
-        ALL: "TODAS LAS BILLETERAS",
-        NEQUI: "SOLO NEQUI",
-        DAVIPLATA: "SOLO DAVIPLATA"
-      };
+      const boxLabel = filterState.deviceId === "ALL" ? "TODAS LAS CAJAS" : getDeviceLabel(filterState.deviceId).toUpperCase();
+      const periodLabels = { today: "HOY", week: "ESTA SEMANA", month: "ESTE MES", all: "HISTORIAL", custom: `${filterState.dateFrom} A ${filterState.dateTo}` };
 
-      document.getElementById("arqueoFilterBadge").textContent = `ARQUEO FILTRADO: ${periodLabels[filterState.period]} • ${walletLabels[filterState.wallet]}`;
+      document.getElementById("arqueoFilterBadge").textContent = `ARQUEO: ${periodLabels[filterState.period]} • ${boxLabel}`;
       document.getElementById("arqueoExactTotal").textContent = `$ ${fmt(validSum)} COP`;
       document.getElementById("arqueoTxSummary").textContent = `(${validCount} ${validCount === 1 ? "transferencia válida" : "transferencias válidas"})`;
 
-      // Update Card 4 (Balance Billeteras del período filtrado)
       document.getElementById("statNequiSum").textContent = `Nequi: $ ${fmt(nequiSum)}`;
       document.getElementById("statDaviSum").textContent = `Davi: $ ${fmt(daviSum)}`;
       const splitTotal = nequiSum + daviSum;
       if (splitTotal > 0) {
         const nequiPct = Math.round((nequiSum / splitTotal) * 100);
-        const daviPct = 100 - nequiPct;
         document.getElementById("statNequiBar").style.width = `${nequiPct}%`;
-        document.getElementById("statDaviBar").style.width = `${daviPct}%`;
-        document.getElementById("statSplitRatio").textContent = `${nequiPct}% Nequi / ${daviPct}% Davi`;
+        document.getElementById("statDaviBar").style.width = `${100 - nequiPct}%`;
+        document.getElementById("statSplitRatio").textContent = `${nequiPct}% Nequi / ${100 - nequiPct}% Davi`;
       } else {
         document.getElementById("statNequiBar").style.width = "50%";
         document.getElementById("statDaviBar").style.width = "50%";
-        document.getElementById("statSplitRatio").textContent = "Sin movimientos en período";
+        document.getElementById("statSplitRatio").textContent = "Sin movimientos";
       }
 
       document.getElementById("statLatencyAvg").textContent = latencyCount > 0 ? `${Math.round(latencySum / latencyCount)} ms` : "-- ms";
-      document.getElementById("tableFooterCount").textContent = `Mostrando ${filteredTransactions.length} movimientos (${validCount} válidos suman al arqueo)`;
+      document.getElementById("tableFooterCount").textContent = `Mostrando ${filteredTransactions.length} movimientos (${validCount} válidos)`;
       document.getElementById("tableFooterTotal").textContent = `$ ${fmt(validSum)} COP`;
 
       renderLedgerRows(highlightId);
     }
 
     function getStatusBadgeHtml(tx) {
-      if (tx.status === "PROCESSED") {
-        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Válido • WA OK</span>`;
-      }
-      if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") {
-        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-amber/15 text-ty-amber border border-ty-amber/30" title="Dinero confirmado en banco; alerta WhatsApp falló">Dinero OK • WA Falló</span>`;
-      }
-      if (tx.status === "DUPLICATE_PAYMENT") {
-        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado (No suma)</span>`;
-      }
-      if (tx.status === "IGNORED_NON_PAYMENT") {
-        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Ignorado (No es abono)</span>`;
-      }
-      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-cyan border border-ty-border">${escapeHtml(tx.status || "PROCESSING")}</span>`;
+      if (tx.status === "PROCESSED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Válido • WA OK</span>`;
+      if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-amber/15 text-ty-amber border border-ty-amber/30">Dinero OK • WA Falló</span>`;
+      if (tx.status === "DUPLICATE_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado</span>`;
+      if (tx.status === "IGNORED_NON_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Ignorado</span>`;
+      return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-cyan border border-ty-border">${escapeHtml(tx.status || "PROCESSING")}</span>`;
     }
 
     function renderLedgerRows(highlightId = null) {
@@ -1361,68 +1506,50 @@
         emptyState.classList.remove("hidden");
         return;
       }
-
       emptyState.classList.add("hidden");
 
-      // Desktop / Tablet Table Rows
       tbody.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
         const walletPill = wallet === "NEQUI"
           ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40">NEQUI</span>`
           : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40">DAVIPLATA</span>`;
-
         const countable = isCountableMoney(tx);
-        const amtText = tx.amount
-          ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}`
-          : "--";
-        const amtClass = countable ? "text-white font-extrabold" : "text-ty-muted line-through";
-        const sender = tx.sender_name || (tx.raw_title ? tx.raw_title : "Notificación bancaria");
-        const detail = tx.raw_text ? tx.raw_text : "";
-        const timeStr = getColombiaDateTimeLabel(getTxTimestamp(tx));
-        const latencyStr = tx.latency_ms && Number(tx.latency_ms) > 0 ? `${tx.latency_ms} ms` : "--";
-        const animClass = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
+        const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
+        const boxInfo = tx.payment_reference ? `${getDeviceLabel(tx.device_id)} • ${tx.payment_reference}` : getDeviceLabel(tx.device_id);
+        const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
 
         return `
-          <tr class="hover:bg-ty-surface/70 transition-colors ${animClass}">
-            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${timeStr}</td>
+          <tr class="hover:bg-ty-surface/70 transition-colors ${anim}">
+            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${getColombiaDateTimeLabel(getTxTimestamp(tx))}</td>
             <td class="py-3 px-4 whitespace-nowrap">${walletPill}</td>
             <td class="py-3 px-4">
-              <div class="font-bold text-white text-sm">${escapeHtml(sender)}</div>
-              <div class="text-[11px] text-ty-muted truncate max-w-xs" title="${escapeHtml(detail)}">${escapeHtml(detail)}</div>
+              <div class="font-bold text-white text-sm">${escapeHtml(tx.sender_name || tx.raw_title || "Notificación")}</div>
+              <div class="text-[11px] text-ty-muted truncate max-w-xs">${escapeHtml(tx.raw_text || "")}</div>
             </td>
-            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${escapeHtml(tx.payment_reference || "Caja 1")}</td>
+            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${escapeHtml(boxInfo)}</td>
             <td class="py-3 px-4 whitespace-nowrap">${getStatusBadgeHtml(tx)}</td>
-            <td class="py-3 px-4 font-mono text-xs text-ty-cyan text-right whitespace-nowrap">${latencyStr}</td>
-            <td class="py-3 px-4 text-right tabular-nums text-sm whitespace-nowrap ${amtClass}">${amtText}</td>
+            <td class="py-3 px-4 font-mono text-xs text-ty-cyan text-right whitespace-nowrap">${tx.latency_ms > 0 ? `${tx.latency_ms} ms` : "--"}</td>
+            <td class="py-3 px-4 text-right tabular-nums text-sm whitespace-nowrap ${countable ? "text-white font-extrabold" : "text-ty-muted line-through"}">${amtText}</td>
           </tr>
         `;
       }).join("");
 
-      // Mobile Ledger Cards
       mobileList.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
-        const walletBadgeClass = wallet === "NEQUI"
-          ? "bg-ty-nequi-bg text-ty-nequi border-ty-nequi/40"
-          : "bg-ty-daviplata-bg text-ty-daviplata border-ty-daviplata/40";
+        const wClass = wallet === "NEQUI" ? "bg-ty-nequi-bg text-ty-nequi border-ty-nequi/40" : "bg-ty-daviplata-bg text-ty-daviplata border-ty-daviplata/40";
         const countable = isCountableMoney(tx);
-        const amtText = tx.amount
-          ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP`
-          : "--";
-        const sender = tx.sender_name || tx.raw_title || "Notificación";
-        const timeStr = getColombiaDateTimeLabel(getTxTimestamp(tx));
-        const animClass = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
-
+        const amtText = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
         return `
-          <div class="p-4 flex flex-col gap-2 ${animClass}">
+          <div class="p-4 flex flex-col gap-2 ${highlightId && tx.id === highlightId ? "animate-payment-in" : ""}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${walletBadgeClass}">${wallet}</span>
-                <span class="font-bold text-white text-sm">${escapeHtml(sender)}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${wClass}">${wallet}</span>
+                <span class="font-bold text-white text-sm">${escapeHtml(tx.sender_name || tx.raw_title || "Notificación")}</span>
               </div>
               <span class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">${amtText}</span>
             </div>
             <div class="flex items-center justify-between text-xs font-mono text-ty-muted">
-              <span>${timeStr}</span>
+              <span>${getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
               ${getStatusBadgeHtml(tx)}
             </div>
           </div>
@@ -1431,77 +1558,46 @@
     }
 
     // =========================================================================
-    // TAB 2: HISTORIAL Y CIERRES POR DÍA
+    // 4. HISTORIAL DIARIO, CSV Y MODO POS
     // =========================================================================
     function renderDailyClosingTable() {
       const tbody = document.getElementById("dailyClosingBody");
-      if (!tbody) return;
-
       const byDay = new Map();
-      for (const tx of allTransactions) {
+
+      for (const tx of getScopedTransactions()) {
         if (!isCountableMoney(tx)) continue;
         const dayKey = getColombiaDateKey(getTxTimestamp(tx));
-        if (!byDay.has(dayKey)) {
-          byDay.set(dayKey, { dayKey, nequiCount: 0, nequiSum: 0, daviCount: 0, daviSum: 0, totalCount: 0, totalSum: 0 });
-        }
-        const entry = byDay.get(dayKey);
+        if (!byDay.has(dayKey)) byDay.set(dayKey, { dayKey, nequiCount: 0, nequiSum: 0, daviCount: 0, daviSum: 0, totalCount: 0, totalSum: 0 });
+        const e = byDay.get(dayKey);
         const amt = Number(tx.amount);
-        const wallet = detectWallet(tx);
-        if (wallet === "NEQUI") {
-          entry.nequiCount++;
-          entry.nequiSum += amt;
-        } else {
-          entry.daviCount++;
-          entry.daviSum += amt;
-        }
-        entry.totalCount++;
-        entry.totalSum += amt;
+        if (detectWallet(tx) === "NEQUI") { e.nequiCount++; e.nequiSum += amt; } else { e.daviCount++; e.daviSum += amt; }
+        e.totalCount++;
+        e.totalSum += amt;
       }
 
       const rows = Array.from(byDay.values()).sort((a, b) => b.dayKey.localeCompare(a.dayKey));
       if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs font-mono text-ty-muted">No hay cierres diarios con ingresos registrados aún.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs font-mono text-ty-muted">No hay cierres diarios registrados aún.</td></tr>`;
         return;
       }
 
       const fmt = (n) => Number(n).toLocaleString("es-CO");
       tbody.innerHTML = rows.map((r) => `
         <tr class="hover:bg-ty-surface/70 transition-colors">
-          <td class="py-3.5 px-4">
-            <div class="font-bold text-white text-sm">${getColombiaFriendlyDay(r.dayKey)}</div>
-            <div class="text-[11px] font-mono text-ty-muted">${r.dayKey}</div>
-          </td>
-          <td class="py-3.5 px-4 text-right font-mono text-xs">
-            <span class="text-ty-nequi font-bold">$ ${fmt(r.nequiSum)}</span>
-            <span class="text-ty-muted ml-1">(${r.nequiCount})</span>
-          </td>
-          <td class="py-3.5 px-4 text-right font-mono text-xs">
-            <span class="text-ty-daviplata font-bold">$ ${fmt(r.daviSum)}</span>
-            <span class="text-ty-muted ml-1">(${r.daviCount})</span>
-          </td>
+          <td class="py-3.5 px-4"><div class="font-bold text-white text-sm">${getColombiaFriendlyDay(r.dayKey)}</div><div class="text-[11px] font-mono text-ty-muted">${r.dayKey}</div></td>
+          <td class="py-3.5 px-4 text-right font-mono text-xs"><span class="text-ty-nequi font-bold">$ ${fmt(r.nequiSum)}</span> <span class="text-ty-muted">(${r.nequiCount})</span></td>
+          <td class="py-3.5 px-4 text-right font-mono text-xs"><span class="text-ty-daviplata font-bold">$ ${fmt(r.daviSum)}</span> <span class="text-ty-muted">(${r.daviCount})</span></td>
           <td class="py-3.5 px-4 text-right font-mono text-xs text-white">${r.totalCount} pagos</td>
           <td class="py-3.5 px-4 text-right tabular-nums text-base font-extrabold text-ty-emerald">$ ${fmt(r.totalSum)} COP</td>
-          <td class="py-3.5 px-4 text-right">
-            <button onclick="jumpToDayFilter('${r.dayKey}')" class="px-2.5 py-1 rounded bg-ty-surface-high border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all">
-              Ver Movimientos
-            </button>
-          </td>
+          <td class="py-3.5 px-4 text-right"><button onclick="jumpToDayFilter('${r.dayKey}')" class="px-2.5 py-1 rounded bg-ty-surface-high border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan">Ver Movimientos</button></td>
         </tr>
       `).join("");
     }
 
-    // =========================================================================
-    // EXPORTACIÓN A CSV (COMPATIBLE CON EXCEL EN ESPAÑOL)
-    // =========================================================================
     function downloadCsvFile(filename, headers, rows) {
-      const escapeCsv = (val) => `"${String(val ?? "").replace(/"/g, '""')}"`;
-      const lines = [headers.map(escapeCsv).join(",")];
-      for (const row of rows) {
-        lines.push(row.map(escapeCsv).join(","));
-      }
-      const bom = "\uFEFF";
-      const blob = new Blob([bom + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
+      const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const csv = "\uFEFF" + [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
       const a = document.createElement("a");
       a.href = url;
       a.download = filename;
@@ -1512,100 +1608,75 @@
     }
 
     function exportFilteredCsv() {
-      if (filteredTransactions.length === 0) {
-        showToast("No hay movimientos en el filtro actual para exportar", true);
-        return;
-      }
-      const headers = ["Fecha Colombia", "Billetera", "Pagador", "Referencia", "Estado", "Suma al Arqueo", "Valor COP", "Latencia (ms)", "Texto Original"];
-      const rows = filteredTransactions.map((tx) => {
-        const countable = isCountableMoney(tx);
-        return [
-          getColombiaDateTimeLabel(getTxTimestamp(tx)),
-          detectWallet(tx),
-          tx.sender_name || tx.raw_title || "",
-          tx.payment_reference || "N/A",
-          tx.status,
-          countable ? "SI" : "NO",
-          tx.amount || 0,
-          tx.latency_ms || 0,
-          tx.raw_text || ""
-        ];
-      });
+      if (!filteredTransactions.length) { showToast("No hay movimientos en el filtro actual", true); return; }
+      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador", "Referencia", "Estado", "Suma al Arqueo", "Valor COP", "Latencia (ms)"];
+      const rows = filteredTransactions.map((tx) => [
+        getColombiaDateTimeLabel(getTxTimestamp(tx)),
+        getDeviceLabel(tx.device_id),
+        detectWallet(tx),
+        tx.sender_name || tx.raw_title || "",
+        tx.payment_reference || "N/A",
+        tx.status,
+        isCountableMoney(tx) ? "SI" : "NO",
+        tx.amount || 0,
+        tx.latency_ms || 0
+      ]);
       const total = filteredTransactions.reduce((acc, tx) => acc + (isCountableMoney(tx) ? Number(tx.amount) : 0), 0);
-      rows.push(["TOTAL ARQUEO VALIDO", "", "", "", "", "", total, "", ""]);
+      rows.push(["TOTAL ARQUEO VALIDO", "", "", "", "", "", "", total, ""]);
       downloadCsvFile(`transferya_arqueo_${getColombiaDateKey(new Date())}.csv`, headers, rows);
-      showToast("Reporte CSV de arqueo descargado");
+      showToast("CSV de arqueo descargado");
     }
 
     function exportDailyClosingCsv() {
       const rows = Array.from(document.querySelectorAll("#dailyClosingBody tr")).map((tr) =>
         Array.from(tr.querySelectorAll("td")).slice(0, 5).map((td) => td.innerText.replace(/\n/g, " "))
       );
-      if (!rows.length || rows[0].length < 5) {
-        showToast("No hay cierres diarios para exportar", true);
-        return;
-      }
-      downloadCsvFile(`transferya_cierres_diarios_${getColombiaDateKey(new Date())}.csv`, ["Fecha", "Nequi", "Daviplata", "Total Pagos", "Total Recibido"], rows);
-      showToast("Cierres diarios exportados a CSV");
+      if (!rows.length || rows[0].length < 5) { showToast("Sin cierres diarios para exportar", true); return; }
+      downloadCsvFile(`transferya_cierres_${getColombiaDateKey(new Date())}.csv`, ["Fecha", "Nequi", "Daviplata", "Pagos", "Total Recibido"], rows);
+      showToast("Cierres diarios descargados");
     }
 
-    // =========================================================================
-    // MODO CAJA POS
-    // =========================================================================
     function updatePosView(customPreviewTx = null) {
-      const validList = allTransactions.filter(isCountableMoney);
+      const validList = getScopedTransactions().filter(isCountableMoney);
       const latest = customPreviewTx || validList[0] || null;
       const grid = document.getElementById("posRecentGrid");
 
       if (!latest) {
         document.getElementById("posHeroAmount").innerHTML = `$ 0 <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>`;
-        document.getElementById("posHeroSender").textContent = "Sin pagos aún en la caja";
+        document.getElementById("posHeroSender").textContent = "Sin pagos aún";
         document.getElementById("posWalletBadge").textContent = "ESPERANDO";
         document.getElementById("posTimestampBadge").textContent = "Listo para recibir";
         document.getElementById("posLatencyChip").textContent = "Centinela en espera";
       } else {
         const wallet = detectWallet(latest);
-        const amtFmt = Number(latest.amount).toLocaleString("es-CO");
-        document.getElementById("posHeroAmount").innerHTML = `$ ${amtFmt} <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>`;
+        document.getElementById("posHeroAmount").innerHTML = `$ ${Number(latest.amount).toLocaleString("es-CO")} <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>`;
         document.getElementById("posHeroSender").textContent = latest.sender_name || wallet;
-
         const badge = document.getElementById("posWalletBadge");
         badge.textContent = wallet;
-        badge.className = wallet === "NEQUI"
-          ? "px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40"
-          : "px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40";
-
-        document.getElementById("posTimestampBadge").textContent = customPreviewTx
-          ? "Prueba Visual/Sonora (No suma)"
-          : getColombiaDateTimeLabel(getTxTimestamp(latest));
+        badge.className = wallet === "NEQUI" ? "px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40" : "px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40";
+        document.getElementById("posTimestampBadge").textContent = customPreviewTx ? "Prueba Visual/Sonora (No suma)" : `${getDeviceLabel(latest.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(latest))}`;
         document.getElementById("posLatencyChip").textContent = latest.latency_ms ? `Validado en ${latest.latency_ms} ms` : "Validado";
       }
 
       const recent4 = validList.slice(0, 4);
-      if (recent4.length === 0) {
-        grid.innerHTML = `<div class="col-span-4 text-center py-4 text-xs font-mono text-ty-muted">Sin transferencias registradas hoy</div>`;
-        return;
-      }
-
-      grid.innerHTML = recent4.map((tx) => {
-        const wallet = detectWallet(tx);
-        return `
-          <div class="p-3 rounded-lg bg-ty-surface border border-ty-border flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${wallet === "NEQUI" ? "bg-ty-nequi-bg text-ty-nequi" : "bg-ty-daviplata-bg text-ty-daviplata"}">${wallet}</span>
-              <span class="text-[10px] font-mono text-ty-muted">${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
+      grid.innerHTML = recent4.length === 0
+        ? `<div class="col-span-4 text-center py-4 text-xs font-mono text-ty-muted">Sin transferencias registradas</div>`
+        : recent4.map((tx) => {
+          const w = detectWallet(tx);
+          return `
+            <div class="p-3 rounded-lg bg-ty-surface border border-ty-border flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${w === "NEQUI" ? "bg-ty-nequi-bg text-ty-nequi" : "bg-ty-daviplata-bg text-ty-daviplata"}">${w}</span>
+                <span class="text-[10px] font-mono text-ty-muted">${getDeviceLabel(tx.device_id)}</span>
+              </div>
+              <div class="text-base font-extrabold text-white tabular-nums">$ ${Number(tx.amount).toLocaleString("es-CO")} COP</div>
+              <div class="text-xs text-ty-muted truncate mt-1">${escapeHtml(tx.sender_name || w)}</div>
             </div>
-            <div class="text-base font-extrabold text-white tabular-nums">$ ${Number(tx.amount).toLocaleString("es-CO")} COP</div>
-            <div class="text-xs text-ty-muted truncate mt-1">${escapeHtml(tx.sender_name || wallet)}</div>
-          </div>
-        `;
-      }).join("");
+          `;
+        }).join("");
     }
 
-    function confirmPosDelivery() {
-      playChime();
-      showToast("Entrega de mercancía confirmada en mostrador");
-    }
+    function confirmPosDelivery() { playChime(); showToast("Entrega de mercancía confirmada"); }
 
     function triggerVisualSimulation() {
       playChime();
@@ -1616,184 +1687,144 @@
       ];
       const pick = samples[Math.floor(Math.random() * samples.length)];
       updatePosView({ ...pick, created_at: new Date().toISOString() });
-      showToast(`Prueba visual/sonora: $ ${pick.amount.toLocaleString("es-CO")} COP (No altera el saldo real de tu cuenta)`);
+      showToast(`Prueba visual/sonora: $ ${pick.amount.toLocaleString("es-CO")} COP`);
     }
 
     // =========================================================================
-    // FORMATEO SEGURO DE DATOS DE PRUEBA DE LA CAJA
+    // 5. GESTIÓN DINÁMICA DE MÚLTIPLES CAJAS + QR AUTENTICADO
     // =========================================================================
-    function openResetModal() {
-      document.getElementById("resetConfirmInput").value = "";
-      document.getElementById("resetModal").classList.remove("hidden");
-    }
+    function renderDevicesGrid() {
+      const grid = document.getElementById("devicesGrid");
+      const cards = merchantDevices.map((d) => {
+        const isActive = d.status === "ACTIVE";
+        const ping = d.last_heartbeat_at ? getColombiaDateTimeLabel(d.last_heartbeat_at) : "Sin heartbeat aún";
+        return `
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${isActive ? "bg-ty-emerald beacon-pulse" : "bg-ty-rose"}"></span>
+                  <span class="font-bold text-white text-base">${escapeHtml(d.label || d.id)}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isActive ? "bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30" : "bg-ty-rose/10 text-ty-rose border border-ty-rose/30"}">${escapeHtml(d.status)}</span>
+              </div>
+              <p class="text-xs font-mono text-ty-muted mb-4">${escapeHtml(d.id)}</p>
 
-    function closeResetModal() {
-      document.getElementById("resetModal").classList.add("hidden");
-    }
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex justify-between py-1 border-b border-ty-border/40">
+                  <span class="text-ty-muted">Comercio</span>
+                  <span class="text-white">${escapeHtml(currentMerchant.name)}</span>
+                </div>
+                <div class="flex justify-between py-1">
+                  <span class="text-ty-muted">Última actividad</span>
+                  <span class="text-ty-cyan">${ping}</span>
+                </div>
+              </div>
+            </div>
 
-    async function executeResetDeviceData() {
-      const val = document.getElementById("resetConfirmInput").value.trim().toUpperCase();
-      if (val !== "FORMATEAR") {
-        showToast("Debes escribir FORMATEAR exactamente para confirmar", true);
-        return;
-      }
-
-      const btn = document.getElementById("confirmResetBtn");
-      btn.disabled = true;
-      btn.textContent = "Formateando...";
-
-      try {
-        const res = await fetch("/api/v1/devices/reset-test-data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            merchantId: MERCHANT_ID,
-            deviceId: DEVICE_ID,
-            confirmation: "FORMATEAR"
-          })
-        });
-        const json = await res.json();
-        if (!res.ok || !json.success) {
-          throw new Error(json.message || "Error al formatear tabla");
-        }
-
-        closeResetModal();
-        allTransactions = [];
-        recomputeAllViews();
-        showToast(`Caja formateada (${json.data.deletedNotifications} registros eliminados). Arqueo en $ 0 COP.`);
-      } catch (err) {
-        showToast(err.message || "No se pudo formatear la caja", true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Confirmar Formateo";
-      }
-    }
-
-    // =========================================================================
-    // GESTIÓN REAL DE CAJEROS EN SUPABASE
-    // =========================================================================
-    function renderCashiersList() {
-      const list = document.getElementById("cashiersList");
-      if (!list) return;
-
-      if (!cashierRecords || cashierRecords.length === 0) {
-        list.innerHTML = `<div class="p-6 text-center text-xs font-mono text-ty-muted">No hay cajeros registrados aún.</div>`;
-        return;
-      }
-
-      list.innerHTML = cashierRecords.map((c) => `
-        <div class="p-4 grid grid-cols-12 gap-2 items-center text-sm">
-          <div class="col-span-4 sm:col-span-3 flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full bg-ty-emerald/10 text-ty-emerald flex items-center justify-center font-bold text-xs font-mono">${escapeHtml((c.name || "CJ").substring(0, 2).toUpperCase())}</div>
-            <span class="font-bold text-white truncate">${escapeHtml(c.name)}</span>
+            <div class="mt-4 pt-3 border-t border-ty-border flex flex-wrap items-center justify-between gap-2">
+              <button onclick="renameDevice('${escapeHtml(d.id)}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white">
+                Renombrar
+              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose">
+                  Formatear
+                </button>
+                <button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald">
+                  QR Emparejar
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="col-span-4 sm:col-span-4 font-mono text-ty-cyan text-xs sm:text-sm truncate">${escapeHtml(c.phone_number)}</div>
-          <div class="col-span-2 sm:col-span-3 font-mono text-xs text-ty-muted truncate">${escapeHtml(c.device_id || "Todas las cajas")}</div>
-          <div class="col-span-2 sm:col-span-2 text-right">
-            <button onclick="toggleCashierStatus('${c.id}', ${!c.is_active})" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition-all ${c.is_active ? "bg-ty-emerald/10 text-ty-emerald border-ty-emerald/30" : "bg-ty-surface text-ty-muted border-ty-border"}">
-              ${c.is_active ? "ACTIVO" : "INACTIVO"}
-            </button>
+        `;
+      }).join("");
+
+      const addSlot = `
+        <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-ty-emerald/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[190px]">
+          <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </div>
+          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Caja #${merchantDevices.length + 1}</h3>
+          <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un QR seguro para conectar otro celular Centinela a ${escapeHtml(currentMerchant.name)}.</p>
         </div>
-      `).join("");
+      `;
+
+      grid.innerHTML = cards + addSlot;
     }
 
-    function openAddCashierModal() {
-      document.getElementById("newCashierName").value = "";
-      document.getElementById("newCashierPhone").value = "+57";
-      document.getElementById("addCashierModal").classList.remove("hidden");
-    }
-
-    function closeAddCashierModal() {
-      document.getElementById("addCashierModal").classList.add("hidden");
-    }
-
-    async function saveNewCashier() {
-      const name = document.getElementById("newCashierName").value.trim();
-      const phone = document.getElementById("newCashierPhone").value.trim();
-      if (!name || !/^\+\d{10,15}$/.test(phone)) {
-        showToast("Ingresa un nombre válido y teléfono en formato +573001234567", true);
-        return;
-      }
-
-      const { data, error } = await supabaseClient
-        .from("cashier_recipients")
-        .insert({ merchant_id: MERCHANT_ID, name, phone_number: phone, is_active: true })
-        .select();
-
-      if (error) {
-        showToast("Error guardando cajero: " + error.message, true);
-        return;
-      }
-
-      if (data && data[0]) {
-        cashierRecords.push(data[0]);
-        renderCashiersList();
-      }
-      closeAddCashierModal();
-      showToast(`Cajero ${name} registrado en el enrutamiento WhatsApp`);
-    }
-
-    async function toggleCashierStatus(id, nextActive) {
+    async function renameDevice(deviceId, currentLabel) {
+      const nextLabel = prompt("Nuevo nombre para esta caja:", currentLabel);
+      if (!nextLabel || !nextLabel.trim()) return;
       const { error } = await supabaseClient
-        .from("cashier_recipients")
-        .update({ is_active: nextActive })
-        .eq("id", id);
+        .from("devices")
+        .update({ label: nextLabel.trim() })
+        .eq("id", deviceId);
 
       if (error) {
-        showToast("No se pudo actualizar estado del cajero", true);
+        showToast("Error renombrando caja: " + error.message, true);
         return;
       }
-      const target = cashierRecords.find((c) => c.id === id);
-      if (target) target.is_active = nextActive;
-      renderCashiersList();
+      showToast("Nombre de caja actualizado");
+      await refreshMerchantData();
     }
 
-    // =========================================================================
-    // CEREMONIA DE EMPAREJAMIENTO QR ZERO-TRUST
-    // =========================================================================
-    async function openPairingModal() {
+    function openPairingModal(presetDeviceId = null, presetLabel = null) {
+      const nextNum = merchantDevices.length + 1;
+      const defaultId = presetDeviceId || `dev_${currentMerchant.id.slice(0, 6)}_caja_${nextNum}`;
+      const defaultLabel = presetLabel || `Caja ${nextNum}`;
+
+      document.getElementById("pairingDeviceIdInput").value = defaultId;
+      document.getElementById("pairingDeviceLabelInput").value = defaultLabel;
+      document.getElementById("pairingModal").classList.remove("hidden");
+      generatePairingQrNow();
+    }
+
+    async function generatePairingQrNow() {
+      if (!currentSession || !currentMerchant) return;
+
+      const deviceId = document.getElementById("pairingDeviceIdInput").value.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+      const label = document.getElementById("pairingDeviceLabelInput").value.trim() || "Caja";
+      if (!deviceId) {
+        showToast("Ingresa un ID válido para la caja", true);
+        return;
+      }
+
       const container = document.getElementById("qrCodeContainer");
       const deepLinkBtn = document.getElementById("qrDeepLinkBtn");
       container.innerHTML = `<span class="text-xs font-mono text-gray-600">Generando código QR...</span>`;
       deepLinkBtn.classList.add("hidden");
-      document.getElementById("manualTokenInput").value = "Generando...";
-      document.getElementById("pairingModal").classList.remove("hidden");
 
       try {
         const res = await fetch("/api/v1/devices/enrollment-tokens", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${currentSession.access_token}`
+          },
           body: JSON.stringify({
-            merchantId: MERCHANT_ID,
-            deviceId: DEVICE_ID,
-            label: "Caja Principal"
+            merchantId: currentMerchant.id,
+            deviceId,
+            label
           })
         });
         const json = await res.json();
-        if (!json.success || !json.data) {
-          throw new Error(json.message || "Respuesta inválida al generar token");
+        if (!res.ok || !json.success || !json.data) {
+          throw new Error(json.message || "No autorizado para generar token");
         }
 
-        const qrPayload = json.data.qrPayload || `transferya://enroll?token=${json.data.token}&deviceId=${DEVICE_ID}`;
+        const qrPayload = json.data.qrPayload;
         document.getElementById("manualTokenInput").value = qrPayload;
         deepLinkBtn.href = qrPayload;
         deepLinkBtn.classList.remove("hidden");
-
-        if (typeof window.qrcode !== "function") {
-          throw new Error("Librería QR local no disponible");
-        }
 
         const qr = window.qrcode(0, "M");
         qr.addData(qrPayload);
         qr.make();
         container.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
-
         startCountdown(300);
       } catch (err) {
-        console.error("Error creando token de emparejamiento:", err);
-        container.innerHTML = `<span class="text-xs font-mono text-red-600 text-center px-3">No se pudo dibujar el QR (${escapeHtml(err.message)})</span>`;
-        showToast("Error generando código QR: " + err.message, true);
+        container.innerHTML = `<span class="text-xs font-mono text-red-600 text-center px-3">${escapeHtml(err.message)}</span>`;
+        showToast("Error generando QR: " + err.message, true);
       }
     }
 
@@ -1815,9 +1846,7 @@
           progressEl.style.width = "0%";
           return;
         }
-        const mins = Math.floor(timeLeft / 60).toString().padStart(2, "0");
-        const secs = (timeLeft % 60).toString().padStart(2, "0");
-        timerEl.textContent = `${mins}:${secs}`;
+        timerEl.textContent = `${Math.floor(timeLeft / 60).toString().padStart(2, "0")}:${(timeLeft % 60).toString().padStart(2, "0")}`;
         progressEl.style.width = `${(timeLeft / durationSeconds) * 100}%`;
       }, 1000);
     }
@@ -1832,15 +1861,201 @@
     }
 
     // =========================================================================
-    // PWA INSTALLATION Y SEGURIDAD
+    // 6. FORMATEO PROTEGIDO DE PRUEBAS & CAJEROS POR COMERCIO
     // =========================================================================
+    function openResetModal(presetDeviceId = null) {
+      if (merchantDevices.length === 0) {
+        showToast("Primero vincula una caja Centinela", true);
+        return;
+      }
+      const resetSel = document.getElementById("resetDeviceSelect");
+      if (presetDeviceId && merchantDevices.some((d) => d.id === presetDeviceId)) {
+        resetSel.value = presetDeviceId;
+      } else if (filterState.deviceId !== "ALL") {
+        resetSel.value = filterState.deviceId;
+      }
+      document.getElementById("resetConfirmInput").value = "";
+      document.getElementById("resetModal").classList.remove("hidden");
+    }
+
+    function closeResetModal() {
+      document.getElementById("resetModal").classList.add("hidden");
+    }
+
+    async function executeResetDeviceData() {
+      const deviceId = document.getElementById("resetDeviceSelect").value;
+      const val = document.getElementById("resetConfirmInput").value.trim().toUpperCase();
+      if (!deviceId || val !== "FORMATEAR") {
+        showToast("Escribe FORMATEAR exactamente para confirmar", true);
+        return;
+      }
+
+      const btn = document.getElementById("confirmResetBtn");
+      btn.disabled = true;
+      btn.textContent = "Formateando...";
+
+      try {
+        const res = await fetch("/api/v1/devices/reset-test-data", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${currentSession.access_token}`
+          },
+          body: JSON.stringify({
+            merchantId: currentMerchant.id,
+            deviceId,
+            confirmation: "FORMATEAR"
+          })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || "Error al formatear caja");
+        }
+        closeResetModal();
+        await refreshMerchantData();
+        showToast(`Caja ${getDeviceLabel(deviceId)} formateada (${json.data.deletedNotifications} registros eliminados).`);
+      } catch (err) {
+        showToast(err.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Confirmar Formateo";
+      }
+    }
+
+    function renderCashiersList() {
+      const list = document.getElementById("cashiersList");
+      if (!cashierRecords.length) {
+        list.innerHTML = `<div class="p-6 text-center text-xs font-mono text-ty-muted">No hay cajeros registrados aún en ${escapeHtml(currentMerchant.name)}.</div>`;
+        return;
+      }
+
+      list.innerHTML = cashierRecords.map((c) => `
+        <div class="p-4 grid grid-cols-12 gap-2 items-center text-sm">
+          <div class="col-span-4 sm:col-span-3 flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-ty-emerald/10 text-ty-emerald flex items-center justify-center font-bold text-xs font-mono">${escapeHtml((c.name || "CJ").substring(0, 2).toUpperCase())}</div>
+            <span class="font-bold text-white truncate">${escapeHtml(c.name)}</span>
+          </div>
+          <div class="col-span-4 sm:col-span-4 font-mono text-ty-cyan text-xs sm:text-sm truncate">${escapeHtml(c.phone_number)}</div>
+          <div class="col-span-2 sm:col-span-3 font-mono text-xs text-ty-muted truncate">${c.device_id ? escapeHtml(getDeviceLabel(c.device_id)) : "Todas las cajas"}</div>
+          <div class="col-span-2 sm:col-span-2 text-right">
+            <button onclick="toggleCashierStatus('${c.id}', ${!c.is_active})" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition-all ${c.is_active ? "bg-ty-emerald/10 text-ty-emerald border-ty-emerald/30" : "bg-ty-surface text-ty-muted border-ty-border"}">${c.is_active ? "ACTIVO" : "INACTIVO"}</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openAddCashierModal() {
+      document.getElementById("newCashierName").value = "";
+      document.getElementById("newCashierPhone").value = "+57";
+      document.getElementById("addCashierModal").classList.remove("hidden");
+    }
+
+    function closeAddCashierModal() {
+      document.getElementById("addCashierModal").classList.add("hidden");
+    }
+
+    async function saveNewCashier() {
+      const name = document.getElementById("newCashierName").value.trim();
+      const phone = document.getElementById("newCashierPhone").value.trim();
+      const deviceId = document.getElementById("newCashierDeviceSelect").value || null;
+      if (!name || !/^\+\d{10,15}$/.test(phone)) {
+        showToast("Ingresa nombre y teléfono en formato +573001234567", true);
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("cashier_recipients")
+        .insert({ merchant_id: currentMerchant.id, device_id: deviceId, name, phone_number: phone, is_active: true })
+        .select();
+
+      if (error) {
+        showToast("Error guardando cajero: " + error.message, true);
+        return;
+      }
+      if (data && data[0]) {
+        cashierRecords.push(data[0]);
+        renderCashiersList();
+      }
+      closeAddCashierModal();
+      showToast(`Cajero ${name} registrado`);
+    }
+
+    async function toggleCashierStatus(id, nextActive) {
+      const { error } = await supabaseClient.from("cashier_recipients").update({ is_active: nextActive }).eq("id", id);
+      if (error) { showToast("No se pudo actualizar el cajero", true); return; }
+      const target = cashierRecords.find((c) => c.id === id);
+      if (target) target.is_active = nextActive;
+      renderCashiersList();
+    }
+
+    // =========================================================================
+    // 7. AUDIO, NAVEGACIÓN, TOAST Y PWA
+    // =========================================================================
+    function initAudio() {
+      try { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); } catch {}
+    }
+
+    function playChime() {
+      if (!isAudioEnabled) return;
+      if (!audioCtx) initAudio();
+      if (!audioCtx) return;
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const o1 = audioCtx.createOscillator(), g1 = audioCtx.createGain();
+      o1.type = "sine"; o1.frequency.setValueAtTime(880, now);
+      g1.gain.setValueAtTime(0.3, now); g1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      o1.connect(g1); g1.connect(audioCtx.destination); o1.start(now); o1.stop(now + 0.35);
+      const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+      o2.type = "triangle"; o2.frequency.setValueAtTime(1760, now + 0.08);
+      g2.gain.setValueAtTime(0.25, now + 0.08); g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+      o2.connect(g2); g2.connect(audioCtx.destination); o2.start(now + 0.08); o2.stop(now + 0.6);
+    }
+
+    function toggleAudio() {
+      isAudioEnabled = !isAudioEnabled;
+      const btn = document.getElementById("audioToggleBtn");
+      const text = document.getElementById("audioBtnText");
+      if (isAudioEnabled) {
+        btn.classList.add("text-ty-emerald"); btn.classList.remove("text-ty-muted");
+        text.textContent = "Chime"; playChime();
+      } else {
+        btn.classList.remove("text-ty-emerald"); btn.classList.add("text-ty-muted");
+        text.textContent = "Silenciado";
+      }
+    }
+
+    function switchTab(tabId) {
+      ["dashboard", "history", "pos", "devices", "cashiers"].forEach((t) => {
+        const el = document.getElementById("tab-" + t);
+        const deskBtn = document.getElementById("nav-btn-" + t);
+        const mobBtn = document.getElementById("mob-nav-" + t);
+        if (t === tabId) {
+          el?.classList.remove("hidden");
+          deskBtn?.classList.add("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
+          deskBtn?.classList.remove("text-ty-muted");
+          mobBtn?.classList.add("text-ty-emerald"); mobBtn?.classList.remove("text-ty-muted");
+        } else {
+          el?.classList.add("hidden");
+          deskBtn?.classList.remove("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
+          deskBtn?.classList.add("text-ty-muted");
+          mobBtn?.classList.remove("text-ty-emerald"); mobBtn?.classList.add("text-ty-muted");
+        }
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showToast(msg, isError = false) {
+      const banner = document.getElementById("toastBanner");
+      document.getElementById("toastMessage").textContent = msg;
+      banner.className = `fixed bottom-20 lg:bottom-6 right-4 z-50 px-4 py-3 rounded-xl bg-ty-surface-high border ${isError ? "border-ty-rose text-ty-rose" : "border-ty-emerald/50 text-white"} text-xs font-mono shadow-2xl flex items-center gap-2.5 max-w-sm`;
+      banner.classList.remove("hidden");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => banner.classList.add("hidden"), 4000);
+    }
+
     function registerServiceWorker() {
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js").catch((err) => {
-            console.warn("SW registration skipped:", err);
-          });
-        });
+        window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
       }
     }
 
@@ -1848,29 +2063,20 @@
       window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        const btn = document.getElementById("pwaInstallBtn");
-        if (btn) btn.classList.remove("hidden");
+        document.getElementById("pwaInstallBtn")?.classList.remove("hidden");
       });
     }
 
     function promptInstallPWA() {
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          deferredPrompt = null;
-          document.getElementById("pwaInstallBtn").classList.add("hidden");
-        });
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById("pwaInstallBtn").classList.add("hidden"); });
       }
     }
 
     function escapeHtml(str) {
       if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
   </script>
 </body>

@@ -67,4 +67,19 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
             expect(sql).toMatch(/ON\s+cashier_recipients\s+FOR ALL/i);
         });
     });
+    describe('4. Migración de Endurecimiento Multi-Comercio Estricto (Paso 4)', () => {
+        it('debe eliminar las políticas abiertas alpha_service_* y restaurar políticas autenticadas', () => {
+            const strictPath = resolve(migrationsDir, '20261112000001_multi_tenant_strict_rls.sql');
+            expect(existsSync(strictPath)).toBe(true);
+            const sql = readFileSync(strictPath, 'utf-8');
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_merchants"/i);
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_devices"/i);
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_cashier_recipients"/i);
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_captured_notifications"/i);
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_payment_fingerprints"/i);
+            expect(sql).toMatch(/DROP POLICY IF EXISTS\s+"alpha_service_enrollment_tokens"/i);
+            expect(sql).toMatch(/CREATE POLICY\s+merchants_owner_insert\s+ON\s+merchants/i);
+            expect(sql).toMatch(/TO authenticated/i);
+        });
+    });
 });

@@ -31,6 +31,7 @@ import type {
 export interface SupabaseConfig {
   supabaseUrl: string;
   serviceKey: string;
+  bearerToken?: string;
 }
 
 /**
@@ -56,7 +57,7 @@ export class SupabaseRepository
     this.baseUrl = config.supabaseUrl.replace(/\/$/, '');
     this.headers = {
       apikey: config.serviceKey,
-      Authorization: `Bearer ${config.serviceKey}`,
+      Authorization: `Bearer ${config.bearerToken ?? config.serviceKey}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     };
@@ -96,8 +97,6 @@ export class SupabaseRepository
   }
 
   async createEnrollmentToken(record: EnrollmentTokenRecord): Promise<void> {
-    await this.ensureMerchantExists(record.merchantId);
-
     const res = await fetch(`${this.baseUrl}/rest/v1/enrollment_tokens`, {
       method: 'POST',
       headers: this.headers,
@@ -524,6 +523,58 @@ export class SupabaseRepository
 
     return {
       id: m.id,
+      name: m.name,
+      status: m.status,
+      subscriptionExpiresAt: m.subscription_expires_at
+        ? new Date(m.subscription_expires_at).getTime()
+        : null,
+      createdAt: new Date(m.created_at).getTime(),
+    };
+  }
+
+  async getMerchantWithOwner(
+    merchantId: string,
+  ): Promise<(Merchant & { ownerId: string }) | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}&select=id,owner_id,name,status,subscription_expires_at,created_at`,
+      { headers: this.headers },
+    );
+
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+
+    const m = rows[0];
+    return {
+      id: m.id,
+      ownerId: m.owner_id,
+      name: m.name,
+      status: m.status,
+      subscriptionExpiresAt: m.subscription_expires_at
+        ? new Date(m.subscription_expires_at).getTime()
+        : null,
+      createdAt: new Date(m.created_at).getTime(),
+    };
+  }
+
+  async getMerchantByDeviceWithOwner(
+    deviceId: string,
+  ): Promise<(Merchant & { ownerId: string }) | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/devices?id=eq.${encodeURIComponent(deviceId)}&select=merchants(id,owner_id,name,status,subscription_expires_at,created_at)`,
+      { headers: this.headers },
+    );
+
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+
+    const m = rows[0].merchants;
+    if (!m) return null;
+
+    return {
+      id: m.id,
+      ownerId: m.owner_id,
       name: m.name,
       status: m.status,
       subscriptionExpiresAt: m.subscription_expires_at
