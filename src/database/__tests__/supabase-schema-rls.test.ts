@@ -128,5 +128,25 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
       expect(sql).toMatch(/TO authenticated/i);
     });
   });
+
+  describe('5. Migración de Motor Comercial y Facturación (Ticket 18)', () => {
+    it('debe extender merchants con subscription_status, subscription_ends_at, billing_phone y trigger anti-fraude', () => {
+      const billingPath = resolve(
+        migrationsDir,
+        '20261113000001_commercial_billing_schema.sql',
+      );
+      expect(existsSync(billingPath)).toBe(true);
+      const sql = readFileSync(billingPath, 'utf-8');
+
+      expect(sql).toMatch(
+        /CREATE TYPE\s+subscription_status_enum\s+AS ENUM\s*\(\s*'TRIAL'\s*,\s*'ACTIVE'\s*,\s*'PAST_DUE'\s*,\s*'SUSPENDED'\s*\)/i,
+      );
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+subscription_status/i);
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+subscription_ends_at/i);
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+billing_phone/i);
+      expect(sql).toMatch(/prevent_merchant_billing_tampering/i);
+      expect(sql).toMatch(/BEFORE UPDATE ON\s+merchants/i);
+    });
+  });
 });
 

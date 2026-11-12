@@ -8,13 +8,21 @@ export type MerchantStatus =
   | 'PENDING_VERIFICATION';
 
 /**
+ * Estados del ciclo comercial / facturación de la suscripción (Fase 3).
+ */
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED';
+
+/**
  * Entidad de dominio que representa un Comercio Suscriptor de TransferYA.
  */
 export interface Merchant {
   id: string; // UUID
   name: string; // Nombre comercial
   status: MerchantStatus;
-  subscriptionExpiresAt?: number | null; // Timestamp epoch ms
+  subscriptionStatus?: SubscriptionStatus;
+  subscriptionEndsAt?: number | null; // Timestamp epoch ms (Fase 3)
+  subscriptionExpiresAt?: number | null; // Timestamp epoch ms (heredado)
+  billingPhone?: string | null; // WhatsApp E.164 del dueño para cobros
   createdAt: number;
 }
 

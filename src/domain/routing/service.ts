@@ -1,3 +1,7 @@
+import {
+  evaluateEffectiveSubscriptionStatus,
+  isSubscriptionAllowedToDispatch,
+} from './billing.js';
 import { normalizePhoneNumberE164 } from './phone-utils.js';
 import type {
   CashierRecipient,
@@ -33,24 +37,16 @@ export class MerchantRoutingService {
       };
     }
 
-    if (merchant.status !== 'ACTIVE') {
+    const effectiveSubStatus = evaluateEffectiveSubscriptionStatus(merchant, now);
+    if (!isSubscriptionAllowedToDispatch(effectiveSubStatus)) {
+      const isSuspended =
+        merchant.status !== 'ACTIVE' || effectiveSubStatus === 'SUSPENDED';
       return {
         success: false,
         reason: 'MERCHANT_INACTIVE',
-        message: 'El comercio no se encuentra activo',
-        merchant,
-      };
-    }
-
-    if (
-      merchant.subscriptionExpiresAt !== null &&
-      merchant.subscriptionExpiresAt !== undefined &&
-      merchant.subscriptionExpiresAt < now
-    ) {
-      return {
-        success: false,
-        reason: 'MERCHANT_INACTIVE',
-        message: 'Suscripcion del comercio expirada',
+        message: isSuspended
+          ? 'El comercio no se encuentra activo'
+          : 'Suscripcion del comercio expirada',
         merchant,
       };
     }

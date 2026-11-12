@@ -262,6 +262,7 @@
             <div class="flex items-center gap-2">
               <h1 class="text-base sm:text-lg font-bold text-white tracking-tight" id="merchantNameTitle">Mi Comercio</h1>
               <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-ty-surface-high border border-ty-border text-ty-cyan">GMT-5</span>
+              <span id="subscriptionPlanBadge" class="hidden px-2 py-0.5 rounded text-[10px] font-mono uppercase border">TRIAL</span>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs text-ty-muted">
               <span id="socketBeacon" class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
@@ -660,6 +661,19 @@
             </div>
             <div id="cashiersList" class="divide-y divide-ty-border"></div>
           </div>
+
+          <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="max-w-lg">
+              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">WhatsApp del Dueño (Facturación y Avisos)</div>
+              <p class="text-xs text-ty-muted mt-1">Número del propietario para recordatorios de renovación o alertas si la suscripción llega a vencer (separado del turno de cajeros).</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <input type="tel" id="billingPhoneInput" placeholder="+573113654315" class="w-44 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-cyan focus:ring-0"/>
+              <button onclick="saveBillingPhone()" id="saveBillingPhoneBtn" class="px-3.5 py-2 rounded-lg bg-ty-surface-high border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan font-bold font-mono text-xs uppercase transition-all">
+                Guardar
+              </button>
+            </div>
+          </div>
         </section>
 
       </main>
@@ -999,9 +1013,84 @@
       document.getElementById("appShell").classList.remove("hidden");
       document.getElementById("merchantNameTitle").textContent = currentMerchant.name;
       document.getElementById("sidebarUserEmail").textContent = currentUser.email || currentUser.id;
+      renderCommercialSubscriptionState();
 
       await refreshMerchantData();
       setupRealtimeSubscription();
+    }
+
+    function renderCommercialSubscriptionState() {
+      const badgeEl = document.getElementById("subscriptionPlanBadge");
+      const billingInput = document.getElementById("billingPhoneInput");
+      if (billingInput && currentMerchant?.billing_phone) {
+        billingInput.value = currentMerchant.billing_phone;
+      }
+      if (!badgeEl) return;
+
+      const rawStatus = currentMerchant?.subscription_status;
+      if (!rawStatus) {
+        badgeEl.classList.add("hidden");
+        return;
+      }
+
+      const endsAtIso = currentMerchant.subscription_ends_at || currentMerchant.subscription_expires_at;
+      const endsAtMs = endsAtIso ? new Date(endsAtIso).getTime() : null;
+      const nowMs = Date.now();
+      const effectiveStatus =
+        currentMerchant.status === "SUSPENDED" || rawStatus === "SUSPENDED"
+          ? "SUSPENDED"
+          : (endsAtMs !== null && endsAtMs < nowMs) || rawStatus === "PAST_DUE"
+            ? "PAST_DUE"
+            : rawStatus;
+
+      const daysLeft = endsAtMs && endsAtMs > nowMs ? Math.ceil((endsAtMs - nowMs) / 86400000) : 0;
+
+      if (effectiveStatus === "ACTIVE") {
+        badgeEl.textContent = daysLeft > 0 ? `PRO • ${daysLeft}d` : "PRO ACTIVO";
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-mono uppercase border bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald";
+      } else if (effectiveStatus === "TRIAL") {
+        badgeEl.textContent = daysLeft > 0 ? `TRIAL • ${daysLeft}d` : "TRIAL";
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-mono uppercase border bg-ty-cyan/10 border-ty-cyan/40 text-ty-cyan";
+      } else if (effectiveStatus === "PAST_DUE") {
+        badgeEl.textContent = "SUSCRIPCIÓN VENCIDA";
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-mono uppercase border bg-ty-rose/10 border-ty-rose/40 text-ty-rose";
+      } else {
+        badgeEl.textContent = "PAUSADO";
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-mono uppercase border bg-ty-amber/10 border-ty-amber/40 text-ty-amber";
+      }
+      badgeEl.classList.remove("hidden");
+    }
+
+    async function saveBillingPhone() {
+      if (!currentMerchant) return;
+      const rawPhone = (document.getElementById("billingPhoneInput")?.value || "").trim().replace(/[\s()-]/g, "");
+      if (rawPhone && !/^\+\d{8,15}$/.test(rawPhone)) {
+        showToast("Usa formato internacional E.164 (ej: +573113654315)", true);
+        return;
+      }
+
+      const btn = document.getElementById("saveBillingPhoneBtn");
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("merchants")
+          .update({ billing_phone: rawPhone || null })
+          .eq("id", currentMerchant.id)
+          .select()
+          .single();
+
+        if (error) {
+          showToast("Error guardando WhatsApp de facturación: " + error.message, true);
+          return;
+        }
+        if (data) currentMerchant = data;
+        showToast("WhatsApp del dueño actualizado");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Guardar";
+      }
     }
 
     async function insertMerchantForCurrentUser(storeName) {
