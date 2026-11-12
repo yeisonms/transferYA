@@ -27,6 +27,11 @@ import type {
   IPipelineNotificationRepository,
   PipelineNotificationUpdate,
 } from '../pipeline/types.js';
+import type {
+  AdminDeviceRow,
+  AdminMerchantRow,
+  IAdminSubscriptionsRepository,
+} from '../admin/types.js';
 
 export interface SupabaseConfig {
   supabaseUrl: string;
@@ -59,6 +64,7 @@ export class SupabaseRepository
     IDeviceHealthRepository,
     IPaymentFingerprintRepository,
     IMerchantRoutingRepository,
+    IAdminSubscriptionsRepository,
     INonceCache
 {
   private readonly baseUrl: string;
@@ -692,5 +698,77 @@ export class SupabaseRepository
     }
 
     return true;
+  }
+
+  // -------------------------------------------------------------
+  // IAdminSubscriptionsRepository
+  // -------------------------------------------------------------
+
+  async getAllMerchants(): Promise<AdminMerchantRow[]> {
+    const res = await fetch(`${this.baseUrl}/rest/v1/merchants?select=*&order=created_at.desc`, {
+      headers: this.headers,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Error obteniendo comercios para Super-Admin (${res.status}): ${errText}`);
+    }
+    const rows = (await res.json()) as any[];
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async getAllDevices(): Promise<AdminDeviceRow[]> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/devices?select=id,merchant_id,label,status,last_heartbeat_at`,
+      { headers: this.headers },
+    );
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Error obteniendo dispositivos para Super-Admin (${res.status}): ${errText}`);
+    }
+    const rows = (await res.json()) as any[];
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async getMerchantById(merchantId: string): Promise<AdminMerchantRow | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}&select=*`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+    return rows[0] as AdminMerchantRow;
+  }
+
+  async updateMerchantSubscription(
+    merchantId: string,
+    updates: {
+      subscription_status?: string;
+      subscription_ends_at?: string;
+      subscription_expires_at?: string;
+      status?: string;
+      billing_phone?: string;
+      updated_at?: string;
+    },
+  ): Promise<AdminMerchantRow | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}`,
+      {
+        method: 'PATCH',
+        headers: this.headers,
+        body: JSON.stringify(updates),
+      },
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        `Error actualizando suscripción de comercio ${merchantId} (${res.status}): ${errText}`,
+      );
+    }
+
+    const updated = (await res.json()) as any[];
+    if (!Array.isArray(updated) || updated.length === 0) return null;
+    return updated[0] as AdminMerchantRow;
   }
 }

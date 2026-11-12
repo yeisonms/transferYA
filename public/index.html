@@ -224,6 +224,15 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
             <span class="text-sm">Cajeros WhatsApp</span>
           </button>
+
+          <!-- SUPER-ADMIN BOTÓN (SOLO VISIBLE PARA MURSAT) -->
+          <button onclick="switchTab('admin')" id="nav-btn-admin" class="hidden nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left border border-ty-amber/20 mt-1">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-ty-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span class="text-sm font-semibold text-ty-amber">Suscripciones</span>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-amber/20 text-ty-amber border border-ty-amber/30">Admin</span>
+          </button>
         </nav>
       </div>
 
@@ -676,6 +685,81 @@
           </div>
         </section>
 
+        <!-- ============================================================ -->
+        <!-- TAB 6: CONTROL DE SUSCRIPCIONES (SUPER-ADMIN MURSAT) -->
+        <!-- ============================================================ -->
+        <section id="tab-admin" class="hidden space-y-6">
+          <div class="p-5 bg-ty-surface-low border border-ty-amber/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-ty-amber/10 border border-ty-amber/40 flex items-center justify-center text-ty-amber shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-lg font-bold text-white">Control de Usuarios &amp; Suscripciones</h2>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-amber/20 text-ty-amber border border-ty-amber/30">Super-Admin</span>
+                </div>
+                <p class="text-xs text-ty-muted">Gestión centralizada del ciclo comercial, prórrogas Pro y corte de servicio (Mursat Solutions).</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="loadAdminMerchants(true)" id="adminRefreshBtn" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-amber text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5">
+                <svg id="adminRefreshIcon" class="w-4 h-4 text-ty-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Recargar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Métricas Resumen -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div class="p-4 bg-ty-surface-low border border-ty-border rounded-xl space-y-1">
+              <div class="text-[11px] font-mono uppercase text-ty-muted">Total Clientes</div>
+              <div class="text-2xl font-bold font-mono text-white" id="adminMetricTotal">0</div>
+            </div>
+            <div class="p-4 bg-ty-surface-low border border-ty-emerald/30 rounded-xl space-y-1">
+              <div class="text-[11px] font-mono uppercase text-ty-emerald">Planes Activos</div>
+              <div class="text-2xl font-bold font-mono text-ty-emerald" id="adminMetricActive">0</div>
+            </div>
+            <div class="p-4 bg-ty-surface-low border border-ty-cyan/30 rounded-xl space-y-1">
+              <div class="text-[11px] font-mono uppercase text-ty-cyan">Período Trial</div>
+              <div class="text-2xl font-bold font-mono text-ty-cyan" id="adminMetricTrial">0</div>
+            </div>
+            <div class="p-4 bg-ty-surface-low border border-ty-rose/30 rounded-xl space-y-1">
+              <div class="text-[11px] font-mono uppercase text-ty-rose">Vencidos / Pausa</div>
+              <div class="text-2xl font-bold font-mono text-ty-rose" id="adminMetricPastDue">0</div>
+            </div>
+          </div>
+
+          <!-- Filtros y Búsqueda -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-sm">
+              <input type="text" id="adminSearchInput" oninput="renderAdminMerchantsList()" placeholder="Buscar por comercio, ID o teléfono..." class="w-full bg-ty-surface border border-ty-border rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-white placeholder-ty-muted focus:border-ty-amber focus:ring-0"/>
+              <svg class="w-4 h-4 text-ty-muted absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" id="adminStatusFilters">
+              <button onclick="setAdminFilter('ALL')" class="admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono bg-ty-surface-high text-ty-amber font-bold border border-ty-amber/40" data-filter="ALL">Todos</button>
+              <button onclick="setAdminFilter('ACTIVE')" class="admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border" data-filter="ACTIVE">Activos</button>
+              <button onclick="setAdminFilter('TRIAL')" class="admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border" data-filter="TRIAL">Trial</button>
+              <button onclick="setAdminFilter('PAST_DUE')" class="admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border" data-filter="PAST_DUE">Vencidos</button>
+              <button onclick="setAdminFilter('SUSPENDED')" class="admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border" data-filter="SUSPENDED">Pausados</button>
+            </div>
+          </div>
+
+          <!-- Lista / Tabla de Comercios -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden shadow-sm">
+            <div class="p-4 border-b border-ty-border font-mono text-xs text-ty-muted hidden md:grid md:grid-cols-12 gap-3">
+              <span class="md:col-span-3">Comercio / Identificador</span>
+              <span class="md:col-span-3">WhatsApp de Cobro</span>
+              <span class="md:col-span-2">Estado Suscripción</span>
+              <span class="md:col-span-2">Vigencia</span>
+              <span class="md:col-span-2 text-right">Acciones Comerciales</span>
+            </div>
+            <div id="adminMerchantsList" class="divide-y divide-ty-border">
+              <div class="p-8 text-center text-xs font-mono text-ty-muted">Cargando base de comercios...</div>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
 
@@ -706,6 +790,12 @@
       <button onclick="switchTab('cashiers')" id="mob-nav-cashiers" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
         <span class="text-[10px] font-mono">Cajeros</span>
+      </button>
+
+      <!-- MOB NAV ADMIN (SOLO VISIBLE PARA MURSAT) -->
+      <button onclick="switchTab('admin')" id="mob-nav-admin" class="hidden flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        <svg class="w-5 h-5 text-ty-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <span class="text-[10px] font-mono font-bold text-ty-amber">Admin</span>
       </button>
     </nav>
   </div>
@@ -847,6 +937,38 @@
     </div>
   </div>
 
+  <!-- MODAL: ACTUALIZAR WHATSAPP DE COBRO (SUPER-ADMIN) -->
+  <div id="adminPhoneModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-ty-surface-low border border-ty-amber/40 rounded-2xl max-w-sm w-full p-6 space-y-4 relative shadow-2xl">
+      <button onclick="closeAdminPhoneModal()" class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-ty-amber"></span>
+          <span>WhatsApp de Cobro del Dueño</span>
+        </h3>
+        <p class="text-xs text-ty-muted mt-1" id="adminPhoneModalStoreName">Comercio</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-mono text-ty-muted uppercase">Número WhatsApp (E.164)</label>
+        <input type="tel" id="adminPhoneModalInput" placeholder="+573113654315" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-amber focus:ring-0"/>
+        <p class="text-[10px] text-ty-muted font-mono">El bot le enviará las alertas de renovación o bloqueo a este número.</p>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="closeAdminPhoneModal()" class="flex-1 py-2 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+          Cancelar
+        </button>
+        <button onclick="saveAdminPhoneModal()" id="adminPhoneModalSaveBtn" class="flex-1 py-2 rounded-lg bg-ty-amber text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Banner -->
   <div id="toastBanner" class="hidden fixed bottom-20 lg:bottom-6 right-4 z-50 px-4 py-3 rounded-xl bg-ty-surface-high border border-ty-emerald/50 text-xs font-mono text-white shadow-2xl flex items-center gap-2.5 max-w-sm">
     <span class="w-2 h-2 rounded-full bg-ty-emerald shrink-0"></span>
@@ -936,6 +1058,7 @@
         currentMerchant = null;
         merchantDevices = [];
         allTransactions = [];
+        renderAdminNavVisibility();
         document.getElementById("appShell").classList.add("hidden");
         document.getElementById("onboardingScreen").classList.add("hidden");
         document.getElementById("authScreen").classList.remove("hidden");
@@ -1014,6 +1137,7 @@
       document.getElementById("merchantNameTitle").textContent = currentMerchant.name;
       document.getElementById("sidebarUserEmail").textContent = currentUser.email || currentUser.id;
       renderCommercialSubscriptionState();
+      renderAdminNavVisibility();
 
       await refreshMerchantData();
       setupRealtimeSubscription();
@@ -2651,24 +2775,342 @@
       }
     }
 
+    function isSuperAdmin() {
+      if (!currentUser) return false;
+      const allowedIds = ["44737b1e-254d-4014-9f24-34bcd9340768"];
+      const allowedEmails = ["yeisonm@unicauca.edu.co"];
+      if (allowedIds.includes(currentUser.id)) return true;
+      if (currentUser.email && allowedEmails.includes(currentUser.email.toLowerCase().trim())) return true;
+      return false;
+    }
+
+    function renderAdminNavVisibility() {
+      const isAdm = isSuperAdmin();
+      const deskBtn = document.getElementById("nav-btn-admin");
+      const mobBtn = document.getElementById("mob-nav-admin");
+      if (isAdm) {
+        deskBtn?.classList.remove("hidden");
+        mobBtn?.classList.remove("hidden");
+      } else {
+        deskBtn?.classList.add("hidden");
+        mobBtn?.classList.add("hidden");
+        const adminTab = document.getElementById("tab-admin");
+        if (adminTab && !adminTab.classList.contains("hidden")) {
+          switchTab("dashboard");
+        }
+      }
+    }
+
     function switchTab(tabId) {
-      ["dashboard", "history", "pos", "devices", "cashiers"].forEach((t) => {
+      if (tabId === "admin" && !isSuperAdmin()) {
+        showToast("Acceso denegado: solo Super-Admin (Mursat Solutions)", true);
+        tabId = "dashboard";
+      }
+
+      ["dashboard", "history", "pos", "devices", "cashiers", "admin"].forEach((t) => {
         const el = document.getElementById("tab-" + t);
         const deskBtn = document.getElementById("nav-btn-" + t);
         const mobBtn = document.getElementById("mob-nav-" + t);
         if (t === tabId) {
           el?.classList.remove("hidden");
-          deskBtn?.classList.add("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
-          deskBtn?.classList.remove("text-ty-muted");
-          mobBtn?.classList.add("text-ty-emerald"); mobBtn?.classList.remove("text-ty-muted");
+          if (t === "admin") {
+            deskBtn?.classList.add("bg-ty-surface-high", "text-ty-amber", "border-l-2", "border-ty-amber");
+            deskBtn?.classList.remove("text-ty-muted");
+            mobBtn?.classList.add("text-ty-amber"); mobBtn?.classList.remove("text-ty-muted");
+            loadAdminMerchants();
+          } else {
+            deskBtn?.classList.add("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
+            deskBtn?.classList.remove("text-ty-muted");
+            mobBtn?.classList.add("text-ty-emerald"); mobBtn?.classList.remove("text-ty-muted");
+          }
         } else {
           el?.classList.add("hidden");
-          deskBtn?.classList.remove("bg-ty-surface-high", "text-ty-emerald", "border-l-2", "border-ty-emerald");
+          deskBtn?.classList.remove("bg-ty-surface-high", "text-ty-emerald", "text-ty-amber", "border-l-2", "border-ty-emerald", "border-ty-amber");
           deskBtn?.classList.add("text-ty-muted");
-          mobBtn?.classList.remove("text-ty-emerald"); mobBtn?.classList.add("text-ty-muted");
+          mobBtn?.classList.remove("text-ty-emerald", "text-ty-amber"); mobBtn?.classList.add("text-ty-muted");
         }
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // =========================================================================
+    // 9. PANEL SUPER-ADMIN (CONTROL DE USUARIOS & SUSCRIPCIONES - MURSAT)
+    // =========================================================================
+    let adminMerchants = [];
+    let adminCurrentFilter = "ALL";
+    let adminEditingMerchantId = null;
+
+    async function loadAdminMerchants(showToastFeedback = false) {
+      if (!isSuperAdmin() || !currentSession?.access_token) return;
+
+      const refreshIcon = document.getElementById("adminRefreshIcon");
+      if (refreshIcon) refreshIcon.classList.add("animate-spin");
+
+      try {
+        const res = await fetch("/api/v1/admin/subscriptions", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.message || `Error cargando comercios (${res.status})`, true);
+          return;
+        }
+
+        const data = await res.json();
+        adminMerchants = data.merchants || [];
+        updateAdminMetrics();
+        renderAdminMerchantsList();
+
+        if (showToastFeedback) {
+          showToast("Lista de comercios actualizada.");
+        }
+      } catch (err) {
+        showToast("Error de conexión consultando Super-Admin API", true);
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove("animate-spin");
+      }
+    }
+
+    function updateAdminMetrics() {
+      const total = adminMerchants.length;
+      let active = 0;
+      let trial = 0;
+      let pastDue = 0;
+
+      adminMerchants.forEach((m) => {
+        const st = m.effectiveSubscriptionStatus;
+        if (st === "ACTIVE") active++;
+        else if (st === "TRIAL") trial++;
+        else if (st === "PAST_DUE" || st === "SUSPENDED") pastDue++;
+      });
+
+      const elTot = document.getElementById("adminMetricTotal");
+      const elAct = document.getElementById("adminMetricActive");
+      const elTri = document.getElementById("adminMetricTrial");
+      const elPas = document.getElementById("adminMetricPastDue");
+
+      if (elTot) elTot.textContent = total;
+      if (elAct) elAct.textContent = active;
+      if (elTri) elTri.textContent = trial;
+      if (elPas) elPas.textContent = pastDue;
+    }
+
+    function setAdminFilter(filter) {
+      adminCurrentFilter = filter;
+      document.querySelectorAll(".admin-filter-btn").forEach((btn) => {
+        if (btn.getAttribute("data-filter") === filter) {
+          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono bg-ty-surface-high text-ty-amber font-bold border border-ty-amber/40";
+        } else {
+          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border";
+        }
+      });
+      renderAdminMerchantsList();
+    }
+
+    function renderAdminMerchantsList() {
+      const container = document.getElementById("adminMerchantsList");
+      if (!container) return;
+
+      const q = (document.getElementById("adminSearchInput")?.value || "").toLowerCase().trim();
+
+      const filtered = adminMerchants.filter((m) => {
+        if (adminCurrentFilter !== "ALL" && m.effectiveSubscriptionStatus !== adminCurrentFilter) {
+          return false;
+        }
+        if (q) {
+          const matchName = m.name?.toLowerCase().includes(q);
+          const matchId = m.id?.toLowerCase().includes(q);
+          const matchPhone = m.billingPhone?.toLowerCase().includes(q);
+          if (!matchName && !matchId && !matchPhone) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-xs font-mono text-ty-muted">
+            No se encontraron comercios con los filtros actuales.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((m) => {
+        const badgeInfo = getAdminStatusBadge(m.effectiveSubscriptionStatus);
+        const endsDateStr = m.subscriptionEndsAt ? new Date(m.subscriptionEndsAt).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "Sin fecha";
+        const cleanPhone = m.billingPhone ? m.billingPhone.replace(/[^\d+]/g, "") : "";
+        const waLink = cleanPhone ? `https://wa.me/${cleanPhone.replace("+", "")}` : null;
+
+        const isSuspended = m.effectiveSubscriptionStatus === "SUSPENDED";
+        const pauseResumeBtn = isSuspended
+          ? `<button onclick="executeAdminAction('${m.id}', 'RESUME')" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all">Reanudar</button>`
+          : `<button onclick="executeAdminAction('${m.id}', 'PAUSE')" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-rose/40 hover:bg-ty-rose hover:text-white text-ty-rose text-xs font-mono font-bold transition-all">Pausar</button>`;
+
+        return `
+          <div class="p-4 flex flex-col md:grid md:grid-cols-12 gap-3 items-start md:items-center hover:bg-ty-surface/40 transition-colors">
+            <!-- Comercio / ID -->
+            <div class="md:col-span-3 space-y-0.5">
+              <div class="font-bold text-white text-sm flex items-center gap-2">
+                <span>${escapeHtml(m.name)}</span>
+                ${m.id === currentMerchant?.id ? '<span class="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30">Tu Cuenta</span>' : ''}
+              </div>
+              <div class="text-[11px] font-mono text-ty-muted truncate flex items-center gap-1.5" title="${m.id}">
+                <span>ID: ${m.id.substring(0, 8)}...</span>
+                <span>•</span>
+                <span>${m.onlineDevices}/${m.totalDevices} nodos</span>
+                <span class="w-1.5 h-1.5 rounded-full ${m.onlineDevices > 0 ? "bg-ty-emerald" : "bg-ty-border"}"></span>
+              </div>
+            </div>
+
+            <!-- WhatsApp de Cobro -->
+            <div class="md:col-span-3 text-xs font-mono flex items-center gap-2">
+              ${waLink ? `
+                <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-ty-emerald hover:underline">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+                  <span>${escapeHtml(m.billingPhone)}</span>
+                </a>
+              ` : `
+                <span class="text-ty-muted">Sin teléfono</span>
+              `}
+              <button onclick="openAdminPhoneModal('${m.id}', '${escapeHtml(m.name)}', '${escapeHtml(m.billingPhone || "")}')" class="p-1 rounded hover:bg-ty-surface text-ty-muted hover:text-ty-amber transition-all" title="Editar WhatsApp de Cobro">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
+            </div>
+
+            <!-- Estado Suscripción -->
+            <div class="md:col-span-2">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono uppercase border ${badgeInfo.className}">
+                <span class="w-1.5 h-1.5 rounded-full ${badgeInfo.dotColor}"></span>
+                <span>${badgeInfo.label}</span>
+              </span>
+            </div>
+
+            <!-- Vigencia -->
+            <div class="md:col-span-2 text-xs font-mono space-y-0.5">
+              <div class="${m.remainingDays > 0 ? "text-white" : "text-ty-rose font-bold"}">
+                ${m.remainingDays > 0 ? `${m.remainingDays} días restantes` : "Vencido"}
+              </div>
+              <div class="text-[10px] text-ty-muted">Corte: ${endsDateStr}</div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="md:col-span-2 flex flex-wrap items-center justify-end gap-1.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-ty-border">
+              <button onclick="executeAdminAction('${m.id}', 'EXTEND_30_DAYS')" class="px-2.5 py-1.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all" title="Sumar +30 días Pro">
+                +30d
+              </button>
+              <button onclick="executeAdminAction('${m.id}', 'ACTIVATE_TRIAL', { days: 7 })" class="px-2 py-1.5 rounded-lg bg-ty-cyan/15 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono transition-all" title="Activar 7 días Trial">
+                Trial
+              </button>
+              ${pauseResumeBtn}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function getAdminStatusBadge(status) {
+      switch (status) {
+        case "ACTIVE":
+          return { label: "PRO ACTIVO", className: "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald", dotColor: "bg-ty-emerald" };
+        case "TRIAL":
+          return { label: "TRIAL", className: "bg-ty-cyan/10 border-ty-cyan/40 text-ty-cyan", dotColor: "bg-ty-cyan" };
+        case "PAST_DUE":
+          return { label: "VENCIDO", className: "bg-ty-rose/10 border-ty-rose/40 text-ty-rose", dotColor: "bg-ty-rose" };
+        case "SUSPENDED":
+          return { label: "PAUSADO", className: "bg-ty-amber/10 border-ty-amber/40 text-ty-amber", dotColor: "bg-ty-amber" };
+        default:
+          return { label: status || "DESCONOCIDO", className: "bg-ty-surface border-ty-border text-ty-muted", dotColor: "bg-ty-muted" };
+      }
+    }
+
+    async function executeAdminAction(merchantId, action, extraPayload = {}) {
+      if (!isSuperAdmin() || !currentSession?.access_token) return;
+
+      const actionLabels = {
+        EXTEND_30_DAYS: "¿Confirmas extender +30 Días Pro a este comercio?",
+        ACTIVATE_TRIAL: "¿Confirmas activar 7 días de Trial a este comercio?",
+        PAUSE: "⚠️ ¿Confirmas pausar este comercio? Sus cajeros dejarán de recibir confirmaciones de cobro de inmediato.",
+        RESUME: "¿Confirmas reanudar este comercio?",
+      };
+
+      if (actionLabels[action] && !confirm(actionLabels[action])) {
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/v1/admin/subscriptions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+          body: JSON.stringify({
+            merchantId,
+            action,
+            ...extraPayload,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.message || `Error en acción (${res.status})`, true);
+          return;
+        }
+
+        if (data.merchant) {
+          const idx = adminMerchants.findIndex((m) => m.id === merchantId);
+          if (idx !== -1) {
+            adminMerchants[idx] = data.merchant;
+          }
+          if (currentMerchant && currentMerchant.id === merchantId) {
+            currentMerchant.subscription_status = data.merchant.subscriptionStatus;
+            currentMerchant.subscription_ends_at = data.merchant.subscriptionEndsAtIso;
+            currentMerchant.status = data.merchant.status;
+            currentMerchant.billing_phone = data.merchant.billingPhone;
+            renderCommercialSubscriptionState();
+          }
+        }
+
+        updateAdminMetrics();
+        renderAdminMerchantsList();
+        showToast(data.message || "Acción comercial aplicada exitosamente.");
+      } catch (err) {
+        showToast("Error ejecutando acción administrativa", true);
+      }
+    }
+
+    function openAdminPhoneModal(merchantId, name, currentPhone) {
+      adminEditingMerchantId = merchantId;
+      document.getElementById("adminPhoneModalStoreName").textContent = name;
+      document.getElementById("adminPhoneModalInput").value = currentPhone || "";
+      document.getElementById("adminPhoneModal").classList.remove("hidden");
+    }
+
+    function closeAdminPhoneModal() {
+      adminEditingMerchantId = null;
+      document.getElementById("adminPhoneModal").classList.add("hidden");
+    }
+
+    async function saveAdminPhoneModal() {
+      if (!adminEditingMerchantId) return;
+      const phoneVal = document.getElementById("adminPhoneModalInput").value.trim();
+      const saveBtn = document.getElementById("adminPhoneModalSaveBtn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando...";
+
+      try {
+        await executeAdminAction(adminEditingMerchantId, "UPDATE_BILLING_PHONE", {
+          billingPhone: phoneVal,
+        });
+        closeAdminPhoneModal();
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Guardar";
+      }
     }
 
     function showToast(msg, isError = false) {

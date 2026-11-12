@@ -62,10 +62,11 @@ flowchart LR
 
 ---
 
-## Ticket 20 — Admin API Consolidada y Panel "Control de Usuarios & Suscripciones"
+## Ticket 20 — Admin API Consolidada y Panel "Control de Usuarios & Suscripciones" (Completado)
 
-**Objetivo:** Implementar endpoints administrativos protegidos por rol Super-Admin y consola web para ejecutar **Activar Trial**, **+30 Días Pro**, **Pausar** y **Reactivar**.
+**Objetivo:** Implementar endpoints administrativos protegidos por rol Super-Admin (Mursat Solutions) y consola web para ejecutar **Activar Trial**, **+30 Días Pro**, **Pausar** y **Reactivar**.
 
+- **Estado:** ✅ Completado. 15 pruebas unitarias pasando (`subscriptions-admin.test.ts`), función serverless 8/12 en Vercel, panel integrado en `public/index.html` (restringido con `hidden` para no-admins) y vista dedicada en `public/admin.html`.
 - **Dependencias:** Ticket 18.
 - **Alcance técnico:**
   1. Endpoint consolidado `api/v1/admin/subscriptions.ts` (+ lógica pura en `src/backend/admin/subscriptions.ts`) respetando el límite de 12 Serverless Functions de Vercel Hobby (8/12):
