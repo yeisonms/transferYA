@@ -8,6 +8,7 @@
   <!-- PWA Manifest & Meta Tags -->
   <link rel="manifest" href="/manifest.json"/>
   <meta name="theme-color" content="#090D16"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="TransferYA"/>
@@ -161,7 +162,7 @@
       </form>
 
       <div class="pt-3 border-t border-ty-border flex flex-col gap-2.5 text-center">
-        <button onclick="sendMagicLink()" type="button" class="w-full py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all">
+        <button id="authMagicLinkBtn" onclick="sendMagicLink()" type="button" class="w-full py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed">
           Enviar Magic Link (Acceso sin contraseña)
         </button>
         <p class="text-[11px] font-mono text-ty-muted">Aislamiento Row Level Security activo • Core Engine Operativo</p>
@@ -1012,14 +1013,16 @@
       await loadAuthenticatedMerchant();
     }
 
-    function setAuthMode(mode) {
+    function updateAuthModeUI(mode, preserveFeedback = false) {
       authMode = mode;
       const loginBtn = document.getElementById("authTabLogin");
       const signupBtn = document.getElementById("authTabSignup");
       const storeField = document.getElementById("signupStoreField");
       const submitBtn = document.getElementById("authSubmitBtn");
 
-      document.getElementById("authFeedbackBox").classList.add("hidden");
+      if (!preserveFeedback) {
+        clearAuthFeedback();
+      }
 
       if (mode === "signup") {
         signupBtn.className = "py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all";
@@ -1034,6 +1037,34 @@
       }
     }
 
+    function setAuthMode(mode) {
+      updateAuthModeUI(mode, false);
+    }
+
+    function clearAuthFeedback() {
+      const box = document.getElementById("authFeedbackBox");
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function formatAuthErrorMessage(error) {
+      const raw = String(error?.message || error || "");
+      const status = Number(error?.status || 0);
+      if (status === 429 || /rate\s*limit|too\s*many\s*requests|over_email_send_rate_limit|for security purposes/i.test(raw)) {
+        return "Límite temporal de correos de Supabase (HTTP 429). En Supabase Dashboard -> Authentication -> Providers -> Email desactiva 'Confirm email' (o crea/confirma tu usuario en Authentication -> Users con 'Auto Confirm User') y luego entra por 'Iniciar Sesión'.";
+      }
+      if (/user already registered|already been registered/i.test(raw)) {
+        return "Este correo ya está registrado. Cambia a la pestaña 'Iniciar Sesión' para entrar con tu contraseña.";
+      }
+      if (/email not confirmed/i.test(raw)) {
+        return "Tu cuenta existe pero falta confirmar el correo. Revisa tu bandeja o activa 'Auto Confirm User' en Supabase -> Authentication -> Users.";
+      }
+      if (/invalid login credentials/i.test(raw)) {
+        return "Correo o contraseña incorrectos.";
+      }
+      return raw || "No se pudo completar la autenticación.";
+    }
+
     function showAuthFeedback(msg, isError = false) {
       const box = document.getElementById("authFeedbackBox");
       box.textContent = msg;
@@ -1043,6 +1074,7 @@
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
+      clearAuthFeedback();
       const email = document.getElementById("authEmail").value.trim();
       const password = document.getElementById("authPassword").value;
       const storeName = document.getElementById("authStoreName").value.trim();
@@ -1053,15 +1085,16 @@
         return;
       }
 
+      if (authMode === "signup" && !storeName) {
+        showAuthFeedback("Ingresa el nombre de tu comercio.", true);
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = "Validando...";
 
       try {
         if (authMode === "signup") {
-          if (!storeName) {
-            showAuthFeedback("Ingresa el nombre de tu comercio.", true);
-            return;
-          }
           localStorage.setItem("ty_pending_store_name", storeName);
           const { data, error } = await supabaseClient.auth.signUp({
             email,
@@ -1072,7 +1105,7 @@
             }
           });
           if (error) {
-            showAuthFeedback(error.message, true);
+            showAuthFeedback(formatAuthErrorMessage(error), true);
             return;
           }
           if (!data.session) {
@@ -1082,31 +1115,46 @@
         } else {
           const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
           if (error) {
-            showAuthFeedback("Credenciales inválidas: " + error.message, true);
+            showAuthFeedback(formatAuthErrorMessage(error), true);
             return;
           }
         }
+      } catch (err) {
+        showAuthFeedback(formatAuthErrorMessage(err), true);
       } finally {
         btn.disabled = false;
-        setAuthMode(authMode);
+        updateAuthModeUI(authMode, true);
       }
     }
 
     async function sendMagicLink() {
+      clearAuthFeedback();
       const email = document.getElementById("authEmail").value.trim();
       if (!email) {
         showAuthFeedback("Escribe primero tu correo electrónico arriba para enviarte el enlace mágico.", true);
         return;
       }
-      const { error } = await supabaseClient.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.origin }
-      });
-      if (error) {
-        showAuthFeedback("No se pudo enviar Magic Link: " + error.message, true);
-        return;
+      const btn = document.getElementById("authMagicLinkBtn");
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Enviando enlace...";
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: window.location.origin }
+        });
+        if (error) {
+          showAuthFeedback(formatAuthErrorMessage(error), true);
+          return;
+        }
+        showAuthFeedback("Enlace mágico enviado. Abre tu correo en este dispositivo y haz clic para entrar sin contraseña.", false);
+      } catch (err) {
+        showAuthFeedback(formatAuthErrorMessage(err), true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
       }
-      showAuthFeedback("Enlace mágico enviado. Abre tu correo en este dispositivo y haz clic para entrar sin contraseña.", false);
     }
 
     async function signOutUser() {
