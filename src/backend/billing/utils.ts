@@ -73,3 +73,4 @@ export function extractColombianPhoneNumbers(text: string | null | undefined): s
 
   return Array.from(found);
 }
+

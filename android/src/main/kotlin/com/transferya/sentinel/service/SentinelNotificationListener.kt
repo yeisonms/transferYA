@@ -33,6 +33,21 @@ class SentinelNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "SentinelListener"
 
+        val SUPPORTED_PACKAGES = setOf(
+            "com.nequi.MobileApp",
+            "com.daviplata.appfintech",
+            "com.davivienda.daviplata",
+            "com.davivienda.daviplataapp",
+            "com.davivienda.bancamovil"
+        )
+
+        fun isSupportedPackage(packageName: String?): Boolean {
+            if (packageName.isNullOrBlank()) return false
+            if (SUPPORTED_PACKAGES.contains(packageName)) return true
+            val lower = packageName.lowercase()
+            return lower.contains("daviplata") || lower.contains("nequi")
+        }
+
         @Volatile
         var isConnected: Boolean = false
 
@@ -182,7 +197,7 @@ class SentinelNotificationListener : NotificationListenerService() {
         if (sbn == null) return
 
         val packageName = sbn.packageName ?: return
-        if (packageName != "com.nequi.MobileApp" && packageName != "com.davivienda.daviplata") {
+        if (!isSupportedPackage(packageName)) {
             return
         }
 
@@ -192,7 +207,12 @@ class SentinelNotificationListener : NotificationListenerService() {
             ?: extras.getCharSequence("android.title.big")
             ?: notification.tickerText)?.toString() ?: ""
 
+        val textLines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+            ?.filterNotNull()
+            ?.joinToString(" ") ?: ""
+
         val rawText = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
+            ?: if (textLines.isNotBlank()) textLines else null
             ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)
             ?: notification.tickerText)?.toString() ?: ""

@@ -3,7 +3,10 @@
  */
 export type SupportedWalletPackage =
   | 'com.nequi.MobileApp'
-  | 'com.davivienda.daviplata';
+  | 'com.davivienda.daviplata'
+  | 'com.daviplata.appfintech'
+  | 'com.davivienda.daviplataapp'
+  | (string & {});
 
 export type SupportedWallet = 'NEQUI' | 'DAVIPLATA';
 

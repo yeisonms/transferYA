@@ -21,7 +21,7 @@ export type ParseResult =
   | { success: true; payment: ParsedPaymentReceipt }
   | {
       success: false;
-      error: 'NOT_A_PAYMENT' | 'UNSUPPORTED_FORMAT';
+      error: 'NOT_A_PAYMENT' | 'UNSUPPORTED_FORMAT' | 'DAVIPLATA_LLAVES_UNSPECIFIED_AMOUNT';
       reason: string;
     };
 

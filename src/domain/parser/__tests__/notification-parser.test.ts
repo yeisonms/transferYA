@@ -164,6 +164,29 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
         expect(res.payment.senderName).toBe('Pedro Picapiedra');
       }
     });
+
+    it('debe parsear formato real DaviPlata sin remitente: Recibiste $100. Para saber mas, consulta tus movimientos.', () => {
+      const rawText = 'Recibiste $100. Para saber mas, consulta tus movimientos.';
+      const res = parseBankingNotification(rawText, 'DaviPlata', 'com.daviplata.appfintech');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('DAVIPLATA');
+        expect(res.payment.amount).toBe(100);
+        expect(res.payment.senderName).toBe('DaviPlata');
+      }
+    });
+
+    it('debe identificar aviso de Llaves sin monto en DaviPlata: Transaccion exitosa: Recibiste Plata de otra entidad usando Llaves', () => {
+      const rawText = 'Transaccion exitosa: Recibiste Plata de otra entidad usando Llaves, consulta el detalle';
+      const res = parseBankingNotification(rawText, 'DaviPlata', 'com.daviplata.appfintech');
+
+      // Al no incluir monto, debe indicar la razón precisa de requerir verificación manual
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error).toBe('DAVIPLATA_LLAVES_UNSPECIFIED_AMOUNT');
+      }
+    });
   });
 
   describe('4. Rechazo Estricto de Falsos Positivos (Anti-Fraude y Publicidad)', () => {

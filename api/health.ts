@@ -9,7 +9,11 @@ export default function handler(req: IncomingMessage, res: ServerResponse) {
       service: 'TransferYA Core API Engine',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
-      supportedWallets: ['com.nequi.MobileApp', 'com.davivienda.daviplata'],
+      supportedWallets: [
+        'com.nequi.MobileApp',
+        'com.daviplata.appfintech',
+        'com.davivienda.daviplata',
+      ],
     }),
   );
 }

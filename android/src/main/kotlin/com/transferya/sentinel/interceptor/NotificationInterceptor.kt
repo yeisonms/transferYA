@@ -17,7 +17,10 @@ class NotificationInterceptor(
     private val deviceId: String,
     private val supportedPackages: Set<String> = setOf(
         "com.nequi.MobileApp",
-        "com.davivienda.daviplata"
+        "com.daviplata.appfintech",
+        "com.davivienda.daviplata",
+        "com.davivienda.daviplataapp",
+        "com.davivienda.bancamovil"
     )
 ) {
     companion object {
@@ -25,12 +28,18 @@ class NotificationInterceptor(
         const val WAKE_LOCK_TIMEOUT_MS = 15000L
     }
 
+    private fun isPackageSupported(pkg: String): Boolean {
+        if (supportedPackages.contains(pkg)) return true
+        val lower = pkg.lowercase()
+        return lower.contains("daviplata") || lower.contains("nequi")
+    }
+
     /**
      * Procesa un evento de notificación capturado por el sistema operativo.
      */
     fun onNotificationReceived(event: RawNotificationEvent): InterceptionResult {
         // 1. Filtrado estricto por nombre de paquete (ignorar apps no bancarias)
-        if (!supportedPackages.contains(event.packageName)) {
+        if (!isPackageSupported(event.packageName)) {
             return InterceptionResult.Ignored(
                 reason = "Paquete no soportado",
                 packageName = event.packageName

@@ -86,3 +86,4 @@ CREATE TRIGGER trg_prevent_billing_invoices_tampering
     BEFORE INSERT OR UPDATE OR DELETE ON billing_invoices
     FOR EACH ROW
     EXECUTE FUNCTION prevent_billing_invoices_tampering();
+
