@@ -86,10 +86,11 @@ flowchart LR
 
 ---
 
-## Ticket 21 — Heartbeat con Estado Comercial y Pantalla de Bloqueo + QR Nequi en Android
+## Ticket 21 — Heartbeat con Estado Comercial y Pantalla de Bloqueo + QR Nequi en Android (Completado)
 
 **Objetivo:** Devolver `subscription_status` desde `/api/v1/devices/heartbeat` hacia Android para detener la captura/envío bancario cuando la cuenta esté en `PAST_DUE` o `SUSPENDED`, mostrar pantalla roja de bloqueo comercial con QR de Nequi y auto-reactivar tras pago.
 
+- **Estado:** ✅ Completado. Backend extiende heartbeat con `{ subscription_status, subscription_ends_at, remaining_days, billing_qr_payload, billing_amount_cop }`. Android Centinela `v0.3.0-beta` compilado con R8 y APK disponible en `public/downloads/`, aborta captura bancaria en `PAST_DUE`/`SUSPENDED`, muestra pantalla de cobro con QR Nequi renderizado con ZXing y botón "Ya pagué, verificar estado". Pruebas Vitest y JUnit pasando al 100%.
 - **Dependencias:** Ticket 18 (y Ticket 20 para pruebas E2E con `+30 Días Pro`).
 - **Alcance técnico:**
   1. Backend (`DeviceHeartbeatHandler` + `api/v1/devices/heartbeat.ts`): consultar comercio asociado e incluir `{ success: true, subscription_status, subscription_ends_at, billing_qr_payload, billing_amount_cop }` en la respuesta `HTTP 200`.

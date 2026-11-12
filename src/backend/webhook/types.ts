@@ -90,6 +90,7 @@ export interface HttpResponse {
     data?: unknown;
     error?: string;
     details?: string;
+    [key: string]: any;
   };
 }
 

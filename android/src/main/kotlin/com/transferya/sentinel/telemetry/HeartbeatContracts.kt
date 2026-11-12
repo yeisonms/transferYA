@@ -12,6 +12,19 @@ data class HeartbeatData(
     val sentAt: Long = System.currentTimeMillis()
 )
 
+/**
+ * Respuesta decodificada del endpoint /api/v1/devices/heartbeat (Ticket 21).
+ */
+data class HeartbeatResponse(
+    val success: Boolean,
+    val subscriptionStatus: String? = null,
+    val subscriptionEndsAt: String? = null,
+    val subscriptionEndsAtMs: Long? = null,
+    val remainingDays: Int? = null,
+    val billingQrPayload: String? = null,
+    val billingAmountCop: Long? = null
+)
+
 interface IDeviceStatusProvider {
     fun getBatteryLevel(): Int
     fun isCharging(): Boolean

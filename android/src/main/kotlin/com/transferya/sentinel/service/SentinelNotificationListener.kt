@@ -203,6 +203,14 @@ class SentinelNotificationListener : NotificationListenerService() {
             return
         }
 
+        // Ticket 21: Bloqueo comercial Centinela (Kill-Switch local)
+        val credentials = SharedPreferencesCredentialsStorage(this)
+        val subStatus = credentials.getSubscriptionStatus()
+        if (subStatus == "PAST_DUE" || subStatus == "SUSPENDED") {
+            Log.w(TAG, "Notificación bancaria ignorada: servicio suspendido comercialmente ($subStatus). Abortando captura y despacho.")
+            return
+        }
+
         Log.i(TAG, "Notificación bancaria detectada de [$packageName]: $rawTitle | $rawText")
 
         val event = RawNotificationEvent(

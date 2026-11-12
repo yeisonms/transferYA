@@ -1,12 +1,32 @@
 import { verifyWebhookRequest } from '../../protocol/signer.js';
+import {
+  evaluateEffectiveSubscriptionStatus,
+  getRemainingSubscriptionDays,
+  resolveSubscriptionEndsAt,
+} from '../../domain/routing/billing.js';
+import type {
+  IMerchantRoutingRepository,
+  SubscriptionStatus,
+} from '../../domain/routing/types.js';
 import type { IDeviceRepository, INonceCache, HttpRequest, HttpResponse } from '../webhook/types.js';
-import type { HeartbeatPayload, IDeviceHealthRepository } from './types.js';
+import type {
+  HeartbeatBillingConfig,
+  HeartbeatPayload,
+  HeartbeatResponseBody,
+  IDeviceHealthRepository,
+} from './types.js';
+
+export const DEFAULT_PLAN_PRO_AMOUNT_COP = 50_000;
+export const DEFAULT_NEQUI_BILLING_QR_PAYLOAD =
+  'https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000';
 
 export interface HeartbeatHandlerDependencies {
   deviceRepository: IDeviceRepository;
   deviceHealthRepository: IDeviceHealthRepository;
+  merchantRoutingRepository?: IMerchantRoutingRepository;
   nonceCache: INonceCache;
   nowProvider?: () => number;
+  billingConfig?: HeartbeatBillingConfig;
 }
 
 /**
@@ -107,12 +127,46 @@ export class DeviceHeartbeatHandler {
       status: 'ONLINE',
     });
 
+    let subscriptionStatus: SubscriptionStatus = 'ACTIVE';
+    let subscriptionEndsAtIso: string | null = null;
+    let subscriptionEndsAtMs: number | null = null;
+    let remainingDays = 0;
+
+    if (this.dependencies.merchantRoutingRepository) {
+      const merchant = await this.dependencies.merchantRoutingRepository.getMerchantByDeviceId(deviceId);
+      if (merchant) {
+        subscriptionStatus = evaluateEffectiveSubscriptionStatus(merchant, now);
+        subscriptionEndsAtMs = resolveSubscriptionEndsAt(merchant);
+        subscriptionEndsAtIso = subscriptionEndsAtMs
+          ? new Date(subscriptionEndsAtMs).toISOString()
+          : null;
+        remainingDays = getRemainingSubscriptionDays(subscriptionEndsAtMs, now);
+      }
+    }
+
+    const billingQrPayload =
+      this.dependencies.billingConfig?.qrPayload ??
+      process.env.BILLING_NEQUI_QR_PAYLOAD ??
+      DEFAULT_NEQUI_BILLING_QR_PAYLOAD;
+
+    const billingAmountCop =
+      this.dependencies.billingConfig?.planAmountCop ??
+      Number(process.env.PLAN_PRO_PRICE_COP || DEFAULT_PLAN_PRO_AMOUNT_COP);
+
+    const responseBody: HeartbeatResponseBody = {
+      success: true,
+      message: 'Heartbeat recibido y registrado exitosamente',
+      subscription_status: subscriptionStatus,
+      subscription_ends_at: subscriptionEndsAtIso,
+      subscription_ends_at_ms: subscriptionEndsAtMs,
+      remaining_days: remainingDays,
+      billing_qr_payload: billingQrPayload,
+      billing_amount_cop: billingAmountCop,
+    };
+
     return {
       statusCode: 200,
-      body: {
-        success: true,
-        message: 'Heartbeat recibido y registrado exitosamente',
-      },
+      body: responseBody,
     };
   }
 

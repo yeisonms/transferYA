@@ -33,5 +33,32 @@ class SharedPreferencesCredentialsStorage(context: Context) : IDeviceCredentials
     fun saveServerUrl(url: String) {
         prefs.edit().putString("server_url", url.trim().trimEnd('/')).apply()
     }
+
+    // =========================================================================
+    // Estado Comercial y Facturación (Ticket 21 / ADR-0003)
+    // =========================================================================
+    fun getSubscriptionStatus(): String = prefs.getString("subscription_status", "TRIAL") ?: "TRIAL"
+    fun saveSubscriptionStatus(status: String) {
+        prefs.edit().putString("subscription_status", status).apply()
+    }
+
+    fun getSubscriptionEndsAt(): Long = prefs.getLong("subscription_ends_at", 0L)
+    fun saveSubscriptionEndsAt(timestampMs: Long) {
+        prefs.edit().putLong("subscription_ends_at", timestampMs).apply()
+    }
+
+    fun getBillingQrPayload(): String = prefs.getString(
+        "billing_qr_payload",
+        "https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000"
+    ) ?: "https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000"
+
+    fun saveBillingQrPayload(payload: String) {
+        prefs.edit().putString("billing_qr_payload", payload).apply()
+    }
+
+    fun getBillingAmountCop(): Long = prefs.getLong("billing_amount_cop", 50_000L)
+    fun saveBillingAmountCop(amount: Long) {
+        prefs.edit().putLong("billing_amount_cop", amount).apply()
+    }
 }
 

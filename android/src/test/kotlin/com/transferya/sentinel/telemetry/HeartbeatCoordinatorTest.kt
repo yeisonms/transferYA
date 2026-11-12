@@ -61,5 +61,33 @@ class HeartbeatCoordinatorTest {
         assertTrue(coordinator.runIfDue(force = true) { true })
         assertEquals(fakeNow, coordinator.lastSuccessAtMs)
     }
+
+    @Test
+    fun `4 debe respetar intervalo liviano de 5 minutos cuando la cuenta esta suspendida o vencida (Ticket 21)`() {
+        var fakeNow = 1_700_000_000_000L
+        val coordinator = HeartbeatCoordinator(
+            intervalMs = HeartbeatCoordinator.DEFAULT_HEARTBEAT_INTERVAL_MS,
+            nowProvider = { fakeNow }
+        )
+
+        // Primer ping exitoso
+        assertTrue(coordinator.runIfDue { true })
+
+        // Pasa a estado suspendido (intervalo cambia a 5 min)
+        coordinator.intervalMs = HeartbeatCoordinator.SUSPENDED_HEARTBEAT_INTERVAL_MS
+
+        // A los 2 minutos (120s) NO debe emitir aún
+        fakeNow += 120_000L
+        assertFalse(coordinator.runIfDue { true })
+
+        // A los 4 minutos tampoco
+        fakeNow += 120_000L
+        assertFalse(coordinator.runIfDue { true })
+
+        // A los 5 minutos exactos (300s desde el inicio) emite
+        fakeNow += 60_000L
+        assertTrue(coordinator.runIfDue { true })
+        assertEquals(fakeNow, coordinator.lastSuccessAtMs)
+    }
 }
 

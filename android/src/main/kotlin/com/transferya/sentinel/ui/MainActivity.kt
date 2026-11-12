@@ -18,6 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.google.zxing.BarcodeFormat
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.transferya.sentinel.crypto.AndroidKeyStoreVault
@@ -93,6 +95,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var enrollButton: Button
     private lateinit var manualEnrollButton: Button
     private lateinit var simulateButton: Button
+
+    private lateinit var operationalContainer: LinearLayout
+    private lateinit var commercialLockContainer: LinearLayout
+    private lateinit var lockTitleView: TextView
+    private lateinit var lockMessageView: TextView
+    private lateinit var lockAmountView: TextView
+    private lateinit var lockQrImageView: ImageView
+    private lateinit var recheckButton: Button
 
     private val qrParser = TransferYaQrParser()
 
@@ -207,16 +217,161 @@ class MainActivity : AppCompatActivity() {
         }
         rootLayout.addView(subtitleView)
 
+        // =====================================================================
+        // CONTENEDOR 1: PANTALLA ROJA DE BLOQUEO COMERCIAL (Ticket 21 / QR Nequi)
+        // =====================================================================
+        commercialLockContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(32, 32, 32, 32)
+            setBackgroundColor(Color.parseColor("#1C0A0A"))
+            visibility = View.GONE
+        }
+
+        lockTitleView = TextView(this).apply {
+            text = "⚠️ SERVICIO SUSPENDIDO — PLAN VENCIDO"
+            textSize = 18f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#EF4444"))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 16)
+        }
+        commercialLockContainer.addView(lockTitleView)
+
+        lockMessageView = TextView(this).apply {
+            text = "Tu suscripción a TransferYA ha finalizado. Los cajeros no están recibiendo confirmaciones de pago en WhatsApp.\n\nPara reactivar el servicio de inmediato, escanea el código QR desde Nequi o transfiere la mensualidad a MurSat Solutions:"
+            textSize = 13f
+            setTextColor(Color.parseColor("#E2E8F0"))
+            gravity = Gravity.CENTER
+            setLineSpacing(4f, 1.15f)
+            setPadding(0, 0, 0, 20)
+        }
+        commercialLockContainer.addView(lockMessageView)
+
+        lockAmountView = TextView(this).apply {
+            text = "VALOR PLAN PRO: $ 50.000 COP"
+            textSize = 15f
+            setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
+            setTextColor(Color.parseColor("#F59E0B"))
+            gravity = Gravity.CENTER
+            setPadding(20, 12, 20, 12)
+            setBackgroundColor(Color.parseColor("#2D1515"))
+        }
+        commercialLockContainer.addView(lockAmountView)
+
+        val qrSpace = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 24) }
+        commercialLockContainer.addView(qrSpace)
+
+        val density = resources.displayMetrics.density
+        val qrSizePx = (240 * density).toInt()
+
+        lockQrImageView = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(qrSizePx, qrSizePx).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+            }
+            setBackgroundColor(Color.WHITE)
+            setPadding(16, 16, 16, 16)
+        }
+        commercialLockContainer.addView(lockQrImageView)
+
+        val spaceQrBottom = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
+        commercialLockContainer.addView(spaceQrBottom)
+
+        val nequiDetailsView = TextView(this).apply {
+            text = "Número Nequi: 311 365 4315\nTitular: MurSat Solutions"
+            textSize = 14f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setPadding(0, 4, 0, 24)
+        }
+        commercialLockContainer.addView(nequiDetailsView)
+
+        recheckButton = Button(this).apply {
+            text = "🔄 Ya pagué, verificar estado"
+            setBackgroundColor(Color.parseColor("#00D26A"))
+            setTextColor(Color.parseColor("#090D16"))
+            setTypeface(null, Typeface.BOLD)
+            setOnClickListener {
+                SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
+                Toast.makeText(this@MainActivity, "🔄 Consultando estado del servicio con el servidor...", Toast.LENGTH_SHORT).show()
+                isEnabled = false
+                text = "⏳ Verificando reactivación..."
+                postDelayed({
+                    isEnabled = true
+                    text = "🔄 Ya pagué, verificar estado"
+                    updateUI()
+                    val st = credentialsStorage.getSubscriptionStatus()
+                    if (st != "PAST_DUE" && st != "SUSPENDED") {
+                        Toast.makeText(this@MainActivity, "✅ ¡Plan reactivado exitosamente! Centinela operativo.", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "El plan aún figura pendiente de pago.", Toast.LENGTH_SHORT).show()
+                    }
+                }, 2000)
+            }
+        }
+        commercialLockContainer.addView(recheckButton)
+
+        val spaceLock1 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
+        commercialLockContainer.addView(spaceLock1)
+
+        val openNequiButton = Button(this).apply {
+            text = "📲 Abrir Nequi en este celular"
+            setBackgroundColor(Color.parseColor("#1E293B"))
+            setTextColor(Color.parseColor("#38BDF8"))
+            setOnClickListener {
+                try {
+                    val launchIntent = packageManager.getLaunchIntentForPackage("com.nequi.MobileApp")
+                    if (launchIntent != null) {
+                        startActivity(launchIntent)
+                    } else {
+                        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(credentialsStorage.getBillingQrPayload()))
+                        startActivity(webIntent)
+                    }
+                } catch (_: Exception) {
+                    Toast.makeText(this@MainActivity, "No fue posible abrir la app Nequi.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        commercialLockContainer.addView(openNequiButton)
+
+        val spaceLock2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
+        commercialLockContainer.addView(spaceLock2)
+
+        val copyNequiBtn = Button(this).apply {
+            text = "📋 Copiar Número Nequi (3113654315)"
+            setBackgroundColor(Color.parseColor("#111827"))
+            setTextColor(Color.parseColor("#94A3B8"))
+            textSize = 12f
+            setOnClickListener {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Nequi MurSat", "3113654315")
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this@MainActivity, "Número Nequi copiado: 311 365 4315", Toast.LENGTH_SHORT).show()
+            }
+        }
+        commercialLockContainer.addView(copyNequiBtn)
+
+        rootLayout.addView(commercialLockContainer)
+
+        // =====================================================================
+        // CONTENEDOR 2: OPERACIÓN NORMAL DEL CENTINELA
+        // =====================================================================
+        operationalContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+
         statusView = TextView(this).apply {
             textSize = 14f
             setPadding(28, 24, 28, 24)
             gravity = Gravity.CENTER
             setBackgroundColor(Color.parseColor("#121826"))
         }
-        rootLayout.addView(statusView)
+        operationalContainer.addView(statusView)
 
         val space0 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        rootLayout.addView(space0)
+        operationalContainer.addView(space0)
 
         diagnosticView = TextView(this).apply {
             textSize = 13f
@@ -232,10 +387,10 @@ class MainActivity : AppCompatActivity() {
                 postDelayed({ updateUI() }, 1800)
             }
         }
-        rootLayout.addView(diagnosticView)
+        operationalContainer.addView(diagnosticView)
 
         val space1 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 32) }
-        rootLayout.addView(space1)
+        operationalContainer.addView(space1)
 
         val permissionButton = Button(this).apply {
             text = "🔔 Reconectar Permiso de Notificaciones"
@@ -246,10 +401,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             }
         }
-        rootLayout.addView(permissionButton)
+        operationalContainer.addView(permissionButton)
 
         val space2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        rootLayout.addView(space2)
+        operationalContainer.addView(space2)
 
         val batteryButton = Button(this).apply {
             text = "🔋 Batería e Inicio Automático (Xiaomi/OEM)"
@@ -266,10 +421,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        rootLayout.addView(batteryButton)
+        operationalContainer.addView(batteryButton)
 
         val space2b = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        rootLayout.addView(space2b)
+        operationalContainer.addView(space2b)
 
         simulateButton = Button(this).apply {
             text = "🧪 Simular Notificación Nequi (Aleatorio)"
@@ -280,10 +435,10 @@ class MainActivity : AppCompatActivity() {
                 simulateIncomingPayment()
             }
         }
-        rootLayout.addView(simulateButton)
+        operationalContainer.addView(simulateButton)
 
         val space3 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        rootLayout.addView(space3)
+        operationalContainer.addView(space3)
 
         enrollButton = Button(this).apply {
             text = "📷 Emparejar con Código QR"
@@ -294,10 +449,10 @@ class MainActivity : AppCompatActivity() {
                 startQrEnrollmentFlow()
             }
         }
-        rootLayout.addView(enrollButton)
+        operationalContainer.addView(enrollButton)
 
         val space4 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
-        rootLayout.addView(space4)
+        operationalContainer.addView(space4)
 
         manualEnrollButton = Button(this).apply {
             text = "⌨️ Ingresar Token Manual / Servidor"
@@ -308,7 +463,9 @@ class MainActivity : AppCompatActivity() {
                 showManualEnrollmentDialog()
             }
         }
-        rootLayout.addView(manualEnrollButton)
+        operationalContainer.addView(manualEnrollButton)
+
+        rootLayout.addView(operationalContainer)
 
         scrollWrapper.addView(rootLayout)
         setContentView(scrollWrapper)
@@ -316,6 +473,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI() {
         val state = enrollmentManager.getSentinelState()
+        val subStatus = credentialsStorage.getSubscriptionStatus()
+        val isBlocked = (subStatus == "PAST_DUE" || subStatus == "SUSPENDED") && state == SentinelState.ACTIVE_SENTINEL
+
+        if (isBlocked) {
+            operationalContainer.visibility = View.GONE
+            commercialLockContainer.visibility = View.VISIBLE
+            renderCommercialLock(subStatus)
+            return
+        } else {
+            operationalContainer.visibility = View.VISIBLE
+            commercialLockContainer.visibility = View.GONE
+        }
+
         val isPermGranted = NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)
 
         val pendingCount = sqliteDao.getCountByStatus(NotificationStatus.PENDING)
@@ -359,10 +529,47 @@ class MainActivity : AppCompatActivity() {
         diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery && failedCount == 0 && pendingCount == 0) "#00D26A" else "#F59E0B"))
     }
 
+    private fun renderCommercialLock(subStatus: String) {
+        val isPaused = subStatus == "SUSPENDED"
+        lockTitleView.text = if (isPaused) {
+            "⏸️ SERVICIO PAUSADO POR ADMINISTRACIÓN"
+        } else {
+            "⚠️ SERVICIO SUSPENDIDO — PLAN VENCIDO"
+        }
+        lockTitleView.setTextColor(if (isPaused) Color.parseColor("#F59E0B") else Color.parseColor("#EF4444"))
+
+        val amountCop = credentialsStorage.getBillingAmountCop()
+        val formattedAmount = java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CO")).format(amountCop)
+        lockAmountView.text = "VALOR PLAN PRO: $$formattedAmount COP"
+
+        val qrPayload = credentialsStorage.getBillingQrPayload()
+        try {
+            val barcodeEncoder = BarcodeEncoder()
+            val density = resources.displayMetrics.density
+            val sizePx = (240 * density).toInt()
+            val bitmap = barcodeEncoder.encodeBitmap(qrPayload, BarcodeFormat.QR_CODE, sizePx, sizePx)
+            lockQrImageView.setImageBitmap(bitmap)
+            lockQrImageView.visibility = View.VISIBLE
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error generando QR Nequi", e)
+            lockQrImageView.visibility = View.GONE
+        }
+    }
+
     private fun simulateIncomingPayment() {
         val state = enrollmentManager.getSentinelState()
         if (state != SentinelState.ACTIVE_SENTINEL) {
             Toast.makeText(this, "Empareja el dispositivo primero", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val subStatus = credentialsStorage.getSubscriptionStatus()
+        if (subStatus == "PAST_DUE" || subStatus == "SUSPENDED") {
+            AlertDialog.Builder(this)
+                .setTitle("⚠️ Simulación Bloqueada")
+                .setMessage("El servicio está suspendido o vencido ($subStatus). El Centinela no procesa pagos mientras la cuenta no esté activa.")
+                .setPositiveButton("Aceptar", null)
+                .show()
             return
         }
 

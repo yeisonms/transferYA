@@ -11,8 +11,8 @@ android {
         applicationId = "com.transferya.sentinel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.2.2-beta"
+        versionCode = 5
+        versionName = "0.3.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

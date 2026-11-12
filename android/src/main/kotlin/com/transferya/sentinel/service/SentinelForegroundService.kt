@@ -64,6 +64,11 @@ class SentinelForegroundService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
+        val credentials = SharedPreferencesCredentialsStorage(applicationContext)
+        val initialStatus = credentials.getSubscriptionStatus()
+        if (initialStatus == "PAST_DUE" || initialStatus == "SUSPENDED") {
+            heartbeatCoordinator.intervalMs = HeartbeatCoordinator.SUSPENDED_HEARTBEAT_INTERVAL_MS
+        }
         startWatchdog()
     }
 
@@ -113,7 +118,24 @@ class SentinelForegroundService : Service() {
                     signer = signer,
                     httpClient = NativeSentinelHttpClient(),
                     heartbeatUrl = "$serverUrl/api/v1/devices/heartbeat",
-                    deviceId = deviceId
+                    deviceId = deviceId,
+                    onResponseReceived = { resp ->
+                        resp.subscriptionStatus?.let { status ->
+                            val prevStatus = credentials.getSubscriptionStatus()
+                            credentials.saveSubscriptionStatus(status)
+                            if (status == "PAST_DUE" || status == "SUSPENDED") {
+                                heartbeatCoordinator.intervalMs = HeartbeatCoordinator.SUSPENDED_HEARTBEAT_INTERVAL_MS
+                            } else {
+                                heartbeatCoordinator.intervalMs = HeartbeatCoordinator.DEFAULT_HEARTBEAT_INTERVAL_MS
+                            }
+                            if (prevStatus != status) {
+                                Log.i(TAG, "Estado comercial actualizado: $prevStatus -> $status")
+                            }
+                        }
+                        resp.subscriptionEndsAtMs?.let { credentials.saveSubscriptionEndsAt(it) }
+                        resp.billingQrPayload?.let { credentials.saveBillingQrPayload(it) }
+                        resp.billingAmountCop?.let { credentials.saveBillingAmountCop(it) }
+                    }
                 )
                 val ok = emitter.emitHeartbeat()
                 if (ok) {

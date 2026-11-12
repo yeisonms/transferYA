@@ -23,6 +23,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const heartbeatHandler = new DeviceHeartbeatHandler({
       deviceRepository: repository,
       deviceHealthRepository: repository,
+      merchantRoutingRepository: repository,
       nonceCache: repository,
     });
 

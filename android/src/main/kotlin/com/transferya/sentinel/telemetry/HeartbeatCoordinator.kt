@@ -5,11 +5,12 @@ package com.transferya.sentinel.telemetry
  * Garantiza reintento inmediato si falló la red y cadencia estable tras éxito.
  */
 class HeartbeatCoordinator(
-    val intervalMs: Long = DEFAULT_HEARTBEAT_INTERVAL_MS,
+    var intervalMs: Long = DEFAULT_HEARTBEAT_INTERVAL_MS,
     private val nowProvider: () -> Long = System::currentTimeMillis
 ) {
     companion object {
-        const val DEFAULT_HEARTBEAT_INTERVAL_MS = 120_000L
+        const val DEFAULT_HEARTBEAT_INTERVAL_MS = 120_000L // 2 minutos en operación normal
+        const val SUSPENDED_HEARTBEAT_INTERVAL_MS = 300_000L // 5 minutos liviano en estado PAST_DUE / SUSPENDED
     }
 
     @Volatile

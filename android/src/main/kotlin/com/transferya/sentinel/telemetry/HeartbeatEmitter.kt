@@ -14,7 +14,8 @@ class HeartbeatEmitter(
     private val httpClient: ISentinelHttpClient,
     private val heartbeatUrl: String,
     private val deviceId: String,
-    private val nowProvider: () -> Long = System::currentTimeMillis
+    private val nowProvider: () -> Long = System::currentTimeMillis,
+    private val onResponseReceived: ((HeartbeatResponse) -> Unit)? = null
 ) : IHeartbeatEmitter {
 
     private fun extractPath(url: String): String {
@@ -32,6 +33,21 @@ class HeartbeatEmitter(
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t")
+    }
+
+    private fun extractJsonString(json: String, key: String): String? {
+        val regex = Regex("\"$key\"\\s*:\\s*\"([^\"]+)\"")
+        return regex.find(json)?.groupValues?.get(1)
+    }
+
+    private fun extractJsonLong(json: String, key: String): Long? {
+        val regex = Regex("\"$key\"\\s*:\\s*([0-9]+)")
+        return regex.find(json)?.groupValues?.get(1)?.toLongOrNull()
+    }
+
+    private fun extractJsonInt(json: String, key: String): Int? {
+        val regex = Regex("\"$key\"\\s*:\\s*([0-9]+)")
+        return regex.find(json)?.groupValues?.get(1)?.toIntOrNull()
     }
 
     override fun emitHeartbeat(): Boolean {
@@ -59,7 +75,21 @@ class HeartbeatEmitter(
                 bodyJson = bodyJson
             )
 
-            response.statusCode in 200..299
+            val isSuccess = response.statusCode in 200..299
+            if (isSuccess && response.body.isNotBlank()) {
+                val parsed = HeartbeatResponse(
+                    success = true,
+                    subscriptionStatus = extractJsonString(response.body, "subscription_status"),
+                    subscriptionEndsAt = extractJsonString(response.body, "subscription_ends_at"),
+                    subscriptionEndsAtMs = extractJsonLong(response.body, "subscription_ends_at_ms"),
+                    remainingDays = extractJsonInt(response.body, "remaining_days"),
+                    billingQrPayload = extractJsonString(response.body, "billing_qr_payload"),
+                    billingAmountCop = extractJsonLong(response.body, "billing_amount_cop")
+                )
+                onResponseReceived?.invoke(parsed)
+            }
+
+            isSuccess
         } catch (_: Exception) {
             false
         }

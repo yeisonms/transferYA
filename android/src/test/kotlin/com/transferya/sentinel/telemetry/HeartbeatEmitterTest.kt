@@ -87,5 +87,40 @@ class HeartbeatEmitterTest {
 
         assertFalse(success, "Debe retornar false si el backend responde con error de servidor")
     }
+
+    @Test
+    fun `3 debe decodificar el payload comercial de suscripcion y notificar a onResponseReceived (Ticket 21)`() {
+        var receivedResponse: HeartbeatResponse? = null
+        val mockVault = HmacSignerTest.InMemoryKeyStoreVault()
+        mockVault.storeSecret("heartbeat_key", "secret-test-key-heartbeat-99".toByteArray(Charsets.UTF_8))
+        val customSigner = HmacSigner(mockVault, "heartbeat_key")
+
+        val commercialClient = object : ISentinelHttpClient {
+            override fun post(url: String, headers: Map<String, String>, bodyJson: String): HttpCallResponse {
+                val json = """{"success":true,"subscription_status":"PAST_DUE","subscription_ends_at":"2026-11-12T00:00:00.000Z","subscription_ends_at_ms":1700000000000,"remaining_days":0,"billing_qr_payload":"https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000","billing_amount_cop":50000}"""
+                return HttpCallResponse(200, json)
+            }
+        }
+
+        val commercialEmitter = HeartbeatEmitter(
+            deviceStatusProvider = mockStatusProvider,
+            signer = customSigner,
+            httpClient = commercialClient,
+            heartbeatUrl = testHeartbeatUrl,
+            deviceId = testDeviceId,
+            nowProvider = { fixedNow },
+            onResponseReceived = { resp -> receivedResponse = resp }
+        )
+
+        val success = commercialEmitter.emitHeartbeat()
+
+        assertTrue(success)
+        assertNotNull(receivedResponse)
+        assertEquals("PAST_DUE", receivedResponse?.subscriptionStatus)
+        assertEquals(0, receivedResponse?.remainingDays)
+        assertEquals(50000L, receivedResponse?.billingAmountCop)
+        assertEquals("https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000", receivedResponse?.billingQrPayload)
+        assertEquals(1700000000000L, receivedResponse?.subscriptionEndsAtMs)
+    }
 }
 
