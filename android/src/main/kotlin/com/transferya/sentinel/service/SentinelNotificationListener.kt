@@ -15,6 +15,7 @@ import com.transferya.sentinel.dispatcher.NativeSentinelHttpClient
 import com.transferya.sentinel.dispatcher.NotificationDispatcher
 import com.transferya.sentinel.interceptor.AndroidForegroundController
 import com.transferya.sentinel.interceptor.AndroidWakeLockManager
+import com.transferya.sentinel.interceptor.NotificationFilter
 import com.transferya.sentinel.interceptor.NotificationInterceptor
 import com.transferya.sentinel.interceptor.RawNotificationEvent
 import com.transferya.sentinel.onboarding.DeviceEnrollmentManager
@@ -131,7 +132,7 @@ class SentinelNotificationListener : NotificationListenerService() {
 
             interceptor = NotificationInterceptor(
                 dao = dao,
-                dispatcher = disp,
+                dispatcher = null,
                 wakeLockManager = wakeLockManager,
                 foregroundController = foregroundController,
                 deviceId = deviceId
@@ -150,15 +151,22 @@ class SentinelNotificationListener : NotificationListenerService() {
             return
         }
 
-        val extras = sbn.notification?.extras ?: return
+        val notification = sbn.notification ?: return
+        val extras = notification.extras ?: return
         val rawTitle = (extras.getCharSequence(Notification.EXTRA_TITLE)
             ?: extras.getCharSequence("android.title.big")
-            ?: sbn.notification?.tickerText)?.toString() ?: ""
+            ?: notification.tickerText)?.toString() ?: ""
 
         val rawText = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
             ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)
-            ?: sbn.notification?.tickerText)?.toString() ?: ""
+            ?: notification.tickerText)?.toString() ?: ""
+
+        // Descartar resúmenes de grupo (FLAG_GROUP_SUMMARY) y notificaciones vacías sin texto útil
+        if (!NotificationFilter.shouldProcess(notification.flags, rawTitle, rawText)) {
+            Log.d(TAG, "Notificación descartada por filtro previo (flags=${notification.flags}, vacía o grupo)")
+            return
+        }
 
         Log.i(TAG, "Notificación bancaria detectada de [$packageName]: $rawTitle | $rawText")
 

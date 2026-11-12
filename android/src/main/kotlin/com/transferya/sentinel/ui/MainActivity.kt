@@ -1,9 +1,11 @@
 package com.transferya.sentinel.ui
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -12,8 +14,12 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import com.transferya.sentinel.crypto.AndroidKeyStoreVault
 import com.transferya.sentinel.crypto.HmacSigner
 import com.transferya.sentinel.dispatcher.AndroidConnectivityProvider
@@ -85,7 +91,47 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusView: TextView
     private lateinit var diagnosticView: TextView
     private lateinit var enrollButton: Button
+    private lateinit var manualEnrollButton: Button
     private lateinit var simulateButton: Button
+
+    private val qrParser = TransferYaQrParser()
+
+    private val qrScanLauncher = registerForActivityResult(ScanContract()) { result ->
+        val rawContent = result.contents?.trim()
+        if (rawContent.isNullOrBlank()) {
+            Toast.makeText(this, "Escaneo QR cancelado", Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+
+        val parsed = qrParser.parse(rawContent)
+        if (parsed == null) {
+            AlertDialog.Builder(this)
+                .setTitle("Código QR no válido")
+                .setMessage("El código escaneado no corresponde a un token de TransferYA.\n\nAsegúrate de apuntar al código QR generado en la sección Dispositivos Centinela del panel web.")
+                .setPositiveButton("Reintentar Escaneo") { _, _ -> startQrEnrollmentFlow() }
+                .setNeutralButton("Token Manual") { _, _ -> showManualEnrollmentDialog() }
+                .setNegativeButton("Cancelar", null)
+                .show()
+            return@registerForActivityResult
+        }
+
+        processEnrollment(rawContent)
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchQrScanner()
+        } else {
+            AlertDialog.Builder(this)
+                .setTitle("Permiso de Cámara Requerido")
+                .setMessage("Se necesita acceso a la cámara para escanear el QR de vinculación sin escribir tokens.\n\nTambién puedes pegar el token manualmente si lo prefieres.")
+                .setPositiveButton("Token Manual") { _, _ -> showManualEnrollmentDialog() }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,13 +148,20 @@ class MainActivity : AppCompatActivity() {
 
         // Solicitar permiso de notificaciones de sistema en Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
             }
         }
 
         setupView()
         updateUI()
+        handleIncomingDeepLink(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIncomingDeepLink(intent)
     }
 
     override fun onResume() {
@@ -118,6 +171,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
+        val scrollWrapper = ScrollView(this).apply {
+            isFillViewport = true
+            setBackgroundColor(Color.parseColor("#090D16"))
+        }
+
         val rootLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(48, 48, 48, 48)
@@ -219,17 +277,32 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(space3)
 
         enrollButton = Button(this).apply {
-            text = "⚡ Emparejar Dispositivo (QR / Token)"
+            text = "📷 Emparejar con Código QR"
             setBackgroundColor(Color.parseColor("#00D26A"))
             setTextColor(Color.parseColor("#090D16"))
             setTypeface(null, Typeface.BOLD)
             setOnClickListener {
-                showEnrollmentDialog()
+                startQrEnrollmentFlow()
             }
         }
         rootLayout.addView(enrollButton)
 
-        setContentView(rootLayout)
+        val space4 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
+        rootLayout.addView(space4)
+
+        manualEnrollButton = Button(this).apply {
+            text = "⌨️ Ingresar Token Manual / Servidor"
+            setBackgroundColor(Color.parseColor("#111726"))
+            setTextColor(Color.parseColor("#94A3B8"))
+            textSize = 12f
+            setOnClickListener {
+                showManualEnrollmentDialog()
+            }
+        }
+        rootLayout.addView(manualEnrollButton)
+
+        scrollWrapper.addView(rootLayout)
+        setContentView(scrollWrapper)
     }
 
     private fun updateUI() {
@@ -250,12 +323,12 @@ class MainActivity : AppCompatActivity() {
 
             statusView.text = "🟢 DISPOSITIVO EMPAREJADO\n\nCaja ID: $deviceId\nComercio: $merchantId\nFirma: Hardware KeyStore OK"
             statusView.setTextColor(Color.parseColor("#00D26A"))
-            enrollButton.text = "Re-emparejar / Cambiar Token"
+            enrollButton.text = "📷 Re-emparejar con Código QR"
             startSentinelService()
         } else {
-            statusView.text = "🔴 NO EMPAREJADO\n\nEl dispositivo no tiene secreto HMAC configurado.\nGenera un token en tu panel web y presiona Emparejar."
+            statusView.text = "🔴 NO EMPAREJADO\n\nEl dispositivo no tiene secreto HMAC configurado.\nGenera el QR en el Panel Web y presiona Emparejar."
             statusView.setTextColor(Color.parseColor("#F59E0B"))
-            enrollButton.text = "⚡ Emparejar Dispositivo (QR / Token)"
+            enrollButton.text = "📷 Emparejar con Código QR"
         }
 
         val isListenerBound = SentinelNotificationListener.isConnected
@@ -358,14 +431,55 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showEnrollmentDialog() {
+    private fun startQrEnrollmentFlow() {
+        val hasCameraPerm = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasCameraPerm) {
+            launchQrScanner()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchQrScanner() {
+        val options = ScanOptions().apply {
+            setCaptureActivity(PortraitCaptureActivity::class.java)
+            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            setPrompt("Apunta al código QR en el Panel Web TransferYA")
+            setCameraId(0)
+            setBeepEnabled(true)
+            setBarcodeImageEnabled(false)
+            setOrientationLocked(true)
+        }
+        qrScanLauncher.launch(options)
+    }
+
+    private fun handleIncomingDeepLink(incomingIntent: Intent?) {
+        val rawUri = incomingIntent?.data?.toString()?.trim() ?: return
+        val parsed = qrParser.parse(rawUri) ?: return
+        incomingIntent.data = null
+
+        AlertDialog.Builder(this)
+            .setTitle("Emparejar Dispositivo TransferYA")
+            .setMessage("Se detectó un enlace de emparejamiento para la caja '${parsed.deviceId}'.\n\n¿Deseas vincular este teléfono ahora?")
+            .setPositiveButton("Vincular Ahora") { _, _ ->
+                processEnrollment(rawUri)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun showManualEnrollmentDialog() {
         val dialogLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(48, 32, 48, 16)
         }
 
         val hintText = TextView(this).apply {
-            text = "Pega aquí el URI o Token generado en el panel web de TransferYA:"
+            text = "Modo Manual: pega el URI o Token generado en el panel web de TransferYA:"
             textSize = 14f
             setPadding(0, 0, 0, 16)
         }
@@ -403,7 +517,7 @@ class MainActivity : AppCompatActivity() {
         dialogLayout.addView(serverInput)
 
         AlertDialog.Builder(this)
-            .setTitle("Emparejamiento Zero-Trust")
+            .setTitle("Emparejamiento Manual (Respaldo)")
             .setView(dialogLayout)
             .setPositiveButton("Emparejar") { _, _ ->
                 val rawInput = tokenInput.text.toString().trim()
@@ -441,6 +555,7 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 progressDialog.dismiss()
                 if (result.isSuccess) {
+                    SentinelNotificationListener.forceRebind(this@MainActivity)
                     AlertDialog.Builder(this)
                         .setTitle("✅ ¡Emparejamiento Exitoso!")
                         .setMessage("Dispositivo: ${result.deviceId}\nComercio: ${result.merchantId}\n\nEl secreto criptográfico se ha guardado en el hardware seguro del teléfono.")

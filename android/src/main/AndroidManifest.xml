@@ -2,9 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos de Red y Seguridad -->
+    <!-- Permisos de Red, Cámara QR y Seguridad -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- Permisos de Resiliencia y Mitigación de Batería OEM (ADR-0003) -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -24,15 +26,33 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="34">
 
-        <!-- Actividad Principal: Estado y Enrolamiento QR -->
+        <!-- Actividad Principal: Estado, Escáner QR y Deep Link -->
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="enroll"
+                    android:scheme="transferya" />
+            </intent-filter>
         </activity>
+
+        <!-- Actividad de Escáner QR en orientación vertical -->
+        <activity
+            android:name=".ui.PortraitCaptureActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
 
         <!-- Servicio de Ingesta y Escucha de Notificaciones (Node A) -->
         <service

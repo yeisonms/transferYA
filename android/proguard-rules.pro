@@ -29,6 +29,11 @@
     <methods>;
 }
 
+# 5b. Escáner QR Nativo (ZXing Embedded)
+-keep class com.journeyapps.barcodescanner.** { *; }
+-keep class com.google.zxing.** { *; }
+-dontwarn com.google.zxing.**
+
 # 6. Eliminación de Logs en Compilaciones Release
 # Remueve llamadas a Log.v, Log.d y Log.i en el binario final
 -assumenosideeffects class android.util.Log {

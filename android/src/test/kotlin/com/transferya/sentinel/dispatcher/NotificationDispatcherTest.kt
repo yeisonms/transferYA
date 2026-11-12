@@ -219,5 +219,37 @@ class NotificationDispatcherTest {
         assertEquals(0, dao.getCountByStatus(NotificationStatus.PENDING))
         assertEquals(2, dao.getCountByStatus(NotificationStatus.DISPATCHED))
     }
+
+    @Test
+    fun `7 hilos concurrentes llamando dispatchPending deben enviar cada notificacion una sola vez`() {
+        dao.insertPending(
+            CapturedNotificationEntity(
+                deviceId = testDeviceId,
+                walletPackage = "com.nequi.MobileApp",
+                rawTitle = "Envío",
+                rawText = "KAROLL SIERRA te envió 200, ¡lo mejor!",
+                capturedAt = fixedNow
+            )
+        )
+
+        mockHttpClient.nextResponse = HttpCallResponse(202, """{"success":true}""")
+
+        val startLatch = java.util.concurrent.CountDownLatch(1)
+        val doneLatch = java.util.concurrent.CountDownLatch(2)
+
+        repeat(2) {
+            Thread {
+                startLatch.await()
+                dispatcher.dispatchPending()
+                doneLatch.countDown()
+            }.start()
+        }
+
+        startLatch.countDown()
+        doneLatch.await()
+
+        assertEquals(1, mockHttpClient.recordedCalls.size, "Solo debe haberse realizado 1 HTTP POST entre los 2 hilos")
+        assertEquals(1, dao.getCountByStatus(NotificationStatus.DISPATCHED))
+    }
 }
 

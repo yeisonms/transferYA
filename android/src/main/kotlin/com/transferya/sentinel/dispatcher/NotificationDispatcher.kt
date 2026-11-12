@@ -40,16 +40,21 @@ class NotificationDispatcher(
         return """{"device_id":"${escapeJson(deviceId)}","wallet_package":"${escapeJson(entity.walletPackage)}","raw_title":"${escapeJson(entity.rawTitle)}","raw_text":"${escapeJson(entity.rawText)}","captured_at":${entity.capturedAt},"dispatched_at":$dispatchedAt}"""
     }
 
-    fun dispatchPending(limit: Int = 20): DispatchResult {
+    companion object {
+        // Serializa despachos entre hilos concurrentes para evitar dobles envíos del mismo registro PENDING
+        private val globalDispatchLock = Any()
+    }
+
+    fun dispatchPending(limit: Int = 20): DispatchResult = synchronized(globalDispatchLock) {
         // 1. Restricción de red activa (NetworkType.CONNECTED)
         if (!connectivity.isConnected()) {
-            return DispatchResult.Retry("Sin conectividad de red activa", 0)
+            return@synchronized DispatchResult.Retry("Sin conectividad de red activa", 0)
         }
 
         // 2. Extraer lote de notificaciones en cola FIFO
         val pendingItems = dao.getPendingNotifications(limit)
         if (pendingItems.isEmpty()) {
-            return DispatchResult.Success(0)
+            return@synchronized DispatchResult.Success(0)
         }
 
         val requestPath = extractPath(webhookUrl)
@@ -77,7 +82,7 @@ class NotificationDispatcher(
                 )
             } catch (e: Exception) {
                 dao.incrementRetry(item.id, e.message ?: "Fallo de conexión de red")
-                return DispatchResult.Retry("Fallo de conexión de red: ${e.message}", dispatchedCount)
+                return@synchronized DispatchResult.Retry("Fallo de conexión de red: ${e.message}", dispatchedCount)
             }
 
             when {
@@ -89,20 +94,20 @@ class NotificationDispatcher(
                 // Error de servidor o pasarela (5xx): reintentar con backoff
                 response.statusCode in 500..599 -> {
                     dao.incrementRetry(item.id, "Error de servidor HTTP ${response.statusCode}: ${response.body}")
-                    return DispatchResult.Retry("Error de servidor HTTP ${response.statusCode}", dispatchedCount + 1)
+                    return@synchronized DispatchResult.Retry("Error de servidor HTTP ${response.statusCode}", dispatchedCount + 1)
                 }
                 // Error de cliente irrecuperable (4xx): abortar para no saturar
                 response.statusCode in 400..499 -> {
                     dao.incrementRetry(item.id, "Error fatal HTTP ${response.statusCode}: ${response.body}")
-                    return DispatchResult.FatalFailure("Error fatal HTTP ${response.statusCode}: ${response.body}", item.id)
+                    return@synchronized DispatchResult.FatalFailure("Error fatal HTTP ${response.statusCode}: ${response.body}", item.id)
                 }
                 else -> {
                     dao.incrementRetry(item.id, "Respuesta inesperada HTTP ${response.statusCode}")
-                    return DispatchResult.Retry("Respuesta inesperada HTTP ${response.statusCode}", dispatchedCount + 1)
+                    return@synchronized DispatchResult.Retry("Respuesta inesperada HTTP ${response.statusCode}", dispatchedCount + 1)
                 }
             }
         }
 
-        return DispatchResult.Success(dispatchedCount)
+        return@synchronized DispatchResult.Success(dispatchedCount)
     }
 }

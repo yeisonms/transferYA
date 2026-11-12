@@ -1,6 +1,7 @@
 package com.transferya.sentinel.onboarding
 
 import com.transferya.sentinel.crypto.IKeyStoreVault
+import java.net.URLDecoder
 
 /**
  * Parser estándar para el URI canónico de enrolamiento de TransferYA.
@@ -8,18 +9,26 @@ import com.transferya.sentinel.crypto.IKeyStoreVault
  */
 class TransferYaQrParser : IQrPayloadParser {
     override fun parse(rawQrContent: String): EnrollmentQrPayload? {
-        if (!rawQrContent.startsWith("transferya://enroll?")) {
+        val trimmed = rawQrContent.trim()
+        if (!trimmed.startsWith("transferya://enroll?")) {
             return null
         }
 
-        val queryString = rawQrContent.substringAfter("transferya://enroll?")
+        val queryString = trimmed.substringAfter("transferya://enroll?")
         val params = queryString.split("&").mapNotNull { param ->
             val parts = param.split("=", limit = 2)
-            if (parts.size == 2) parts[0] to parts[1] else null
+            if (parts.size == 2) {
+                val value = try {
+                    URLDecoder.decode(parts[1], "UTF-8")
+                } catch (_: Exception) {
+                    parts[1]
+                }
+                parts[0] to value
+            } else null
         }.toMap()
 
-        val token = params["token"]?.takeIf { it.isNotBlank() } ?: return null
-        val deviceId = params["deviceId"]?.takeIf { it.isNotBlank() } ?: return null
+        val token = params["token"]?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val deviceId = params["deviceId"]?.trim()?.takeIf { it.isNotBlank() } ?: return null
 
         return EnrollmentQrPayload(token = token, deviceId = deviceId)
     }

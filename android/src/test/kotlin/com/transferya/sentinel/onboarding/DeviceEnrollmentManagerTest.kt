@@ -165,5 +165,15 @@ class DeviceEnrollmentManagerTest {
         assertNull(mockStorage.getMerchantId())
         assertEquals(SentinelState.UNENROLLED, manager.getSentinelState())
     }
+
+    @Test
+    fun `8 Parser de QR debe limpiar espacios alrededor y decodificar parametros URL-encoded`() {
+        val rawQr = "  transferya://enroll?token=tok_clean_99&deviceId=dev_caja%5Fprincipal  \n"
+        val payload = qrParser.parse(rawQr)
+
+        assertNotNull(payload)
+        assertEquals("tok_clean_99", payload?.token)
+        assertEquals("dev_caja_principal", payload?.deviceId)
+    }
 }
 
