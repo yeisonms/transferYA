@@ -190,9 +190,10 @@
       <form onsubmit="handleProvisionMerchant(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre Comercial</label>
-          <input type="text" id="provisionStoreName" required placeholder="Ej: Droguería Central" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
+          <input type="text" id="provisionStoreName" required minlength="2" maxlength="80" placeholder="Ej: Droguería Central" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
         </div>
-        <button id="provisionBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 transition-all">
+        <div id="onboardingFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
+        <button id="provisionBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
           Crear Comercio y Entrar
         </button>
       </form>
@@ -201,9 +202,14 @@
         <div class="text-ty-cyan font-bold uppercase">Nota para dueño del Piloto Alpha:</div>
         <p class="leading-relaxed">Si estás reclamando tu caja existente <span class="text-white">Comercio Piloto Alpha</span>, ejecuta en Supabase SQL Editor el UPDATE con tu correo o User ID:</p>
         <div class="p-2 rounded bg-ty-bg text-[10px] text-white select-all break-all" id="onboardingClaimSql"></div>
-        <button onclick="checkMerchantReload()" class="w-full py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-ty-emerald text-xs transition-all">
-          Ya asigné mi comercio, verificar de nuevo
-        </button>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button onclick="copyClaimSql()" type="button" class="sm:w-1/3 py-2 rounded-lg bg-ty-surface-highest border border-ty-border hover:border-ty-cyan text-ty-cyan text-xs transition-all">
+            Copiar SQL
+          </button>
+          <button onclick="checkMerchantReload()" type="button" class="sm:flex-1 py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-ty-emerald text-xs transition-all">
+            Ya asigné mi comercio, verificar de nuevo
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -922,6 +928,32 @@
       await loadAuthenticatedMerchant();
     }
 
+    function clearOnboardingFeedback() {
+      const box = document.getElementById("onboardingFeedbackBox");
+      if (!box) return;
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function showOnboardingFeedback(msg, isError = true) {
+      const box = document.getElementById("onboardingFeedbackBox");
+      if (!box) return;
+      box.textContent = msg;
+      box.className = `p-3 rounded-lg text-xs font-mono border break-words ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.classList.remove("hidden");
+    }
+
+    async function copyClaimSql() {
+      const sql = document.getElementById("onboardingClaimSql")?.textContent?.trim();
+      if (!sql) return;
+      try {
+        await navigator.clipboard.writeText(sql);
+        showOnboardingFeedback("SQL copiado al portapapeles.", false);
+      } catch {
+        showOnboardingFeedback("Selecciona manualmente el SQL y cópialo con Ctrl+C.", true);
+      }
+    }
+
     async function loadAuthenticatedMerchant() {
       const { data: merchants, error } = await supabaseClient
         .from("merchants")
@@ -934,14 +966,17 @@
         return;
       }
 
+      let provisionError = null;
       if (!merchants || merchants.length === 0) {
         // Si registró nombre de tienda al crear cuenta, provisionar automáticamente
         const pendingStore = currentUser.user_metadata?.store_name || localStorage.getItem("ty_pending_store_name");
         if (pendingStore) {
-          const created = await insertMerchantForCurrentUser(pendingStore);
-          if (created) {
+          const result = await insertMerchantForCurrentUser(pendingStore);
+          if (result.data) {
             localStorage.removeItem("ty_pending_store_name");
-            currentMerchant = created;
+            currentMerchant = result.data;
+          } else {
+            provisionError = result.errorMessage;
           }
         }
       } else {
@@ -950,6 +985,9 @@
 
       if (!currentMerchant) {
         showOnboardingScreen();
+        if (provisionError) {
+          showOnboardingFeedback(provisionError, true);
+        }
         return;
       }
 
@@ -963,21 +1001,56 @@
     }
 
     async function insertMerchantForCurrentUser(storeName) {
+      const cleanName = String(storeName || "").trim();
       const { data, error } = await supabaseClient
         .from("merchants")
         .insert({
           owner_id: currentUser.id,
-          name: storeName.trim(),
+          name: cleanName,
           status: "ACTIVE"
         })
         .select()
         .single();
 
-      if (error) {
-        console.warn("No se pudo provisionar automáticamente:", error.message);
-        return null;
+      if (!error && data) {
+        return { data, errorMessage: null };
       }
-      return data;
+
+      // Respaldo autenticado en Backend (/api/v1/merchants/provision):
+      // Permite crear el comercio con owner_id verificado vía JWT aún antes de ejecutar
+      // la migración Strict RLS (cuando Alpha permite `anon` pero bloquea INSERT de `authenticated`).
+      try {
+        const { data: sessData } = await supabaseClient.auth.getSession();
+        const accessToken = sessData?.session?.access_token || currentSession?.access_token;
+        if (accessToken) {
+          const apiRes = await fetch("/api/v1/merchants/provision", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ storeName: cleanName })
+          });
+          const apiJson = await apiRes.json().catch(() => null);
+          if (apiRes.ok && apiJson?.success && apiJson?.data) {
+            return { data: apiJson.data, errorMessage: null };
+          }
+          if (apiJson?.message) {
+            return {
+              data: null,
+              errorMessage: `No se pudo crear el comercio: ${apiJson.message}`
+            };
+          }
+        }
+      } catch (apiErr) {
+        console.warn("Error consultando /api/v1/merchants/provision:", apiErr);
+      }
+
+      const rawMsg = error?.message || "Permiso RLS denegado al insertar en merchants.";
+      return {
+        data: null,
+        errorMessage: `No se pudo crear el comercio (${rawMsg}). Si ya desactivaste políticas Alpha sin activar merchants_owner_insert, ejecuta la migración 20261112000001_multi_tenant_strict_rls.sql en Supabase.`
+      };
     }
 
     function showOnboardingScreen() {
@@ -986,30 +1059,49 @@
       document.getElementById("onboardingUserEmail").textContent = currentUser.email || currentUser.id;
       document.getElementById("onboardingClaimSql").textContent =
         `UPDATE merchants SET owner_id = '${currentUser.id}' WHERE id = 'a0000000-0000-0000-0000-000000000001';`;
+      const inputEl = document.getElementById("provisionStoreName");
+      if (inputEl && !inputEl.value.trim()) {
+        const pending = currentUser.user_metadata?.store_name || localStorage.getItem("ty_pending_store_name") || "";
+        if (pending) inputEl.value = pending;
+      }
     }
 
     async function handleProvisionMerchant(e) {
       e.preventDefault();
+      clearOnboardingFeedback();
       const name = document.getElementById("provisionStoreName").value.trim();
-      if (!name) return;
+      if (name.length < 2) {
+        showOnboardingFeedback("Ingresa un nombre comercial de al menos 2 caracteres.", true);
+        return;
+      }
 
       const btn = document.getElementById("provisionBtn");
       btn.disabled = true;
       btn.textContent = "Creando Comercio...";
 
-      const created = await insertMerchantForCurrentUser(name);
-      btn.disabled = false;
-      btn.textContent = "Crear Comercio y Entrar";
-
-      if (!created) {
-        showToast("Error creando el comercio. Revisa permisos RLS en Supabase.", true);
-        return;
+      try {
+        const result = await insertMerchantForCurrentUser(name);
+        if (!result.data) {
+          const msg = result.errorMessage || "Error creando el comercio en Supabase.";
+          showOnboardingFeedback(msg, true);
+          showToast(msg, true);
+          return;
+        }
+        localStorage.removeItem("ty_pending_store_name");
+        currentMerchant = result.data;
+        await loadAuthenticatedMerchant();
+      } catch (err) {
+        const msg = err?.message || "Error inesperado creando el comercio.";
+        showOnboardingFeedback(msg, true);
+        showToast(msg, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Crear Comercio y Entrar";
       }
-      currentMerchant = created;
-      await loadAuthenticatedMerchant();
     }
 
     async function checkMerchantReload() {
+      clearOnboardingFeedback();
       await loadAuthenticatedMerchant();
     }
 

@@ -34,6 +34,15 @@ export interface SupabaseConfig {
   bearerToken?: string;
 }
 
+export interface OwnedMerchantRecord {
+  id: string;
+  owner_id: string;
+  name: string;
+  status: string;
+  subscription_expires_at: string | null;
+  created_at: string;
+}
+
 /**
  * Adaptador de producción que conecta el Core Backend con Supabase (PostgreSQL)
  * a través de su interfaz REST nativa (PostgREST) con cero dependencias externas.
@@ -581,6 +590,52 @@ export class SupabaseRepository
         ? new Date(m.subscription_expires_at).getTime()
         : null,
       createdAt: new Date(m.created_at).getTime(),
+    };
+  }
+
+  async getMerchantsByOwner(ownerId: string): Promise<OwnedMerchantRecord[]> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?owner_id=eq.${encodeURIComponent(ownerId)}&select=id,owner_id,name,status,subscription_expires_at,created_at&order=created_at.asc&limit=1`,
+      { headers: this.headers },
+    );
+    if (!res.ok) {
+      return [];
+    }
+    const rows = (await res.json()) as OwnedMerchantRecord[];
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async createMerchantForOwner(
+    ownerId: string,
+    name: string,
+  ): Promise<{
+    data: OwnedMerchantRecord | null;
+    status: number;
+    errorMessage?: string;
+  }> {
+    const res = await fetch(`${this.baseUrl}/rest/v1/merchants?select=*`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({
+        owner_id: ownerId,
+        name,
+        status: 'ACTIVE',
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return {
+        data: null,
+        status: res.status,
+        errorMessage: errText || `HTTP ${res.status}`,
+      };
+    }
+
+    const rows = (await res.json()) as OwnedMerchantRecord[];
+    return {
+      data: rows?.[0] ?? null,
+      status: res.status,
     };
   }
 
