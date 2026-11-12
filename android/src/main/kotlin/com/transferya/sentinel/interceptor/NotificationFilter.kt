@@ -26,3 +26,4 @@ object NotificationFilter {
         return true
     }
 }
+
