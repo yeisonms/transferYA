@@ -34,6 +34,9 @@ interface ICapturedNotificationDao {
     fun getById(id: Long): CapturedNotificationEntity?
     fun markAsDispatched(id: Long, dispatchedAt: Long): Boolean
     fun incrementRetry(id: Long, error: String): Boolean
+    fun markAsFailed(id: Long, error: String): Boolean = incrementRetry(id, error)
+    fun failPendingForOtherDevices(activeDeviceId: String): Int = 0
+    fun getLastError(): String? = null
     fun getCountByStatus(status: NotificationStatus): Int
 }
 

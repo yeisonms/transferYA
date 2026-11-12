@@ -130,6 +130,40 @@ class AndroidSqliteNotificationDao(context: Context) :
         return true
     }
 
+    override fun markAsFailed(id: Long, error: String): Boolean {
+        val db = writableDatabase
+        db.execSQL(
+            "UPDATE $TABLE_NAME SET $COL_STATUS = ?, $COL_RETRY_COUNT = $COL_RETRY_COUNT + 1, $COL_LAST_ERROR = ? WHERE $COL_ID = ?",
+            arrayOf(NotificationStatus.FAILED.name, error, id.toString())
+        )
+        return true
+    }
+
+    override fun failPendingForOtherDevices(activeDeviceId: String): Int {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_STATUS, NotificationStatus.FAILED.name)
+            put(COL_LAST_ERROR, "Descartado al re-emparejar a $activeDeviceId")
+        }
+        return db.update(
+            TABLE_NAME,
+            values,
+            "$COL_STATUS = ? AND $COL_DEVICE_ID != ?",
+            arrayOf(NotificationStatus.PENDING.name, activeDeviceId)
+        )
+    }
+
+    override fun getLastError(): String? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT $COL_LAST_ERROR FROM $TABLE_NAME WHERE $COL_LAST_ERROR IS NOT NULL AND $COL_LAST_ERROR != '' ORDER BY $COL_ID DESC LIMIT 1",
+            null
+        )
+        return cursor.use {
+            if (it.moveToNext()) it.getString(0) else null
+        }
+    }
+
     override fun getCountByStatus(status: NotificationStatus): Int {
         val db = readableDatabase
         val cursor = db.rawQuery(

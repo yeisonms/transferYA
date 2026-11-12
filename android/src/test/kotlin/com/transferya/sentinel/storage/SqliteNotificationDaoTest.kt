@@ -121,5 +121,34 @@ class SqliteNotificationDaoTest {
         val totalPending = dao.getCountByStatus(NotificationStatus.PENDING)
         assertEquals(threadCount * itemsPerThread, totalPending, "Todas las inserciones concurrentes deben persistir íntegramente")
     }
+
+    @Test
+    fun `6 debe marcar como FAILED y registrar ultimo error excluyendo la fila de la cola FIFO`() {
+        val id = dao.insertPending(sampleEntity)
+        assertTrue(dao.markAsFailed(id, "Error fatal HTTP 401"))
+
+        val record = dao.getById(id)
+        assertNotNull(record)
+        assertEquals(NotificationStatus.FAILED, record!!.status)
+        assertEquals(1, record.retryCount)
+        assertEquals("Error fatal HTTP 401", record.lastError)
+        assertEquals("Error fatal HTTP 401", dao.getLastError())
+        assertTrue(dao.getPendingNotifications(limit = 10).isEmpty())
+    }
+
+    @Test
+    fun `7 debe descartar filas pendientes de cajas anteriores al re-emparejar`() {
+        val oldId = dao.insertPending(sampleEntity.copy(deviceId = "dev_centinela_caja_1"))
+        val newId = dao.insertPending(sampleEntity.copy(deviceId = "dev_5f38cd_caja_1"))
+
+        val failedCount = dao.failPendingForOtherDevices("dev_5f38cd_caja_1")
+        assertEquals(1, failedCount)
+        assertEquals(NotificationStatus.FAILED, dao.getById(oldId)!!.status)
+        assertEquals(NotificationStatus.PENDING, dao.getById(newId)!!.status)
+
+        val pending = dao.getPendingNotifications(limit = 10)
+        assertEquals(1, pending.size)
+        assertEquals("dev_5f38cd_caja_1", pending[0].deviceId)
+    }
 }
 

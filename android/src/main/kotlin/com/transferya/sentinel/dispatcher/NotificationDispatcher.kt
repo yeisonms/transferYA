@@ -96,9 +96,9 @@ class NotificationDispatcher(
                     dao.incrementRetry(item.id, "Error de servidor HTTP ${response.statusCode}: ${response.body}")
                     return@synchronized DispatchResult.Retry("Error de servidor HTTP ${response.statusCode}", dispatchedCount + 1)
                 }
-                // Error de cliente irrecuperable (4xx): abortar para no saturar
+                // Error de cliente irrecuperable (4xx): marcar FAILED para no atascar la cola FIFO
                 response.statusCode in 400..499 -> {
-                    dao.incrementRetry(item.id, "Error fatal HTTP ${response.statusCode}: ${response.body}")
+                    dao.markAsFailed(item.id, "Error fatal HTTP ${response.statusCode}: ${response.body}")
                     return@synchronized DispatchResult.FatalFailure("Error fatal HTTP ${response.statusCode}: ${response.body}", item.id)
                 }
                 else -> {

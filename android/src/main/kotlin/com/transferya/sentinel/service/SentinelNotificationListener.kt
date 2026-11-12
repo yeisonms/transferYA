@@ -36,6 +36,18 @@ class SentinelNotificationListener : NotificationListenerService() {
         @Volatile
         var isConnected: Boolean = false
 
+        @Volatile
+        private var activeInstance: SentinelNotificationListener? = null
+
+        fun reinitializeIfConnected(context: Context) {
+            try {
+                activeInstance?.ensurePipelineFresh()
+            } catch (e: Exception) {
+                Log.w(TAG, "reinitializeIfConnected warning: ${e.message}")
+            }
+            forceRebind(context)
+        }
+
         fun rebind(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 try {
@@ -72,17 +84,27 @@ class SentinelNotificationListener : NotificationListenerService() {
 
     private var interceptor: NotificationInterceptor? = null
     private var dispatcher: NotificationDispatcher? = null
+    private var initializedDeviceId: String? = null
 
     override fun onCreate() {
         super.onCreate()
-        initPipeline()
+        activeInstance = this
+        ensurePipelineFresh()
+    }
+
+    override fun onDestroy() {
+        if (activeInstance === this) {
+            activeInstance = null
+        }
+        super.onDestroy()
     }
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        activeInstance = this
         isConnected = true
         Log.i(TAG, "NotificationListener conectado con el sistema operativo")
-        initPipeline()
+        ensurePipelineFresh()
         thread {
             try {
                 dispatcher?.dispatchPending()
@@ -99,6 +121,15 @@ class SentinelNotificationListener : NotificationListenerService() {
         rebind(this)
     }
 
+    @Synchronized
+    fun ensurePipelineFresh() {
+        val currentDeviceId = SharedPreferencesCredentialsStorage(this).getDeviceId()
+        if (interceptor == null || dispatcher == null || initializedDeviceId != currentDeviceId) {
+            initPipeline()
+        }
+    }
+
+    @Synchronized
     private fun initPipeline() {
         try {
             val credentialsStorage = SharedPreferencesCredentialsStorage(this)
@@ -107,6 +138,9 @@ class SentinelNotificationListener : NotificationListenerService() {
             val keyStoreVault = AndroidKeyStoreVault(this)
 
             if (deviceId.isNullOrBlank() || !keyStoreVault.hasSecret(DeviceEnrollmentManager.KEYSTORE_ALIAS_SECRET)) {
+                interceptor = null
+                dispatcher = null
+                initializedDeviceId = null
                 Log.w(TAG, "Dispositivo no emparejado aún. Pipeline en espera de credenciales.")
                 return
             }
@@ -137,6 +171,7 @@ class SentinelNotificationListener : NotificationListenerService() {
                 foregroundController = foregroundController,
                 deviceId = deviceId
             )
+            initializedDeviceId = deviceId
             Log.i(TAG, "Pipeline Centinela inicializado exitosamente para caja: $deviceId hacia $webhookUrl")
         } catch (e: Exception) {
             Log.e(TAG, "Error inicializando pipeline Centinela", e)
@@ -177,9 +212,7 @@ class SentinelNotificationListener : NotificationListenerService() {
             postTime = sbn.postTime
         )
 
-        if (interceptor == null) {
-            initPipeline()
-        }
+        ensurePipelineFresh()
 
         val result = interceptor?.onNotificationReceived(event)
         Log.i(TAG, "Resultado de intercepción: $result")

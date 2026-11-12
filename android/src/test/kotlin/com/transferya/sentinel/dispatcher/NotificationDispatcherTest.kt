@@ -251,5 +251,39 @@ class NotificationDispatcherTest {
         assertEquals(1, mockHttpClient.recordedCalls.size, "Solo debe haberse realizado 1 HTTP POST entre los 2 hilos")
         assertEquals(1, dao.getCountByStatus(NotificationStatus.DISPATCHED))
     }
+
+    @Test
+    fun `8 un fallo fatal 401 debe marcar el item FAILED para no bloquear pagos posteriores en cola FIFO`() {
+        val staleId = dao.insertPending(
+            CapturedNotificationEntity(
+                deviceId = "dev_antiguo",
+                walletPackage = "com.nequi.MobileApp",
+                rawTitle = "Nequi",
+                rawText = "Pago antiguo fallido",
+                capturedAt = fixedNow - 5000
+            )
+        )
+        val freshId = dao.insertPending(
+            CapturedNotificationEntity(
+                deviceId = testDeviceId,
+                walletPackage = "com.nequi.MobileApp",
+                rawTitle = "Nequi",
+                rawText = "Pago valido actual",
+                capturedAt = fixedNow - 1000
+            )
+        )
+
+        mockHttpClient.nextResponse = HttpCallResponse(401, """{"error":"UNAUTHORIZED"}""")
+        val firstRun = dispatcher.dispatchPending(limit = 10)
+        assertTrue(firstRun is DispatchResult.FatalFailure)
+        assertEquals(NotificationStatus.FAILED, dao.getById(staleId)!!.status)
+        assertEquals(NotificationStatus.PENDING, dao.getById(freshId)!!.status)
+
+        mockHttpClient.nextResponse = HttpCallResponse(202, """{"success":true}""")
+        val secondRun = dispatcher.dispatchPending(limit = 10)
+        assertTrue(secondRun is DispatchResult.Success)
+        assertEquals(1, (secondRun as DispatchResult.Success).dispatchedCount)
+        assertEquals(NotificationStatus.DISPATCHED, dao.getById(freshId)!!.status)
+    }
 }
 

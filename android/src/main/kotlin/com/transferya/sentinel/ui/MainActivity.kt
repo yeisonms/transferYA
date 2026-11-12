@@ -311,6 +311,8 @@ class MainActivity : AppCompatActivity() {
 
         val pendingCount = sqliteDao.getCountByStatus(NotificationStatus.PENDING)
         val dispatchedCount = sqliteDao.getCountByStatus(NotificationStatus.DISPATCHED)
+        val failedCount = sqliteDao.getCountByStatus(NotificationStatus.FAILED)
+        val lastError = sqliteDao.getLastError()
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
         val isIgnoringBattery = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && powerManager != null) {
@@ -335,9 +337,10 @@ class MainActivity : AppCompatActivity() {
         val listenerText = if (isListenerBound) "🟢 VINCULADO (Recibiendo)" else "🔴 DESCONECTADO (Toca para Reconectar)"
         val permText = if (isPermGranted) "✅ ACTIVO" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
         val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' Requerido"
+        val lastErrorLine = if (!lastError.isNullOrBlank()) "\n• Último Error Red: ${lastError.take(120)}" else ""
 
-        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados"
-        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery) "#00D26A" else "#F59E0B"))
+        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados / $failedCount fallidos$lastErrorLine"
+        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery && failedCount == 0 && pendingCount == 0) "#00D26A" else "#F59E0B"))
     }
 
     private fun simulateIncomingPayment() {
@@ -555,7 +558,8 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 progressDialog.dismiss()
                 if (result.isSuccess) {
-                    SentinelNotificationListener.forceRebind(this@MainActivity)
+                    result.deviceId?.let { sqliteDao.failPendingForOtherDevices(it) }
+                    SentinelNotificationListener.reinitializeIfConnected(this@MainActivity)
                     AlertDialog.Builder(this)
                         .setTitle("✅ ¡Emparejamiento Exitoso!")
                         .setMessage("Dispositivo: ${result.deviceId}\nComercio: ${result.merchantId}\n\nEl secreto criptográfico se ha guardado en el hardware seguro del teléfono.")

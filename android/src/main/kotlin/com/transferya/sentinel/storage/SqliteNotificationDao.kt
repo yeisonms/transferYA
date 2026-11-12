@@ -132,6 +132,48 @@ class SqliteNotificationDao(private val jdbcUrl: String = "jdbc:sqlite::memory:"
         }
     }
 
+    override fun markAsFailed(id: Long, error: String): Boolean = synchronized(dbLock) {
+        val sql = """
+            UPDATE captured_notifications
+            SET status = 'FAILED', retry_count = retry_count + 1, last_error = ?
+            WHERE id = ?
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setString(1, error)
+            stmt.setLong(2, id)
+            stmt.executeUpdate() > 0
+        }
+    }
+
+    override fun failPendingForOtherDevices(activeDeviceId: String): Int = synchronized(dbLock) {
+        val sql = """
+            UPDATE captured_notifications
+            SET status = 'FAILED', last_error = ?
+            WHERE status = 'PENDING' AND device_id != ?
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setString(1, "Descartado al re-emparejar a $activeDeviceId")
+            stmt.setString(2, activeDeviceId)
+            stmt.executeUpdate()
+        }
+    }
+
+    override fun getLastError(): String? = synchronized(dbLock) {
+        val sql = """
+            SELECT last_error FROM captured_notifications
+            WHERE last_error IS NOT NULL AND last_error != ''
+            ORDER BY id DESC LIMIT 1
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.executeQuery().use { rs ->
+                if (rs.next()) rs.getString(1) else null
+            }
+        }
+    }
+
     override fun getCountByStatus(status: NotificationStatus): Int = synchronized(dbLock) {
         val sql = "SELECT COUNT(*) FROM captured_notifications WHERE status = ?"
         connection.prepareStatement(sql).use { stmt ->
