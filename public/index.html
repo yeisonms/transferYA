@@ -296,9 +296,11 @@
               <h1 class="text-base sm:text-lg font-bold text-white tracking-tight" id="merchantNameTitle">Mi Comercio</h1>
               <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-ty-surface-high border border-ty-border text-ty-cyan">GMT-5</span>
             </div>
-            <div class="flex items-center gap-2 text-xs text-ty-muted">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-ty-muted">
               <span id="socketBeacon" class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
               <span id="socketStatusText" class="font-mono text-ty-emerald">Conectando Realtime...</span>
+              <span class="text-ty-border hidden sm:inline">•</span>
+              <span id="sentinelHealthSummary" class="font-mono text-ty-muted hidden sm:inline">Evaluando nodos...</span>
             </div>
           </div>
         </div>
@@ -343,6 +345,17 @@
           </div>
           <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase shrink-0">
             Emparejar Caja 1 (QR)
+          </button>
+        </div>
+
+        <!-- Banner de alerta automática cuando una caja deja de emitir Heartbeat (> 5 min) -->
+        <div id="devicesOfflineBanner" class="hidden p-4 rounded-xl bg-ty-rose/10 border border-ty-rose/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-mono font-bold uppercase text-ty-rose" id="devicesOfflineBannerTitle">Caja Centinela Desconectada</div>
+            <p class="text-xs text-white/90 mt-0.5" id="devicesOfflineBannerBody">Una o más cajas llevan más de 5 minutos sin enviar heartbeat. Revisa internet, batería (Sin restricciones) o abre TransferYA Centinela.</p>
+          </div>
+          <button onclick="switchTab('devices')" class="px-4 py-2 rounded-lg bg-ty-surface border border-ty-rose/50 hover:bg-ty-rose hover:text-white text-ty-rose font-bold font-mono text-xs uppercase shrink-0 transition-all">
+            Revisar Cajas
           </button>
         </div>
 
@@ -851,6 +864,7 @@
     const SUPABASE_URL = "https://yljfzscbxhwdflpkcboy.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsamZ6c2NieGh3ZGZscGtjYm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNTE5OTQsImV4cCI6MjEwOTgyNzk5NH0.QrtmgJeTHiHSBzgxDNQkcU_UrMGBoFkgvUS-r-RPu2I";
     const VALID_PAYMENT_STATUSES = new Set(["PROCESSED", "DISPATCH_FAILED", "ROUTING_FAILED"]);
+    const HEARTBEAT_OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
 
     let supabaseClient = null;
     let currentSession = null;
@@ -861,6 +875,9 @@
     let allTransactions = [];
     let filteredTransactions = [];
     let realtimeChannel = null;
+    let deviceHealthTimer = null;
+    let knownOfflineDeviceIds = new Set();
+    let isHealthBaselineInitialized = false;
 
     let isAudioEnabled = true;
     let audioCtx = null;
@@ -1283,7 +1300,7 @@
       cashierRecords = cashiersData || [];
 
       populateDeviceSelectors();
-      renderDevicesGrid();
+      evaluateDeviceHealthViews(false);
       renderCashiersList();
 
       const noDevicesBanner = document.getElementById("noDevicesBanner");
@@ -1367,7 +1384,15 @@
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "devices", filter: `merchant_id=eq.${currentMerchant.id}` },
-          () => {
+          (payload) => {
+            if (payload.eventType === "UPDATE" && payload.new) {
+              const idx = merchantDevices.findIndex((d) => d.id === payload.new.id);
+              if (idx !== -1) {
+                merchantDevices[idx] = { ...merchantDevices[idx], ...payload.new };
+                evaluateDeviceHealthViews(false);
+                return;
+              }
+            }
             refreshMerchantData();
           }
         )
@@ -1384,9 +1409,19 @@
             beacon.className = "w-2 h-2 rounded-full bg-ty-amber";
           }
         });
+
+      deviceHealthTimer = setInterval(() => {
+        evaluateDeviceHealthViews(true);
+      }, 30000);
     }
 
     function teardownRealtime() {
+      if (deviceHealthTimer) {
+        clearInterval(deviceHealthTimer);
+        deviceHealthTimer = null;
+      }
+      knownOfflineDeviceIds.clear();
+      isHealthBaselineInitialized = false;
       if (realtimeChannel && supabaseClient) {
         supabaseClient.removeChannel(realtimeChannel);
         realtimeChannel = null;
@@ -1831,22 +1866,157 @@
     }
 
     // =========================================================================
-    // 5. GESTIÓN DINÁMICA DE MÚLTIPLES CAJAS + QR AUTENTICADO
+    // 5. GESTIÓN DINÁMICA DE MÚLTIPLES CAJAS + TELEMETRÍA ONLINE/OFFLINE + QR
     // =========================================================================
-    function renderDevicesGrid() {
+    function formatRelativeDuration(ageMs) {
+      const safeMs = Math.max(0, Number(ageMs) || 0);
+      const totalSec = Math.floor(safeMs / 1000);
+      if (totalSec < 60) return `Hace ${totalSec}s`;
+      const totalMin = Math.floor(totalSec / 60);
+      if (totalMin < 60) return `Hace ${totalMin} min`;
+      const hours = Math.floor(totalMin / 60);
+      const remMin = totalMin % 60;
+      if (hours < 24) return remMin > 0 ? `Hace ${hours}h ${remMin}m` : `Hace ${hours}h`;
+      const days = Math.floor(hours / 24);
+      return `Hace ${days}d`;
+    }
+
+    function getDeviceConnectionHealth(device, nowMs = Date.now()) {
+      if (!device || device.status !== "ACTIVE") {
+        return {
+          state: "DISABLED",
+          badgeLabel: device?.status || "INACTIVA",
+          dotClass: "bg-ty-rose",
+          badgeClass: "bg-ty-rose/10 text-ty-rose border border-ty-rose/30",
+          cardBorderClass: "border-ty-border",
+          relativeText: "Deshabilitada",
+          pingColorClass: "text-ty-muted"
+        };
+      }
+
+      if (!device.last_heartbeat_at) {
+        return {
+          state: "PENDING",
+          badgeLabel: "SIN PING",
+          dotClass: "bg-ty-amber",
+          badgeClass: "bg-ty-amber/10 text-ty-amber border border-ty-amber/30",
+          cardBorderClass: "border-ty-amber/30",
+          relativeText: "Esperando primer heartbeat",
+          pingColorClass: "text-ty-amber"
+        };
+      }
+
+      const lastMs = new Date(device.last_heartbeat_at).getTime();
+      if (Number.isNaN(lastMs)) {
+        return {
+          state: "PENDING",
+          badgeLabel: "SIN PING",
+          dotClass: "bg-ty-amber",
+          badgeClass: "bg-ty-amber/10 text-ty-amber border border-ty-amber/30",
+          cardBorderClass: "border-ty-amber/30",
+          relativeText: "Sin fecha válida",
+          pingColorClass: "text-ty-amber"
+        };
+      }
+
+      const ageMs = Math.max(0, nowMs - lastMs);
+      if (ageMs <= HEARTBEAT_OFFLINE_THRESHOLD_MS) {
+        return {
+          state: "ONLINE",
+          badgeLabel: "EN LÍNEA",
+          dotClass: "bg-ty-emerald beacon-pulse",
+          badgeClass: "bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30",
+          cardBorderClass: "border-ty-border",
+          relativeText: formatRelativeDuration(ageMs),
+          pingColorClass: "text-ty-emerald"
+        };
+      }
+
+      return {
+        state: "OFFLINE",
+        badgeLabel: "DESCONECTADA",
+        dotClass: "bg-ty-rose",
+        badgeClass: "bg-ty-rose/10 text-ty-rose border border-ty-rose/40",
+        cardBorderClass: "border-ty-rose/40",
+        relativeText: `Sin señal (${formatRelativeDuration(ageMs)})`,
+        pingColorClass: "text-ty-rose"
+      };
+    }
+
+    function evaluateDeviceHealthViews(notifyTransitions = true) {
+      const nowMs = Date.now();
+      const currentOfflineIds = new Set();
+      let onlineCount = 0;
+      let pendingCount = 0;
+      let activeCount = 0;
+      const offlineNames = [];
+
+      for (const d of merchantDevices) {
+        if (d.status === "ACTIVE") activeCount++;
+        const health = getDeviceConnectionHealth(d, nowMs);
+        if (health.state === "ONLINE") onlineCount++;
+        else if (health.state === "PENDING") pendingCount++;
+        else if (health.state === "OFFLINE") {
+          currentOfflineIds.add(d.id);
+          offlineNames.push(d.label || d.id);
+          if (notifyTransitions && isHealthBaselineInitialized && !knownOfflineDeviceIds.has(d.id)) {
+            showToast(`Caja desconectada: ${d.label || d.id} dejó de enviar heartbeat`, true);
+          }
+        }
+      }
+
+      knownOfflineDeviceIds = currentOfflineIds;
+      isHealthBaselineInitialized = true;
+
+      const summaryEl = document.getElementById("sentinelHealthSummary");
+      if (summaryEl) {
+        if (activeCount === 0) {
+          summaryEl.textContent = "Sin cajas vinculadas";
+          summaryEl.className = "font-mono text-ty-amber hidden sm:inline";
+        } else if (currentOfflineIds.size > 0) {
+          summaryEl.textContent = `${onlineCount}/${activeCount} en línea • ${currentOfflineIds.size} desconectada(s)`;
+          summaryEl.className = "font-mono text-ty-rose hidden sm:inline";
+        } else if (pendingCount > 0 && onlineCount === 0) {
+          summaryEl.textContent = `${pendingCount} caja(s) esperando ping`;
+          summaryEl.className = "font-mono text-ty-amber hidden sm:inline";
+        } else {
+          summaryEl.textContent = `${onlineCount}/${activeCount} cajas en línea`;
+          summaryEl.className = "font-mono text-ty-emerald hidden sm:inline";
+        }
+      }
+
+      const offlineBanner = document.getElementById("devicesOfflineBanner");
+      if (offlineBanner) {
+        if (currentOfflineIds.size > 0) {
+          document.getElementById("devicesOfflineBannerTitle").textContent =
+            currentOfflineIds.size === 1
+              ? `Caja Desconectada: ${offlineNames[0]}`
+              : `${currentOfflineIds.size} Cajas Desconectadas`;
+          document.getElementById("devicesOfflineBannerBody").textContent =
+            `${offlineNames.join(", ")} supera 5 minutos sin emitir heartbeat. Revisa conexión a internet y optimización de batería en ese celular.`;
+          offlineBanner.classList.remove("hidden");
+        } else {
+          offlineBanner.classList.add("hidden");
+        }
+      }
+
+      renderDevicesGrid(nowMs);
+    }
+
+    function renderDevicesGrid(nowMs = Date.now()) {
       const grid = document.getElementById("devicesGrid");
       const cards = merchantDevices.map((d) => {
-        const isActive = d.status === "ACTIVE";
-        const ping = d.last_heartbeat_at ? getColombiaDateTimeLabel(d.last_heartbeat_at) : "Sin heartbeat aún";
+        const health = getDeviceConnectionHealth(d, nowMs);
+        const exactPing = d.last_heartbeat_at ? getColombiaDateTimeLabel(d.last_heartbeat_at) : "Sin registros aún";
         return `
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 flex flex-col justify-between">
+          <div class="bg-ty-surface-low border ${health.cardBorderClass} rounded-xl p-5 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${isActive ? "bg-ty-emerald beacon-pulse" : "bg-ty-rose"}"></span>
+                  <span class="w-2.5 h-2.5 rounded-full ${health.dotClass}"></span>
                   <span class="font-bold text-white text-base">${escapeHtml(d.label || d.id)}</span>
                 </div>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isActive ? "bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/30" : "bg-ty-rose/10 text-ty-rose border border-ty-rose/30"}">${escapeHtml(d.status)}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${health.badgeClass}">${escapeHtml(health.badgeLabel)}</span>
               </div>
               <p class="text-xs font-mono text-ty-muted mb-4">${escapeHtml(d.id)}</p>
 
@@ -1855,9 +2025,13 @@
                   <span class="text-ty-muted">Comercio</span>
                   <span class="text-white">${escapeHtml(currentMerchant.name)}</span>
                 </div>
+                <div class="flex justify-between py-1 border-b border-ty-border/40">
+                  <span class="text-ty-muted">Estado Ping</span>
+                  <span class="${health.pingColorClass} font-semibold">${escapeHtml(health.relativeText)}</span>
+                </div>
                 <div class="flex justify-between py-1">
-                  <span class="text-ty-muted">Última actividad</span>
-                  <span class="text-ty-cyan">${ping}</span>
+                  <span class="text-ty-muted">Último heartbeat</span>
+                  <span class="text-ty-cyan">${escapeHtml(exactPing)}</span>
                 </div>
               </div>
             </div>

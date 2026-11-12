@@ -101,5 +101,33 @@ describe('SupabaseRepository REST Adapter', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     fetchSpy.mockRestore();
   });
+
+  it('debe persistir last_heartbeat_at y updated_at al recibir heartbeat', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ id: 'dev_5f38cd_caja_1' }],
+      text: async () => '',
+    } as any);
+
+    await repository.upsertDeviceHeartbeat({
+      deviceId: 'dev_5f38cd_caja_1',
+      lastSeenAt: 1700000000000,
+      batteryLevel: 88,
+      isCharging: false,
+      networkType: 'WIFI',
+      appVersion: '0.2.2-beta',
+      status: 'ONLINE',
+    });
+
+    const callUrl = String(fetchSpy.mock.calls[0]?.[0]);
+    const callInit = fetchSpy.mock.calls[0]?.[1] as RequestInit;
+    const body = JSON.parse(callInit.body as string);
+    expect(callUrl).toContain('/rest/v1/devices?id=eq.dev_5f38cd_caja_1');
+    expect(callInit.method).toBe('PATCH');
+    expect(body.last_heartbeat_at).toBe('2023-11-14T22:13:20.000Z');
+    expect(body.updated_at).toBe('2023-11-14T22:13:20.000Z');
+    expect(body.status).toBe('ACTIVE');
+    fetchSpy.mockRestore();
+  });
 });
 

@@ -343,17 +343,25 @@ export class SupabaseRepository
   // -------------------------------------------------------------
 
   async upsertDeviceHeartbeat(record: DeviceHealthRecord): Promise<void> {
-    await fetch(
+    const isoTimestamp = new Date(record.lastSeenAt).toISOString();
+    const res = await fetch(
       `${this.baseUrl}/rest/v1/devices?id=eq.${encodeURIComponent(record.deviceId)}`,
       {
         method: 'PATCH',
         headers: this.headers,
         body: JSON.stringify({
-          last_heartbeat_at: new Date(record.lastSeenAt).toISOString(),
+          last_heartbeat_at: isoTimestamp,
+          updated_at: isoTimestamp,
           status: 'ACTIVE',
         }),
       },
     );
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        `Error actualizando heartbeat de dispositivo ${record.deviceId}: ${errText}`,
+      );
+    }
   }
 
   async getDeviceHealth(deviceId: string): Promise<DeviceHealthRecord | null> {

@@ -167,6 +167,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         SentinelNotificationListener.rebind(this)
+        if (enrollmentManager.getSentinelState() == SentinelState.ACTIVE_SENTINEL) {
+            val lastPing = credentialsStorage.getLastHeartbeatAt()
+            if (lastPing <= 0L || (System.currentTimeMillis() - lastPing) >= 60_000L) {
+                SentinelForegroundService.triggerImmediateHeartbeat(this)
+            }
+        }
         updateUI()
     }
 
@@ -219,8 +225,11 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(Color.parseColor("#172033"))
             setOnClickListener {
                 SentinelNotificationListener.forceRebind(this@MainActivity)
-                Toast.makeText(this@MainActivity, "🔄 Re-conectando escucha con el sistema...", Toast.LENGTH_SHORT).show()
-                postDelayed({ updateUI() }, 1000)
+                if (enrollmentManager.getSentinelState() == SentinelState.ACTIVE_SENTINEL) {
+                    SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
+                }
+                Toast.makeText(this@MainActivity, "🔄 Reconectando escucha y enviando heartbeat...", Toast.LENGTH_SHORT).show()
+                postDelayed({ updateUI() }, 1800)
             }
         }
         rootLayout.addView(diagnosticView)
@@ -337,9 +346,16 @@ class MainActivity : AppCompatActivity() {
         val listenerText = if (isListenerBound) "🟢 VINCULADO (Recibiendo)" else "🔴 DESCONECTADO (Toca para Reconectar)"
         val permText = if (isPermGranted) "✅ ACTIVO" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
         val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' Requerido"
+        val lastPingAt = credentialsStorage.getLastHeartbeatAt()
+        val heartbeatText = if (lastPingAt > 0L) {
+            val secAgo = ((System.currentTimeMillis() - lastPingAt) / 1000L).coerceAtLeast(0L)
+            if (secAgo < 60L) "✅ Hace ${secAgo}s" else "✅ Hace ${secAgo / 60L} min"
+        } else {
+            "⏳ En espera (cada 2 min)"
+        }
         val lastErrorLine = if (!lastError.isNullOrBlank()) "\n• Último Error Red: ${lastError.take(120)}" else ""
 
-        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados / $failedCount fallidos$lastErrorLine"
+        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Último Heartbeat: $heartbeatText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados / $failedCount fallidos$lastErrorLine"
         diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery && failedCount == 0 && pendingCount == 0) "#00D26A" else "#F59E0B"))
     }
 
@@ -560,6 +576,7 @@ class MainActivity : AppCompatActivity() {
                 if (result.isSuccess) {
                     result.deviceId?.let { sqliteDao.failPendingForOtherDevices(it) }
                     SentinelNotificationListener.reinitializeIfConnected(this@MainActivity)
+                    SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
                     AlertDialog.Builder(this)
                         .setTitle("✅ ¡Emparejamiento Exitoso!")
                         .setMessage("Dispositivo: ${result.deviceId}\nComercio: ${result.merchantId}\n\nEl secreto criptográfico se ha guardado en el hardware seguro del teléfono.")

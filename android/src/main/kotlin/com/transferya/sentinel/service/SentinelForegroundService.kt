@@ -11,6 +11,15 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import com.transferya.sentinel.crypto.AndroidKeyStoreVault
+import com.transferya.sentinel.crypto.HmacSigner
+import com.transferya.sentinel.dispatcher.AndroidConnectivityProvider
+import com.transferya.sentinel.dispatcher.NativeSentinelHttpClient
+import com.transferya.sentinel.onboarding.DeviceEnrollmentManager
+import com.transferya.sentinel.onboarding.SharedPreferencesCredentialsStorage
+import com.transferya.sentinel.telemetry.AndroidDeviceStatusProvider
+import com.transferya.sentinel.telemetry.HeartbeatCoordinator
+import com.transferya.sentinel.telemetry.HeartbeatEmitter
 import com.transferya.sentinel.ui.MainActivity
 import kotlin.concurrent.thread
 
@@ -22,7 +31,23 @@ class SentinelForegroundService : Service() {
     companion object {
         const val CHANNEL_ID = "transferya_sentinel_channel"
         const val NOTIFICATION_ID = 1001
+        const val ACTION_TRIGGER_HEARTBEAT = "com.transferya.sentinel.ACTION_TRIGGER_HEARTBEAT"
         private const val TAG = "SentinelForeground"
+
+        fun triggerImmediateHeartbeat(context: Context) {
+            try {
+                val intent = Intent(context, SentinelForegroundService::class.java).apply {
+                    action = ACTION_TRIGGER_HEARTBEAT
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "No se pudo disparar heartbeat inmediato: ${e.message}")
+            }
+        }
     }
 
     override fun onCreate() {
@@ -43,11 +68,14 @@ class SentinelForegroundService : Service() {
     }
 
     private var watchdogRunning = true
+    private val heartbeatLock = Any()
+    private val heartbeatCoordinator = HeartbeatCoordinator()
 
     private fun startWatchdog() {
         thread(start = true, isDaemon = true) {
             while (watchdogRunning) {
                 try {
+                    emitHeartbeatIfDue(force = false)
                     Thread.sleep(10000)
                     if (!SentinelNotificationListener.isConnected) {
                         Log.w(TAG, "Watchdog: NotificationListener desconectado. Forzando re-conexión...")
@@ -56,8 +84,45 @@ class SentinelForegroundService : Service() {
                 } catch (_: InterruptedException) {
                     break
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error en watchdog de listener", e)
+                    Log.e(TAG, "Error en watchdog de listener / heartbeat", e)
                 }
+            }
+        }
+    }
+
+    private fun emitHeartbeatIfDue(force: Boolean) {
+        synchronized(heartbeatLock) {
+            val credentials = SharedPreferencesCredentialsStorage(applicationContext)
+            val deviceId = credentials.getDeviceId()
+            val keyStoreVault = AndroidKeyStoreVault(applicationContext)
+            if (deviceId.isNullOrBlank() || !keyStoreVault.hasSecret(DeviceEnrollmentManager.KEYSTORE_ALIAS_SECRET)) {
+                return
+            }
+
+            val connectivity = AndroidConnectivityProvider(applicationContext)
+            if (!connectivity.isConnected()) {
+                return
+            }
+
+            heartbeatCoordinator.runIfDue(force = force) {
+                val serverUrl = credentials.getServerUrl()
+                val signer = HmacSigner(keyStoreVault, DeviceEnrollmentManager.KEYSTORE_ALIAS_SECRET)
+                val statusProvider = AndroidDeviceStatusProvider(applicationContext)
+                val emitter = HeartbeatEmitter(
+                    deviceStatusProvider = statusProvider,
+                    signer = signer,
+                    httpClient = NativeSentinelHttpClient(),
+                    heartbeatUrl = "$serverUrl/api/v1/devices/heartbeat",
+                    deviceId = deviceId
+                )
+                val ok = emitter.emitHeartbeat()
+                if (ok) {
+                    credentials.saveLastHeartbeatAt(System.currentTimeMillis())
+                    Log.i(TAG, "Heartbeat ONLINE confirmado para caja $deviceId")
+                } else {
+                    Log.w(TAG, "Fallo enviando heartbeat para caja $deviceId")
+                }
+                ok
             }
         }
     }
@@ -68,7 +133,16 @@ class SentinelForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "SentinelForegroundService recibido onStartCommand (START_STICKY)")
+        Log.i(TAG, "SentinelForegroundService recibido onStartCommand (action=${intent?.action})")
+        if (intent?.action == ACTION_TRIGGER_HEARTBEAT) {
+            thread(start = true, isDaemon = true) {
+                try {
+                    emitHeartbeatIfDue(force = true)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error en heartbeat inmediato: ${e.message}")
+                }
+            }
+        }
         return START_STICKY
     }
 
