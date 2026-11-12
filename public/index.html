@@ -20,41 +20,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "ty-bg": "#090D16",
-            "ty-surface-low": "#0B101C",
-            "ty-surface": "#111726",
-            "ty-surface-high": "#182032",
-            "ty-surface-highest": "#222B40",
-            "ty-border": "rgba(255, 255, 255, 0.08)",
-            "ty-border-strong": "#1E293B",
-            "ty-emerald": "#00D26A",
-            "ty-emerald-glow": "rgba(0, 210, 106, 0.25)",
-            "ty-cyan": "#38BDF8",
-            "ty-nequi": "#E10098",
-            "ty-nequi-bg": "rgba(225, 0, 152, 0.12)",
-            "ty-daviplata": "#ED1C24",
-            "ty-daviplata-bg": "rgba(237, 28, 36, 0.12)",
-            "ty-amber": "#F59E0B",
-            "ty-rose": "#F43F5E",
-            "ty-text": "#F8FAFC",
-            "ty-muted": "#94A3B8",
-          },
-          fontFamily: {
-            sans: ["Plus Jakarta Sans", "sans-serif"],
-            mono: ["JetBrains Mono", "monospace"],
-          }
-        }
-      }
-    };
-  </script>
+  <!-- Tailwind CSS Compilado Localmente -->
+  <link rel="stylesheet" href="/css/app.css"/>
 
   <!-- Supabase JS Client & Local QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -341,11 +308,16 @@
         <div id="noDevicesBanner" class="hidden p-4 rounded-xl bg-ty-amber/10 border border-ty-amber/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div class="text-xs font-mono font-bold uppercase text-ty-amber">Sin Dispositivo Centinela Vinculado</div>
-            <p class="text-xs text-white/90 mt-0.5">Vincula tu celular Android de caja registradora con código QR para empezar a recibir pagos en tiempo real.</p>
+            <p class="text-xs text-white/90 mt-0.5">Descarga e instala la app Android en tu teléfono de caja registradora y vincúlala con código QR.</p>
           </div>
-          <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase shrink-0">
-            Emparejar Caja 1 (QR)
-          </button>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="/downloads/transferya-sentinel-v0.2.2-beta.apk" download="transferya-sentinel-v0.2.2-beta.apk" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase transition-all">
+              Descargar APK (v0.2.2)
+            </a>
+            <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase">
+              Emparejar Caja 1 (QR)
+            </button>
+          </div>
         </div>
 
         <!-- Banner de alerta automática cuando una caja deja de emitir Heartbeat (> 5 min) -->
@@ -650,6 +622,10 @@
               <p class="text-xs text-ty-muted">Administra una o múltiples cajas registradoras conectadas a tu comercio</p>
             </div>
             <div class="flex flex-wrap gap-2">
+              <a href="/downloads/transferya-sentinel-v0.2.2-beta.apk" download="transferya-sentinel-v0.2.2-beta.apk" class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Descargar APK Android (v0.2.2)</span>
+              </a>
               <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span>Emparejar Nueva Caja (QR)</span>
@@ -678,9 +654,9 @@
           <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
             <div class="p-4 border-b border-ty-border font-mono text-xs text-ty-muted grid grid-cols-12 gap-2">
               <span class="col-span-4 sm:col-span-3">Cajero / Nombre</span>
-              <span class="col-span-4 sm:col-span-4">Número WhatsApp</span>
+              <span class="col-span-3 sm:col-span-3">Número WhatsApp</span>
               <span class="col-span-2 sm:col-span-3">Caja Asignada</span>
-              <span class="col-span-2 sm:col-span-2 text-right">Estado</span>
+              <span class="col-span-3 sm:col-span-3 text-right">Acciones</span>
             </div>
             <div id="cashiersList" class="divide-y divide-ty-border"></div>
           </div>
@@ -847,6 +823,12 @@
         <button onclick="copyManualToken()" id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-ty-surface-high hover:bg-ty-surface border border-ty-border text-xs font-mono text-white transition-all">
           Copiar
         </button>
+      </div>
+
+      <div class="pt-2 border-t border-ty-border/60 text-center">
+        <a href="/downloads/transferya-sentinel-v0.2.2-beta.apk" download="transferya-sentinel-v0.2.2-beta.apk" class="text-[11px] font-mono text-ty-cyan hover:underline">
+          ¿Aún no tienes la app? Descargar TransferYA Centinela APK (v0.2.2-beta)
+        </a>
       </div>
     </div>
   </div>
@@ -1930,14 +1912,15 @@
 
     function getDeviceConnectionHealth(device, nowMs = Date.now()) {
       if (!device || device.status !== "ACTIVE") {
+        const isRevoked = device?.status === "REVOKED";
         return {
           state: "DISABLED",
-          badgeLabel: device?.status || "INACTIVA",
+          badgeLabel: isRevoked ? "REVOCADA" : (device?.status || "INACTIVA"),
           dotClass: "bg-ty-rose",
           badgeClass: "bg-ty-rose/10 text-ty-rose border border-ty-rose/30",
-          cardBorderClass: "border-ty-border",
-          relativeText: "Deshabilitada",
-          pingColorClass: "text-ty-muted"
+          cardBorderClass: "border-ty-rose/30",
+          relativeText: isRevoked ? "Acceso bloqueado (celular revocado)" : "Deshabilitada",
+          pingColorClass: "text-ty-rose"
         };
       }
 
@@ -2084,14 +2067,19 @@
             </div>
 
             <div class="mt-4 pt-3 border-t border-ty-border flex flex-wrap items-center justify-between gap-2">
-              <button onclick="renameDevice('${escapeHtml(d.id)}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white">
-                Renombrar
-              </button>
-              <div class="flex items-center gap-2">
-                <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose">
+              <div class="flex items-center gap-1.5">
+                <button onclick="renameDevice('${escapeHtml(d.id)}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white">
+                  Renombrar
+                </button>
+                <button onclick="toggleDeviceRevocation('${escapeHtml(d.id)}', '${d.status === "ACTIVE" ? "REVOKED" : "ACTIVE"}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded border text-xs font-mono transition-all ${d.status === "ACTIVE" ? "bg-ty-amber/10 border-ty-amber/30 text-ty-amber hover:bg-ty-amber/20" : "bg-ty-emerald/10 border-ty-emerald/30 text-ty-emerald hover:bg-ty-emerald/20"}">
+                  ${d.status === "ACTIVE" ? "Revocar" : "Reactivar"}
+                </button>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose hover:bg-ty-rose/20">
                   Formatear
                 </button>
-                <button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald">
+                <button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald hover:bg-ty-emerald/25">
                   QR Emparejar
                 </button>
               </div>
@@ -2111,6 +2099,31 @@
       `;
 
       grid.innerHTML = cards + addSlot;
+    }
+
+    async function toggleDeviceRevocation(deviceId, nextStatus, label) {
+      const isRevoking = nextStatus === "REVOKED";
+      const confirmMsg = isRevoking
+        ? `¿Revocar acceso de la caja "${label}" (${deviceId})?\n\nSi el celular se perdió o fue robado, bloqueará de inmediato cualquier webhook o heartbeat desde ese dispositivo hasta que vuelvas a reactivarlo o re-emparejarlo por QR.`
+        : `¿Reactivar la caja "${label}" (${deviceId})?\n\nSi borraste la app o cambiaste de teléfono, recuerda volver a escanear el botón "QR Emparejar".`;
+
+      if (!confirm(confirmMsg)) return;
+
+      const { error } = await supabaseClient
+        .from("devices")
+        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        .eq("id", deviceId)
+        .eq("merchant_id", currentMerchant.id);
+
+      if (error) {
+        showToast("No se pudo actualizar estado de la caja: " + error.message, true);
+        return;
+      }
+
+      const target = merchantDevices.find((d) => d.id === deviceId);
+      if (target) target.status = nextStatus;
+      evaluateDeviceHealthViews(false);
+      showToast(isRevoking ? `Caja ${label} revocada y bloqueada` : `Caja ${label} reactivada`);
     }
 
     async function renameDevice(deviceId, currentLabel) {
@@ -2293,13 +2306,16 @@
       list.innerHTML = cashierRecords.map((c) => `
         <div class="p-4 grid grid-cols-12 gap-2 items-center text-sm">
           <div class="col-span-4 sm:col-span-3 flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full bg-ty-emerald/10 text-ty-emerald flex items-center justify-center font-bold text-xs font-mono">${escapeHtml((c.name || "CJ").substring(0, 2).toUpperCase())}</div>
+            <div class="w-7 h-7 rounded-full bg-ty-emerald/10 text-ty-emerald flex items-center justify-center font-bold text-xs font-mono shrink-0">${escapeHtml((c.name || "CJ").substring(0, 2).toUpperCase())}</div>
             <span class="font-bold text-white truncate">${escapeHtml(c.name)}</span>
           </div>
-          <div class="col-span-4 sm:col-span-4 font-mono text-ty-cyan text-xs sm:text-sm truncate">${escapeHtml(c.phone_number)}</div>
+          <div class="col-span-3 sm:col-span-3 font-mono text-ty-cyan text-xs sm:text-sm truncate">${escapeHtml(c.phone_number)}</div>
           <div class="col-span-2 sm:col-span-3 font-mono text-xs text-ty-muted truncate">${c.device_id ? escapeHtml(getDeviceLabel(c.device_id)) : "Todas las cajas"}</div>
-          <div class="col-span-2 sm:col-span-2 text-right">
-            <button onclick="toggleCashierStatus('${c.id}', ${!c.is_active})" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition-all ${c.is_active ? "bg-ty-emerald/10 text-ty-emerald border-ty-emerald/30" : "bg-ty-surface text-ty-muted border-ty-border"}">${c.is_active ? "ACTIVO" : "INACTIVO"}</button>
+          <div class="col-span-3 sm:col-span-3 flex items-center justify-end gap-1.5">
+            <button onclick="toggleCashierStatus('${c.id}', ${!c.is_active})" class="px-2 py-1 rounded text-[10px] font-mono font-bold border transition-all ${c.is_active ? "bg-ty-emerald/10 text-ty-emerald border-ty-emerald/30" : "bg-ty-surface text-ty-muted border-ty-border"}">${c.is_active ? "ACTIVO" : "INACTIVO"}</button>
+            <button onclick="deleteCashier('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.phone_number)}')" title="Eliminar cajero" class="p-1.5 rounded bg-ty-rose/10 border border-ty-rose/30 text-ty-rose hover:bg-ty-rose/20 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
           </div>
         </div>
       `).join("");
@@ -2342,11 +2358,34 @@
     }
 
     async function toggleCashierStatus(id, nextActive) {
-      const { error } = await supabaseClient.from("cashier_recipients").update({ is_active: nextActive }).eq("id", id);
+      const { error } = await supabaseClient
+        .from("cashier_recipients")
+        .update({ is_active: nextActive })
+        .eq("id", id)
+        .eq("merchant_id", currentMerchant.id);
       if (error) { showToast("No se pudo actualizar el cajero", true); return; }
       const target = cashierRecords.find((c) => c.id === id);
       if (target) target.is_active = nextActive;
       renderCashiersList();
+    }
+
+    async function deleteCashier(id, name, phone) {
+      if (!confirm(`¿Eliminar permanentemente al cajero "${name}" (${phone})?\n\nDejará de recibir notificaciones de WhatsApp para ${currentMerchant.name}.`)) {
+        return;
+      }
+      const { error } = await supabaseClient
+        .from("cashier_recipients")
+        .delete()
+        .eq("id", id)
+        .eq("merchant_id", currentMerchant.id);
+
+      if (error) {
+        showToast("No se pudo eliminar el cajero: " + error.message, true);
+        return;
+      }
+      cashierRecords = cashierRecords.filter((c) => c.id !== id);
+      renderCashiersList();
+      showToast(`Cajero ${name} eliminado`);
     }
 
     // =========================================================================

@@ -1,13 +1,13 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v8';
+const CACHE_NAME = 'transferya-cache-v9';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/css/app.css',
   '/manifest.json',
   '/icons/icon.svg',
   '/vendor/qrcode-generator.js',
   'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
-  'https://cdn.tailwindcss.com?plugins=forms,container-queries',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
 ];
 
