@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { NotificationWebhookHandler } from '../../../src/backend/webhook/handler.js';
 import { PaymentProcessingPipeline } from '../../../src/backend/pipeline/orchestrator.js';
 import { MerchantRoutingService } from '../../../src/domain/routing/service.js';
+import { BillingReconciliationService } from '../../../src/backend/billing/reconciliation.js';
 import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
 import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
 
@@ -50,11 +51,23 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
               process.env.META_PHONE_NUMBER_ID || '1404825876052179',
           });
 
+          const billingReconciliationService = new BillingReconciliationService({
+            config: {
+              billingSentinelDeviceId:
+                process.env.BILLING_SENTINEL_DEVICE_ID || 'dev_5f38cd_caja_1',
+              minPlanPriceCop: Number(process.env.PLAN_PRO_PRICE_COP || 50000),
+              defaultPlanDays: 30,
+            },
+            repository,
+            whatsappClient,
+          });
+
           const pipeline = new PaymentProcessingPipeline({
             notificationRepository: repository,
             fingerprintRepository: repository,
             routingService,
             whatsappClient,
+            billingReconciliationService,
           });
 
           const pipelineResult = await pipeline.processCapturedNotification(notificationId);

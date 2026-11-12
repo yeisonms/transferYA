@@ -28,6 +28,8 @@ export interface StoredNotificationRecord {
   amount?: number | null;
   senderName?: string | null;
   paymentReference?: string | null;
+  whatsappMessageIds?: string[];
+  failureReason?: string;
 }
 
 /**

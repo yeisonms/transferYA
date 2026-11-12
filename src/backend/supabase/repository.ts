@@ -32,6 +32,13 @@ import type {
   AdminMerchantRow,
   IAdminSubscriptionsRepository,
 } from '../admin/types.js';
+import type {
+  BillingInvoiceRecord,
+  CreateBillingInvoiceInput,
+  IBillingInvoicesRepository,
+} from '../billing/types.js';
+import { generateInvoiceReferenceCode } from '../billing/utils.js';
+import { resolveSubscriptionEndsAt } from '../../domain/routing/billing.js';
 
 export interface SupabaseConfig {
   supabaseUrl: string;
@@ -65,6 +72,7 @@ export class SupabaseRepository
     IPaymentFingerprintRepository,
     IMerchantRoutingRepository,
     IAdminSubscriptionsRepository,
+    IBillingInvoicesRepository,
     INonceCache
 {
   private readonly baseUrl: string;
@@ -770,5 +778,153 @@ export class SupabaseRepository
     const updated = (await res.json()) as any[];
     if (!Array.isArray(updated) || updated.length === 0) return null;
     return updated[0] as AdminMerchantRow;
+  }
+
+  // -------------------------------------------------------------
+  // IBillingInvoicesRepository (Ticket 22)
+  // -------------------------------------------------------------
+
+  async findMerchantByBillingPhone(normalizedPhone: string): Promise<Merchant | null> {
+    const clean = normalizedPhone.trim();
+    const noPlus = clean.replace(/^\+/, '');
+    const last10 = clean.slice(-10);
+
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?or=(billing_phone.eq.${encodeURIComponent(clean)},billing_phone.eq.${encodeURIComponent(noPlus)},billing_phone.ilike.*${encodeURIComponent(last10)})&select=*&limit=1`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+    const { ownerId: _ownerId, ...merchant } = this.mapMerchantRow(rows[0]);
+    return merchant;
+  }
+
+  async findMerchantById(merchantId: string): Promise<Merchant | null> {
+    const row = await this.getMerchantById(merchantId);
+    if (!row) return null;
+    const { ownerId: _ownerId, ...merchant } = this.mapMerchantRow(row);
+    return merchant;
+  }
+
+  async findInvoiceByReference(referenceCode: string): Promise<BillingInvoiceRecord | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/billing_invoices?reference_code=ilike.${encodeURIComponent(referenceCode.trim())}&select=*&limit=1`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+    return rows[0] as BillingInvoiceRecord;
+  }
+
+  async getPendingInvoiceForMerchant(merchantId: string): Promise<BillingInvoiceRecord | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/billing_invoices?merchant_id=eq.${encodeURIComponent(merchantId)}&status=eq.PENDING&order=created_at.desc&select=*&limit=1`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+    return rows[0] as BillingInvoiceRecord;
+  }
+
+  async createInvoice(input: CreateBillingInvoiceInput): Promise<BillingInvoiceRecord> {
+    const referenceCode = input.referenceCode || generateInvoiceReferenceCode();
+    const res = await fetch(`${this.baseUrl}/rest/v1/billing_invoices`, {
+      method: 'POST',
+      headers: {
+        ...this.headers,
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({
+        merchant_id: input.merchantId,
+        amount_cop: input.amountCop ?? 50_000,
+        reference_code: referenceCode,
+        status: input.status ?? 'PENDING',
+        notification_id: input.notificationId ?? null,
+        paid_at: input.paidAt ?? null,
+        expires_at: input.expiresAt ?? new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Error creando factura comercial (${res.status}): ${err}`);
+    }
+
+    const rows = (await res.json()) as any[];
+    return rows[0] as BillingInvoiceRecord;
+  }
+
+  async markInvoicePaid(
+    invoiceId: string,
+    notificationId: string,
+    paidAtMs: number = Date.now(),
+  ): Promise<BillingInvoiceRecord> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/billing_invoices?id=eq.${encodeURIComponent(invoiceId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          ...this.headers,
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          status: 'PAID',
+          notification_id: notificationId,
+          paid_at: new Date(paidAtMs).toISOString(),
+          updated_at: new Date(paidAtMs).toISOString(),
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Error marcando factura pagada (${res.status}): ${err}`);
+    }
+
+    const rows = (await res.json()) as any[];
+    return rows[0] as BillingInvoiceRecord;
+  }
+
+  async extendMerchantSubscription(
+    merchantId: string,
+    days: number = 30,
+    nowMs: number = Date.now(),
+  ): Promise<{ previousEndsAt: string | null; newEndsAt: string; daysRemaining: number }> {
+    const merchant = await this.getMerchantById(merchantId);
+    if (!merchant) {
+      throw new Error(`Comercio con ID ${merchantId} no encontrado para renovación.`);
+    }
+
+    const currentEndsAtMs = resolveSubscriptionEndsAt({
+      subscriptionEndsAt: merchant.subscription_ends_at
+        ? new Date(merchant.subscription_ends_at).getTime()
+        : null,
+      subscriptionExpiresAt: merchant.subscription_expires_at
+        ? new Date(merchant.subscription_expires_at).getTime()
+        : null,
+    });
+
+    const baseMs = currentEndsAtMs && currentEndsAtMs > nowMs ? currentEndsAtMs : nowMs;
+    const endsAtMs = baseMs + days * 86_400_000;
+    const iso = new Date(endsAtMs).toISOString();
+
+    await this.updateMerchantSubscription(merchantId, {
+      subscription_status: 'ACTIVE',
+      subscription_ends_at: iso,
+      subscription_expires_at: iso,
+      status: 'ACTIVE',
+      updated_at: new Date(nowMs).toISOString(),
+    });
+
+    const daysRemaining = Math.max(1, Math.ceil((endsAtMs - nowMs) / 86_400_000));
+
+    return {
+      previousEndsAt: currentEndsAtMs ? new Date(currentEndsAtMs).toISOString() : null,
+      newEndsAt: iso,
+      daysRemaining,
+    };
   }
 }

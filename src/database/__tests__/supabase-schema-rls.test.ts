@@ -148,5 +148,29 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
       expect(sql).toMatch(/BEFORE UPDATE ON\s+merchants/i);
     });
   });
+
+  describe('6. Migración de Facturación y Conciliación Dogfooding (Ticket 22)', () => {
+    it('debe definir la tabla billing_invoices con índices, RLS y trigger anti-tampering', () => {
+      const invoiceMigrationPath = resolve(
+        migrationsDir,
+        '20261114000001_billing_invoices_schema.sql',
+      );
+      expect(existsSync(invoiceMigrationPath)).toBe(true);
+      const sql = readFileSync(invoiceMigrationPath, 'utf-8');
+
+      expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS\s+billing_invoices/i);
+      expect(sql).toMatch(/merchant_id\s+UUID\s+NOT NULL\s+REFERENCES\s+merchants\(id\)/i);
+      expect(sql).toMatch(/amount_cop\s+BIGINT\s+NOT NULL\s+DEFAULT\s+50000/i);
+      expect(sql).toMatch(/reference_code\s+VARCHAR\(30\)\s+UNIQUE\s+NOT NULL/i);
+      expect(sql).toMatch(/status\s+VARCHAR\(20\)\s+NOT NULL\s+DEFAULT\s+'PENDING'/i);
+      expect(sql).toMatch(/idx_billing_invoices_merchant/i);
+      expect(sql).toMatch(/idx_billing_invoices_reference/i);
+      expect(sql).toMatch(/idx_billing_invoices_notification/i);
+      expect(sql).toMatch(/ENABLE ROW LEVEL SECURITY/i);
+      expect(sql).toMatch(/merchants_view_own_billing_invoices/i);
+      expect(sql).toMatch(/super_admin_view_all_billing_invoices/i);
+      expect(sql).toMatch(/prevent_billing_invoices_tampering/i);
+    });
+  });
 });
 

@@ -10,6 +10,7 @@ import type {
   IHttpClient,
   IWhatsAppCloudApiClient,
   PaymentAlertOptions,
+  RenewalConfirmationOptions,
   SubscriptionNoticeOptions,
   TemplateComponent,
   WhatsAppSendResult,
@@ -347,6 +348,46 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
         parameters: [
           { type: 'text', text: formattedAmount },
           { type: 'text', text: formattedRenewal },
+        ],
+      },
+    ];
+
+    let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+    if (!templateResult.success) {
+      templateResult = await this.sendTemplate(to, templateName, components, 'es');
+    }
+
+    if (templateResult.success) {
+      return templateResult;
+    }
+
+    const textResult = await this.sendTextMessage(to, text);
+    if (textResult.success) {
+      return textResult;
+    }
+
+    return templateResult;
+  }
+
+  async sendRenewalConfirmation(
+    to: string,
+    options: RenewalConfirmationOptions,
+  ): Promise<WhatsAppSendResult> {
+    const formattedAmount = formatCopCurrency(options.amountCop);
+    const dateStr = options.newEndsAtIso.split('T')[0];
+    const storeLabel = options.storeName ? ` (${options.storeName})` : '';
+    const refLabel = options.referenceCode ? `\nRef: ${options.referenceCode}` : '';
+
+    const text = `🎉 *¡Pago Confirmado y Plan Renovado!*${storeLabel}\n\nConfirmamos la recepción de tu pago por *${formattedAmount}*. Tu suscripción a *TransferYA Pro* ha sido extendida +30 días con éxito.\n\n📅 Nueva vigencia: *${dateStr}* (*${options.daysRemaining} días restantes*)${refLabel}\n\n¡Tus cajas y cajeros continuarán recibiendo las notificaciones en tiempo real! ⚡`;
+
+    const templateName = 'transferya_subscription_renewed_v1';
+    const components: TemplateComponent[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: formattedAmount },
+          { type: 'text', text: `${options.daysRemaining} días` },
+          { type: 'text', text: dateStr },
         ],
       },
     ];

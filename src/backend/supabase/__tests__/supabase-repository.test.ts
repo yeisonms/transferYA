@@ -129,5 +129,140 @@ describe('SupabaseRepository REST Adapter', () => {
     expect(body.status).toBe('ACTIVE');
     fetchSpy.mockRestore();
   });
+
+  describe('IBillingInvoicesRepository (Ticket 22)', () => {
+    it('debe buscar comercio por billing_phone', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            id: 'm_123',
+            owner_id: 'o_123',
+            name: 'Pizzería Napoles',
+            status: 'ACTIVE',
+            subscription_status: 'ACTIVE',
+            subscription_ends_at: '2026-12-01T00:00:00Z',
+            billing_phone: '+573113654315',
+            created_at: '2026-11-01T00:00:00Z',
+          },
+        ],
+      } as any);
+
+      const merchant = await repository.findMerchantByBillingPhone('+573113654315');
+      expect(merchant).not.toBeNull();
+      expect(merchant?.id).toBe('m_123');
+      expect(merchant?.name).toBe('Pizzería Napoles');
+      expect(merchant?.billingPhone).toBe('+573113654315');
+
+      const url = String(fetchSpy.mock.calls[0]?.[0]);
+      expect(url).toContain('/rest/v1/merchants');
+      fetchSpy.mockRestore();
+    });
+
+    it('debe buscar factura por reference_code', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            id: 'inv_abc',
+            merchant_id: 'm_123',
+            amount_cop: 50000,
+            reference_code: 'TYA-7B8K2M',
+            status: 'PENDING',
+          },
+        ],
+      } as any);
+
+      const invoice = await repository.findInvoiceByReference('TYA-7B8K2M');
+      expect(invoice).not.toBeNull();
+      expect(invoice?.reference_code).toBe('TYA-7B8K2M');
+      expect(invoice?.amount_cop).toBe(50000);
+
+      const url = String(fetchSpy.mock.calls[0]?.[0]);
+      expect(url).toContain('/rest/v1/billing_invoices');
+      fetchSpy.mockRestore();
+    });
+
+    it('debe crear y marcar factura pagada', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'inv_new',
+              merchant_id: 'm_123',
+              amount_cop: 50000,
+              reference_code: 'TYA-AUTOREF',
+              status: 'PENDING',
+            },
+          ],
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'inv_new',
+              merchant_id: 'm_123',
+              amount_cop: 50000,
+              reference_code: 'TYA-AUTOREF',
+              status: 'PAID',
+              notification_id: 'notif_1',
+            },
+          ],
+        } as any);
+
+      const created = await repository.createInvoice({
+        merchantId: 'm_123',
+        amountCop: 50000,
+        referenceCode: 'TYA-AUTOREF',
+      });
+      expect(created.id).toBe('inv_new');
+
+      const paid = await repository.markInvoicePaid('inv_new', 'notif_1', 1700000000000);
+      expect(paid.status).toBe('PAID');
+      expect(paid.notification_id).toBe('notif_1');
+
+      fetchSpy.mockRestore();
+    });
+
+    it('debe extender suscripción +30 días atómicamente', async () => {
+      const nowMs = new Date('2026-11-15T00:00:00Z').getTime();
+      const currentEnds = new Date('2026-11-20T00:00:00Z').toISOString();
+
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        // 1. getMerchantById
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'm_123',
+              name: 'Pizzería Napoles',
+              subscription_status: 'ACTIVE',
+              subscription_ends_at: currentEnds,
+            },
+          ],
+        } as any)
+        // 2. updateMerchantSubscription (PATCH)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'm_123',
+              subscription_status: 'ACTIVE',
+              subscription_ends_at: '2026-12-20T00:00:00.000Z',
+            },
+          ],
+        } as any);
+
+      const result = await repository.extendMerchantSubscription('m_123', 30, nowMs);
+      expect(result.previousEndsAt).toBe(currentEnds);
+      expect(result.newEndsAt).toBe('2026-12-20T00:00:00.000Z');
+      expect(result.daysRemaining).toBe(35);
+
+      fetchSpy.mockRestore();
+    });
+  });
 });
 

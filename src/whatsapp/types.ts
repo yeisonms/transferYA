@@ -81,6 +81,17 @@ export interface SubscriptionNoticeOptions {
 }
 
 /**
+ * Parámetros para la confirmación de auto-renovación de suscripción (Dogfooding).
+ */
+export interface RenewalConfirmationOptions {
+  amountCop: number;
+  storeName?: string;
+  newEndsAtIso: string;
+  daysRemaining: number;
+  referenceCode?: string;
+}
+
+/**
  * Abstracción de cliente HTTP para desacoplar de bibliotecas externas (fetch, axios, got).
  */
 export interface HttpResponseData<T = any> {
@@ -127,6 +138,15 @@ export interface IWhatsAppCloudApiClient {
   sendSubscriptionNotice(
     to: string,
     options: SubscriptionNoticeOptions,
+  ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía la confirmación de auto-renovación comercial al WhatsApp del dueño (Dogfooding)
+   * tras acreditar el pago de mensualidad en la cuenta Nequi de MurSat.
+   */
+  sendRenewalConfirmation(
+    to: string,
+    options: RenewalConfirmationOptions,
   ): Promise<WhatsAppSendResult>;
 }
 

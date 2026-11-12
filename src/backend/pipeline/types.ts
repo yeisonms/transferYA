@@ -9,6 +9,7 @@ import type {
 import type { MerchantRoutingService } from '../../domain/routing/service.js';
 import type { IWhatsAppCloudApiClient } from '../../whatsapp/types.js';
 import type { StoredNotificationRecord } from '../webhook/types.js';
+import type { BillingReconciliationService } from '../billing/reconciliation.js';
 
 export type PipelineStatus =
   | 'PROCESSED'
@@ -60,6 +61,10 @@ export type PipelineResult =
       receipt: ParsedPaymentReceipt;
       merchantId: string;
       dispatches: DispatchSummary[];
+      isDogfooding?: boolean;
+      invoiceId?: string;
+      renewedUntilIso?: string;
+      daysRemaining?: number;
     }
   | {
       status: 'IGNORED_NON_PAYMENT';
@@ -85,6 +90,7 @@ export type PipelineResult =
       notificationId: string;
       reason: string;
       details?: string;
+      isDogfooding?: boolean;
     }
   | {
       status: 'DISPATCH_FAILED';
@@ -99,6 +105,7 @@ export interface PaymentPipelineDependencies {
   fingerprintRepository: IPaymentFingerprintRepository;
   routingService: MerchantRoutingService;
   whatsappClient: IWhatsAppCloudApiClient;
+  billingReconciliationService?: BillingReconciliationService;
   parser?: (
     rawText: string,
     rawTitle?: string,

@@ -107,10 +107,11 @@ flowchart LR
 
 ---
 
-## Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutions Auto-Renovación)
+## Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutions Auto-Renovación) (Completado)
 
 **Objetivo:** Usar el propio Centinela de MurSat Solutions para detectar pagos de mensualidad entrantes a su Nequi, conciliarlos por código de referencia o `billing_phone` y extender automáticamente `+30 Días Pro`.
 
+- **Estado:** ✅ Completado. Tabla `billing_invoices` con RLS y trigger anti-tampering (`20261114000001_billing_invoices_schema.sql`). `BillingReconciliationService` con conciliación doble (referencia `TYA-XXXXXX` o celular E.164 `billing_phone`), extensión atómica `+30 Días Pro`, deduplicación anti-replay por huella SHA-256 e integración con WhatsApp Cloud API para confirmación automática al dueño.
 - **Dependencias:** Tickets 19 y 20.
 - **Alcance técnico:**
   1. Tabla `billing_invoices` (`id`, `merchant_id`, `amount_cop`, `reference_code` único, `status`: `PENDING`/`PAID`, `notification_id`, `expires_at`).

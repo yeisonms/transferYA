@@ -199,6 +199,66 @@ export class PaymentProcessingPipeline {
       };
     }
 
+    // 3.5. Evaluación de Auto-Renovación por Dogfooding (Ticket 22)
+    // Si la notificación proviene del Centinela de Facturación de MurSat, se concilia
+    // directamente contra la cuenta de un comercio cliente para renovar su Plan Pro.
+    if (this.deps.billingReconciliationService?.isBillingSentinel(notification.deviceId)) {
+      const reconResult = await this.deps.billingReconciliationService.reconcile(
+        notification,
+        receipt,
+      );
+
+      if (reconResult.success && reconResult.matchedMerchant) {
+        await this.deps.notificationRepository.updateNotification(
+          notificationId,
+          {
+            status: 'PROCESSED',
+            amount: receipt.amount,
+            senderName: receipt.senderName,
+            paymentReference: receipt.reference || reconResult.matchedReference,
+            whatsappMessageIds: reconResult.whatsappMessageId
+              ? [reconResult.whatsappMessageId]
+              : undefined,
+            processedAt: now,
+          },
+        );
+
+        return {
+          status: 'PROCESSED',
+          notificationId,
+          fingerprint,
+          receipt,
+          merchantId: reconResult.matchedMerchant.id,
+          dispatches: [],
+          isDogfooding: true,
+          invoiceId: reconResult.matchedInvoice?.id,
+          renewedUntilIso: reconResult.newEndsAtIso,
+          daysRemaining: reconResult.daysRemaining,
+        };
+      }
+
+      // Conciliación fallida (monto insuficiente, factura ya pagada o comercio no identificado)
+      await this.deps.notificationRepository.updateNotification(
+        notificationId,
+        {
+          status: 'ROUTING_FAILED',
+          amount: receipt.amount,
+          senderName: receipt.senderName,
+          paymentReference: receipt.reference,
+          failureReason: reconResult.details || reconResult.failureReason,
+          processedAt: now,
+        },
+      );
+
+      return {
+        status: 'ROUTING_FAILED',
+        notificationId,
+        reason: reconResult.failureReason || 'DOGFOODING_RECONCILIATION_FAILED',
+        details: reconResult.details,
+        isDogfooding: true,
+      };
+    }
+
     // 4. Resolver enrutamiento Comercio-Centinela-Cajeros
     const routeResult = await this.deps.routingService.resolveRoute(
       notification.deviceId,
