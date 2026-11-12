@@ -116,3 +116,4 @@ describe('Dominio Comercial y Ciclo de Suscripción (Ticket 18)', () => {
     expect(getRemainingSubscriptionDays(null, baseNow)).toBe(0);
   });
 });
+

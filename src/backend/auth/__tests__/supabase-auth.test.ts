@@ -112,3 +112,4 @@ describe('Autenticación Supabase Auth y Aislamiento Multi-Comercio (Paso 4)', (
     }
   });
 });
+

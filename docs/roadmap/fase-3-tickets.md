@@ -120,3 +120,4 @@ flowchart LR
   - Misma huella SHA-256 nunca acredita doble renovación.
   - Montos inferiores al valor del plan no renuevan automáticamente y registran auditoría.
   - Pruebas unitarias en `src/backend/billing/__tests__/reconciliation.test.ts`.
+

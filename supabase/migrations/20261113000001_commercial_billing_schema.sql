@@ -62,3 +62,4 @@ CREATE TRIGGER trg_prevent_merchant_billing_tampering
     BEFORE UPDATE ON merchants
     FOR EACH ROW
     EXECUTE FUNCTION prevent_merchant_billing_tampering();
+
