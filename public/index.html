@@ -311,9 +311,9 @@
             <option value="ALL">Todas las cajas</option>
           </select>
 
-          <button id="audioToggleBtn" onclick="toggleAudio()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald" title="Activar/Silenciar Chime">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-            <span class="hidden md:inline" id="audioBtnText">Chime</span>
+          <button id="audioToggleBtn" onclick="toggleAudio()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald" title="Activar o silenciar sonido de cobros">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <span id="audioBtnText">Audio</span>
           </button>
 
           <button onclick="refreshMerchantData()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5" title="Recargar datos">
@@ -876,11 +876,14 @@
     let filteredTransactions = [];
     let realtimeChannel = null;
     let deviceHealthTimer = null;
+    let txSyncTimer = null;
     let knownOfflineDeviceIds = new Set();
     let isHealthBaselineInitialized = false;
 
-    let isAudioEnabled = true;
+    let isAudioEnabled = localStorage.getItem("ty_audio_enabled") !== "false";
     let audioCtx = null;
+    let chimeWavAudio = null;
+    let chimeWavUrl = null;
     let qrInterval = null;
     let deferredPrompt = null;
     let toastTimer = null;
@@ -899,6 +902,8 @@
     document.addEventListener("DOMContentLoaded", () => {
       initDateDefaults();
       initAudio();
+      setupAudioGestureUnlock();
+      updateAudioButtonUI();
       bootstrapAuth();
       registerServiceWorker();
       setupPwaPrompt();
@@ -1413,12 +1418,54 @@
       deviceHealthTimer = setInterval(() => {
         evaluateDeviceHealthViews(true);
       }, 30000);
+
+      // Respaldo incremental cada 15s por si el navegador suspendió el WebSocket en segundo plano
+      txSyncTimer = setInterval(() => {
+        syncLatestTransactions();
+      }, 15000);
+    }
+
+    async function syncLatestTransactions() {
+      if (!supabaseClient || !currentMerchant || !merchantDevices.length) return;
+      const deviceIds = merchantDevices.map((d) => d.id);
+      const { data: latestRows, error } = await supabaseClient
+        .from("captured_notifications")
+        .select("*")
+        .in("device_id", deviceIds)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error || !Array.isArray(latestRows) || !latestRows.length) return;
+
+      let newlyCounted = null;
+      for (const tx of [...latestRows].reverse()) {
+        const idx = allTransactions.findIndex((t) => t.id === tx.id);
+        const wasCountableBefore = idx !== -1 ? isCountableMoney(allTransactions[idx]) : false;
+        if (idx !== -1) allTransactions[idx] = tx;
+        else allTransactions.unshift(tx);
+
+        if (!wasCountableBefore && isCountableMoney(tx)) {
+          newlyCounted = tx;
+        }
+      }
+
+      if (newlyCounted) {
+        if (filterState.deviceId === "ALL" || filterState.deviceId === newlyCounted.device_id) {
+          playChime();
+        }
+        showToast(`[${getDeviceLabel(newlyCounted.device_id)}] $ ${Number(newlyCounted.amount).toLocaleString("es-CO")} COP (${newlyCounted.sender_name || detectWallet(newlyCounted)})`);
+        recomputeAllViews(newlyCounted.id);
+      }
     }
 
     function teardownRealtime() {
       if (deviceHealthTimer) {
         clearInterval(deviceHealthTimer);
         deviceHealthTimer = null;
+      }
+      if (txSyncTimer) {
+        clearInterval(txSyncTimer);
+        txSyncTimer = null;
       }
       knownOfflineDeviceIds.clear();
       isHealthBaselineInitialized = false;
@@ -2306,35 +2353,172 @@
     // 7. AUDIO, NAVEGACIÓN, TOAST Y PWA
     // =========================================================================
     function initAudio() {
-      try { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); } catch {}
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        if (!audioCtx) {
+          audioCtx = new AC();
+          audioCtx.onstatechange = () => updateAudioButtonUI();
+        }
+      } catch {}
+      updateAudioButtonUI();
     }
 
-    function playChime() {
+    function setupAudioGestureUnlock() {
+      const unlockHandler = () => unlockAudioFromGesture();
+      ["pointerdown", "touchstart", "keydown"].forEach((evtName) => {
+        document.addEventListener(evtName, unlockHandler, { capture: true, passive: true });
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) updateAudioButtonUI();
+      });
+    }
+
+    function unlockAudioFromGesture() {
       if (!isAudioEnabled) return;
       if (!audioCtx) initAudio();
-      if (!audioCtx) return;
-      if (audioCtx.state === "suspended") audioCtx.resume();
-      const now = audioCtx.currentTime;
-      const o1 = audioCtx.createOscillator(), g1 = audioCtx.createGain();
-      o1.type = "sine"; o1.frequency.setValueAtTime(880, now);
-      g1.gain.setValueAtTime(0.3, now); g1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      o1.connect(g1); g1.connect(audioCtx.destination); o1.start(now); o1.stop(now + 0.35);
-      const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
-      o2.type = "triangle"; o2.frequency.setValueAtTime(1760, now + 0.08);
-      g2.gain.setValueAtTime(0.25, now + 0.08); g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-      o2.connect(g2); g2.connect(audioCtx.destination); o2.start(now + 0.08); o2.stop(now + 0.6);
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => updateAudioButtonUI()).catch(() => {});
+      }
+      updateAudioButtonUI();
     }
 
-    function toggleAudio() {
-      isAudioEnabled = !isAudioEnabled;
+    function buildChimeWavUrl() {
+      if (chimeWavUrl) return chimeWavUrl;
+      const sampleRate = 22050;
+      const totalSamples = Math.floor(sampleRate * 0.45);
+      const dataSize = totalSamples * 2;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+      const writeStr = (offset, s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+
+      writeStr(0, "RIFF");
+      view.setUint32(4, 36 + dataSize, true);
+      writeStr(8, "WAVE");
+      writeStr(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, "data");
+      view.setUint32(40, dataSize, true);
+
+      for (let i = 0; i < totalSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
+        if (t < 0.18) {
+          sample += Math.sin(2 * Math.PI * 880 * t) * Math.exp(-t * 14) * 0.55;
+        }
+        if (t >= 0.09) {
+          const t2 = t - 0.09;
+          sample += Math.sin(2 * Math.PI * 1760 * t2) * Math.exp(-t2 * 9) * 0.45;
+        }
+        const clamped = Math.max(-1, Math.min(1, sample));
+        view.setInt16(44 + i * 2, clamped * 32767, true);
+      }
+
+      chimeWavUrl = URL.createObjectURL(new Blob([buffer], { type: "audio/wav" }));
+      return chimeWavUrl;
+    }
+
+    async function playWavFallback() {
+      try {
+        if (!chimeWavAudio) {
+          chimeWavAudio = new Audio(buildChimeWavUrl());
+          chimeWavAudio.volume = 0.9;
+        }
+        chimeWavAudio.currentTime = 0;
+        await chimeWavAudio.play();
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function updateAudioButtonUI() {
       const btn = document.getElementById("audioToggleBtn");
       const text = document.getElementById("audioBtnText");
-      if (isAudioEnabled) {
-        btn.classList.add("text-ty-emerald"); btn.classList.remove("text-ty-muted");
-        text.textContent = "Chime"; playChime();
-      } else {
-        btn.classList.remove("text-ty-emerald"); btn.classList.add("text-ty-muted");
+      if (!btn || !text) return;
+
+      if (!isAudioEnabled) {
+        btn.className = "px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono flex items-center gap-1.5 transition-all text-ty-muted";
         text.textContent = "Silenciado";
+        btn.title = "Sonido silenciado. Toca para activar.";
+        return;
+      }
+
+      const isUnlocked = audioCtx && audioCtx.state === "running";
+      if (isUnlocked) {
+        btn.className = "px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:border-ty-emerald text-xs font-mono flex items-center gap-1.5 transition-all text-ty-emerald";
+        text.textContent = "Sonido OK";
+        btn.title = "Alerta sonora activa. Toca para silenciar.";
+      } else {
+        btn.className = "px-2.5 py-1.5 rounded-lg bg-ty-amber/10 border border-ty-amber/50 hover:border-ty-amber text-xs font-mono flex items-center gap-1.5 transition-all text-ty-amber animate-pulse";
+        text.textContent = "Activar Audio";
+        btn.title = "El navegador requiere 1 clic para desbloquear el sonido automático.";
+      }
+    }
+
+    async function playChime(fromUserGesture = false) {
+      if (!isAudioEnabled) return false;
+      if (!audioCtx) initAudio();
+
+      if (audioCtx && audioCtx.state === "suspended") {
+        try { await audioCtx.resume(); } catch {}
+      }
+      updateAudioButtonUI();
+
+      if (audioCtx && audioCtx.state === "running") {
+        const start = audioCtx.currentTime + 0.02;
+        const o1 = audioCtx.createOscillator(), g1 = audioCtx.createGain();
+        o1.type = "sine";
+        o1.frequency.setValueAtTime(880, start);
+        g1.gain.setValueAtTime(0.45, start);
+        g1.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+        o1.connect(g1); g1.connect(audioCtx.destination);
+        o1.start(start); o1.stop(start + 0.26);
+
+        const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+        o2.type = "sine";
+        o2.frequency.setValueAtTime(1174.66, start + 0.1);
+        g2.gain.setValueAtTime(0.42, start + 0.1);
+        g2.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+        o2.connect(g2); g2.connect(audioCtx.destination);
+        o2.start(start + 0.1); o2.stop(start + 0.36);
+
+        const o3 = audioCtx.createOscillator(), g3 = audioCtx.createGain();
+        o3.type = "triangle";
+        o3.frequency.setValueAtTime(1760, start + 0.2);
+        g3.gain.setValueAtTime(0.35, start + 0.2);
+        g3.gain.exponentialRampToValueAtTime(0.0005, start + 0.65);
+        o3.connect(g3); g3.connect(audioCtx.destination);
+        o3.start(start + 0.2); o3.stop(start + 0.66);
+        return true;
+      }
+
+      const wavOk = await playWavFallback();
+      if (!wavOk && !fromUserGesture) {
+        showToast("Toca 'Activar Audio' arriba para desbloquear el sonido en este navegador.", true);
+      }
+      return wavOk;
+    }
+
+    async function toggleAudio() {
+      const needsUnlock = isAudioEnabled && (!audioCtx || audioCtx.state !== "running");
+      if (!isAudioEnabled || needsUnlock) {
+        isAudioEnabled = true;
+        localStorage.setItem("ty_audio_enabled", "true");
+        unlockAudioFromGesture();
+        await playChime(true);
+        showToast("Sonido de cobros activado");
+      } else {
+        isAudioEnabled = false;
+        localStorage.setItem("ty_audio_enabled", "false");
+        updateAudioButtonUI();
+        showToast("Sonido silenciado");
       }
     }
 
