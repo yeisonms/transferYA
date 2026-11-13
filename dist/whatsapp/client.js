@@ -1,4 +1,4 @@
-import { formatCapturedTime, formatCopCurrency, formatRecipientForMeta, formatWalletDisplayName, } from './formatter.js';
+import { buildHumanizedPaymentAlertText, formatCapturedTime, formatCopCurrency, formatRecipientForMeta, formatWalletDisplayName, } from './formatter.js';
 export class DefaultFetchHttpClient {
     async post(url, body, headers) {
         const res = await fetch(url, {
@@ -237,14 +237,73 @@ export class WhatsAppCloudApiClient {
         if (templateResult.success) {
             return templateResult;
         }
-        // Fallback de alta resiliencia: si la plantilla está en revisión o no aprobada aún,
-        // enviar mensaje directo formateado para que el cajero no pierda la alerta
-        const refText = payment.reference ? `\nRef: ${payment.reference}` : '';
-        const staleWarning = options.isStale
-            ? `\n⚠️ Advertencia: ${Math.round((options.latencyMs ?? 0) / 1000)}s de retraso en red.`
-            : '';
-        const fallbackText = `⚡ *TransferYA - Pago Confirmado*\n\n💰 Monto: *${formattedAmount}*\n👤 De: *${payment.senderName}*\n🏦 Billetera: *${formattedWallet}*\n⏰ Hora: *${formattedTime}*${refText}${staleWarning}`;
+        // Fallback de alta resiliencia: si la plantilla está en revisión o no aprobada aún en Meta,
+        // enviar mensaje directo humanizado para que el cajero entregue la mercancía con total tranquilidad
+        const fallbackText = buildHumanizedPaymentAlertText(payment, options);
         const textResult = await this.sendTextMessage(to, fallbackText);
+        if (textResult.success) {
+            return textResult;
+        }
+        return templateResult;
+    }
+    async sendSubscriptionNotice(to, options) {
+        const formattedAmount = formatCopCurrency(options.amount);
+        const renewalPrice = options.renewalPriceCop ?? 50000;
+        const formattedRenewal = formatCopCurrency(renewalPrice);
+        const storeLabel = options.storeName ? ` (${options.storeName})` : '';
+        const text = options.isSuspended
+            ? `⚠️ TransferYA detectó un pago de ${formattedAmount} en tu caja${storeLabel}, pero tu comercio se encuentra pausado. Reactiva tu servicio en el panel para que tus cajeros sigan recibiendo las confirmaciones.`
+            : `⚠️ TransferYA detectó un pago de ${formattedAmount} en tu caja${storeLabel}, pero tu suscripción está vencida. Renueva tu plan por ${formattedRenewal} para que tus cajeros sigan recibiendo las confirmaciones.`;
+        const templateName = options.isSuspended
+            ? 'transferya_account_suspended_notice_v1'
+            : 'transferya_subscription_past_due_v1';
+        const components = [
+            {
+                type: 'body',
+                parameters: [
+                    { type: 'text', text: formattedAmount },
+                    { type: 'text', text: formattedRenewal },
+                ],
+            },
+        ];
+        let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+        if (!templateResult.success) {
+            templateResult = await this.sendTemplate(to, templateName, components, 'es');
+        }
+        if (templateResult.success) {
+            return templateResult;
+        }
+        const textResult = await this.sendTextMessage(to, text);
+        if (textResult.success) {
+            return textResult;
+        }
+        return templateResult;
+    }
+    async sendRenewalConfirmation(to, options) {
+        const formattedAmount = formatCopCurrency(options.amountCop);
+        const dateStr = options.newEndsAtIso.split('T')[0];
+        const storeLabel = options.storeName ? ` (${options.storeName})` : '';
+        const refLabel = options.referenceCode ? `\nRef: ${options.referenceCode}` : '';
+        const text = `🎉 *¡Pago Confirmado y Plan Renovado!*${storeLabel}\n\nConfirmamos la recepción de tu pago por *${formattedAmount}*. Tu suscripción a *TransferYA Pro* ha sido extendida +30 días con éxito.\n\n📅 Nueva vigencia: *${dateStr}* (*${options.daysRemaining} días restantes*)${refLabel}\n\n¡Tus cajas y cajeros continuarán recibiendo las notificaciones en tiempo real! ⚡`;
+        const templateName = 'transferya_subscription_renewed_v1';
+        const components = [
+            {
+                type: 'body',
+                parameters: [
+                    { type: 'text', text: formattedAmount },
+                    { type: 'text', text: `${options.daysRemaining} días` },
+                    { type: 'text', text: dateStr },
+                ],
+            },
+        ];
+        let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+        if (!templateResult.success) {
+            templateResult = await this.sendTemplate(to, templateName, components, 'es');
+        }
+        if (templateResult.success) {
+            return templateResult;
+        }
+        const textResult = await this.sendTextMessage(to, text);
         if (textResult.success) {
             return textResult;
         }

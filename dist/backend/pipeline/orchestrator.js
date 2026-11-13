@@ -1,5 +1,6 @@
 import { generatePaymentFingerprint } from '../../domain/idempotency/fingerprint.js';
 import { parseBankingNotification } from '../../domain/parser/engine.js';
+import { normalizePhoneNumberE164 } from '../../domain/routing/phone-utils.js';
 /**
  * Orquestador principal del pipeline de procesamiento de pagos y despacho a WhatsApp.
  *
@@ -16,12 +17,61 @@ export class PaymentProcessingPipeline {
     parser;
     fingerprintGenerator;
     nowProvider;
+    billingNoticeCooldownMs;
+    renewalPriceCop;
+    billingNoticeTimestamps = new Map();
     constructor(deps) {
         this.deps = deps;
         this.parser = deps.parser ?? parseBankingNotification;
         this.fingerprintGenerator =
             deps.fingerprintGenerator ?? generatePaymentFingerprint;
         this.nowProvider = deps.nowProvider ?? (() => Date.now());
+        this.billingNoticeCooldownMs =
+            deps.billingNoticeCooldownMs ?? 6 * 60 * 60 * 1000;
+        this.renewalPriceCop = deps.renewalPriceCop ?? 50_000;
+    }
+    async handleBlockedSubscription(notificationId, receipt, merchant, reason, failureMessage, now) {
+        let billingNoticeSent = false;
+        let noticeMessageId;
+        const lastSentAt = this.billingNoticeTimestamps.get(merchant.id) ?? 0;
+        const isWithinCooldown = lastSentAt > 0 && now - lastSentAt < this.billingNoticeCooldownMs;
+        if (!isWithinCooldown && merchant.billingPhone) {
+            try {
+                const ownerPhone = normalizePhoneNumberE164(merchant.billingPhone);
+                const sendRes = await this.deps.whatsappClient.sendSubscriptionNotice(ownerPhone, {
+                    amount: receipt.amount,
+                    wallet: receipt.wallet,
+                    storeName: merchant.name,
+                    isSuspended: reason === 'SUBSCRIPTION_SUSPENDED',
+                    renewalPriceCop: this.renewalPriceCop,
+                });
+                if (sendRes.success) {
+                    this.billingNoticeTimestamps.set(merchant.id, now);
+                    billingNoticeSent = true;
+                    noticeMessageId = sendRes.messageId;
+                }
+            }
+            catch {
+                // Ignorar teléfono de facturación inválido sin interrumpir el Kill Switch
+            }
+        }
+        await this.deps.notificationRepository.updateNotification(notificationId, {
+            status: 'IGNORED_SUSPENDED_ACCOUNT',
+            amount: receipt.amount,
+            senderName: receipt.senderName,
+            paymentReference: receipt.reference,
+            failureReason: failureMessage,
+            whatsappMessageIds: noticeMessageId ? [noticeMessageId] : undefined,
+            processedAt: now,
+        });
+        return {
+            status: 'IGNORED_SUSPENDED_ACCOUNT',
+            notificationId,
+            receipt,
+            merchantId: merchant.id,
+            reason,
+            billingNoticeSent,
+        };
     }
     /**
      * Procesa de extremo a extremo una notificación capturada por su ID.
@@ -84,9 +134,60 @@ export class PaymentProcessingPipeline {
                     },
                 };
             }
+            // 3.5. Evaluación de Auto-Renovación por Dogfooding (Ticket 22)
+            // Si la notificación proviene del Centinela de Facturación de MurSat, se concilia
+            // directamente contra la cuenta de un comercio cliente para renovar su Plan Pro.
+            if (this.deps.billingReconciliationService?.isBillingSentinel(notification.deviceId)) {
+                const reconResult = await this.deps.billingReconciliationService.reconcile(notification, receipt);
+                if (reconResult.success && reconResult.matchedMerchant) {
+                    await this.deps.notificationRepository.updateNotification(notificationId, {
+                        status: 'PROCESSED',
+                        amount: receipt.amount,
+                        senderName: receipt.senderName,
+                        paymentReference: receipt.reference || reconResult.matchedReference,
+                        whatsappMessageIds: reconResult.whatsappMessageId
+                            ? [reconResult.whatsappMessageId]
+                            : undefined,
+                        processedAt: now,
+                    });
+                    return {
+                        status: 'PROCESSED',
+                        notificationId,
+                        fingerprint,
+                        receipt,
+                        merchantId: reconResult.matchedMerchant.id,
+                        dispatches: [],
+                        isDogfooding: true,
+                        invoiceId: reconResult.matchedInvoice?.id,
+                        renewedUntilIso: reconResult.newEndsAtIso,
+                        daysRemaining: reconResult.daysRemaining,
+                    };
+                }
+                // Conciliación fallida (monto insuficiente, factura ya pagada o comercio no identificado)
+                await this.deps.notificationRepository.updateNotification(notificationId, {
+                    status: 'ROUTING_FAILED',
+                    amount: receipt.amount,
+                    senderName: receipt.senderName,
+                    paymentReference: receipt.reference,
+                    failureReason: reconResult.details || reconResult.failureReason,
+                    processedAt: now,
+                });
+                return {
+                    status: 'ROUTING_FAILED',
+                    notificationId,
+                    reason: reconResult.failureReason || 'DOGFOODING_RECONCILIATION_FAILED',
+                    details: reconResult.details,
+                    isDogfooding: true,
+                };
+            }
             // 4. Resolver enrutamiento Comercio-Centinela-Cajeros
             const routeResult = await this.deps.routingService.resolveRoute(notification.deviceId);
             if (!routeResult.success) {
+                if ((routeResult.reason === 'SUBSCRIPTION_PAST_DUE' ||
+                    routeResult.reason === 'SUBSCRIPTION_SUSPENDED') &&
+                    routeResult.merchant) {
+                    return this.handleBlockedSubscription(notificationId, receipt, routeResult.merchant, routeResult.reason, routeResult.message, now);
+                }
                 await this.deps.notificationRepository.updateNotification(notificationId, {
                     status: 'ROUTING_FAILED',
                     amount: receipt.amount,
@@ -109,6 +210,7 @@ export class PaymentProcessingPipeline {
                     capturedAt: notification.capturedAt,
                     latencyMs: notification.latencyMs,
                     cashierName: recipient.name,
+                    deviceLabel: recipient.name || 'Caja 1',
                 });
                 dispatches.push({
                     recipientId: recipient.id,

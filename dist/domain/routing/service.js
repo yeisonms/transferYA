@@ -1,3 +1,4 @@
+import { evaluateEffectiveSubscriptionStatus, isSubscriptionAllowedToDispatch, } from './billing.js';
 import { normalizePhoneNumberE164 } from './phone-utils.js';
 /**
  * Servicio de dominio para la resolución de rutas de notificación Comercio-Centinela-Cajeros.
@@ -20,21 +21,19 @@ export class MerchantRoutingService {
                 message: 'Dispositivo Centinela no vinculado a ningún Comercio Suscriptor',
             };
         }
-        if (merchant.status !== 'ACTIVE') {
+        const effectiveSubStatus = evaluateEffectiveSubscriptionStatus(merchant, now);
+        if (!isSubscriptionAllowedToDispatch(effectiveSubStatus)) {
+            const isSuspended = merchant.status === 'SUSPENDED' ||
+                merchant.status === 'CANCELLED' ||
+                effectiveSubStatus === 'SUSPENDED';
             return {
                 success: false,
-                reason: 'MERCHANT_INACTIVE',
-                message: 'El comercio no se encuentra activo',
-                merchant,
-            };
-        }
-        if (merchant.subscriptionExpiresAt !== null &&
-            merchant.subscriptionExpiresAt !== undefined &&
-            merchant.subscriptionExpiresAt < now) {
-            return {
-                success: false,
-                reason: 'MERCHANT_INACTIVE',
-                message: 'Suscripcion del comercio expirada',
+                reason: isSuspended
+                    ? 'SUBSCRIPTION_SUSPENDED'
+                    : 'SUBSCRIPTION_PAST_DUE',
+                message: isSuspended
+                    ? 'El comercio se encuentra pausado o suspendido'
+                    : 'Suscripcion del comercio expirada o en mora',
                 merchant,
             };
         }

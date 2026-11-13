@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WhatsAppCloudApiClient } from '../client.js';
-import { formatCapturedTime, formatCopCurrency, formatRecipientForMeta, formatWalletDisplayName, } from '../formatter.js';
+import { buildHumanizedPaymentAlertText, formatCapturedTime, formatCopCurrency, formatFriendlyCapturedTime, formatRecipientForMeta, formatWalletBadge, formatWalletDisplayName, } from '../formatter.js';
 describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket 11)', () => {
     describe('1. Formateadores de Negocio y Presentación (formatter)', () => {
         it('formatCopCurrency debe formatear números enteros a pesos colombianos con separador de miles', () => {
@@ -27,6 +27,34 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
             expect(formatRecipientForMeta('+573001234567')).toBe('573001234567');
             expect(formatRecipientForMeta('  +57 300 123-4567  ')).toBe('573001234567');
             expect(formatRecipientForMeta('573001234567')).toBe('573001234567');
+        });
+        it('formatFriendlyCapturedTime debe formatear en 12 horas en español (ej: 02:30 p. m.)', () => {
+            const utcTime = Date.UTC(2026, 4, 6, 19, 30, 0); // 14:30 Bogota
+            const formatted = formatFriendlyCapturedTime(utcTime);
+            expect(formatted).toMatch(/02:30\s+(p\.\s*m\.|PM)/i);
+        });
+        it('formatWalletBadge debe retornar el icono correspondiente', () => {
+            expect(formatWalletBadge('NEQUI')).toEqual({ emoji: '🟣', name: 'Nequi', combined: '🟣 Nequi' });
+            expect(formatWalletBadge('DAVIPLATA')).toEqual({ emoji: '🔴', name: 'DaviPlata', combined: '🔴 DaviPlata' });
+        });
+        it('buildHumanizedPaymentAlertText debe construir el mensaje oficial sin tecnicismos para el cajero', () => {
+            const payment = {
+                wallet: 'NEQUI',
+                amount: 35000,
+                senderName: 'Carlos Andrés Gómez',
+                reference: 'M1234567',
+                rawText: 'Nequi: Recibiste $35.000 de Carlos Andrés Gómez',
+            };
+            const text = buildHumanizedPaymentAlertText(payment, {
+                isStale: false,
+                capturedAt: Date.UTC(2026, 4, 6, 19, 45, 0),
+                deviceLabel: 'Caja 1',
+            });
+            expect(text).toContain('✅ *¡Pago Confirmado en Caja 1!*');
+            expect(text).toContain('🟣 Nequi: *$ 35.000*');
+            expect(text).toContain('👤 *Cliente:* Carlos Andrés Gómez');
+            expect(text).toMatch(/⏰ \*Hora:\* 02:45\s+(p\.\s*m\.|PM) — \*Saldo validado\*/i);
+            expect(text).toContain('Entrega la mercancía con tranquilidad');
         });
     });
     describe('2. Constructor de Payloads y Despacho de Plantillas (WhatsAppCloudApiClient)', () => {
@@ -241,6 +269,31 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
                 expect(result.message).toMatch(/econnreset/i);
             }
             expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
+        });
+        it('debe despachar la alerta de retención comercial al dueño (fallback a texto) cuando la cuenta está vencida', async () => {
+            vi.spyOn(mockHttpClient, 'post')
+                .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } }) // es_CO template no existe
+                .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } }) // es template no existe
+                .mockResolvedValueOnce({ status: 200, data: { messages: [{ id: 'wamid.BILLING_NOTICE_1' }] } }); // Fallback texto
+            const result = await client.sendSubscriptionNotice('+573113654315', {
+                amount: 15000,
+                storeName: 'Mursat Solutions',
+                isSuspended: false,
+                renewalPriceCop: 50000,
+            });
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.messageId).toBe('wamid.BILLING_NOTICE_1');
+            }
+            const lastCall = vi.mocked(mockHttpClient.post).mock.calls[2];
+            expect(lastCall?.[1]).toEqual(expect.objectContaining({
+                to: '573113654315',
+                type: 'text',
+                text: {
+                    body: expect.stringContaining('$ 15.000'),
+                },
+            }));
+            expect((lastCall?.[1]).text.body).toContain('$ 50.000');
         });
     });
 });

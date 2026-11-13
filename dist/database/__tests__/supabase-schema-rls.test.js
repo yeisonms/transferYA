@@ -82,4 +82,36 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
             expect(sql).toMatch(/TO authenticated/i);
         });
     });
+    describe('5. Migración de Motor Comercial y Facturación (Ticket 18)', () => {
+        it('debe extender merchants con subscription_status, subscription_ends_at, billing_phone y trigger anti-fraude', () => {
+            const billingPath = resolve(migrationsDir, '20261113000001_commercial_billing_schema.sql');
+            expect(existsSync(billingPath)).toBe(true);
+            const sql = readFileSync(billingPath, 'utf-8');
+            expect(sql).toMatch(/CREATE TYPE\s+subscription_status_enum\s+AS ENUM\s*\(\s*'TRIAL'\s*,\s*'ACTIVE'\s*,\s*'PAST_DUE'\s*,\s*'SUSPENDED'\s*\)/i);
+            expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+subscription_status/i);
+            expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+subscription_ends_at/i);
+            expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+billing_phone/i);
+            expect(sql).toMatch(/prevent_merchant_billing_tampering/i);
+            expect(sql).toMatch(/BEFORE UPDATE ON\s+merchants/i);
+        });
+    });
+    describe('6. Migración de Facturación y Conciliación Dogfooding (Ticket 22)', () => {
+        it('debe definir la tabla billing_invoices con índices, RLS y trigger anti-tampering', () => {
+            const invoiceMigrationPath = resolve(migrationsDir, '20261114000001_billing_invoices_schema.sql');
+            expect(existsSync(invoiceMigrationPath)).toBe(true);
+            const sql = readFileSync(invoiceMigrationPath, 'utf-8');
+            expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS\s+billing_invoices/i);
+            expect(sql).toMatch(/merchant_id\s+UUID\s+NOT NULL\s+REFERENCES\s+merchants\(id\)/i);
+            expect(sql).toMatch(/amount_cop\s+BIGINT\s+NOT NULL\s+DEFAULT\s+50000/i);
+            expect(sql).toMatch(/reference_code\s+VARCHAR\(30\)\s+UNIQUE\s+NOT NULL/i);
+            expect(sql).toMatch(/status\s+VARCHAR\(20\)\s+NOT NULL\s+DEFAULT\s+'PENDING'/i);
+            expect(sql).toMatch(/idx_billing_invoices_merchant/i);
+            expect(sql).toMatch(/idx_billing_invoices_reference/i);
+            expect(sql).toMatch(/idx_billing_invoices_notification/i);
+            expect(sql).toMatch(/ENABLE ROW LEVEL SECURITY/i);
+            expect(sql).toMatch(/merchants_view_own_billing_invoices/i);
+            expect(sql).toMatch(/super_admin_view_all_billing_invoices/i);
+            expect(sql).toMatch(/prevent_billing_invoices_tampering/i);
+        });
+    });
 });

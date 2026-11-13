@@ -171,10 +171,12 @@ export function parseBankingNotification(rawText, rawTitle = '', walletPackage) 
     }
     // 2. Determinar filtro de billetera si viene explícito (paquete Android tiene prioridad sobre texto)
     let expectedWallet = null;
-    if (walletPackage === 'com.nequi.MobileApp') {
+    if (walletPackage === 'com.nequi.MobileApp' || (walletPackage && /nequi/i.test(walletPackage))) {
         expectedWallet = 'NEQUI';
     }
-    else if (walletPackage === 'com.davivienda.daviplata') {
+    else if (walletPackage === 'com.davivienda.daviplata' ||
+        walletPackage === 'com.daviplata.appfintech' ||
+        (walletPackage && /daviplata/i.test(walletPackage))) {
         expectedWallet = 'DAVIPLATA';
     }
     else if (/nequi/i.test(rawTitle) || /nequi/i.test(rawText)) {
@@ -220,7 +222,16 @@ export function parseBankingNotification(rawText, rawTitle = '', walletPackage) 
             }
         }
     }
-    // 4. No coincidió con ningún patrón de abono monetario conocido
+    // 4. Detección especializada de transferencias interoperables por Llaves sin monto en DaviPlata
+    if (/Recibiste Plata de otra entidad usando Llaves/i.test(combinedText) ||
+        /usando Llaves.*consulta el detalle/i.test(combinedText)) {
+        return {
+            success: false,
+            error: 'DAVIPLATA_LLAVES_UNSPECIFIED_AMOUNT',
+            reason: 'DaviPlata recibió una transferencia interoperable mediante Llaves pero no incluye el monto ni el remitente en la notificación push. Requiere verificación manual en la app DaviPlata.',
+        };
+    }
+    // 5. No coincidió con ningún patrón de abono monetario conocido
     return {
         success: false,
         error: 'NOT_A_PAYMENT',

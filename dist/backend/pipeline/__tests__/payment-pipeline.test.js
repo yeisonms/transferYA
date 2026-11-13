@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InMemoryPaymentFingerprintRepository } from '../../../domain/idempotency/fingerprint.js';
 import { InMemoryMerchantRoutingRepository, MerchantRoutingService, } from '../../../domain/routing/service.js';
 import { PaymentProcessingPipeline } from '../orchestrator.js';
+import { BillingReconciliationService } from '../../billing/reconciliation.js';
 class InMemoryPipelineNotificationRepository {
     notifications = new Map();
     updates = [];
@@ -68,6 +69,14 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         mockWhatsappClient = {
             sendTemplate: vi.fn(),
             sendPaymentAlert: vi.fn(),
+            sendSubscriptionNotice: vi.fn().mockResolvedValue({
+                success: true,
+                messageId: 'wamid.BILLING_NOTICE_DEFAULT',
+            }),
+            sendRenewalConfirmation: vi.fn().mockResolvedValue({
+                success: true,
+                messageId: 'wamid.RENEWAL_CONFIRM_DEFAULT',
+            }),
         };
         pipeline = new PaymentProcessingPipeline({
             notificationRepository: notificationRepo,
@@ -214,16 +223,10 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         const updatedDup = await notificationRepo.getNotificationById('notif_payment_sms_burst');
         expect(updatedDup?.status).toBe('DUPLICATE_PAYMENT');
     });
-    it('5. Fallo de Enrutamiento (Comercio Inactivo o Suspendido -> ROUTING_FAILED)', async () => {
-        const suspendedMerchant = {
-            ...merchant,
-            id: 'merchant_suspendido_id',
-            status: 'SUSPENDED',
-        };
-        routingRepo.registerDeviceMerchant('dev_suspendido', suspendedMerchant);
+    it('5. Fallo de Enrutamiento (Dispositivo no mapeado -> ROUTING_FAILED)', async () => {
         const notification = {
-            id: 'notif_merchant_suspendido',
-            deviceId: 'dev_suspendido',
+            id: 'notif_merchant_unmapped',
+            deviceId: 'dev_no_registrado',
             walletPackage: 'com.nequi.MobileApp',
             rawTitle: 'Nequi',
             rawText: 'Laura te envio $25.000 a tu Nequi',
@@ -235,10 +238,10 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
             status: 'RECEIVED',
         };
         notificationRepo.seed(notification);
-        const result = await pipeline.processCapturedNotification('notif_merchant_suspendido');
+        const result = await pipeline.processCapturedNotification('notif_merchant_unmapped');
         expect(result.status).toBe('ROUTING_FAILED');
         expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
-        const updated = await notificationRepo.getNotificationById('notif_merchant_suspendido');
+        const updated = await notificationRepo.getNotificationById('notif_merchant_unmapped');
         expect(updated?.status).toBe('ROUTING_FAILED');
     });
     it('6. Fallo Total de Despacho en WhatsApp (DISPATCH_FAILED)', async () => {
@@ -287,5 +290,347 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         const result = await pipeline.processCapturedNotification('notif_race_dup');
         expect(result.status).toBe('DUPLICATE_PAYMENT');
         expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    });
+    it('8. Kill Switch (PAST_DUE -> IGNORED_SUSPENDED_ACCOUNT, cero mensajes a cajeros, alerta al dueño)', async () => {
+        const pastDueMerchant = {
+            ...merchant,
+            id: 'merchant_vencido_id',
+            name: 'Tienda La Esquina',
+            status: 'ACTIVE',
+            subscriptionStatus: 'PAST_DUE',
+            subscriptionEndsAt: now - 3600_000,
+            billingPhone: '+573113654315',
+        };
+        routingRepo.registerDeviceMerchant('dev_vencido_kill', pastDueMerchant);
+        routingRepo.registerCashierRecipient({
+            id: 'cajero_vencido_1',
+            merchantId: pastDueMerchant.id,
+            deviceId: 'dev_vencido_kill',
+            name: 'Cajero Bloqueado',
+            phoneNumber: '+573001112233',
+            isActive: true,
+        });
+        const notification = {
+            id: 'notif_kill_past_due',
+            deviceId: 'dev_vencido_kill',
+            walletPackage: 'com.nequi.MobileApp',
+            rawTitle: 'Nequi',
+            rawText: 'Pedro Gomez te envió $15.000 a tu Nequi',
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 80,
+            isStale: false,
+            status: 'RECEIVED',
+        };
+        notificationRepo.seed(notification);
+        const result = await pipeline.processCapturedNotification('notif_kill_past_due');
+        expect(result.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+        if (result.status === 'IGNORED_SUSPENDED_ACCOUNT') {
+            expect(result.reason).toBe('SUBSCRIPTION_PAST_DUE');
+            expect(result.receipt.amount).toBe(15000);
+            expect(result.billingNoticeSent).toBe(true);
+        }
+        expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+        expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledTimes(1);
+        expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledWith('+573113654315', expect.objectContaining({
+            amount: 15000,
+            storeName: 'Tienda La Esquina',
+            isSuspended: false,
+            renewalPriceCop: 50000,
+        }));
+        const updated = await notificationRepo.getNotificationById('notif_kill_past_due');
+        expect(updated?.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+        expect(updated?.amount).toBe(15000);
+        expect(updated?.senderName).toBe('Pedro Gomez');
+    });
+    it('9. Kill Switch aplica cooldown anti-spam de 6h en avisos de cobro al dueño', async () => {
+        const pastDueMerchant = {
+            ...merchant,
+            id: 'merchant_cooldown_id',
+            status: 'ACTIVE',
+            subscriptionStatus: 'TRIAL',
+            subscriptionEndsAt: now - 1000, // Venció hace 1s -> PAST_DUE efectivo
+            billingPhone: '+573113654315',
+        };
+        routingRepo.registerDeviceMerchant('dev_cooldown', pastDueMerchant);
+        notificationRepo.seed({
+            id: 'notif_cd_1',
+            deviceId: 'dev_cooldown',
+            walletPackage: 'com.nequi.MobileApp',
+            rawTitle: 'Nequi',
+            rawText: 'Ana te envió $15.000 a tu Nequi',
+            capturedAt: now - 1000,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 50,
+            isStale: false,
+            status: 'RECEIVED',
+        });
+        notificationRepo.seed({
+            id: 'notif_cd_2',
+            deviceId: 'dev_cooldown',
+            walletPackage: 'com.nequi.MobileApp',
+            rawTitle: 'Nequi',
+            rawText: 'Luis te envió $22.000 a tu Nequi',
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 50,
+            isStale: false,
+            status: 'RECEIVED',
+        });
+        const r1 = await pipeline.processCapturedNotification('notif_cd_1');
+        const r2 = await pipeline.processCapturedNotification('notif_cd_2');
+        expect(r1.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+        expect(r2.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+        if (r1.status === 'IGNORED_SUSPENDED_ACCOUNT')
+            expect(r1.billingNoticeSent).toBe(true);
+        if (r2.status === 'IGNORED_SUSPENDED_ACCOUNT')
+            expect(r2.billingNoticeSent).toBe(false);
+        expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledTimes(1);
+        expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    });
+    it('10. Kill Switch en cuenta SUSPENDED sin billingPhone aborta despacho sin error', async () => {
+        const pausedMerchant = {
+            ...merchant,
+            id: 'merchant_paused_nophone',
+            status: 'SUSPENDED',
+            subscriptionStatus: 'SUSPENDED',
+            billingPhone: null,
+        };
+        routingRepo.registerDeviceMerchant('dev_paused', pausedMerchant);
+        notificationRepo.seed({
+            id: 'notif_paused_1',
+            deviceId: 'dev_paused',
+            walletPackage: 'com.nequi.MobileApp',
+            rawTitle: 'Nequi',
+            rawText: 'Maria te envió $30.000 a tu Nequi',
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 50,
+            isStale: false,
+            status: 'RECEIVED',
+        });
+        const result = await pipeline.processCapturedNotification('notif_paused_1');
+        expect(result.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+        if (result.status === 'IGNORED_SUSPENDED_ACCOUNT') {
+            expect(result.reason).toBe('SUBSCRIPTION_SUSPENDED');
+            expect(result.billingNoticeSent).toBe(false);
+        }
+        expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+        expect(mockWhatsappClient.sendSubscriptionNotice).not.toHaveBeenCalled();
+    });
+    describe('Ticket 22 — Integración de Auto-Renovación por Dogfooding en el Pipeline', () => {
+        const billingSentinelId = 'dev_mursat_billing_sentinel';
+        let mockBillingRepo;
+        let billingService;
+        beforeEach(() => {
+            mockBillingRepo = {
+                findMerchantByBillingPhone: vi.fn(),
+                findMerchantById: vi.fn(),
+                findInvoiceByReference: vi.fn(),
+                getPendingInvoiceForMerchant: vi.fn(),
+                createInvoice: vi.fn(),
+                markInvoicePaid: vi.fn(),
+                extendMerchantSubscription: vi.fn(),
+            };
+            billingService = new BillingReconciliationService({
+                config: {
+                    billingSentinelDeviceId: billingSentinelId,
+                    minPlanPriceCop: 50_000,
+                    defaultPlanDays: 30,
+                },
+                repository: mockBillingRepo,
+                whatsappClient: mockWhatsappClient,
+                nowProvider: () => now,
+            });
+            pipeline = new PaymentProcessingPipeline({
+                notificationRepository: notificationRepo,
+                fingerprintRepository: fingerprintRepo,
+                routingService,
+                whatsappClient: mockWhatsappClient,
+                billingReconciliationService: billingService,
+                nowProvider: () => now,
+            });
+        });
+        it('debe procesar exitosamente la auto-renovación dogfooding sin despachar a cajeros de tienda', async () => {
+            const clientMerchant = {
+                id: 'merchant_client_auto',
+                name: 'Droguería El Alivio',
+                status: 'ACTIVE',
+                subscriptionStatus: 'ACTIVE',
+                subscriptionEndsAt: now + 2 * 86_400_000,
+                billingPhone: '+573113654315',
+                createdAt: now - 86_400_000,
+            };
+            vi.mocked(mockBillingRepo.findInvoiceByReference).mockResolvedValueOnce({
+                id: 'inv_dogfood_1',
+                merchant_id: clientMerchant.id,
+                amount_cop: 50_000,
+                reference_code: 'TYA-7B8K2M',
+                status: 'PENDING',
+                notification_id: null,
+                paid_at: null,
+                expires_at: new Date(now + 30 * 86_400_000).toISOString(),
+                created_at: new Date(now).toISOString(),
+                updated_at: new Date(now).toISOString(),
+            });
+            vi.mocked(mockBillingRepo.findMerchantById).mockResolvedValueOnce(clientMerchant);
+            vi.mocked(mockBillingRepo.extendMerchantSubscription).mockResolvedValueOnce({
+                previousEndsAt: new Date(clientMerchant.subscriptionEndsAt).toISOString(),
+                newEndsAt: new Date(now + 32 * 86_400_000).toISOString(),
+                daysRemaining: 32,
+            });
+            vi.mocked(mockBillingRepo.markInvoicePaid).mockResolvedValueOnce({
+                id: 'inv_dogfood_1',
+                merchant_id: clientMerchant.id,
+                amount_cop: 50_000,
+                reference_code: 'TYA-7B8K2M',
+                status: 'PAID',
+                notification_id: 'notif_dogfood_ok',
+                paid_at: new Date(now).toISOString(),
+                expires_at: new Date(now + 30 * 86_400_000).toISOString(),
+                created_at: new Date(now).toISOString(),
+                updated_at: new Date(now).toISOString(),
+            });
+            vi.mocked(mockWhatsappClient.sendRenewalConfirmation).mockResolvedValueOnce({
+                success: true,
+                messageId: 'wamid.DOGFOOD_CONFIRM_1',
+            });
+            notificationRepo.seed({
+                id: 'notif_dogfood_ok',
+                deviceId: billingSentinelId, // Proviene de MurSat Billing Sentinel
+                walletPackage: 'com.nequi.MobileApp',
+                rawTitle: 'Nequi',
+                rawText: 'EDWIN MURCIA te envió 50000, ¡lo mejor! Ref: TYA-7B8K2M',
+                capturedAt: now,
+                dispatchedAt: now,
+                receivedAt: now,
+                latencyMs: 50,
+                isStale: false,
+                status: 'RECEIVED',
+            });
+            const result = await pipeline.processCapturedNotification('notif_dogfood_ok');
+            expect(result.status).toBe('PROCESSED');
+            if (result.status === 'PROCESSED') {
+                expect(result.isDogfooding).toBe(true);
+                expect(result.merchantId).toBe(clientMerchant.id);
+                expect(result.invoiceId).toBe('inv_dogfood_1');
+                expect(result.daysRemaining).toBe(32);
+            }
+            // No debe despachar a cajeros de caja retail
+            expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+            expect(mockWhatsappClient.sendRenewalConfirmation).toHaveBeenCalledWith('+573113654315', expect.objectContaining({
+                amountCop: 50_000,
+                storeName: 'Droguería El Alivio',
+                referenceCode: 'TYA-7B8K2M',
+            }));
+            // La notificación en base de datos debe estar PROCESSED
+            const updated = await notificationRepo.getNotificationById('notif_dogfood_ok');
+            expect(updated?.status).toBe('PROCESSED');
+            expect(updated?.whatsappMessageIds).toEqual(['wamid.DOGFOOD_CONFIRM_1']);
+        });
+        it('debe proteger contra duplicados (Huella SHA-256): el segundo intento no acredita doble renovación', async () => {
+            const clientMerchant = {
+                id: 'merchant_client_auto',
+                name: 'Droguería El Alivio',
+                status: 'ACTIVE',
+                subscriptionStatus: 'ACTIVE',
+                subscriptionEndsAt: now + 2 * 86_400_000,
+                billingPhone: '+573113654315',
+                createdAt: now - 86_400_000,
+            };
+            vi.mocked(mockBillingRepo.findInvoiceByReference).mockResolvedValue({
+                id: 'inv_dogfood_1',
+                merchant_id: clientMerchant.id,
+                amount_cop: 50_000,
+                reference_code: 'TYA-7B8K2M',
+                status: 'PENDING',
+                notification_id: null,
+                paid_at: null,
+                expires_at: new Date(now + 30 * 86_400_000).toISOString(),
+                created_at: new Date(now).toISOString(),
+                updated_at: new Date(now).toISOString(),
+            });
+            vi.mocked(mockBillingRepo.findMerchantById).mockResolvedValue(clientMerchant);
+            vi.mocked(mockBillingRepo.extendMerchantSubscription).mockResolvedValue({
+                previousEndsAt: new Date(clientMerchant.subscriptionEndsAt).toISOString(),
+                newEndsAt: new Date(now + 32 * 86_400_000).toISOString(),
+                daysRemaining: 32,
+            });
+            vi.mocked(mockBillingRepo.markInvoicePaid).mockResolvedValue({
+                id: 'inv_dogfood_1',
+                merchant_id: clientMerchant.id,
+                amount_cop: 50_000,
+                reference_code: 'TYA-7B8K2M',
+                status: 'PAID',
+                notification_id: 'notif_first_attempt',
+                paid_at: new Date(now).toISOString(),
+                expires_at: new Date(now + 30 * 86_400_000).toISOString(),
+                created_at: new Date(now).toISOString(),
+                updated_at: new Date(now).toISOString(),
+            });
+            notificationRepo.seed({
+                id: 'notif_first_attempt',
+                deviceId: billingSentinelId,
+                walletPackage: 'com.nequi.MobileApp',
+                rawTitle: 'Nequi',
+                rawText: 'EDWIN MURCIA te envió 50000, ¡lo mejor! Ref: TYA-7B8K2M',
+                capturedAt: now,
+                dispatchedAt: now,
+                receivedAt: now,
+                latencyMs: 50,
+                isStale: false,
+                status: 'RECEIVED',
+            });
+            const firstResult = await pipeline.processCapturedNotification('notif_first_attempt');
+            expect(firstResult.status).toBe('PROCESSED');
+            expect(mockBillingRepo.extendMerchantSubscription).toHaveBeenCalledTimes(1);
+            // Segundo intento con la misma huella/captura
+            notificationRepo.seed({
+                id: 'notif_duplicate_attempt',
+                deviceId: billingSentinelId,
+                walletPackage: 'com.nequi.MobileApp',
+                rawTitle: 'Nequi',
+                rawText: 'EDWIN MURCIA te envió 50000, ¡lo mejor! Ref: TYA-7B8K2M',
+                capturedAt: now,
+                dispatchedAt: now,
+                receivedAt: now,
+                latencyMs: 50,
+                isStale: false,
+                status: 'RECEIVED',
+            });
+            const duplicateResult = await pipeline.processCapturedNotification('notif_duplicate_attempt');
+            expect(duplicateResult.status).toBe('DUPLICATE_PAYMENT');
+            // No se volvió a llamar a extendMerchantSubscription
+            expect(mockBillingRepo.extendMerchantSubscription).toHaveBeenCalledTimes(1);
+        });
+        it('debe registrar falla de enrutamiento y no renovar cuando el monto transferido a MurSat es inferior a 50.000 COP', async () => {
+            notificationRepo.seed({
+                id: 'notif_low_amount',
+                deviceId: billingSentinelId,
+                walletPackage: 'com.nequi.MobileApp',
+                rawTitle: 'Nequi',
+                rawText: 'EDWIN MURCIA te envió 10000, ¡lo mejor! Ref: TYA-7B8K2M',
+                capturedAt: now,
+                dispatchedAt: now,
+                receivedAt: now,
+                latencyMs: 50,
+                isStale: false,
+                status: 'RECEIVED',
+            });
+            const result = await pipeline.processCapturedNotification('notif_low_amount');
+            expect(result.status).toBe('ROUTING_FAILED');
+            if (result.status === 'ROUTING_FAILED') {
+                expect(result.isDogfooding).toBe(true);
+                expect(result.reason).toBe('INSUFFICIENT_AMOUNT');
+            }
+            expect(mockBillingRepo.extendMerchantSubscription).not.toHaveBeenCalled();
+            const updated = await notificationRepo.getNotificationById('notif_low_amount');
+            expect(updated?.status).toBe('ROUTING_FAILED');
+            expect(updated?.failureReason).toContain('inferior al precio oficial del Plan Pro');
+        });
     });
 });

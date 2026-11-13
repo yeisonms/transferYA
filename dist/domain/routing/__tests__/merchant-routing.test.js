@@ -109,8 +109,8 @@ describe('Módulo de Mapeo Comercio-Dispositivo-Cajero (Ticket 10)', () => {
             const result = await service.resolveRoute('dev_centinela_suspendido');
             expect(result.success).toBe(false);
             if (!result.success) {
-                expect(result.reason).toBe('MERCHANT_INACTIVE');
-                expect(result.message).toMatch(/comercio no se encuentra activo/i);
+                expect(result.reason).toBe('SUBSCRIPTION_SUSPENDED');
+                expect(result.message).toMatch(/pausado o suspendido/i);
                 expect(result.merchant?.status).toBe('SUSPENDED');
             }
         });
@@ -127,7 +127,7 @@ describe('Módulo de Mapeo Comercio-Dispositivo-Cajero (Ticket 10)', () => {
             const result = await service.resolveRoute('dev_centinela_vencido');
             expect(result.success).toBe(false);
             if (!result.success) {
-                expect(result.reason).toBe('MERCHANT_INACTIVE');
+                expect(result.reason).toBe('SUBSCRIPTION_PAST_DUE');
                 expect(result.message).toMatch(/suscripcion del comercio expirada/i);
             }
         });

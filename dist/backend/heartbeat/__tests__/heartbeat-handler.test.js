@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DeviceHeartbeatHandler } from '../handler.js';
+import { DeviceHeartbeatHandler, DEFAULT_NEQUI_BILLING_QR_PAYLOAD, DEFAULT_PLAN_PRO_AMOUNT_COP } from '../handler.js';
 import { buildCanonicalString, computeHmacSignature } from '../../../protocol/signer.js';
 describe('DeviceHeartbeatHandler (Ticket 07 / ADR-0003)', () => {
     const mockSecret = 'heartbeat-secret-key-123';
@@ -95,5 +95,59 @@ describe('DeviceHeartbeatHandler (Ticket 07 / ADR-0003)', () => {
         const offlineDeviceIds = await handler.checkOfflineDevices(600000); // 10 minutos = 600.000 ms
         expect(offlineDeviceIds).toContain('centinela-offline-01');
         expect(mockHealthRepo.findOfflineDevices).toHaveBeenCalledWith(600000, fixedNow);
+    });
+    it('debe retornar estado comercial y payload de cobro QR Nequi en HTTP 200 (Ticket 21)', async () => {
+        const mockMerchantRepo = {
+            getMerchantByDeviceId: vi.fn().mockResolvedValue({
+                id: 'merchant-alpha',
+                name: 'Tienda Alpha',
+                status: 'ACTIVE',
+                subscriptionStatus: 'ACTIVE',
+                subscriptionEndsAt: fixedNow + 10 * 86_400_000, // 10 días restantes
+                createdAt: fixedNow - 100_000,
+            }),
+            getCashierRecipients: vi.fn().mockResolvedValue([]),
+        };
+        const commercialHandler = new DeviceHeartbeatHandler({
+            deviceRepository: mockDeviceRepo,
+            deviceHealthRepository: mockHealthRepo,
+            merchantRoutingRepository: mockMerchantRepo,
+            nonceCache: mockNonceCache,
+            nowProvider: () => fixedNow,
+        });
+        const req = createSignedRequest(validPayload);
+        const res = await commercialHandler.handle(req);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.subscription_status).toBe('ACTIVE');
+        expect(res.body.remaining_days).toBe(10);
+        expect(res.body.billing_amount_cop).toBe(DEFAULT_PLAN_PRO_AMOUNT_COP);
+        expect(res.body.billing_qr_payload).toBe(DEFAULT_NEQUI_BILLING_QR_PAYLOAD);
+    });
+    it('debe retornar PAST_DUE cuando la fecha de corte vencio (Ticket 21)', async () => {
+        const mockMerchantRepo = {
+            getMerchantByDeviceId: vi.fn().mockResolvedValue({
+                id: 'merchant-vencido',
+                name: 'Tienda Vencida',
+                status: 'ACTIVE',
+                subscriptionStatus: 'ACTIVE',
+                subscriptionEndsAt: fixedNow - 86_400_000, // Venció ayer
+                createdAt: fixedNow - 100_000,
+            }),
+            getCashierRecipients: vi.fn().mockResolvedValue([]),
+        };
+        const commercialHandler = new DeviceHeartbeatHandler({
+            deviceRepository: mockDeviceRepo,
+            deviceHealthRepository: mockHealthRepo,
+            merchantRoutingRepository: mockMerchantRepo,
+            nonceCache: mockNonceCache,
+            nowProvider: () => fixedNow,
+        });
+        const req = createSignedRequest(validPayload);
+        const res = await commercialHandler.handle(req);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.subscription_status).toBe('PAST_DUE');
+        expect(res.body.remaining_days).toBe(0);
+        expect(res.body.billing_amount_cop).toBe(50000);
     });
 });
