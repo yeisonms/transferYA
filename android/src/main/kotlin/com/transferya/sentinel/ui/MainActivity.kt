@@ -474,10 +474,83 @@ class MainActivity : AppCompatActivity() {
         }
         operationalContainer.addView(manualEnrollButton)
 
+        // Banner de Confianza, Privacidad y Habeas Data
+        val privacyContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 20, 24, 20)
+            setBackgroundColor(Color.parseColor("#0F172A"))
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = 28
+                bottomMargin = 16
+            }
+            layoutParams = params
+        }
+
+        val privacyBadgeTitle = TextView(this).apply {
+            text = "🛡️ GARANTÍA DE SEGURIDAD & HABEAS DATA"
+            textSize = 11f
+            setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
+            setTextColor(Color.parseColor("#00D26A"))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 8)
+        }
+        privacyContainer.addView(privacyBadgeTitle)
+
+        val privacyBadgeText = TextView(this).apply {
+            text = "\"TransferYA Centinela únicamente lee las alertas de pago emitidas por Nequi y DaviPlata. Jamás tiene acceso a tus claves, saldos de cuenta ni conversaciones personales.\""
+            textSize = 11f
+            setTextColor(Color.parseColor("#94A3B8"))
+            gravity = Gravity.CENTER
+            setLineSpacing(3f, 1.15f)
+            setPadding(0, 0, 0, 12)
+        }
+        privacyContainer.addView(privacyBadgeText)
+
+        val privacyDetailBtn = Button(this).apply {
+            text = "ℹ️ ¿Por qué Android pide permisos especiales?"
+            setBackgroundColor(Color.parseColor("#1E293B"))
+            setTextColor(Color.parseColor("#38BDF8"))
+            textSize = 11f
+            setOnClickListener {
+                showSecurityExplanationDialog()
+            }
+        }
+        privacyContainer.addView(privacyDetailBtn)
+
+        operationalContainer.addView(privacyContainer)
+
         rootLayout.addView(operationalContainer)
 
         scrollWrapper.addView(rootLayout)
         setContentView(scrollWrapper)
+    }
+
+    private fun showSecurityExplanationDialog() {
+        val message = """
+            🛡️ 1. ACCESO A NOTIFICACIONES:
+            Es el único permiso que permite a TransferYA detectar en menos de 1 segundo cuando Nequi o DaviPlata te envían: "Te enviaron $...". 
+            
+            🔒 2. FILTRO ESTRICTO:
+            La app descarta inmediatamente cualquier notificación que NO sea de Nequi o DaviPlata. JAMÁS se leen chats de WhatsApp, SMS, llamadas, fotos ni contraseñas.
+            
+            🚫 3. CERO ACCESO A TU DINERO:
+            TransferYA es un receptor pasivo (como un timbre inteligente). No se conecta a tu banco, no conoce tus claves y es técnicamente imposible que retire o transfiera dinero.
+            
+            🔋 4. OPTIMIZACIÓN DE BATERÍA:
+            Evita que Android cierre la app al apagar la pantalla para que no se pierda ningún cobro en tu negocio.
+            
+            🇨🇴 5. HABEAS DATA (Ley 1581 de 2012):
+            Tus datos de ventas se usan únicamente para el arqueo de tu negocio. Jamás se venden ni comparten con terceros.
+        """.trimIndent()
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Garantía de Privacidad y Seguridad")
+            .setMessage(message)
+            .setPositiveButton("Entendido") { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     private fun updateUI() {
