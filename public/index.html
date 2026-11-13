@@ -68,6 +68,34 @@
     ::-webkit-scrollbar-track { background: #0B101C; }
     ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #00D26A; }
+
+    /* Estilos de Impresión / Descarga de PDF de Cierre de Caja */
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      #appShell,
+      #authScreen,
+      #onboardingScreen,
+      #toastBanner,
+      #pairingModal,
+      #resetModal,
+      #addCashierModal,
+      #adminPhoneModal,
+      #turnClosingModal,
+      header,
+      aside,
+      nav {
+        display: none !important;
+      }
+      #printableClosingReceipt {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-ty-bg min-h-screen text-ty-text flex flex-col selection:bg-ty-emerald selection:text-black">
@@ -311,6 +339,12 @@
             <span>Instalar</span>
           </button>
 
+          <button onclick="openTurnClosingModal()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:bg-ty-emerald/10 text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm" title="Hacer Cierre de Turno & Cuadre de Caja en 1 Clic">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="hidden sm:inline">Cierre de Turno</span>
+            <span class="sm:hidden">Cierre</span>
+          </button>
+
           <button onclick="switchTab('pos')" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,106,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5">
             <span>Modo Caja</span>
           </button>
@@ -441,13 +475,17 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-              <button onclick="exportFilteredCsv()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
+              <button onclick="openTurnClosingModal()" class="px-4 py-2 rounded-xl bg-ty-emerald text-black font-extrabold text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.35)] transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Hacer Cierre de Turno</span>
+              </button>
+              <button onclick="exportFilteredCsv()" class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5" title="Exportar movimientos a Excel / CSV">
                 <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span>Exportar CSV</span>
               </button>
-              <button onclick="openResetModal()" class="px-3 py-1.5 rounded-lg bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5">
+              <button onclick="openResetModal()" class="px-3 py-2 rounded-xl bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5" title="Eliminar registros de prueba">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <span>Formatear Tabla</span>
+                <span>Limpiar Pruebas</span>
               </button>
             </div>
           </div>
@@ -541,13 +579,19 @@
         <section id="tab-history" class="hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Historial y Cierre Diario por Fecha</h2>
+              <h2 class="text-lg font-bold text-white">Historial y Cierres de Caja</h2>
               <p class="text-xs text-ty-muted">Consolidado exacto de dinero que entró cada día según la caja seleccionada</p>
             </div>
-            <button onclick="exportDailyClosingCsv()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Descargar Cierres CSV</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openTurnClosingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Cierre de Turno en 1 Clic</span>
+              </button>
+              <button onclick="exportDailyClosingCsv()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Descargar Cierres CSV</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
@@ -995,6 +1039,205 @@
         <button onclick="saveAdminPhoneModal()" id="adminPhoneModalSaveBtn" class="flex-1 py-2 rounded-lg bg-ty-amber text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all">
           Guardar
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- MODAL: CIERRE DE TURNO Y CUADRE DE CAJA EN 1 CLIC -->
+  <!-- ================================================================== -->
+  <div id="turnClosingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-xl w-full p-6 sm:p-7 space-y-5 relative shadow-2xl my-auto">
+      <button onclick="closeTurnClosingModal()" class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface" title="Cerrar ventana">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-start gap-3.5 border-b border-ty-border pb-4">
+        <div class="w-12 h-12 rounded-xl bg-ty-emerald/15 border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shrink-0 shadow-[0_0_15px_rgba(0,210,106,0.25)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div class="flex-1 pr-6">
+          <div class="flex items-center gap-2">
+            <h3 class="text-lg font-bold text-white tracking-tight">Cierre de Turno &amp; Cuadre de Caja</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">1 Clic</span>
+          </div>
+          <div class="text-xs text-ty-muted flex flex-wrap items-center gap-1.5 mt-0.5">
+            <span id="turnModalMerchantName" class="text-white font-semibold">Mi Negocio</span>
+            <span>•</span>
+            <span id="turnModalDeviceLabel" class="font-mono text-ty-cyan">Todas las Cajas</span>
+            <span>•</span>
+            <span id="turnModalDateTime" class="font-mono text-white/80">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scope Selector (Turno Hoy / Últimas 8 horas / Filtro Actual) -->
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-ty-surface p-1.5 rounded-xl border border-ty-border text-xs font-mono">
+        <span class="text-ty-muted px-2 font-semibold">Rango del Turno:</span>
+        <div class="flex items-center gap-1" id="turnScopeButtons">
+          <button onclick="setTurnScope('today')" id="turnScopeBtn-today" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold transition-all shadow-sm">Hoy Completo</button>
+          <button onclick="setTurnScope('8h')" id="turnScopeBtn-8h" class="px-3 py-1.5 rounded-lg text-ty-muted hover:text-white bg-transparent transition-all">Últimas 8 Horas</button>
+          <button onclick="setTurnScope('current')" id="turnScopeBtn-current" class="px-3 py-1.5 rounded-lg text-ty-muted hover:text-white bg-transparent transition-all">Filtro de Pantalla</button>
+        </div>
+      </div>
+
+      <!-- Grand Total Hero Card -->
+      <div class="p-5 rounded-2xl bg-gradient-to-br from-ty-emerald/20 via-ty-surface-low to-ty-surface border border-ty-emerald/40 text-center space-y-1 shadow-[0_0_25px_rgba(0,210,106,0.15)]">
+        <span class="text-[11px] font-mono uppercase tracking-wider text-ty-emerald font-bold">💰 Gran Total Verificado en Turno</span>
+        <div class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight tabular-nums" id="turnTotalHero">
+          $ 0 <span class="text-xl sm:text-2xl text-ty-emerald font-normal font-sans">COP</span>
+        </div>
+        <div class="text-xs font-mono text-ty-muted pt-1 flex items-center justify-center gap-2" id="turnTotalCountHero">
+          <span>0 pagos verificados</span> • <span>Promedio: $ 0 COP</span>
+        </div>
+      </div>
+
+      <!-- Wallet Breakdown Cards (Nequi vs DaviPlata) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <!-- Nequi Card -->
+        <div class="p-4 rounded-xl bg-[#260026]/70 border border-[#E01E5A]/40 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-[#330033] border border-[#E01E5A]/50 text-[#FF4B81]">
+              <span class="w-2 h-2 rounded-full bg-[#E01E5A]"></span>
+              🟣 Nequi
+            </span>
+            <span class="text-xs font-mono text-[#FF80AB] font-semibold" id="turnNequiCount">0 pagos</span>
+          </div>
+          <div>
+            <div class="text-2xl font-bold font-mono text-white tabular-nums" id="turnNequiSum">$ 0 COP</div>
+            <div class="text-[11px] text-ty-muted mt-0.5">Recibido en cuenta Nequi</div>
+          </div>
+        </div>
+
+        <!-- DaviPlata Card -->
+        <div class="p-4 rounded-xl bg-[#260505]/70 border border-[#ED1C24]/40 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-[#330B0B] border border-[#ED1C24]/50 text-[#FF5A5F]">
+              <span class="w-2 h-2 rounded-full bg-[#ED1C24]"></span>
+              🔴 DaviPlata
+            </span>
+            <span class="text-xs font-mono text-[#FFA4A6] font-semibold" id="turnDaviCount">0 pagos</span>
+          </div>
+          <div>
+            <div class="text-2xl font-bold font-mono text-white tabular-nums" id="turnDaviSum">$ 0 COP</div>
+            <div class="text-[11px] text-ty-muted mt-0.5">Recibido en cuenta DaviPlata</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Turn Metrics -->
+      <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-ty-surface border border-ty-border text-xs font-mono">
+        <div>
+          <span class="text-ty-muted block text-[10px] uppercase">Primer Pago del Turno:</span>
+          <span class="text-white font-semibold" id="turnFirstPayment">Sin pagos</span>
+        </div>
+        <div>
+          <span class="text-ty-muted block text-[10px] uppercase">Último Pago del Turno:</span>
+          <span class="text-white font-semibold" id="turnLastPayment">Sin pagos</span>
+        </div>
+      </div>
+
+      <!-- Actions: WhatsApp del Dueño + PDF + CSV -->
+      <div class="space-y-3 pt-2 border-t border-ty-border">
+        <!-- WhatsApp Destination Config Option -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-ty-surface border border-ty-border text-xs">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#25D366] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+            <span class="text-ty-muted font-mono">WhatsApp Destino:</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input type="tel" id="turnWhatsAppInput" placeholder="Número WhatsApp dueño" class="w-48 bg-ty-bg border border-ty-border rounded px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
+            <button onclick="saveClosingWhatsAppPhone()" class="px-2.5 py-1 rounded bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-[11px] font-mono text-ty-emerald transition-all">
+              Guardar
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- Botón WhatsApp -->
+          <button onclick="sendTurnClosingToWhatsApp()" class="py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+            <span>Enviar a WhatsApp Dueño</span>
+          </button>
+
+          <!-- Botón PDF / Imprimir -->
+          <button onclick="printTurnClosingReceipt()" class="py-3 px-4 rounded-xl bg-ty-surface border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Descargar Reporte (PDF)</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] font-mono text-ty-muted px-1">
+          <button onclick="copyTurnClosingText()" class="hover:text-white flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <span>Copiar Resumen de Texto</span>
+          </button>
+          <button onclick="exportTurnClosingCsv()" class="hover:text-ty-cyan hover:underline flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Exportar Detalle (CSV)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- CONTENEDOR OCULTO PARA IMPRESIÓN / GENERACIÓN DE PDF -->
+  <!-- ================================================================== -->
+  <div id="printableClosingReceipt" class="hidden">
+    <div style="max-width: 380px; margin: 0 auto; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; color: #000; padding: 15px;">
+      <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 12px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: bold; text-transform: uppercase;">TRANSFERYA</h2>
+        <p style="margin: 2px 0; font-size: 11px;">COMPROBANTE DE CIERRE DE TURNO / ARQUEO</p>
+        <p style="margin: 4px 0 0 0; font-size: 14px; font-weight: bold;" id="printStoreName">MI NEGOCIO</p>
+      </div>
+
+      <div style="margin-bottom: 12px; font-size: 12px;">
+        <div><strong>Fecha/Hora:</strong> <span id="printDateTime">-</span></div>
+        <div><strong>Caja:</strong> <span id="printDeviceLabel">-</span></div>
+        <div><strong>Rango:</strong> <span id="printScopeLabel">-</span></div>
+        <div><strong>Estado:</strong> <span style="font-weight: bold;">VERIFICADO Y CUADRADO</span></div>
+      </div>
+
+      <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>🟣 NEQUI (<span id="printNequiCount">0</span> pagos):</span>
+          <strong id="printNequiSum">$ 0</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>🔴 DAVIPLATA (<span id="printDaviCount">0</span> pagos):</span>
+          <strong id="printDaviSum">$ 0</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; border-top: 1px solid #000; padding-top: 6px; margin-top: 6px;">
+          <span>TOTAL EN CUENTA:</span>
+          <span id="printTotalSum">$ 0 COP</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; color: #333;">
+          <span>Transferencias:</span>
+          <span id="printTotalCount">0 pagos</span>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; margin-bottom: 20px;">
+        <div><strong>Primer pago:</strong> <span id="printFirstPayment">-</span></div>
+        <div><strong>Último pago:</strong> <span id="printLastPayment">-</span></div>
+      </div>
+
+      <div style="border-top: 1px dashed #000; padding-top: 25px; margin-top: 25px;">
+        <div style="display: flex; justify-content: space-between; text-align: center; font-size: 11px;">
+          <div style="width: 45%;">
+            <div style="border-top: 1px solid #000; margin-top: 25px; padding-top: 3px;">Firma Cajero(a)</div>
+          </div>
+          <div style="width: 45%;">
+            <div style="border-top: 1px solid #000; margin-top: 25px; padding-top: 3px;">Firma Administrador</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px; font-size: 10px; color: #555;">
+        *** TransferYA — Verificación Bancaria en Tiempo Real ***<br/>
+        Reporte generado automáticamente • Sin descuadres
       </div>
     </div>
   </div>
@@ -2082,6 +2325,273 @@
       if (!rows.length || rows[0].length < 5) { showToast("Sin cierres diarios para exportar", true); return; }
       downloadCsvFile(`transferya_cierres_${getColombiaDateKey(new Date())}.csv`, ["Fecha", "Nequi", "Daviplata", "Pagos", "Total Recibido"], rows);
       showToast("Cierres diarios descargados");
+    }
+
+    // =========================================================================
+    // 4. CIERRE DE TURNO Y CUADRE DE CAJA EN 1 CLIC (NEQUI VS DAVIPLATA + WHATSAPP & PDF)
+    // =========================================================================
+    let turnClosingScope = "today"; // "today" | "8h" | "current"
+    let currentClosingStats = null;
+
+    function getColombiaFriendlyDateTime(date = new Date()) {
+      const d = new Date(date);
+      const datePart = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", weekday: "short", day: "2-digit", month: "short", year: "numeric" }).format(d);
+      const timePart = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", hour: "2-digit", minute: "2-digit", hour12: true }).format(d);
+      return `${datePart} • ${timePart}`;
+    }
+
+    function calculateTurnClosingStats(scope = turnClosingScope) {
+      const nowMs = Date.now();
+      const todayKey = getColombiaDateKey(new Date(nowMs));
+      const eightHoursAgoMs = nowMs - (8 * 60 * 60 * 1000);
+
+      let pool = [];
+      if (scope === "current") {
+        pool = filteredTransactions;
+      } else {
+        const scoped = getScopedTransactions();
+        if (scope === "8h") {
+          pool = scoped.filter((tx) => getTxTimestamp(tx) >= eightHoursAgoMs);
+        } else {
+          // "today" por defecto
+          pool = scoped.filter((tx) => getColombiaDateKey(getTxTimestamp(tx)) === todayKey);
+        }
+      }
+
+      const validList = pool.filter(isCountableMoney);
+
+      let nequiSum = 0;
+      let nequiCount = 0;
+      let daviSum = 0;
+      let daviCount = 0;
+      let firstTimestamp = null;
+      let lastTimestamp = null;
+
+      for (const tx of validList) {
+        const amt = Number(tx.amount) || 0;
+        const wallet = detectWallet(tx);
+        const ts = getTxTimestamp(tx);
+
+        if (!firstTimestamp || ts < firstTimestamp) firstTimestamp = ts;
+        if (!lastTimestamp || ts > lastTimestamp) lastTimestamp = ts;
+
+        if (wallet === "NEQUI") {
+          nequiSum += amt;
+          nequiCount++;
+        } else {
+          daviSum += amt;
+          daviCount++;
+        }
+      }
+
+      const totalSum = nequiSum + daviSum;
+      const totalCount = nequiCount + daviCount;
+      const avgTicket = totalCount > 0 ? Math.round(totalSum / totalCount) : 0;
+
+      const firstPaymentTime = firstTimestamp ? getColombiaDateTimeLabel(firstTimestamp) : "Sin movimientos";
+      const lastPaymentTime = lastTimestamp ? getColombiaDateTimeLabel(lastTimestamp) : "Sin movimientos";
+
+      const scopeLabels = {
+        today: "Turno Hoy Completo",
+        "8h": "Últimas 8 Horas",
+        current: `Filtro de Pantalla (${periodLabels[filterState.period] || "Personalizado"})`
+      };
+
+      return {
+        scope,
+        scopeLabel: scopeLabels[scope] || "Turno Actual",
+        validList,
+        nequiSum,
+        nequiCount,
+        daviSum,
+        daviCount,
+        totalSum,
+        totalCount,
+        avgTicket,
+        firstPaymentTime,
+        lastPaymentTime,
+        nowIso: new Date().toISOString(),
+        deviceLabel: getDeviceLabel(filterState.deviceId),
+        merchantName: currentMerchant?.name || "Mi Negocio"
+      };
+    }
+
+    function openTurnClosingModal(presetScope = null) {
+      if (presetScope) turnClosingScope = presetScope;
+      renderTurnClosingModal();
+      document.getElementById("turnClosingModal").classList.remove("hidden");
+    }
+
+    function closeTurnClosingModal() {
+      document.getElementById("turnClosingModal").classList.add("hidden");
+    }
+
+    function setTurnScope(scope) {
+      turnClosingScope = scope;
+      renderTurnClosingModal();
+    }
+
+    function renderTurnClosingModal() {
+      currentClosingStats = calculateTurnClosingStats(turnClosingScope);
+      const s = currentClosingStats;
+      const fmt = (n) => Number(n || 0).toLocaleString("es-CO");
+
+      // Scope button styling
+      const btnToday = document.getElementById("turnScopeBtn-today");
+      const btn8h = document.getElementById("turnScopeBtn-8h");
+      const btnCurrent = document.getElementById("turnScopeBtn-current");
+
+      const activeClass = "px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold transition-all shadow-sm";
+      const inactiveClass = "px-3 py-1.5 rounded-lg text-ty-muted hover:text-white bg-transparent transition-all";
+
+      if (btnToday) btnToday.className = s.scope === "today" ? activeClass : inactiveClass;
+      if (btn8h) btn8h.className = s.scope === "8h" ? activeClass : inactiveClass;
+      if (btnCurrent) btnCurrent.className = s.scope === "current" ? activeClass : inactiveClass;
+
+      // Header labels
+      document.getElementById("turnModalMerchantName").textContent = s.merchantName;
+      document.getElementById("turnModalDeviceLabel").textContent = s.deviceLabel;
+      document.getElementById("turnModalDateTime").textContent = getColombiaFriendlyDateTime();
+
+      // Grand Total Hero
+      document.getElementById("turnTotalHero").innerHTML = `$ ${fmt(s.totalSum)} <span class="text-xl sm:text-2xl text-ty-emerald font-normal font-sans">COP</span>`;
+      document.getElementById("turnTotalCountHero").innerHTML = `<span>${s.totalCount} ${s.totalCount === 1 ? "pago verificado" : "pagos verificados"}</span> • <span>Promedio: $ ${fmt(s.avgTicket)} COP</span>`;
+
+      // Wallets breakdown
+      document.getElementById("turnNequiSum").textContent = `$ ${fmt(s.nequiSum)} COP`;
+      document.getElementById("turnNequiCount").textContent = `${s.nequiCount} ${s.nequiCount === 1 ? "pago" : "pagos"}`;
+
+      document.getElementById("turnDaviSum").textContent = `$ ${fmt(s.daviSum)} COP`;
+      document.getElementById("turnDaviCount").textContent = `${s.daviCount} ${s.daviCount === 1 ? "pago" : "pagos"}`;
+
+      // Timestamps
+      document.getElementById("turnFirstPayment").textContent = s.firstPaymentTime;
+      document.getElementById("turnLastPayment").textContent = s.lastPaymentTime;
+
+      // WhatsApp Input Sync
+      const phoneInput = document.getElementById("turnWhatsAppInput");
+      if (phoneInput && !phoneInput.value && currentMerchant?.billing_phone) {
+        phoneInput.value = currentMerchant.billing_phone;
+      }
+
+      // Populate hidden printable receipt for PDF / POS printer
+      document.getElementById("printStoreName").textContent = s.merchantName.toUpperCase();
+      document.getElementById("printDateTime").textContent = getColombiaFriendlyDateTime();
+      document.getElementById("printDeviceLabel").textContent = s.deviceLabel;
+      document.getElementById("printScopeLabel").textContent = s.scopeLabel;
+
+      document.getElementById("printNequiCount").textContent = s.nequiCount;
+      document.getElementById("printNequiSum").textContent = `$ ${fmt(s.nequiSum)}`;
+
+      document.getElementById("printDaviCount").textContent = s.daviCount;
+      document.getElementById("printDaviSum").textContent = `$ ${fmt(s.daviSum)}`;
+
+      document.getElementById("printTotalSum").textContent = `$ ${fmt(s.totalSum)} COP`;
+      document.getElementById("printTotalCount").textContent = `${s.totalCount} transferencias`;
+
+      document.getElementById("printFirstPayment").textContent = s.firstPaymentTime;
+      document.getElementById("printLastPayment").textContent = s.lastPaymentTime;
+    }
+
+    async function saveClosingWhatsAppPhone() {
+      const input = document.getElementById("turnWhatsAppInput");
+      const raw = input?.value?.trim() || "";
+      if (!raw) {
+        showToast("Ingresa un número de celular o WhatsApp", true);
+        return;
+      }
+      let cleaned = raw.replace(/\D/g, "");
+      if (cleaned.length === 10 && cleaned.startsWith("3")) {
+        cleaned = "57" + cleaned;
+      }
+      const formatted = "+" + cleaned;
+      if (currentMerchant) {
+        currentMerchant.billing_phone = formatted;
+        await supabaseClient.from("merchants").update({ billing_phone: formatted }).eq("id", currentMerchant.id);
+        const billingInput = document.getElementById("billingPhoneInput");
+        if (billingInput) billingInput.value = formatted;
+        showToast("WhatsApp del dueño actualizado: " + formatted);
+      }
+    }
+
+    function buildClosingWhatsAppMessage() {
+      const s = currentClosingStats || calculateTurnClosingStats();
+      const fmt = (n) => Number(n || 0).toLocaleString("es-CO");
+
+      return (
+        `📊 *CIERRE DE CAJA — ${s.merchantName.toUpperCase()}*\n` +
+        `🗓️ *Fecha:* ${getColombiaFriendlyDateTime()}\n` +
+        `🏪 *Caja:* ${s.deviceLabel}\n` +
+        `⏱️ *Rango:* ${s.scopeLabel}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `🟣 *Total Nequi:* $ ${fmt(s.nequiSum)} COP (${s.nequiCount} ${s.nequiCount === 1 ? "pago" : "pagos"})\n` +
+        `🔴 *Total DaviPlata:* $ ${fmt(s.daviSum)} COP (${s.daviCount} ${s.daviCount === 1 ? "pago" : "pagos"})\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `💰 *GRAN TOTAL DEL TURNO:* $ ${fmt(s.totalSum)} COP (${s.totalCount} pagos)\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `⏱️ Primer pago: ${s.firstPaymentTime}\n` +
+        `⏱️ Último pago: ${s.lastPaymentTime}\n` +
+        `📈 Ticket promedio: $ ${fmt(s.avgTicket)} COP\n\n` +
+        `_✅ Cuadre verificado en tiempo real con TransferYA_`
+      );
+    }
+
+    function sendTurnClosingToWhatsApp() {
+      const msg = buildClosingWhatsAppMessage();
+      const phoneInput = document.getElementById("turnWhatsAppInput");
+      let phone = (phoneInput?.value?.trim() || currentMerchant?.billing_phone || "").replace(/\D/g, "");
+
+      if (phone.length === 10 && phone.startsWith("3")) {
+        phone = "57" + phone;
+      }
+
+      const waUrl = phone
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+      window.open(waUrl, "_blank");
+      showToast("Abriendo WhatsApp con el resumen de cierre...");
+    }
+
+    function printTurnClosingReceipt() {
+      renderTurnClosingModal();
+      showToast("Abriendo vista de impresión / Guardar como PDF...");
+      setTimeout(() => {
+        window.print();
+      }, 250);
+    }
+
+    function copyTurnClosingText() {
+      const msg = buildClosingWhatsAppMessage();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(msg).then(() => {
+          showToast("Resumen de cierre copiado al portapapeles");
+        }).catch(() => {
+          showToast("No se pudo copiar automáticamente", true);
+        });
+      } else {
+        showToast("Portapapeles no disponible", true);
+      }
+    }
+
+    function exportTurnClosingCsv() {
+      const s = currentClosingStats || calculateTurnClosingStats();
+      if (!s.validList.length) {
+        showToast("Sin pagos en este turno para exportar", true);
+        return;
+      }
+      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador", "Referencia", "Valor COP"];
+      const rows = s.validList.map((tx) => [
+        getColombiaDateTimeLabel(getTxTimestamp(tx)),
+        getDeviceLabel(tx.device_id),
+        detectWallet(tx),
+        tx.sender_name || tx.raw_title || "",
+        tx.payment_reference || "N/A",
+        tx.amount || 0
+      ]);
+      rows.push(["TOTAL CIERRE TURNO", s.deviceLabel, "", "", "", s.totalSum]);
+      downloadCsvFile(`cierre_turno_${getColombiaDateKey(new Date())}_${s.scope}.csv`, headers, rows);
+      showToast("Detalle del turno descargado en CSV");
     }
 
     function updatePosView(customPreviewTx = null) {
