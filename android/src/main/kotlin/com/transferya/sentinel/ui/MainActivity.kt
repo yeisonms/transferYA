@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val logoView = ImageView(this).apply {
-            setImageResource(com.transferya.sentinel.R.drawable.transferya_logo)
+            setImageResource(com.transferya.sentinel.R.drawable.transferya_centinela_master)
             layoutParams = LinearLayout.LayoutParams(160, 160).apply {
                 bottomMargin = 16
             }
@@ -208,8 +208,8 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(logoView)
 
         val titleView = TextView(this).apply {
-            text = "transferYA"
-            textSize = 28f
+            text = "transferYA Centinela"
+            textSize = 26f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
@@ -217,9 +217,9 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(titleView)
 
         val subtitleView = TextView(this).apply {
-            text = "VERIFICACIÓN AL INSTANTE • NEQUI Y DAVIPLATA"
-            textSize = 11f
-            setTextColor(Color.parseColor("#00D26A"))
+            text = "RECEPTOR EN SEGUNDO PLANO • NEQUI Y DAVIPLATA"
+            textSize = 10f
+            setTextColor(Color.parseColor("#00E5FF"))
             setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
             gravity = Gravity.CENTER
             setPadding(0, 4, 0, 24)
