@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v21';
+const CACHE_NAME = 'transferya-cache-v22';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

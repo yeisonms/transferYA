@@ -336,6 +336,11 @@
             <svg class="w-3.5 h-3.5 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </button>
 
+          <button onclick="toggleQuickStartGuide()" class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-muted hover:text-ty-emerald transition-all flex items-center gap-1.5" title="Ver Guía de Inicio Rápido en 3 Pasos">
+            <span>💡</span>
+            <span class="hidden sm:inline">Guía de Inicio</span>
+          </button>
+
           <button id="pwaInstallBtn" onclick="promptInstallPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all items-center gap-1.5">
             <span>Instalar</span>
           </button>
@@ -359,21 +364,123 @@
       <!-- Main Content Sections -->
       <main class="flex-1 p-4 lg:p-6 pb-24 lg:pb-8 space-y-6 max-w-7xl w-full mx-auto">
 
-        <!-- Banner si aún no hay dispositivos Centinela vinculados -->
-        <div id="noDevicesBanner" class="hidden p-4 rounded-xl bg-ty-amber/10 border border-ty-amber/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div class="text-xs font-mono font-bold uppercase text-ty-amber">📱 Conecta el Celular de tu Caja</div>
-            <p class="text-xs text-white/90 mt-0.5">Descarga la aplicación TransferYA en el celular donde recibes los pagos de Nequi y DaviPlata, y escanéalo con código QR.</p>
+        <!-- ============================================================ -->
+        <!-- GUÍA DE INICIO RÁPIDO (ONBOARDING EN 3 PASOS ILUSTRADOS) -->
+        <!-- ============================================================ -->
+        <div id="noDevicesBanner" class="hidden p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-ty-surface-low via-ty-surface to-ty-surface-low border-2 border-ty-emerald/40 shadow-2xl relative overflow-hidden space-y-5">
+          <!-- Glow decorativo de fondo -->
+          <div class="absolute -top-24 -right-24 w-72 h-72 bg-ty-emerald/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Cabecera de la Guía -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ty-emerald/20 text-ty-emerald border border-ty-emerald/40 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-ty-emerald beacon-pulse"></span>
+                  Guía de Inicio Rápido (2 Minutos)
+                </span>
+                <span class="text-xs text-ty-muted hidden sm:inline">• Sin configuraciones complicadas</span>
+              </div>
+              <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                ¡Bienvenido a TransferYA! Conecta tu negocio en 3 sencillos pasos
+              </h2>
+              <p class="text-xs sm:text-sm text-ty-muted">
+                Configura tu caja en menos de 2 minutos para verificar pagos de <strong class="text-white">Nequi</strong> y <strong class="text-white">DaviPlata</strong> automáticamente.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-xl bg-ty-emerald text-black font-extrabold text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.35)] transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Conectar mi Celular Ahora</span>
+              </button>
+              <button onclick="toggleQuickStartGuide(false)" class="p-2 rounded-xl bg-ty-surface border border-ty-border hover:text-white text-ty-muted transition-all" title="Ocultar guía">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase transition-all flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              <span>Descargar App Android</span>
-            </a>
-            <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,210,106,0.3)]">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <span>Conectar Celular (QR)</span>
-            </button>
+
+          <!-- Cuadrícula de 3 Pasos Ilustrados -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+            <!-- Paso 1 -->
+            <div class="bg-ty-bg/80 border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30">
+                    PASO 1
+                  </span>
+                  <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-cyan/30 flex items-center justify-center text-ty-cyan group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white group-hover:text-ty-cyan transition-colors">
+                    Descarga la App en tu Celular
+                  </h3>
+                  <p class="text-xs text-ty-muted mt-1 leading-relaxed">
+                    Descarga la app en el celular donde recibes la plata de <strong class="text-white">Nequi</strong> y <strong class="text-white">DaviPlata</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="w-full py-2 px-3 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Descargar App Android</span>
+              </a>
+            </div>
+
+            <!-- Paso 2 -->
+            <div class="bg-ty-bg/80 border border-ty-border hover:border-ty-emerald/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">
+                    PASO 2
+                  </span>
+                  <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-emerald/30 flex items-center justify-center text-ty-emerald group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">
+                    Toca "Escanear QR" y apunta
+                  </h3>
+                  <p class="text-xs text-ty-muted mt-1 leading-relaxed">
+                    Toca <strong class="text-white">"Escanear QR"</strong> en la app y apunta la cámara a la pantalla de tu computador o tablet.
+                  </p>
+                </div>
+              </div>
+
+              <button onclick="openPairingModal()" class="w-full py-2 px-3 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Mostrar Código QR</span>
+              </button>
+            </div>
+
+            <!-- Paso 3 -->
+            <div class="bg-ty-bg/80 border border-ty-border hover:border-ty-amber/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-ty-amber/15 text-ty-amber border border-ty-amber/30">
+                    PASO 3
+                  </span>
+                  <div class="w-10 h-10 rounded-xl bg-ty-surface border border-ty-amber/30 flex items-center justify-center text-ty-amber group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white group-hover:text-ty-amber transition-colors">
+                    ¡Listo! Pagos Automáticos
+                  </h3>
+                  <p class="text-xs text-ty-muted mt-1 leading-relaxed">
+                    ¡Listo! Tus pagos sonarán automáticamente en la caja y avisarán a tus cajeros.
+                  </p>
+                </div>
+              </div>
+
+              <div class="w-full py-2 px-3 rounded-lg bg-ty-surface/80 border border-ty-border text-[11px] font-mono text-ty-emerald flex items-center justify-center gap-1.5 text-center">
+                <span>🛡️ Saldo validado en tiempo real</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -689,6 +796,10 @@
               <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio que reciben las notificaciones de Nequi y DaviPlata</p>
             </div>
             <div class="flex flex-wrap gap-2">
+              <button onclick="toggleQuickStartGuide(true); switchTab('dashboard');" class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-ty-muted hover:text-white font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2" title="Ver guía de 3 pasos para conectar">
+                <span>💡</span>
+                <span>Guía en 3 Pasos</span>
+              </button>
               <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Descargar App Android (APK)</span>
@@ -2995,6 +3106,22 @@
       }
       showToast("Nombre de caja actualizado");
       await refreshMerchantData();
+    }
+
+    function toggleQuickStartGuide(forceShow = null) {
+      const banner = document.getElementById("noDevicesBanner");
+      if (!banner) return;
+      if (forceShow === true) {
+        banner.classList.remove("hidden");
+        banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } else if (forceShow === false) {
+        banner.classList.add("hidden");
+      } else {
+        banner.classList.toggle("hidden");
+        if (!banner.classList.contains("hidden")) {
+          banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }
     }
 
     function openPairingModal(presetDeviceId = null, presetLabel = null) {

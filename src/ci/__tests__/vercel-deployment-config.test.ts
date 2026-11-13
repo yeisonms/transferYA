@@ -25,6 +25,11 @@ describe('Validación de Configuración para Despliegue en Vercel', () => {
     expect(htmlContent).toContain('Ingresar a mi Negocio');
     expect(htmlContent).toContain('Nequi');
     expect(htmlContent).toContain('DaviPlata');
+    // Validación de Onboarding en 3 pasos para comercios nuevos
+    expect(htmlContent).toContain('Guía de Inicio Rápido');
+    expect(htmlContent).toContain('Descarga la app en el celular donde recibes la plata');
+    expect(htmlContent).toContain('Escanear QR');
+    expect(htmlContent).toContain('Tus pagos sonarán automáticamente en la caja');
   });
 
   it('debe existir la Serverless Function api/health.ts y responder con estado ONLINE', async () => {
