@@ -35,6 +35,20 @@ describe('Validación de Configuración para Despliegue en Vercel', () => {
     expect(htmlContent).toContain('pos-green-flash');
     expect(htmlContent).toContain('pos-screen-burst-flash');
     expect(htmlContent).toContain('Probar Cobro ($ 25.000)');
+
+    // Validación SEO & Open Graph para WhatsApp y Redes Sociales
+    expect(htmlContent).toContain('property="og:image"');
+    expect(htmlContent).toContain('images/og-share.jpg');
+    expect(htmlContent).toContain('property="og:title"');
+    expect(htmlContent).toContain('property="og:description"');
+    expect(htmlContent).toContain('twitter:card');
+
+    // Validación de existencia de assets de marca generados
+    expect(existsSync(resolve(publicDirPath, 'favicon.ico'))).toBe(true);
+    expect(existsSync(resolve(publicDirPath, 'images', 'og-share.jpg'))).toBe(true);
+    expect(existsSync(resolve(publicDirPath, 'icons', 'icon-192.png'))).toBe(true);
+    expect(existsSync(resolve(publicDirPath, 'icons', 'icon-512.png'))).toBe(true);
+    expect(existsSync(resolve(publicDirPath, 'icons', 'logo-wordmark.png'))).toBe(true);
   });
 
   it('debe existir la Serverless Function api/health.ts y responder con estado ONLINE', async () => {

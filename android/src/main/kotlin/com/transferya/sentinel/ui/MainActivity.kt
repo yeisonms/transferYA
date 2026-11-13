@@ -199,9 +199,17 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(Color.parseColor("#090D16"))
         }
 
+        val logoView = ImageView(this).apply {
+            setImageResource(com.transferya.sentinel.R.drawable.transferya_logo)
+            layoutParams = LinearLayout.LayoutParams(160, 160).apply {
+                bottomMargin = 16
+            }
+        }
+        rootLayout.addView(logoView)
+
         val titleView = TextView(this).apply {
-            text = "TransferYA Caja ⚡"
-            textSize = 24f
+            text = "transferYA"
+            textSize = 28f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
@@ -209,11 +217,12 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(titleView)
 
         val subtitleView = TextView(this).apply {
-            text = "Receptor de Pagos Nequi y DaviPlata"
-            textSize = 14f
-            setTextColor(Color.parseColor("#9CA3AF"))
+            text = "VERIFICACIÓN AL INSTANTE • NEQUI Y DAVIPLATA"
+            textSize = 11f
+            setTextColor(Color.parseColor("#00D26A"))
+            setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
             gravity = Gravity.CENTER
-            setPadding(0, 8, 0, 24)
+            setPadding(0, 4, 0, 24)
         }
         rootLayout.addView(subtitleView)
 
