@@ -2389,10 +2389,18 @@
       const firstPaymentTime = firstTimestamp ? getColombiaDateTimeLabel(firstTimestamp) : "Sin movimientos";
       const lastPaymentTime = lastTimestamp ? getColombiaDateTimeLabel(lastTimestamp) : "Sin movimientos";
 
+      const periodLabelMap = {
+        today: "Hoy",
+        week: "Esta Semana",
+        month: "Este Mes",
+        all: "Historial",
+        custom: filterState.dateFrom && filterState.dateTo ? `${filterState.dateFrom} a ${filterState.dateTo}` : "Personalizado"
+      };
+
       const scopeLabels = {
         today: "Turno Hoy Completo",
         "8h": "Últimas 8 Horas",
-        current: `Filtro de Pantalla (${periodLabels[filterState.period] || "Personalizado"})`
+        current: `Filtro de Pantalla (${periodLabelMap[filterState.period] || "Personalizado"})`
       };
 
       return {
