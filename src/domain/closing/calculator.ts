@@ -108,3 +108,4 @@ export function formatClosingWhatsAppMessage(summary: TurnClosingSummary, option
     `_✅ Cuadre verificado en tiempo real con TransferYA_`
   );
 }
+

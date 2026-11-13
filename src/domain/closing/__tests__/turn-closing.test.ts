@@ -112,3 +112,4 @@ describe('Paso A — Módulo de Cierre de Turno y Cuadre de Caja en 1 Clic', () 
     expect(waMessage).toContain('TransferYA');
   });
 });
+
