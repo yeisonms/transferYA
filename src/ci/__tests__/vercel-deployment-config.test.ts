@@ -30,6 +30,11 @@ describe('Validación de Configuración para Despliegue en Vercel', () => {
     expect(htmlContent).toContain('Descarga la app en el celular donde recibes la plata');
     expect(htmlContent).toContain('Escanear QR');
     expect(htmlContent).toContain('Tus pagos sonarán automáticamente en la caja');
+    // Validación Paso D: Modo Pantalla Mostrador (POS) con destello verde y sonido Cha-ching
+    expect(htmlContent).toContain('Modo Pantalla Mostrador (POS)');
+    expect(htmlContent).toContain('pos-green-flash');
+    expect(htmlContent).toContain('pos-screen-burst-flash');
+    expect(htmlContent).toContain('Probar Cobro ($ 25.000)');
   });
 
   it('debe existir la Serverless Function api/health.ts y responder con estado ONLINE', async () => {
