@@ -450,7 +450,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space3)
 
         enrollButton = Button(this).apply {
-            text = "📷 Vincular con Código QR"
+            text = "📷 Vincular con Código QR (Desde PC)"
             setBackgroundColor(Color.parseColor("#00D26A"))
             setTextColor(Color.parseColor("#090D16"))
             setTypeface(null, Typeface.BOLD)
@@ -463,8 +463,29 @@ class MainActivity : AppCompatActivity() {
         val space4 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
         operationalContainer.addView(space4)
 
+        val openWebBtn = Button(this).apply {
+            text = "🌐 Vincular desde este Celular (Abrir Web)"
+            setBackgroundColor(Color.parseColor("#1E293B"))
+            setTextColor(Color.parseColor("#38BDF8"))
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setOnClickListener {
+                try {
+                    val serverUrl = credentialsStorage.getServerUrl().ifBlank { "https://transferya.vercel.app" }
+                    val browserIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(serverUrl))
+                    startActivity(browserIntent)
+                } catch (_: Exception) {
+                    Toast.makeText(this@MainActivity, "No fue posible abrir el navegador.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        operationalContainer.addView(openWebBtn)
+
+        val space4b = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
+        operationalContainer.addView(space4b)
+
         manualEnrollButton = Button(this).apply {
-            text = "⌨️ Vincular con Código Manual"
+            text = "⌨️ Vincular con Código Manual (Pegar)"
             setBackgroundColor(Color.parseColor("#111726"))
             setTextColor(Color.parseColor("#94A3B8"))
             textSize = 12f
@@ -589,9 +610,9 @@ class MainActivity : AppCompatActivity() {
             enrollButton.text = "📷 Cambiar o Re-vincular Código QR"
             startSentinelService()
         } else {
-            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\nPara activar este celular, abre el panel de tu negocio en la web (transferya.mursat.com), ve a 'Celulares de Caja' y escanea el código QR."
+            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\n¿Estás usando este mismo teléfono? Toca 'Vincular desde este Celular' para abrir el panel y conectar en 1 Clic.\n\n¿Tienes computador? Abre transferya.vercel.app y escanea el código QR."
             statusView.setTextColor(Color.parseColor("#F59E0B"))
-            enrollButton.text = "📷 Vincular con Código QR"
+            enrollButton.text = "📷 Vincular con Código QR (Desde PC)"
         }
 
         val isListenerBound = SentinelNotificationListener.isConnected
