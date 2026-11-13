@@ -1,5 +1,6 @@
 import type { ParsedPaymentReceipt } from '../domain/parser/types.js';
 import {
+  buildHumanizedPaymentAlertText,
   formatCapturedTime,
   formatCopCurrency,
   formatRecipientForMeta,
@@ -309,13 +310,9 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
       return templateResult;
     }
 
-    // Fallback de alta resiliencia: si la plantilla está en revisión o no aprobada aún,
-    // enviar mensaje directo formateado para que el cajero no pierda la alerta
-    const refText = payment.reference ? `\nRef: ${payment.reference}` : '';
-    const staleWarning = options.isStale
-      ? `\n⚠️ Advertencia: ${Math.round((options.latencyMs ?? 0) / 1000)}s de retraso en red.`
-      : '';
-    const fallbackText = `⚡ *TransferYA - Pago Confirmado*\n\n💰 Monto: *${formattedAmount}*\n👤 De: *${payment.senderName}*\n🏦 Billetera: *${formattedWallet}*\n⏰ Hora: *${formattedTime}*${refText}${staleWarning}`;
+    // Fallback de alta resiliencia: si la plantilla está en revisión o no aprobada aún en Meta,
+    // enviar mensaje directo humanizado para que el cajero entregue la mercancía con total tranquilidad
+    const fallbackText = buildHumanizedPaymentAlertText(payment, options);
 
     const textResult = await this.sendTextMessage(to, fallbackText);
     if (textResult.success) {

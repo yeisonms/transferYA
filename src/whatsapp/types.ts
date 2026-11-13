@@ -67,6 +67,7 @@ export interface PaymentAlertOptions {
   capturedAt: number;
   latencyMs?: number;
   cashierName?: string;
+  deviceLabel?: string;
 }
 
 /**

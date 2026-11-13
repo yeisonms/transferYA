@@ -728,6 +728,53 @@
             <div id="cashiersList" class="divide-y divide-ty-border"></div>
           </div>
 
+          <!-- Vista Previa de Notificación Humanizada WhatsApp para Cajeros -->
+          <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#25D366]"></span>
+                  <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">Notificación Oficial Humanizada (WhatsApp Cajeros)</h3>
+                </div>
+                <p class="text-xs text-ty-muted mt-0.5">Diseñada sin tecnicismos para que el cajero tenga 100% de tranquilidad al entregar la mercancía sin pedir pantallazo.</p>
+              </div>
+              <div class="flex items-center gap-1.5 bg-ty-surface p-1 rounded-lg border border-ty-border">
+                <button onclick="previewCashierTemplate('NEQUI')" id="previewWalletBtn-NEQUI" class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-high text-ty-nequi transition-all">🟣 Nequi</button>
+                <button onclick="previewCashierTemplate('DAVIPLATA')" id="previewWalletBtn-DAVIPLATA" class="px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-daviplata transition-all">🔴 DaviPlata</button>
+              </div>
+            </div>
+
+            <!-- WhatsApp Message Bubble Visual Simulation -->
+            <div class="max-w-md p-4 rounded-2xl bg-[#0b141a] border border-[#202c33] shadow-xl relative overflow-hidden">
+              <div class="flex items-center justify-between text-[11px] font-mono text-[#8696a0] pb-2 mb-2 border-b border-[#202c33]">
+                <div class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+                  <span class="font-bold text-[#e9edef]">WhatsApp • TransferYA</span>
+                </div>
+                <span id="previewMsgTime">02:45 p. m.</span>
+              </div>
+
+              <!-- Message Body -->
+              <div class="bg-[#1f2c34] p-3.5 rounded-xl rounded-tl-none space-y-2 text-xs text-[#e9edef] shadow border-l-4 border-[#25D366]">
+                <div class="font-bold text-sm sm:text-base text-[#25D366] flex items-center gap-1.5">
+                  <span>✅</span> <span id="previewTitleBox">¡Pago Confirmado en Caja 1!</span>
+                </div>
+                <div class="text-base sm:text-lg font-extrabold text-white" id="previewAmountBadge">
+                  🟣 Nequi: $ 35.000 COP
+                </div>
+                <div class="text-xs text-[#d1d7db] flex items-center gap-1.5">
+                  <span>👤</span> <span>Cliente: <strong class="text-white" id="previewClientName">Carlos Andrés Gómez</strong></span>
+                </div>
+                <div class="text-xs text-[#8696a0] flex items-center gap-1.5">
+                  <span>⏰</span> <span>Hora: <strong class="text-[#e9edef]" id="previewClockLabel">02:45 p. m.</strong> — <span class="text-[#25D366] font-semibold">Saldo validado</span></span>
+                </div>
+                <div class="pt-2 border-t border-[#2a3942] text-[11px] text-[#8696a0] italic leading-relaxed">
+                  👍 Entrega la mercancía con total tranquilidad. Verificado en tiempo real con TransferYA.
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="max-w-lg">
               <div class="text-xs font-mono font-bold uppercase text-ty-cyan">WhatsApp del Dueño (Avisos de Cuenta)</div>
@@ -3127,6 +3174,24 @@
           </div>
         </div>
       `).join("");
+    }
+
+    function previewCashierTemplate(wallet = "NEQUI") {
+      const isNequi = wallet === "NEQUI";
+      const btnNequi = document.getElementById("previewWalletBtn-NEQUI");
+      const btnDavi = document.getElementById("previewWalletBtn-DAVIPLATA");
+      const badge = document.getElementById("previewAmountBadge");
+      const client = document.getElementById("previewClientName");
+
+      if (btnNequi) btnNequi.className = isNequi ? "px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-high text-ty-nequi transition-all" : "px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-nequi transition-all";
+      if (btnDavi) btnDavi.className = !isNequi ? "px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-high text-ty-daviplata transition-all" : "px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-daviplata transition-all";
+
+      if (badge) {
+        badge.innerHTML = isNequi ? `🟣 Nequi: $ 35.000 COP` : `🔴 DaviPlata: $ 35.000 COP`;
+      }
+      if (client) {
+        client.textContent = isNequi ? "Carlos Andrés Gómez" : "María Fernanda Morales";
+      }
     }
 
     function openAddCashierModal() {

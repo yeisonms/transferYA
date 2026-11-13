@@ -311,6 +311,7 @@ export class PaymentProcessingPipeline {
           capturedAt: notification.capturedAt,
           latencyMs: notification.latencyMs,
           cashierName: recipient.name,
+          deviceLabel: recipient.name || 'Caja 1',
         },
       );
 

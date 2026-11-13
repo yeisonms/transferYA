@@ -2,9 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ParsedPaymentReceipt } from '../../domain/parser/types.js';
 import { WhatsAppCloudApiClient } from '../client.js';
 import {
+  buildHumanizedPaymentAlertText,
   formatCapturedTime,
   formatCopCurrency,
+  formatFriendlyCapturedTime,
   formatRecipientForMeta,
+  formatWalletBadge,
   formatWalletDisplayName,
 } from '../formatter.js';
 import type {
@@ -43,6 +46,38 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
       expect(formatRecipientForMeta('+573001234567')).toBe('573001234567');
       expect(formatRecipientForMeta('  +57 300 123-4567  ')).toBe('573001234567');
       expect(formatRecipientForMeta('573001234567')).toBe('573001234567');
+    });
+
+    it('formatFriendlyCapturedTime debe formatear en 12 horas en español (ej: 02:30 p. m.)', () => {
+      const utcTime = Date.UTC(2026, 4, 6, 19, 30, 0); // 14:30 Bogota
+      const formatted = formatFriendlyCapturedTime(utcTime);
+      expect(formatted).toMatch(/02:30\s+(p\.\s*m\.|PM)/i);
+    });
+
+    it('formatWalletBadge debe retornar el icono correspondiente', () => {
+      expect(formatWalletBadge('NEQUI')).toEqual({ emoji: '🟣', name: 'Nequi', combined: '🟣 Nequi' });
+      expect(formatWalletBadge('DAVIPLATA')).toEqual({ emoji: '🔴', name: 'DaviPlata', combined: '🔴 DaviPlata' });
+    });
+
+    it('buildHumanizedPaymentAlertText debe construir el mensaje oficial sin tecnicismos para el cajero', () => {
+      const payment: ParsedPaymentReceipt = {
+        wallet: 'NEQUI',
+        amount: 35000,
+        senderName: 'Carlos Andrés Gómez',
+        reference: 'M1234567',
+        rawText: 'Nequi: Recibiste $35.000 de Carlos Andrés Gómez',
+      };
+      const text = buildHumanizedPaymentAlertText(payment, {
+        isStale: false,
+        capturedAt: Date.UTC(2026, 4, 6, 19, 45, 0),
+        deviceLabel: 'Caja 1',
+      });
+
+      expect(text).toContain('✅ *¡Pago Confirmado en Caja 1!*');
+      expect(text).toContain('🟣 Nequi: *$ 35.000*');
+      expect(text).toContain('👤 *Cliente:* Carlos Andrés Gómez');
+      expect(text).toMatch(/⏰ \*Hora:\* 02:45\s+(p\.\s*m\.|PM) — \*Saldo validado\*/i);
+      expect(text).toContain('Entrega la mercancía con tranquilidad');
     });
   });
 
