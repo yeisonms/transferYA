@@ -22,8 +22,9 @@ describe('Validación de Configuración para Despliegue en Vercel', () => {
 
     const htmlContent = readFileSync(indexHtmlPath, 'utf-8');
     expect(htmlContent).toContain('TransferYA');
-    expect(htmlContent).toContain('/api/v1/webhooks/notifications');
-    expect(htmlContent).toContain('Core Engine Operativo');
+    expect(htmlContent).toContain('Ingresar a mi Negocio');
+    expect(htmlContent).toContain('Nequi');
+    expect(htmlContent).toContain('DaviPlata');
   });
 
   it('debe existir la Serverless Function api/health.ts y responder con estado ONLINE', async () => {

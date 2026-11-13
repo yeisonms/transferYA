@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val titleView = TextView(this).apply {
-            text = "TransferYA Sentinel ⚡"
+            text = "TransferYA Caja ⚡"
             textSize = 24f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(titleView)
 
         val subtitleView = TextView(this).apply {
-            text = "Nodo A: Ingesta de Pagos en Tiempo Real"
+            text = "Receptor de Pagos Nequi y DaviPlata"
             textSize = 14f
             setTextColor(Color.parseColor("#9CA3AF"))
             gravity = Gravity.CENTER
@@ -393,7 +393,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space1)
 
         val permissionButton = Button(this).apply {
-            text = "🔔 Reconectar Permiso de Notificaciones"
+            text = "🔔 Activar Permiso de Notificaciones"
             setBackgroundColor(Color.parseColor("#1E293B"))
             setTextColor(Color.WHITE)
             setOnClickListener {
@@ -407,7 +407,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space2)
 
         val batteryButton = Button(this).apply {
-            text = "🔋 Batería e Inicio Automático (Xiaomi/OEM)"
+            text = "🔋 Optimizar Batería (Sin Restricciones)"
             setBackgroundColor(Color.parseColor("#334155"))
             setTextColor(Color.WHITE)
             setOnClickListener {
@@ -427,7 +427,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space2b)
 
         simulateButton = Button(this).apply {
-            text = "🧪 Simular Notificación Nequi (Aleatorio)"
+            text = "🧪 Probar Notificación de Pago"
             setBackgroundColor(Color.parseColor("#2563EB"))
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
@@ -441,7 +441,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space3)
 
         enrollButton = Button(this).apply {
-            text = "📷 Emparejar con Código QR"
+            text = "📷 Vincular con Código QR"
             setBackgroundColor(Color.parseColor("#00D26A"))
             setTextColor(Color.parseColor("#090D16"))
             setTypeface(null, Typeface.BOLD)
@@ -455,7 +455,7 @@ class MainActivity : AppCompatActivity() {
         operationalContainer.addView(space4)
 
         manualEnrollButton = Button(this).apply {
-            text = "⌨️ Ingresar Token Manual / Servidor"
+            text = "⌨️ Vincular con Código Manual"
             setBackgroundColor(Color.parseColor("#111726"))
             setTextColor(Color.parseColor("#94A3B8"))
             textSize = 12f
@@ -502,30 +502,30 @@ class MainActivity : AppCompatActivity() {
             val deviceId = credentialsStorage.getDeviceId() ?: "Desconocido"
             val merchantId = credentialsStorage.getMerchantId() ?: "Desconocido"
 
-            statusView.text = "🟢 DISPOSITIVO EMPAREJADO\n\nCaja ID: $deviceId\nComercio: $merchantId\nFirma: Hardware KeyStore OK"
+            statusView.text = "🟢 CAJA CONECTADA Y ACTIVA\n\nCaja: $deviceId\nComercio: $merchantId\nEstado: Escuchando pagos en tiempo real"
             statusView.setTextColor(Color.parseColor("#00D26A"))
-            enrollButton.text = "📷 Re-emparejar con Código QR"
+            enrollButton.text = "📷 Cambiar o Re-vincular Código QR"
             startSentinelService()
         } else {
-            statusView.text = "🔴 NO EMPAREJADO\n\nEl dispositivo no tiene secreto HMAC configurado.\nGenera el QR en el Panel Web y presiona Emparejar."
+            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\nPara activar este celular, abre el panel de tu negocio en la web (transferya.mursat.com), ve a 'Celulares de Caja' y escanea el código QR."
             statusView.setTextColor(Color.parseColor("#F59E0B"))
-            enrollButton.text = "📷 Emparejar con Código QR"
+            enrollButton.text = "📷 Vincular con Código QR"
         }
 
         val isListenerBound = SentinelNotificationListener.isConnected
-        val listenerText = if (isListenerBound) "🟢 VINCULADO (Recibiendo)" else "🔴 DESCONECTADO (Toca para Reconectar)"
+        val listenerText = if (isListenerBound) "🟢 ACTIVO (Escuchando)" else "🔴 DESCONECTADO (Toca para Reconectar)"
         val permText = if (isPermGranted) "✅ ACTIVO" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
         val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' Requerido"
         val lastPingAt = credentialsStorage.getLastHeartbeatAt()
         val heartbeatText = if (lastPingAt > 0L) {
             val secAgo = ((System.currentTimeMillis() - lastPingAt) / 1000L).coerceAtLeast(0L)
-            if (secAgo < 60L) "✅ Hace ${secAgo}s" else "✅ Hace ${secAgo / 60L} min"
+            if (secAgo < 60L) "✅ En línea (Hace ${secAgo}s)" else "✅ En línea (Hace ${secAgo / 60L} min)"
         } else {
-            "⏳ En espera (cada 2 min)"
+            "⏳ Conectando..."
         }
         val lastErrorLine = if (!lastError.isNullOrBlank()) "\n• Último Error Red: ${lastError.take(120)}" else ""
 
-        diagnosticView.text = "Diagnóstico en Vivo:\n• Permiso Android: $permText\n• Enlace del Sistema: $listenerText\n• Batería OEM: $batteryText\n• Último Heartbeat: $heartbeatText\n• Cola Local SQLite: $pendingCount pendientes / $dispatchedCount enviados / $failedCount fallidos$lastErrorLine"
+        diagnosticView.text = "Estado del Sistema:\n• Lectura de Notificaciones: $permText\n• Conexión con Negocio: $heartbeatText\n• Estado del Receptor: $listenerText\n• Batería del Teléfono: $batteryText\n• Pagos Registrados: $dispatchedCount confirmados$lastErrorLine"
         diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery && failedCount == 0 && pendingCount == 0) "#00D26A" else "#F59E0B"))
     }
 

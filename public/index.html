@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-  <title>TransferYA | Cockpit Financiero Multi-Comercio &amp; POS</title>
+  <title>TransferYA | Verificador de Pagos Nequi y DaviPlata en Tiempo Real</title>
 
   <!-- PWA Manifest & Meta Tags -->
   <link rel="manifest" href="/manifest.json"/>
@@ -87,52 +87,76 @@
   <!-- ================================================================== -->
   <section id="authScreen" class="hidden min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-      <!-- Brand -->
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.25)]">
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <!-- Brand & Commercial Badges -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-ty-surface border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shadow-[0_0_20px_rgba(0,210,106,0.25)] shrink-0">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">En Vivo</span>
+            </div>
+            <span class="text-xs text-ty-muted">Verificador de Pagos en Tiempo Real</span>
+          </div>
         </div>
-        <div>
-          <span class="text-xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
-          <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Acceso Seguro de Comercios</span>
+
+        <!-- Badges Comerciales de Pagos Soportados -->
+        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#260026] border border-[#E01E5A]/40 text-[#FF4B81]">
+            <span class="w-2 h-2 rounded-full bg-[#E01E5A] animate-pulse"></span>
+            Nequi
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#260505] border border-[#ED1C24]/40 text-[#FF5A5F]">
+            <span class="w-2 h-2 rounded-full bg-[#ED1C24] animate-pulse"></span>
+            DaviPlata
+          </span>
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono text-ty-emerald bg-ty-emerald/10 border border-ty-emerald/30">
+            ⚡ 0% comisión
+          </span>
         </div>
       </div>
 
       <!-- Mode Switch -->
       <div class="grid grid-cols-2 gap-1.5 bg-ty-surface p-1 rounded-xl border border-ty-border">
-        <button id="authTabLogin" onclick="setAuthMode('login')" class="py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all">Iniciar Sesión</button>
-        <button id="authTabSignup" onclick="setAuthMode('signup')" class="py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all">Crear Comercio</button>
+        <button id="authTabLogin" onclick="setAuthMode('login')" class="py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm">Iniciar Sesión</button>
+        <button id="authTabSignup" onclick="setAuthMode('signup')" class="py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all">Registrar mi Negocio</button>
       </div>
 
       <!-- Form -->
       <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
         <div id="signupStoreField" class="hidden">
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Comercio</label>
-          <input type="text" id="authStoreName" placeholder="Ej: Minimarket La 14" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Negocio</label>
+          <input type="text" id="authStoreName" placeholder="Ej: Minimarket La 14, Panadería San Pedro" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
         </div>
 
         <div>
           <label class="block text-xs font-mono text-ty-muted mb-1.5">Correo Electrónico</label>
-          <input type="email" id="authEmail" required placeholder="dueno@tucomercio.com" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+          <input type="email" id="authEmail" required placeholder="tucorreo@ejemplo.com" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
         </div>
 
         <div id="authPasswordGroup">
           <label class="block text-xs font-mono text-ty-muted mb-1.5">Contraseña</label>
-          <input type="password" id="authPassword" minlength="6" placeholder="Mínimo 6 caracteres" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
+          <input type="password" id="authPassword" minlength="6" placeholder="Tu contraseña de acceso" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0"/>
         </div>
 
         <div id="authFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
 
-        <button id="authSubmitBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.25)] transition-all">
-          Entrar al Cockpit
+        <button id="authSubmitBtn" type="submit" class="w-full py-3.5 rounded-xl bg-ty-emerald text-black font-bold text-sm tracking-wide uppercase hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
+          <span>Ingresar a mi Negocio</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </form>
 
       <div class="pt-3 border-t border-ty-border flex flex-col gap-2.5 text-center">
         <button id="authMagicLinkBtn" onclick="sendMagicLink()" type="button" class="w-full py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-          Enviar Magic Link (Acceso sin contraseña)
+          Ingresar con enlace al correo (sin contraseña)
         </button>
-        <p class="text-[11px] font-mono text-ty-muted">Aislamiento Row Level Security activo • Core Engine Operativo</p>
+        <p class="text-[11px] font-mono text-ty-muted flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-ty-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Pagos verificados en tiempo real • Datos 100% seguros y protegidos</span>
+        </p>
       </div>
     </div>
   </section>
@@ -144,40 +168,26 @@
     <div class="w-full max-w-lg bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
       <div class="flex items-center justify-between">
         <div>
-          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Paso Final de Registro</span>
-          <h2 class="text-xl font-bold text-white mt-1">Configura tu Comercio</h2>
+          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Bienvenido a TransferYA</span>
+          <h2 class="text-xl font-bold text-white mt-1">Registra tu Negocio</h2>
         </div>
         <button onclick="signOutUser()" class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white">Cerrar Sesión</button>
       </div>
 
       <p class="text-xs text-ty-muted leading-relaxed">
-        Tu cuenta (<span id="onboardingUserEmail" class="font-mono text-white"></span>) aún no tiene un comercio asignado en esta base de datos aislada.
+        Tu cuenta (<span id="onboardingUserEmail" class="font-mono text-white"></span>) está lista. Solo ingresa el nombre de tu establecimiento para empezar a verificar pagos de Nequi y DaviPlata.
       </p>
 
       <form onsubmit="handleProvisionMerchant(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre Comercial</label>
-          <input type="text" id="provisionStoreName" required minlength="2" maxlength="80" placeholder="Ej: Droguería Central" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
+          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Negocio o Establecimiento</label>
+          <input type="text" id="provisionStoreName" required minlength="2" maxlength="80" placeholder="Ej: Droguería Central, Restaurante El Buen Sabor" class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0"/>
         </div>
         <div id="onboardingFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
-        <button id="provisionBtn" type="submit" class="w-full py-3 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-          Crear Comercio y Entrar
+        <button id="provisionBtn" type="submit" class="w-full py-3.5 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.3)] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+          Comenzar y Entrar a mi Panel
         </button>
       </form>
-
-      <div class="p-3.5 rounded-xl bg-ty-surface border border-ty-border space-y-2 text-[11px] font-mono text-ty-muted">
-        <div class="text-ty-cyan font-bold uppercase">Nota para dueño del Piloto Alpha:</div>
-        <p class="leading-relaxed">Si estás reclamando tu caja existente <span class="text-white">Comercio Piloto Alpha</span>, ejecuta en Supabase SQL Editor el UPDATE con tu correo o User ID:</p>
-        <div class="p-2 rounded bg-ty-bg text-[10px] text-white select-all break-all" id="onboardingClaimSql"></div>
-        <div class="flex flex-col sm:flex-row gap-2">
-          <button onclick="copyClaimSql()" type="button" class="sm:w-1/3 py-2 rounded-lg bg-ty-surface-highest border border-ty-border hover:border-ty-cyan text-ty-cyan text-xs transition-all">
-            Copiar SQL
-          </button>
-          <button onclick="checkMerchantReload()" type="button" class="sm:flex-1 py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-ty-emerald text-xs transition-all">
-            Ya asigné mi comercio, verificar de nuevo
-          </button>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -195,29 +205,29 @@
           </div>
           <div>
             <span class="text-xl font-extrabold tracking-tight text-white block leading-tight">TransferYA</span>
-            <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Multi-Comercio RLS</span>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Panel de Control</span>
           </div>
         </div>
 
         <nav class="flex flex-col gap-1.5" id="desktopNav">
           <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            <span class="text-sm">Resumen y Caja</span>
+            <span class="text-sm">Resumen y Ventas</span>
           </button>
 
           <button onclick="switchTab('history')" id="nav-btn-history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="text-sm">Historial de Cierres</span>
+            <span class="text-sm">Cierres de Caja</span>
           </button>
 
           <button onclick="switchTab('pos')" id="nav-btn-pos" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            <span class="text-sm">Modo Caja POS</span>
+            <span class="text-sm">Pantalla de Cobro (POS)</span>
           </button>
 
           <button onclick="switchTab('devices')" id="nav-btn-devices" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            <span class="text-sm">Cajas Centinela</span>
+            <span class="text-sm">Celulares de Caja</span>
           </button>
 
           <button onclick="switchTab('cashiers')" id="nav-btn-cashiers" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
@@ -245,15 +255,15 @@
 
         <button onclick="switchTab('pos')" class="w-full py-2.5 px-3 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span>Pantalla POS</span>
+          <span>Pantalla de Cobro (POS)</span>
         </button>
 
         <div class="flex flex-col gap-1 text-[11px] font-mono text-ty-muted px-1">
           <div class="flex items-center justify-between">
-            <span>Core Engine Operativo</span>
+            <span>Sistema en Línea</span>
             <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
           </div>
-          <span class="text-[9px] text-ty-muted/80 truncate">Ingesta: /api/v1/webhooks/notifications</span>
+          <span class="text-[9px] text-ty-emerald/80 truncate">⚡ Verificando pagos Nequi y DaviPlata</span>
         </div>
       </div>
     </aside>
@@ -275,9 +285,9 @@
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs text-ty-muted">
               <span id="socketBeacon" class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
-              <span id="socketStatusText" class="font-mono text-ty-emerald">Conectando Realtime...</span>
+              <span id="socketStatusText" class="font-mono text-ty-emerald">Conectando en vivo...</span>
               <span class="text-ty-border hidden sm:inline">•</span>
-              <span id="sentinelHealthSummary" class="font-mono text-ty-muted hidden sm:inline">Evaluando nodos...</span>
+              <span id="sentinelHealthSummary" class="font-mono text-ty-muted hidden sm:inline">Verificando celulares...</span>
             </div>
           </div>
         </div>
@@ -302,7 +312,7 @@
           </button>
 
           <button onclick="switchTab('pos')" class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,106,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5">
-            <span>Modo POS</span>
+            <span>Modo Caja</span>
           </button>
 
           <button onclick="signOutUser()" class="lg:hidden px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-rose/30 text-xs font-mono text-ty-rose">
@@ -317,27 +327,31 @@
         <!-- Banner si aún no hay dispositivos Centinela vinculados -->
         <div id="noDevicesBanner" class="hidden p-4 rounded-xl bg-ty-amber/10 border border-ty-amber/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div class="text-xs font-mono font-bold uppercase text-ty-amber">Sin Dispositivo Centinela Vinculado</div>
-            <p class="text-xs text-white/90 mt-0.5">Descarga e instala la app Android en tu teléfono de caja registradora y vincúlala con código QR.</p>
+            <div class="text-xs font-mono font-bold uppercase text-ty-amber">📱 Conecta el Celular de tu Caja</div>
+            <p class="text-xs text-white/90 mt-0.5">Descarga la aplicación TransferYA en el celular donde recibes los pagos de Nequi y DaviPlata, y escanéalo con código QR.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase transition-all">
-              Descargar APK (v0.3.1)
+            <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase transition-all flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Descargar App Android</span>
             </a>
-            <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase">
-              Emparejar Caja 1 (QR)
+            <button onclick="openPairingModal()" class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,210,106,0.3)]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Conectar Celular (QR)</span>
             </button>
           </div>
         </div>
 
-        <!-- Banner de alerta automática cuando una caja deja de emitir Heartbeat (> 5 min) -->
+        <!-- Banner de alerta automática cuando una caja deja de comunicarse (> 5 min) -->
         <div id="devicesOfflineBanner" class="hidden p-4 rounded-xl bg-ty-rose/10 border border-ty-rose/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div class="text-xs font-mono font-bold uppercase text-ty-rose" id="devicesOfflineBannerTitle">Caja Centinela Desconectada</div>
-            <p class="text-xs text-white/90 mt-0.5" id="devicesOfflineBannerBody">Una o más cajas llevan más de 5 minutos sin enviar heartbeat. Revisa internet, batería (Sin restricciones) o abre TransferYA Centinela.</p>
+            <div class="text-xs font-mono font-bold uppercase text-ty-rose" id="devicesOfflineBannerTitle">Celular de Caja Desconectado</div>
+            <p class="text-xs text-white/90 mt-0.5" id="devicesOfflineBannerBody">El celular de tu caja lleva más de 5 minutos sin comunicación. Revisa que tenga conexión a internet y la aplicación TransferYA abierta.</p>
           </div>
           <button onclick="switchTab('devices')" class="px-4 py-2 rounded-lg bg-ty-surface border border-ty-rose/50 hover:bg-ty-rose hover:text-white text-ty-rose font-bold font-mono text-xs uppercase shrink-0 transition-all">
-            Revisar Cajas
+            Revisar Celulares
+          </button>
+        </div>
           </button>
         </div>
 
@@ -600,7 +614,7 @@
 
             <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-ty-muted mb-6">
               <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-cyan">
-                <span id="posLatencyChip">Centinela Listo</span>
+                <span id="posLatencyChip">Caja Lista</span>
               </span>
               <span class="px-3 py-1 rounded bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-emerald">
                 <span>WhatsApp Cajero Sincronizado</span>
@@ -623,22 +637,22 @@
         </section>
 
         <!-- ============================================================ -->
-        <!-- TAB 4: CAJAS CENTINELA (MULTI-CAJA DINÁMICO) -->
+        <!-- TAB 4: CELULARES Y CAJAS REGISTRADORAS -->
         <!-- ============================================================ -->
         <section id="tab-devices" class="hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Cajas y Dispositivos Centinela</h2>
-              <p class="text-xs text-ty-muted">Administra una o múltiples cajas registradoras conectadas a tu comercio</p>
+              <h2 class="text-lg font-bold text-white">Celulares y Cajas Registradoras</h2>
+              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio que reciben las notificaciones de Nequi y DaviPlata</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                <span>Descargar APK Android (v0.3.1)</span>
+                <span>Descargar App Android (APK)</span>
               </a>
               <button onclick="openPairingModal()" class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>Emparejar Nueva Caja (QR)</span>
+                <span>Conectar Nuevo Celular (QR)</span>
               </button>
             </div>
           </div>
@@ -652,8 +666,8 @@
         <section id="tab-cashiers" class="hidden space-y-6">
           <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-lg font-bold text-white">Directorio de Cajeros WhatsApp</h2>
-              <p class="text-xs text-ty-muted">Asigna cajeros a todas las cajas o a una caja específica del comercio</p>
+              <h2 class="text-lg font-bold text-white">Cajeros y Alertas por WhatsApp</h2>
+              <p class="text-xs text-ty-muted">Registra a tus cajeros para que reciban la confirmación inmediata de cada pago en su propio WhatsApp</p>
             </div>
             <button onclick="openAddCashierModal()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -673,8 +687,8 @@
 
           <div class="p-5 bg-ty-surface-low border border-ty-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="max-w-lg">
-              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">WhatsApp del Dueño (Facturación y Avisos)</div>
-              <p class="text-xs text-ty-muted mt-1">Número del propietario para recordatorios de renovación o alertas si la suscripción llega a vencer (separado del turno de cajeros).</p>
+              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">WhatsApp del Dueño (Avisos de Cuenta)</div>
+              <p class="text-xs text-ty-muted mt-1">Número de WhatsApp del propietario para avisos importantes y recordatorios de renovación de tu plan (independiente del turno de los cajeros).</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <input type="tel" id="billingPhoneInput" placeholder="+573113654315" class="w-44 bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-cyan focus:ring-0"/>
@@ -715,8 +729,8 @@
             <div class="flex items-center gap-3">
               <span class="w-2.5 h-2.5 rounded-full bg-ty-emerald beacon-pulse shrink-0"></span>
               <div>
-                <span class="font-bold font-mono text-ty-emerald uppercase">Dogfooding Auto-Renovación Activo</span>
-                <p class="text-ty-muted mt-0.5">Centinela MurSat <code class="text-white">dev_5f38cd_caja_1</code> concilia transferencias a Nequi <code class="text-white">3113654315</code> (&ge; $50.000 COP) y renueva +30 días Pro automáticamente.</p>
+                <span class="font-bold font-mono text-ty-emerald uppercase">Auto-Renovación MurSat Activa</span>
+                <p class="text-ty-muted mt-0.5">Celular de Caja MurSat <code class="text-white">dev_5f38cd_caja_1</code> concilia transferencias a Nequi <code class="text-white">3113654315</code> (&ge; $50.000 COP) y renueva +30 días Pro automáticamente.</p>
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -799,7 +813,7 @@
 
       <button onclick="switchTab('devices')" id="mob-nav-devices" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-        <span class="text-[10px] font-mono">Nodos</span>
+        <span class="text-[10px] font-mono">Cajas</span>
       </button>
 
       <button onclick="switchTab('cashiers')" id="mob-nav-cashiers" class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
@@ -896,36 +910,36 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="w-2 h-2 rounded-full bg-ty-emerald beacon-pulse"></span>
-          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Ceremonia Zero-Trust</span>
+          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Conexión Rápida y Segura</span>
         </div>
-        <h3 class="text-lg font-bold text-white">Emparejar Caja Centinela</h3>
-        <p class="text-xs text-ty-muted">Elige si vas a vincular una caja nueva o re-emparejar una existente.</p>
+        <h3 class="text-lg font-bold text-white">Conectar Celular de Caja</h3>
+        <p class="text-xs text-ty-muted">Abre la app TransferYA en el celular de tu negocio, presiona "Escanear QR" y apunta la cámara a este código.</p>
       </div>
 
       <!-- Configuración de Caja antes de generar QR -->
       <div class="space-y-2.5 p-3 rounded-xl bg-ty-surface border border-ty-border">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">ID de Caja</label>
+            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">Código de Caja</label>
             <input type="text" id="pairingDeviceIdInput" class="w-full bg-ty-bg border border-ty-border rounded px-2.5 py-1.5 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0"/>
           </div>
           <div>
-            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">Nombre de Caja</label>
+            <label class="block text-[10px] font-mono text-ty-muted uppercase mb-1">Nombre (Ej: Caja 1, Barra)</label>
             <input type="text" id="pairingDeviceLabelInput" placeholder="Caja 2" class="w-full bg-ty-bg border border-ty-border rounded px-2.5 py-1.5 text-xs text-white focus:border-ty-emerald focus:ring-0"/>
           </div>
         </div>
         <button onclick="generatePairingQrNow()" class="w-full py-2 rounded-lg bg-ty-surface-high border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all">
-          Regenerar Código QR para esta Caja
+          Actualizar Código QR
         </button>
       </div>
 
       <div id="qrCodeContainer" class="bg-white p-3 rounded-xl flex items-center justify-center mx-auto w-56 h-56 shadow-inner">
-        <span class="text-xs font-mono text-gray-500">Generando QR seguro...</span>
+        <span class="text-xs font-mono text-gray-500">Generando código QR...</span>
       </div>
 
       <div class="space-y-1.5">
         <div class="flex items-center justify-between text-xs font-mono">
-          <span class="text-ty-muted">Vigencia del Token:</span>
+          <span class="text-ty-muted">Código válido por:</span>
           <span id="qrTimerText" class="text-ty-emerald font-bold">05:00</span>
         </div>
         <div class="w-full h-1.5 rounded-full bg-ty-surface overflow-hidden">
@@ -934,7 +948,7 @@
       </div>
 
       <a id="qrDeepLinkBtn" href="#" class="hidden w-full py-2 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald/25 text-ty-emerald text-xs font-mono font-bold text-center block transition-all">
-        Abrir directo en TransferYA Sentinel (este celular)
+        Abrir directo en la App TransferYA (en este celular)
       </a>
 
       <div class="flex items-center gap-2">
@@ -945,8 +959,9 @@
       </div>
 
       <div class="pt-2 border-t border-ty-border/60 text-center">
-        <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="text-[11px] font-mono text-ty-cyan hover:underline">
-          ¿Aún no tienes la app? Descargar TransferYA Centinela APK (v0.3.1-beta)
+        <a href="/downloads/transferya-sentinel-v0.3.1-beta.apk" download="transferya-sentinel-v0.3.1-beta.apk" class="text-[11px] font-mono text-ty-cyan hover:underline flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>¿Aún no tienes la app? Descargar TransferYA para Android (APK v0.3.1)</span>
         </a>
       </div>
     </div>
@@ -1349,15 +1364,15 @@
       }
 
       if (mode === "signup") {
-        signupBtn.className = "py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all";
-        loginBtn.className = "py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        signupBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
+        loginBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
         storeField.classList.remove("hidden");
-        submitBtn.textContent = "Crear Cuenta de Comercio";
+        submitBtn.textContent = "Registrar mi Negocio";
       } else {
-        loginBtn.className = "py-2 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all";
-        signupBtn.className = "py-2 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        loginBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
+        signupBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
         storeField.classList.add("hidden");
-        submitBtn.textContent = "Entrar al Cockpit";
+        submitBtn.textContent = "Ingresar a mi Negocio";
       }
     }
 
@@ -2079,7 +2094,7 @@
         document.getElementById("posHeroSender").textContent = "Sin pagos aún";
         document.getElementById("posWalletBadge").textContent = "ESPERANDO";
         document.getElementById("posTimestampBadge").textContent = "Listo para recibir";
-        document.getElementById("posLatencyChip").textContent = "Centinela en espera";
+        document.getElementById("posLatencyChip").textContent = "Caja en espera de pagos";
       } else {
         const wallet = detectWallet(latest);
         document.getElementById("posHeroAmount").innerHTML = `$ ${Number(latest.amount).toLocaleString("es-CO")} <span class="text-2xl sm:text-3xl text-ty-emerald font-normal font-sans">COP</span>`;
@@ -2144,11 +2159,11 @@
         const isRevoked = device?.status === "REVOKED";
         return {
           state: "DISABLED",
-          badgeLabel: isRevoked ? "REVOCADA" : (device?.status || "INACTIVA"),
+          badgeLabel: isRevoked ? "PAUSADA" : (device?.status || "INACTIVA"),
           dotClass: "bg-ty-rose",
           badgeClass: "bg-ty-rose/10 text-ty-rose border border-ty-rose/30",
           cardBorderClass: "border-ty-rose/30",
-          relativeText: isRevoked ? "Acceso bloqueado (celular revocado)" : "Deshabilitada",
+          relativeText: isRevoked ? "Acceso en pausa (celular desactivado)" : "Deshabilitada",
           pingColorClass: "text-ty-rose"
         };
       }
@@ -2156,11 +2171,11 @@
       if (!device.last_heartbeat_at) {
         return {
           state: "PENDING",
-          badgeLabel: "SIN PING",
+          badgeLabel: "CONECTANDO",
           dotClass: "bg-ty-amber",
           badgeClass: "bg-ty-amber/10 text-ty-amber border border-ty-amber/30",
           cardBorderClass: "border-ty-amber/30",
-          relativeText: "Esperando primer heartbeat",
+          relativeText: "Esperando primera conexión",
           pingColorClass: "text-ty-amber"
         };
       }
@@ -2169,11 +2184,11 @@
       if (Number.isNaN(lastMs)) {
         return {
           state: "PENDING",
-          badgeLabel: "SIN PING",
+          badgeLabel: "CONECTANDO",
           dotClass: "bg-ty-amber",
           badgeClass: "bg-ty-amber/10 text-ty-amber border border-ty-amber/30",
           cardBorderClass: "border-ty-amber/30",
-          relativeText: "Sin fecha válida",
+          relativeText: "Sin fecha registrada",
           pingColorClass: "text-ty-amber"
         };
       }
@@ -2197,7 +2212,7 @@
         dotClass: "bg-ty-rose",
         badgeClass: "bg-ty-rose/10 text-ty-rose border border-ty-rose/40",
         cardBorderClass: "border-ty-rose/40",
-        relativeText: `Sin señal (${formatRelativeDuration(ageMs)})`,
+        relativeText: `Sin conexión (${formatRelativeDuration(ageMs)})`,
         pingColorClass: "text-ty-rose"
       };
     }
@@ -2219,7 +2234,7 @@
           currentOfflineIds.add(d.id);
           offlineNames.push(d.label || d.id);
           if (notifyTransitions && isHealthBaselineInitialized && !knownOfflineDeviceIds.has(d.id)) {
-            showToast(`Caja desconectada: ${d.label || d.id} dejó de enviar heartbeat`, true);
+            showToast(`Caja desconectada: ${d.label || d.id} perdió conexión a internet`, true);
           }
         }
       }
@@ -2230,16 +2245,16 @@
       const summaryEl = document.getElementById("sentinelHealthSummary");
       if (summaryEl) {
         if (activeCount === 0) {
-          summaryEl.textContent = "Sin cajas vinculadas";
+          summaryEl.textContent = "Sin celulares vinculados";
           summaryEl.className = "font-mono text-ty-amber hidden sm:inline";
         } else if (currentOfflineIds.size > 0) {
-          summaryEl.textContent = `${onlineCount}/${activeCount} en línea • ${currentOfflineIds.size} desconectada(s)`;
+          summaryEl.textContent = `${onlineCount}/${activeCount} en línea • ${currentOfflineIds.size} desconectado(s)`;
           summaryEl.className = "font-mono text-ty-rose hidden sm:inline";
         } else if (pendingCount > 0 && onlineCount === 0) {
-          summaryEl.textContent = `${pendingCount} caja(s) esperando ping`;
+          summaryEl.textContent = `${pendingCount} celular(es) conectando`;
           summaryEl.className = "font-mono text-ty-amber hidden sm:inline";
         } else {
-          summaryEl.textContent = `${onlineCount}/${activeCount} cajas en línea`;
+          summaryEl.textContent = `${onlineCount}/${activeCount} celulares en línea`;
           summaryEl.className = "font-mono text-ty-emerald hidden sm:inline";
         }
       }
@@ -2249,10 +2264,10 @@
         if (currentOfflineIds.size > 0) {
           document.getElementById("devicesOfflineBannerTitle").textContent =
             currentOfflineIds.size === 1
-              ? `Caja Desconectada: ${offlineNames[0]}`
-              : `${currentOfflineIds.size} Cajas Desconectadas`;
+              ? `Celular Desconectado: ${offlineNames[0]}`
+              : `${currentOfflineIds.size} Celulares Desconectados`;
           document.getElementById("devicesOfflineBannerBody").textContent =
-            `${offlineNames.join(", ")} supera 5 minutos sin emitir heartbeat. Revisa conexión a internet y optimización de batería en ese celular.`;
+            `${offlineNames.join(", ")} lleva más de 5 minutos sin conexión. Verifica que el celular tenga internet y la app TransferYA abierta.`;
           offlineBanner.classList.remove("hidden");
         } else {
           offlineBanner.classList.add("hidden");
@@ -2285,11 +2300,11 @@
                   <span class="text-white">${escapeHtml(currentMerchant.name)}</span>
                 </div>
                 <div class="flex justify-between py-1 border-b border-ty-border/40">
-                  <span class="text-ty-muted">Estado Ping</span>
+                  <span class="text-ty-muted">Conexión</span>
                   <span class="${health.pingColorClass} font-semibold">${escapeHtml(health.relativeText)}</span>
                 </div>
                 <div class="flex justify-between py-1">
-                  <span class="text-ty-muted">Último heartbeat</span>
+                  <span class="text-ty-muted">Última sincronización</span>
                   <span class="text-ty-cyan">${escapeHtml(exactPing)}</span>
                 </div>
               </div>
@@ -2301,15 +2316,15 @@
                   Renombrar
                 </button>
                 <button onclick="toggleDeviceRevocation('${escapeHtml(d.id)}', '${d.status === "ACTIVE" ? "REVOKED" : "ACTIVE"}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded border text-xs font-mono transition-all ${d.status === "ACTIVE" ? "bg-ty-amber/10 border-ty-amber/30 text-ty-amber hover:bg-ty-amber/20" : "bg-ty-emerald/10 border-ty-emerald/30 text-ty-emerald hover:bg-ty-emerald/20"}">
-                  ${d.status === "ACTIVE" ? "Revocar" : "Reactivar"}
+                  ${d.status === "ACTIVE" ? "Pausar" : "Activar"}
                 </button>
               </div>
               <div class="flex items-center gap-1.5">
                 <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose hover:bg-ty-rose/20">
-                  Formatear
+                  Eliminar
                 </button>
                 <button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald hover:bg-ty-emerald/25">
-                  QR Emparejar
+                  Ver QR
                 </button>
               </div>
             </div>
@@ -2322,8 +2337,8 @@
           <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </div>
-          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Caja #${merchantDevices.length + 1}</h3>
-          <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un QR seguro para conectar otro celular Centinela a ${escapeHtml(currentMerchant.name)}.</p>
+          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Celular #${merchantDevices.length + 1}</h3>
+          <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para conectar otro celular de caja a ${escapeHtml(currentMerchant.name)}.</p>
         </div>
       `;
 
@@ -2333,8 +2348,8 @@
     async function toggleDeviceRevocation(deviceId, nextStatus, label) {
       const isRevoking = nextStatus === "REVOKED";
       const confirmMsg = isRevoking
-        ? `¿Revocar acceso de la caja "${label}" (${deviceId})?\n\nSi el celular se perdió o fue robado, bloqueará de inmediato cualquier webhook o heartbeat desde ese dispositivo hasta que vuelvas a reactivarlo o re-emparejarlo por QR.`
-        : `¿Reactivar la caja "${label}" (${deviceId})?\n\nSi borraste la app o cambiaste de teléfono, recuerda volver a escanear el botón "QR Emparejar".`;
+        ? `¿Pausar el acceso de la caja "${label}" (${deviceId})?\n\nSi el celular no está en uso o se extravió, pausarlo evitará que registre pagos en tu negocio hasta que lo vuelvas a activar.`
+        : `¿Activar la caja "${label}" (${deviceId})?\n\nEl celular volverá a registrar pagos en tu negocio.`;
 
       if (!confirm(confirmMsg)) return;
 
@@ -2352,7 +2367,7 @@
       const target = merchantDevices.find((d) => d.id === deviceId);
       if (target) target.status = nextStatus;
       evaluateDeviceHealthViews(false);
-      showToast(isRevoking ? `Caja ${label} revocada y bloqueada` : `Caja ${label} reactivada`);
+      showToast(isRevoking ? `Caja ${label} pausada` : `Caja ${label} activada`);
     }
 
     async function renameDevice(deviceId, currentLabel) {
@@ -2468,7 +2483,7 @@
     // =========================================================================
     function openResetModal(presetDeviceId = null) {
       if (merchantDevices.length === 0) {
-        showToast("Primero vincula una caja Centinela", true);
+        showToast("Primero vincula un celular de caja", true);
         return;
       }
       const resetSel = document.getElementById("resetDeviceSelect");
@@ -2976,7 +2991,7 @@
               <div class="text-[11px] font-mono text-ty-muted truncate flex items-center gap-1.5" title="${m.id}">
                 <span>ID: ${m.id.substring(0, 8)}...</span>
                 <span>•</span>
-                <span>${m.onlineDevices}/${m.totalDevices} nodos</span>
+                <span>${m.onlineDevices}/${m.totalDevices} cajas</span>
                 <span class="w-1.5 h-1.5 rounded-full ${m.onlineDevices > 0 ? "bg-ty-emerald" : "bg-ty-border"}"></span>
               </div>
             </div>
