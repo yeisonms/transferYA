@@ -23,8 +23,9 @@
   <!-- Tailwind CSS Compilado Localmente -->
   <link rel="stylesheet" href="/css/app.css"/>
 
-  <!-- Supabase JS Client & Local QRCode Generator -->
+  <!-- Supabase JS Client, SheetJS Excel Engine & Local QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/vendor/xlsx.full.min.js"></script>
   <script src="/vendor/qrcode-generator.js"></script>
 
   <style>
@@ -477,9 +478,9 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span>Hacer Cierre de Turno</span>
               </button>
-              <button onclick="exportFilteredCsv()" class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5" title="Exportar movimientos a Excel / CSV">
-                <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>Exportar CSV</span>
+              <button onclick="exportFilteredExcel()" class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5" title="Descargar movimientos filtrados en Excel (.xlsx)">
+                <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Exportar Excel</span>
               </button>
               <button onclick="openResetModal()" class="px-3 py-2 rounded-xl bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5" title="Eliminar registros de prueba">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -585,9 +586,9 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span>Cierre de Turno en 1 Clic</span>
               </button>
-              <button onclick="exportDailyClosingCsv()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-white transition-all flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>Descargar Cierres CSV</span>
+              <button onclick="exportDailyClosingExcel()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5" title="Descargar consolidado diario en formato Excel (.xlsx)">
+                <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Descargar Cierres Excel</span>
               </button>
             </div>
           </div>
@@ -1171,9 +1172,9 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             <span>Copiar Resumen de Texto</span>
           </button>
-          <button onclick="exportTurnClosingCsv()" class="hover:text-ty-cyan hover:underline flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Exportar Detalle (CSV)</span>
+          <button onclick="exportTurnClosingExcel()" class="hover:text-ty-emerald hover:underline flex items-center gap-1" title="Descargar detalle de este turno en formato Excel (.xlsx)">
+            <svg class="w-3.5 h-3.5 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Exportar Detalle (Excel)</span>
           </button>
         </div>
       </div>
@@ -2283,22 +2284,43 @@
       `).join("");
     }
 
-    function downloadCsvFile(filename, headers, rows) {
+    function downloadExcelFile(filename, sheetName, headers, rows, colWidths = []) {
+      const xlsxFilename = filename.endsWith(".xlsx") ? filename : filename.replace(/\.[^.]+$/, "") + ".xlsx";
+
+      if (typeof XLSX !== "undefined") {
+        try {
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+          if (colWidths && colWidths.length > 0) {
+            ws["!cols"] = colWidths.map((w) => ({ wch: w }));
+          }
+          XLSX.utils.book_append_sheet(wb, ws, sheetName || "TransferYA");
+          XLSX.writeFile(wb, xlsxFilename);
+          return true;
+        } catch (err) {
+          console.warn("SheetJS XLSX generation error, falling back to CSV:", err);
+        }
+      }
+
+      // Fallback a formato Excel (CSV delimitado por punto y coma ';' con BOM UTF-8 para Excel en Español)
       const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const csv = "\uFEFF" + [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
-      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+      const csv = "\uFEFF" + [headers.map(esc).join(";"), ...rows.map((r) => r.map(esc).join(";"))].join("\r\n");
+      const url = URL.createObjectURL(new Blob([csv], { type: "application/vnd.ms-excel;charset=utf-8;" }));
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = xlsxFilename.replace(/\.xlsx$/i, ".csv");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      return false;
     }
 
-    function exportFilteredCsv() {
+    const downloadCsvFile = (filename, headers, rows) => downloadExcelFile(filename, "Reporte", headers, rows);
+
+    function exportFilteredExcel() {
       if (!filteredTransactions.length) { showToast("No hay movimientos en el filtro actual", true); return; }
-      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador", "Referencia", "Estado", "Suma al Arqueo", "Valor COP", "Latencia (ms)"];
+      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador / Remitente", "Referencia", "Estado", "Suma al Arqueo", "Valor (COP)", "Latencia (ms)"];
       const rows = filteredTransactions.map((tx) => [
         getColombiaDateTimeLabel(getTxTimestamp(tx)),
         getDeviceLabel(tx.device_id),
@@ -2307,23 +2329,29 @@
         tx.payment_reference || "N/A",
         tx.status,
         isCountableMoney(tx) ? "SI" : "NO",
-        tx.amount || 0,
+        Number(tx.amount) || 0,
         tx.latency_ms || 0
       ]);
       const total = filteredTransactions.reduce((acc, tx) => acc + (isCountableMoney(tx) ? Number(tx.amount) : 0), 0);
       rows.push(["TOTAL ARQUEO VALIDO", "", "", "", "", "", "", total, ""]);
-      downloadCsvFile(`transferya_arqueo_${getColombiaDateKey(new Date())}.csv`, headers, rows);
-      showToast("CSV de arqueo descargado");
-    }
 
-    function exportDailyClosingCsv() {
+      const colWidths = [22, 16, 12, 30, 20, 14, 16, 16, 14];
+      const ok = downloadExcelFile(`transferya_arqueo_${getColombiaDateKey(new Date())}.xlsx`, "Arqueo de Ventas", headers, rows, colWidths);
+      showToast(ok ? "Reporte en Excel (.xlsx) descargado" : "Reporte de ventas descargado");
+    }
+    const exportFilteredCsv = exportFilteredExcel;
+
+    function exportDailyClosingExcel() {
       const rows = Array.from(document.querySelectorAll("#dailyClosingBody tr")).map((tr) =>
-        Array.from(tr.querySelectorAll("td")).slice(0, 5).map((td) => td.innerText.replace(/\n/g, " "))
+        Array.from(tr.querySelectorAll("td")).slice(0, 5).map((td) => td.innerText.replace(/\n/g, " ").trim())
       );
       if (!rows.length || rows[0].length < 5) { showToast("Sin cierres diarios para exportar", true); return; }
-      downloadCsvFile(`transferya_cierres_${getColombiaDateKey(new Date())}.csv`, ["Fecha", "Nequi", "Daviplata", "Pagos", "Total Recibido"], rows);
-      showToast("Cierres diarios descargados");
+      const headers = ["Fecha (Colombia)", "Nequi (# / COP)", "DaviPlata (# / COP)", "Total Pagos", "Total Recibido COP"];
+      const colWidths = [22, 24, 24, 14, 22];
+      const ok = downloadExcelFile(`transferya_cierres_${getColombiaDateKey(new Date())}.xlsx`, "Cierres Diarios", headers, rows, colWidths);
+      showToast(ok ? "Cierres en Excel (.xlsx) descargados" : "Cierres diarios descargados");
     }
+    const exportDailyClosingCsv = exportDailyClosingExcel;
 
     // =========================================================================
     // 4. CIERRE DE TURNO Y CUADRE DE CAJA EN 1 CLIC (NEQUI VS DAVIPLATA + WHATSAPP & PDF)
@@ -2529,12 +2557,12 @@
         `🗓️ *Fecha:* ${getColombiaFriendlyDateTime()}\n` +
         `🏪 *Caja:* ${s.deviceLabel}\n` +
         `⏱️ *Rango:* ${s.scopeLabel}\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `──────────────────────\n` +
         `🟣 *Total Nequi:* $ ${fmt(s.nequiSum)} COP (${s.nequiCount} ${s.nequiCount === 1 ? "pago" : "pagos"})\n` +
         `🔴 *Total DaviPlata:* $ ${fmt(s.daviSum)} COP (${s.daviCount} ${s.daviCount === 1 ? "pago" : "pagos"})\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `──────────────────────\n` +
         `💰 *GRAN TOTAL DEL TURNO:* $ ${fmt(s.totalSum)} COP (${s.totalCount} pagos)\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `──────────────────────\n` +
         `⏱️ Primer pago: ${s.firstPaymentTime}\n` +
         `⏱️ Último pago: ${s.lastPaymentTime}\n` +
         `📈 Ticket promedio: $ ${fmt(s.avgTicket)} COP\n\n` +
@@ -2551,12 +2579,29 @@
         phone = "57" + phone;
       }
 
-      const waUrl = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
-        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      // Auto-copiar de inmediato al portapapeles con los emojis 100% intactos
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).catch(() => {});
+      }
+
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const encoded = encodeURIComponent(msg);
+
+      let waUrl = "";
+      if (isMobile) {
+        // En celular abre directamente la aplicación nativa de WhatsApp
+        waUrl = phone
+          ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}`
+          : `https://api.whatsapp.com/send?text=${encoded}`;
+      } else {
+        // En PC va directo a WhatsApp Web sin pasar por el redirect de wa.me que corrompe emojis
+        waUrl = phone
+          ? `https://web.whatsapp.com/send?phone=${phone}&text=${encoded}`
+          : `https://web.whatsapp.com/send?text=${encoded}`;
+      }
 
       window.open(waUrl, "_blank");
-      showToast("Abriendo WhatsApp con el resumen de cierre...");
+      showToast("Abriendo WhatsApp... Emojis y texto también copiados al portapapeles");
     }
 
     function printTurnClosingReceipt() {
@@ -2580,25 +2625,28 @@
       }
     }
 
-    function exportTurnClosingCsv() {
+    function exportTurnClosingExcel() {
       const s = currentClosingStats || calculateTurnClosingStats();
       if (!s.validList.length) {
         showToast("Sin pagos en este turno para exportar", true);
         return;
       }
-      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador", "Referencia", "Valor COP"];
+      const headers = ["Fecha Colombia", "Caja", "Billetera", "Pagador / Remitente", "Referencia", "Valor (COP)"];
       const rows = s.validList.map((tx) => [
         getColombiaDateTimeLabel(getTxTimestamp(tx)),
         getDeviceLabel(tx.device_id),
         detectWallet(tx),
         tx.sender_name || tx.raw_title || "",
         tx.payment_reference || "N/A",
-        tx.amount || 0
+        Number(tx.amount) || 0
       ]);
       rows.push(["TOTAL CIERRE TURNO", s.deviceLabel, "", "", "", s.totalSum]);
-      downloadCsvFile(`cierre_turno_${getColombiaDateKey(new Date())}_${s.scope}.csv`, headers, rows);
-      showToast("Detalle del turno descargado en CSV");
+
+      const colWidths = [22, 16, 12, 30, 20, 16];
+      const ok = downloadExcelFile(`cierre_turno_${getColombiaDateKey(new Date())}_${s.scope}.xlsx`, "Cierre de Turno", headers, rows, colWidths);
+      showToast(ok ? "Detalle del turno descargado en Excel (.xlsx)" : "Detalle del turno descargado");
     }
+    const exportTurnClosingCsv = exportTurnClosingExcel;
 
     function updatePosView(customPreviewTx = null) {
       const validList = getScopedTransactions().filter(isCountableMoney);
