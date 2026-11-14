@@ -67,8 +67,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation("org.xerial:sqlite-jdbc:3.47.1.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.xerial:sqlite-jdbc:3.47.1.0")
 }
