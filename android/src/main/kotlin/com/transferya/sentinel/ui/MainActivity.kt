@@ -412,6 +412,21 @@ class MainActivity : AppCompatActivity() {
         }
         operationalContainer.addView(permissionButton)
 
+        val spacePermHelp = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 10) }
+        operationalContainer.addView(spacePermHelp)
+
+        val unlockHelpButton = Button(this).apply {
+            text = "🔓 ¿Dice 'A la app se le negó el acceso'? Toca aquí"
+            setBackgroundColor(Color.parseColor("#334155"))
+            setTextColor(Color.parseColor("#38BDF8"))
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setOnClickListener {
+                showRestrictedSettingsGuide()
+            }
+        }
+        operationalContainer.addView(unlockHelpButton)
+
         val space2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
         operationalContainer.addView(space2)
 
@@ -563,7 +578,10 @@ class MainActivity : AppCompatActivity() {
             🔋 4. OPTIMIZACIÓN DE BATERÍA:
             Evita que Android cierre la app al apagar la pantalla para que no se pierda ningún cobro en tu negocio.
             
-            🇨🇴 5. HABEAS DATA (Ley 1581 de 2012):
+            🔓 5. AJUSTES RESTRINGIDOS (Android 13/14):
+            Si ves el mensaje "A la app se le negó el acceso", ve a Info de la App > 3 puntos (⋮) > Permitir ajustes restringidos. Esto desbloquea el aviso normal de 10 segundos.
+            
+            🇨🇴 6. HABEAS DATA (Ley 1581 de 2012):
             Tus datos de ventas se usan únicamente para el arqueo de tu negocio. Jamás se venden ni comparten con terceros.
         """.trimIndent()
 
@@ -571,6 +589,31 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Garantía de Privacidad y Seguridad")
             .setMessage(message)
             .setPositiveButton("Entendido") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun showRestrictedSettingsGuide() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("🔓 Cómo Desbloquear el Permiso")
+            .setMessage(
+                "En Android 13 y 14 (Xiaomi HyperOS, MIUI, Samsung, Motorola), las apps descargadas directamente requieren autorizar los 'Ajustes Restringidos' antes de permitir el acceso.\n\n" +
+                "📋 SIGUE ESTOS 3 SENCILLOS PASOS:\n\n" +
+                "1️⃣ Toca el botón 'Ir a Info de la App' abajo.\n" +
+                "2️⃣ Toca los 3 puntos (⋮) en la esquina superior derecha.\n" +
+                "3️⃣ Selecciona 'Permitir ajustes restringidos' e introduce tu huella o PIN.\n\n" +
+                "✅ ¡Listo! Regresa aquí y presiona '🔔 Activar Permiso de Notificaciones' para aceptar la advertencia normal de 10 segundos."
+            )
+            .setPositiveButton("Ir a Info de la App") { _, _ ->
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.fromParts("package", packageName, null)
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    startActivity(Intent(Settings.ACTION_SETTINGS))
+                }
+            }
+            .setNegativeButton("Entendido", null)
             .show()
     }
 
