@@ -36,6 +36,12 @@ describe('Validación de Configuración para Despliegue en Vercel', () => {
     expect(htmlContent).toContain('pos-screen-burst-flash');
     expect(htmlContent).toContain('Probar Cobro ($ 25.000)');
 
+    // Validación Anuncio en Voz Alta (Caja Parlante / Soundbox) Opción A
+    expect(htmlContent).toContain('posVoiceToggleBtn');
+    expect(htmlContent).toContain('togglePosVoice');
+    expect(htmlContent).toContain('speakPaymentAnnouncement');
+    expect(htmlContent).toContain('¡Recibiste');
+
     // Validación SEO & Open Graph para WhatsApp y Redes Sociales
     expect(htmlContent).toContain('property="og:image"');
     expect(htmlContent).toContain('images/og-share.jpg');

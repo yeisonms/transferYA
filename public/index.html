@@ -1156,9 +1156,15 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <button id="posVoiceToggleBtn" onclick="togglePosVoice()"
+                class="px-3.5 py-2 rounded-xl bg-ty-emerald/15 border border-ty-emerald/50 text-xs font-mono font-bold text-ty-emerald transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,210,106,0.2)]"
+                title="Activar o desactivar anuncio en voz alta de pagos">
+                <span id="posVoiceIcon">🗣️</span>
+                <span id="posVoiceBtnText">Voz: Activada</span>
+              </button>
               <button onclick="triggerVisualSimulation()"
                 class="px-3.5 py-2 rounded-xl bg-ty-emerald/20 border border-ty-emerald/50 hover:bg-ty-emerald hover:text-black text-xs font-mono font-bold text-ty-emerald shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center gap-1.5"
-                title="Probar sonido de caja registradora y destello verde de $ 25.000">
+                title="Probar sonido de caja registradora, voz alta y destello verde de $ 25.000">
                 <span>🔔</span>
                 <span>Probar Cobro ($ 25.000)</span>
               </button>
@@ -1238,6 +1244,13 @@
                 id="posLatencyChip">
                 <span>⚡ Notificación instantánea</span>
               </span>
+              <button type="button" onclick="togglePosVoice()"
+                id="posVoiceBadgeChip"
+                class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:border-ty-emerald flex items-center gap-1.5 text-ty-emerald font-mono cursor-pointer transition-all"
+                title="Toca para activar o silenciar el anuncio en voz alta de pagos">
+                <span id="posVoiceBadgeIcon">🗣️</span>
+                <span id="posVoiceBadgeText">Voz alta: Activa ("¡Recibiste $...")</span>
+              </button>
               <span
                 class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border flex items-center gap-1.5 text-ty-muted"
                 id="posWakeLockChip" title="Mantiene encendida la pantalla de la tablet en el mostrador">
@@ -2477,6 +2490,7 @@
                     let isHealthBaselineInitialized = false;
 
                     let isAudioEnabled = localStorage.getItem("ty_audio_enabled") !== "false";
+                    let isPosVoiceEnabled = localStorage.getItem("ty_pos_voice_enabled") !== "false";
                     let audioCtx = null;
                     let chimeWavAudio = null;
                     let chimeWavUrl = null;
@@ -2500,6 +2514,7 @@
                       initAudio();
                       setupAudioGestureUnlock();
                       updateAudioButtonUI();
+                      updatePosVoiceButtonUI();
                       bootstrapAuth();
                       registerServiceWorker();
                       setupPwaPrompt();
@@ -3934,7 +3949,10 @@
                       // 3. Reproducir campana de caja registradora ("¡Cha-ching! 🔔")
                       playChime();
 
-                      // 4. Actualizar la vista con el monto gigante y datos del pagador
+                      // 4. Anuncio en voz alta (Opción A: "¡Recibiste X pesos por Nequi!")
+                      speakPaymentAnnouncement(tx);
+
+                      // 5. Actualizar la vista con el monto gigante y datos del pagador
                       updatePosView(tx);
                     }
 
@@ -4630,6 +4648,7 @@
                         }
                       } catch { }
                       updateAudioButtonUI();
+                      updatePosVoiceButtonUI();
                     }
 
                     function setupAudioGestureUnlock() {
@@ -4649,6 +4668,7 @@
                         audioCtx.resume().then(() => updateAudioButtonUI()).catch(() => { });
                       }
                       updateAudioButtonUI();
+                      updatePosVoiceButtonUI();
                     }
 
                     function buildChimeWavUrl() {
@@ -4748,6 +4768,7 @@
                         try { await audioCtx.resume(); } catch { }
                       }
                       updateAudioButtonUI();
+                      updatePosVoiceButtonUI();
 
                       if (audioCtx && audioCtx.state === "running") {
                         const start = audioCtx.currentTime + 0.015;
@@ -4830,7 +4851,170 @@
                         isAudioEnabled = false;
                         localStorage.setItem("ty_audio_enabled", "false");
                         updateAudioButtonUI();
+                      updatePosVoiceButtonUI();
                         showToast("Sonido silenciado");
+                      }
+                    }
+
+                    // =========================================================================
+                    // 7.1 LOCUCIÓN Y ANUNCIOS EN VOZ ALTA (CAJA MOSTRADOR PARLANTE / SOUNDBOX)
+                    // =========================================================================
+                    function numberToSpanishWords(n) {
+                      n = Math.floor(Math.abs(Number(n) || 0));
+                      if (n === 0) return "cero";
+
+                      const unidades = ["", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+                      const especiales = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+                      const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+                      const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+
+                      function convertirCentenas(num) {
+                        if (num === 0) return "";
+                        if (num === 100) return "cien";
+                        let texto = "";
+                        const c = Math.floor(num / 100);
+                        const d = Math.floor((num % 100) / 10);
+                        const u = num % 10;
+
+                        if (c > 0) texto += centenas[c] + " ";
+
+                        const resto = num % 100;
+                        if (resto >= 10 && resto <= 19) {
+                          texto += especiales[resto - 10] + " ";
+                        } else if (resto === 20) {
+                          texto += "veinte ";
+                        } else if (resto === 21) {
+                          texto += "veintiún ";
+                        } else if (resto >= 22 && resto <= 29) {
+                          texto += "veinti" + unidades[u] + " ";
+                        } else {
+                          if (d > 0) texto += decenas[d] + (u > 0 ? " y " : " ");
+                          if (u > 0) texto += unidades[u] + " ";
+                        }
+                        return texto.trim();
+                      }
+
+                      let partes = [];
+                      const millones = Math.floor(n / 1000000);
+                      if (millones > 0) {
+                        if (millones === 1) partes.push("un millón");
+                        else partes.push(convertirCentenas(millones) + " millones");
+                      }
+
+                      const miles = Math.floor((n % 1000000) / 1000);
+                      if (miles > 0) {
+                        if (miles === 1) partes.push("mil");
+                        else partes.push(convertirCentenas(miles) + " mil");
+                      }
+
+                      const resto = n % 1000;
+                      if (resto > 0) {
+                        partes.push(convertirCentenas(resto));
+                      }
+
+                      return partes.join(" ").trim();
+                    }
+
+                    function speakPaymentAnnouncement(tx) {
+                      if (!isPosVoiceEnabled) return;
+                      if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+                      try {
+                        const rawWallet = detectWallet(tx);
+                        const walletName = rawWallet === "DAVIPLATA" ? "DaviPlata" : "Nequi";
+                        const amountNum = Math.round(Number(tx && tx.amount) || 0);
+
+                        let amountWords = "";
+                        try {
+                          amountWords = numberToSpanishWords(amountNum);
+                        } catch { }
+                        if (!amountWords) amountWords = `${amountNum.toLocaleString("es-CO")}`;
+
+                        // Opción A: "¡Recibiste [monto en pesos] por [billetera]!"
+                        const phrase = `¡Recibiste ${amountWords} pesos por ${walletName}!`;
+                        speakPaymentAnnouncementText(phrase, 450);
+                      } catch (err) {
+                        console.warn("Error en anuncio en voz alta:", err);
+                      }
+                    }
+
+                    function speakPaymentAnnouncementText(text, delayMs = 0) {
+                      if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+                      setTimeout(() => {
+                        try {
+                          if (window.speechSynthesis.paused) {
+                            window.speechSynthesis.resume();
+                          }
+                          window.speechSynthesis.cancel();
+
+                          const utterance = new SpeechSynthesisUtterance(text);
+                          utterance.lang = "es-CO";
+                          utterance.rate = 1.0;
+                          utterance.pitch = 1.0;
+                          utterance.volume = 1.0;
+
+                          const voices = window.speechSynthesis.getVoices();
+                          if (voices && voices.length > 0) {
+                            const esVoice = voices.find(v => v.lang.startsWith("es-CO")) ||
+                                            voices.find(v => v.lang.startsWith("es-419")) ||
+                                            voices.find(v => v.lang.startsWith("es"));
+                            if (esVoice) utterance.voice = esVoice;
+                          }
+
+                          window.speechSynthesis.speak(utterance);
+                        } catch (err) {
+                          console.warn("Fallo al reproducir locución:", err);
+                        }
+                      }, delayMs);
+                    }
+
+                    function togglePosVoice() {
+                      isPosVoiceEnabled = !isPosVoiceEnabled;
+                      localStorage.setItem("ty_pos_voice_enabled", isPosVoiceEnabled ? "true" : "false");
+                      updatePosVoiceButtonUI();
+
+                      if (isPosVoiceEnabled) {
+                        showToast("🗣️ Anuncio en voz alta de cobros activado");
+                        speakPaymentAnnouncementText("¡Voz de caja mostrador activada!");
+                      } else {
+                        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                          window.speechSynthesis.cancel();
+                        }
+                        showToast("🔇 Anuncio en voz alta silenciado");
+                      }
+                    }
+
+                    function updatePosVoiceButtonUI() {
+                      const btn = document.getElementById("posVoiceToggleBtn");
+                      const icon = document.getElementById("posVoiceIcon");
+                      const text = document.getElementById("posVoiceBtnText");
+                      const badge = document.getElementById("posVoiceBadgeChip");
+                      const badgeIcon = document.getElementById("posVoiceBadgeIcon");
+                      const badgeText = document.getElementById("posVoiceBadgeText");
+
+                      if (isPosVoiceEnabled) {
+                        if (btn) {
+                          btn.className = "px-3.5 py-2 rounded-xl bg-ty-emerald/15 border border-ty-emerald/50 text-xs font-mono font-bold text-ty-emerald transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,210,106,0.2)]";
+                        }
+                        if (icon) icon.textContent = "🗣️";
+                        if (text) text.textContent = "Voz: Activada";
+                        if (badge) {
+                          badge.className = "px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-emerald/40 hover:border-ty-emerald flex items-center gap-1.5 text-ty-emerald font-mono cursor-pointer transition-all";
+                        }
+                        if (badgeIcon) badgeIcon.textContent = "🗣️";
+                        if (badgeText) badgeText.textContent = "Voz alta: Activa (\"¡Recibiste $...\")";
+                      } else {
+                        if (btn) {
+                          btn.className = "px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-muted text-xs font-mono text-ty-muted hover:text-white transition-all flex items-center gap-1.5";
+                        }
+                        if (icon) icon.textContent = "🔇";
+                        if (text) text.textContent = "Voz: Silenciada";
+                        if (badge) {
+                          badge.className = "px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-muted flex items-center gap-1.5 text-ty-muted font-mono cursor-pointer transition-all";
+                        }
+                        if (badgeIcon) badgeIcon.textContent = "🔇";
+                        if (badgeText) badgeText.textContent = "Voz alta: Silenciada";
                       }
                     }
 
@@ -4893,6 +5077,7 @@
                         requestWakeLock();
                         unlockAudioFromGesture();
                         updatePosView();
+                        updatePosVoiceButtonUI();
                       } else {
                         releaseWakeLock();
                       }
