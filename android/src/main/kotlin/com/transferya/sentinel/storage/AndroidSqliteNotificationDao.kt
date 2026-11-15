@@ -175,6 +175,18 @@ class AndroidSqliteNotificationDao(context: Context) :
         }
     }
 
+    override fun exists(walletPackage: String, rawTitle: String, rawText: String, capturedAt: Long): Boolean {
+        val db = readableDatabase
+        val cursor = db.query(
+            TABLE_NAME,
+            arrayOf(COL_ID),
+            "$COL_WALLET_PACKAGE = ? AND $COL_RAW_TITLE = ? AND $COL_RAW_TEXT = ? AND $COL_CAPTURED_AT = ?",
+            arrayOf(walletPackage, rawTitle, rawText, capturedAt.toString()),
+            null, null, null, "1"
+        )
+        return cursor.use { it.moveToFirst() }
+    }
+
     private fun mapCursorToEntity(c: Cursor): CapturedNotificationEntity {
         val dispatchedAtCol = c.getColumnIndexOrThrow(COL_DISPATCHED_AT)
         val dispatchedAt = if (c.isNull(dispatchedAtCol)) null else c.getLong(dispatchedAtCol)

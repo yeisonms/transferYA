@@ -202,6 +202,18 @@ class SqliteNotificationDao(private val jdbcUrl: String = "jdbc:sqlite::memory:"
         )
     }
 
+    override fun exists(walletPackage: String, rawTitle: String, rawText: String, capturedAt: Long): Boolean = synchronized(dbLock) {
+        val sql = "SELECT id FROM captured_notifications WHERE wallet_package = ? AND raw_title = ? AND raw_text = ? AND captured_at = ? LIMIT 1"
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setString(1, walletPackage)
+            stmt.setString(2, rawTitle)
+            stmt.setString(3, rawText)
+            stmt.setLong(4, capturedAt)
+            val rs = stmt.executeQuery()
+            rs.next()
+        }
+    }
+
     override fun close() {
         if (!connection.isClosed) {
             connection.close()

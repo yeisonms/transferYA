@@ -37,6 +37,7 @@ interface ICapturedNotificationDao {
     fun markAsFailed(id: Long, error: String): Boolean = incrementRetry(id, error)
     fun failPendingForOtherDevices(activeDeviceId: String): Int = 0
     fun getLastError(): String? = null
+    fun exists(walletPackage: String, rawTitle: String, rawText: String, capturedAt: Long): Boolean = false
     fun getCountByStatus(status: NotificationStatus): Int
 }
 

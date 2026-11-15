@@ -177,6 +177,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         SentinelNotificationListener.rebind(this)
+        if (SentinelNotificationListener.isConnected) {
+            SentinelNotificationListener.scanActiveNotifications()
+        }
         if (enrollmentManager.getSentinelState() == SentinelState.ACTIVE_SENTINEL) {
             val lastPing = credentialsStorage.getLastHeartbeatAt()
             if (lastPing <= 0L || (System.currentTimeMillis() - lastPing) >= 60_000L) {
@@ -389,11 +392,15 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(Color.parseColor("#172033"))
             setOnClickListener {
                 SentinelNotificationListener.forceRebind(this@MainActivity)
+                SentinelNotificationListener.scanActiveNotifications()
                 if (enrollmentManager.getSentinelState() == SentinelState.ACTIVE_SENTINEL) {
                     SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
                 }
-                Toast.makeText(this@MainActivity, "🔄 Reconectando escucha y enviando heartbeat...", Toast.LENGTH_SHORT).show()
-                postDelayed({ updateUI() }, 1800)
+                Toast.makeText(this@MainActivity, "🔄 Reconectando escucha y rescatando pagos pendientes...", Toast.LENGTH_SHORT).show()
+                postDelayed({
+                    SentinelNotificationListener.scanActiveNotifications()
+                    updateUI()
+                }, 1800)
             }
         }
         operationalContainer.addView(diagnosticView)

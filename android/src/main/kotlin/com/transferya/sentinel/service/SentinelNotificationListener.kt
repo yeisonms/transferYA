@@ -57,10 +57,19 @@ class SentinelNotificationListener : NotificationListenerService() {
         fun reinitializeIfConnected(context: Context) {
             try {
                 activeInstance?.ensurePipelineFresh()
+                scanActiveNotifications()
             } catch (e: Exception) {
                 Log.w(TAG, "reinitializeIfConnected warning: ${e.message}")
             }
             forceRebind(context)
+        }
+
+        fun scanActiveNotifications() {
+            try {
+                activeInstance?.scanAndProcessActiveNotifications()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error invocando scanActiveNotifications", e)
+            }
         }
 
         fun rebind(context: Context) {
@@ -122,10 +131,58 @@ class SentinelNotificationListener : NotificationListenerService() {
         ensurePipelineFresh()
         thread {
             try {
+                // 1. Escanear y rescatar notificaciones activas que llegaron mientras el servicio estuvo desconectado
+                scanAndProcessActiveNotifications()
+                // 2. Despachar la cola local SQLite hacia el backend
                 dispatcher?.dispatchPending()
             } catch (e: Exception) {
-                Log.e(TAG, "Error despachando notificaciones pendientes al conectar", e)
+                Log.e(TAG, "Error despachando notificaciones al conectar", e)
             }
+        }
+    }
+
+    /**
+     * Inspecciona activamente la barra de notificaciones del sistema para rescatar
+     * notificaciones bancarias que llegaron mientras el Centinela estuvo desconectado (ADR-0003).
+     */
+    fun scanAndProcessActiveNotifications() {
+        try {
+            val activeNotifications = getActiveNotifications() ?: return
+            Log.i(TAG, "Escaneando ${activeNotifications.size} notificaciones activas en el sistema...")
+            val dao = AndroidSqliteNotificationDao(this)
+            for (sbn in activeNotifications) {
+                if (sbn != null && isSupportedPackage(sbn.packageName)) {
+                    val notification = sbn.notification ?: continue
+                    val extras = notification.extras ?: continue
+                    val rawTitle = (extras.getCharSequence(Notification.EXTRA_TITLE)
+                        ?: extras.getCharSequence("android.title.big")
+                        ?: notification.tickerText)?.toString() ?: ""
+
+                    val textLines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+                        ?.filterNotNull()
+                        ?.joinToString(" ") ?: ""
+
+                    val rawText = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
+                        ?: if (textLines.isNotBlank()) textLines else null
+                        ?: extras.getCharSequence(Notification.EXTRA_TEXT)
+                        ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)
+                        ?: notification.tickerText)?.toString() ?: ""
+
+                    if (!NotificationFilter.shouldProcess(notification.flags, rawTitle, rawText)) {
+                        continue
+                    }
+
+                    if (dao.exists(sbn.packageName, rawTitle, rawText, sbn.postTime)) {
+                        Log.d(TAG, "Notificación activa ya registrada previamente en SQLite: $rawTitle | $rawText")
+                        continue
+                    }
+
+                    Log.i(TAG, "Procesando retroactivamente notificación bancaria represada de [${sbn.packageName}]: $rawTitle | $rawText")
+                    onNotificationPosted(sbn)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error escaneando notificaciones activas represadas", e)
         }
     }
 
