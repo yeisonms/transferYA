@@ -1,6 +1,6 @@
 # Fase 3: Motor Comercial, Facturación y Panel Admin (Feature-First)
 
-> **Nota de numeración:** Las fases previas en `.scratch/` cubrieron del Ticket 01 al Ticket 17 (`17-cicd-github-actions-vercel-release-apk.md`). Los tickets de **Fase 3 Comercial** continúan de forma correlativa del **Ticket 18** al **Ticket 22**.
+> **Nota de numeración:** Las fases previas en `.scratch/` cubrieron del Ticket 01 al Ticket 17 (`17-cicd-github-actions-vercel-release-apk.md`). Los tickets de **Fase 3 Comercial** continúan de forma correlativa del **Ticket 18** al **Ticket 23**.
 
 ---
 
@@ -13,6 +13,7 @@ flowchart LR
     T18 --> T21["Ticket 21: Heartbeat Estado Comercial + Bloqueo Android + QR Nequi"]
     T19 --> T22["Ticket 22: Auto-Renovación Dogfooding MurSat"]
     T20 --> T22
+    T20 --> T23["Ticket 23: Control Estricto de Activación Pre-Pago"]
 ```
 
 ---
@@ -123,4 +124,47 @@ flowchart LR
   - Misma huella SHA-256 nunca acredita doble renovación.
   - Montos inferiores al valor del plan no renuevan automáticamente y registran auditoría.
   - Pruebas unitarias en `src/backend/billing/__tests__/reconciliation.test.ts`.
+
+---
+
+## Ticket 23 — Control Estricto de Activación, Bloqueo Pre-Pago y Aprobación Super-Admin (Anti Self-Service Trial)
+
+**Objetivo:** Eliminar el período de prueba automático (`TRIAL` de 7 días por defecto) para cerrar el modelo de negocio a un esquema estrictamente controlado / pre-pago: las cuentas nuevas nacen en estado inactivo/pendiente con 0 días de vigencia, se bloquea la emisión de códigos QR de sincronización (`/api/v1/devices/enrollment-tokens`) y se muestra un paywall en la pantalla web del comerciante hasta que el Super-Admin (Mursat Solutions) apruebe y active el plan desde el panel administrativo (`+30d` o `Trial` de cortesía manual).
+
+- **Estado:** 📋 Registrado / Planificado para implementación posterior (on-hold a solicitud del usuario).
+- **Dependencias:** Tickets 18 y 20.
+- **Alcance técnico:**
+  1. **Base de Datos / Migración Supabase:**
+     - Modificar los valores por defecto en la tabla `merchants`:
+       - `status` pasa de `'ACTIVE'` a `'PENDING_VERIFICATION'` o `'SUSPENDED'`.
+       - `subscription_status` pasa de `'TRIAL'` a `'PAST_DUE'`.
+       - `subscription_ends_at` pasa de `NOW() + INTERVAL '7 days'` a `NOW()` (0 días restantes).
+     - Actualizar `provisionMerchantForAuthenticatedUser` en `src/backend/merchants/provision.ts` y repositorio de inserción para crear comercios sin días de prueba automática.
+  2. **Bloqueo del Enrolamiento QR en Backend (`/api/v1/devices/enrollment-tokens` y `/api/v1/devices/enroll`):**
+     - En `DeviceEnrollmentHandler`, validar el estado comercial efectivo del comercio:
+       - Si `status !== 'ACTIVE'` o `effectiveSubscriptionStatus` no es `ACTIVE` ni `TRIAL` vigente (`remainingDays <= 0`), abortar con `HTTP 403 Forbidden`:
+         `{ success: false, error: 'SUBSCRIPTION_REQUIRED', message: 'Tu cuenta no cuenta con una suscripción activa. Comunícate con el administrador para habilitar tu servicio.' }`.
+       - Impedir la emisión de cualquier token QR o secreto de dispositivo a cuentas no activadas.
+  3. **Paywall y Pantalla de Bloqueo en la Web (`public/index.html`):**
+     - Si el comercio está en estado `PENDING_VERIFICATION`, `PAST_DUE` (0 días) o `SUSPENDED`:
+       - Bloquear el botón de "Vincular Celular Centinela" (deshabilitado con candado 🔒).
+       - Mostrar banner prominente / modal de cuenta pendiente de activación con botón de enlace directo a WhatsApp de Mursat Solutions (+57 311 365 4315) con mensaje predeterminado:
+         *"Hola Mursat Solutions, acabo de registrar mi comercio [Nombre] en TransferYA y deseo activar mi suscripción del Plan Pro."*
+       - Bloquear visualización de movimientos o transmisiones en vivo si la cuenta no está autorizada.
+  4. **Gestión de Activación desde Panel Super-Admin (`#tab-admin`):**
+     - Las cuentas recién creadas aparecen en la lista de comercios con etiqueta clara:
+       **🟡 PENDIENTE / SIN PLAN (0 días)**.
+     - El Super-Admin puede activar la cuenta con un solo clic:
+       - Botón **`+30d`**: Activa inmediatamente el Plan Pro por 30 días (`status = 'ACTIVE'`, `subscription_status = 'ACTIVE'`, `subscription_ends_at = NOW() + 30 days`).
+       - Botón **`Trial`**: Activa 7 días de cortesía manual únicamente si el Super-Admin lo decide.
+     - Al activarse, la pantalla del comerciante se desbloquea en tiempo real sin requerir nuevo registro.
+- **Criterios de aceptación estrictos:**
+  - Un usuario recién registrado que intenta generar un QR en `/api/v1/devices/enrollment-tokens` recibe `HTTP 403` inmediato.
+  - El teléfono Centinela no puede enrolarse a un comercio sin suscripción activa aprobada.
+  - El panel Super-Admin muestra el comercio en estado pendiente/vencido y el botón `+30d` lo habilita al instante.
+  - Pruebas unitarias de integración cubriendo:
+    1. Creación de cuenta con 0 días / bloqueada por defecto.
+    2. Denegación `403 SUBSCRIPTION_REQUIRED` en el generador de tokens QR.
+    3. Desbloqueo y enrolamiento exitoso únicamente tras la aprobación administrativa.
+
 
