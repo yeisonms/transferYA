@@ -244,6 +244,10 @@
       #addCashierModal,
       #adminPhoneModal,
       #turnClosingModal,
+      #securityPrivacyModal,
+      #forgotPasswordModal,
+      #resetPasswordModal,
+      #changePasswordModal,
       header,
       aside,
       nav {
@@ -339,7 +343,13 @@
         </div>
 
         <div id="authPasswordGroup">
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Contraseña</label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-mono text-ty-muted">Contraseña</label>
+            <button type="button" onclick="openForgotPasswordModal()" id="forgotPasswordLinkBtn"
+              class="text-[11px] font-mono text-ty-cyan hover:underline">
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
           <input type="password" id="authPassword" minlength="6" placeholder="Tu contraseña de acceso"
             class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
         </div>
@@ -509,8 +519,11 @@
       <div class="flex flex-col gap-3 border-t border-ty-border pt-4">
         <div class="px-1">
           <div class="text-[11px] font-mono text-white truncate" id="sidebarUserEmail">-</div>
-          <button onclick="signOutUser()" class="text-[11px] font-mono text-ty-rose hover:underline mt-1">Cerrar
-            Sesión</button>
+          <div class="flex items-center gap-2 mt-1">
+            <button onclick="openChangePasswordModal()" class="text-[11px] font-mono text-ty-cyan hover:underline">Cambiar Clave</button>
+            <span class="text-ty-muted text-[10px]">•</span>
+            <button onclick="signOutUser()" class="text-[11px] font-mono text-ty-rose hover:underline">Cerrar Sesión</button>
+          </div>
         </div>
 
         <button onclick="switchTab('pos')"
@@ -617,6 +630,11 @@
             <span>Modo Caja</span>
           </button>
 
+          <button onclick="openChangePasswordModal()"
+            class="lg:hidden px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all"
+            title="Cambiar contraseña de acceso">
+            Clave
+          </button>
           <button onclick="signOutUser()"
             class="lg:hidden px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-rose/30 text-xs font-mono text-ty-rose">
             Salir
@@ -2420,6 +2438,165 @@
   </div>
 
   <!-- ================================================================== -->
+  <!-- MODAL: RECUPERAR CONTRASEÑA (OLVIDÉ MI CONTRASEÑA) -->
+  <!-- ================================================================== -->
+  <div id="forgotPasswordModal"
+    class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-sm w-full p-6 space-y-4 relative shadow-2xl">
+      <button onclick="closeForgotPasswordModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface border border-ty-border transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-ty-cyan/15 border border-ty-cyan/40 flex items-center justify-center text-ty-cyan shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Recuperar Contraseña</h3>
+          <p class="text-xs text-ty-muted">Te enviaremos un enlace a tu correo</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-ty-muted leading-relaxed">
+        Ingresa el correo con el que registraste tu comercio y te enviaremos un enlace seguro para restablecer tu contraseña.
+      </p>
+
+      <form onsubmit="event.preventDefault(); handleSendPasswordReset();" class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono text-ty-muted uppercase">Correo Electrónico</label>
+          <input type="email" id="forgotEmailInput" required placeholder="tucorreo@ejemplo.com"
+            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-cyan focus:ring-0" />
+        </div>
+
+        <div id="forgotFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeForgotPasswordModal()"
+            class="flex-1 py-2 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+            Cancelar
+          </button>
+          <button type="submit" id="forgotSubmitBtn"
+            class="flex-1 py-2 rounded-lg bg-ty-cyan text-black font-bold font-mono text-xs uppercase hover:brightness-110 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all">
+            Enviar Enlace
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- MODAL: ASIGNAR NUEVA CONTRASEÑA (DESDE ENLACE DE RECUPERACIÓN) -->
+  <!-- ================================================================== -->
+  <div id="resetPasswordModal"
+    class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      class="bg-ty-surface-low border border-ty-emerald/40 rounded-2xl max-w-sm w-full p-6 space-y-4 relative shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-ty-emerald/15 border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shrink-0 shadow-[0_0_15px_rgba(0,210,106,0.25)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Crea tu Nueva Contraseña</h3>
+          <p class="text-xs text-ty-muted">Restablecimiento seguro de clave</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-ty-muted leading-relaxed">
+        Tu enlace de recuperación fue validado con éxito. Asigna a continuación la nueva contraseña con la que ingresarás a TransferYA.
+      </p>
+
+      <form onsubmit="event.preventDefault(); handleSaveResetPassword();" class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono text-ty-muted uppercase">Nueva Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="resetNewPasswordInput" required minlength="6" placeholder="Nueva contraseña"
+            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono text-ty-muted uppercase">Confirmar Contraseña</label>
+          <input type="password" id="resetConfirmPasswordInput" required minlength="6" placeholder="Repite la contraseña"
+            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
+        </div>
+
+        <div id="resetPasswordFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
+
+        <button type="submit" id="resetPasswordSubmitBtn"
+          class="w-full py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all">
+          Guardar Nueva Contraseña
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- MODAL: CAMBIAR CONTRASEÑA (DESDE CUENTA YA AUTENTICADA) -->
+  <!-- ================================================================== -->
+  <div id="changePasswordModal"
+    class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-sm w-full p-6 space-y-4 relative shadow-2xl">
+      <button onclick="closeChangePasswordModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface border border-ty-border transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-ty-emerald/15 border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shrink-0 shadow-[0_0_15px_rgba(0,210,106,0.2)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Cambiar mi Contraseña</h3>
+          <p class="text-xs text-ty-muted">Para entrar en PC y otros equipos</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-ty-muted leading-relaxed">
+        Define una nueva contraseña para tu cuenta (<span id="changePasswordUserEmail" class="font-mono text-white"></span>). Podrás usarla de inmediato para iniciar sesión en tu computador.
+      </p>
+
+      <form onsubmit="event.preventDefault(); handleUpdatePasswordFromAccount();" class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono text-ty-muted uppercase">Nueva Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="changeNewPasswordInput" required minlength="6" placeholder="Nueva contraseña"
+            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono text-ty-muted uppercase">Confirmar Contraseña</label>
+          <input type="password" id="changeConfirmPasswordInput" required minlength="6" placeholder="Repite la contraseña"
+            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
+        </div>
+
+        <div id="changePasswordFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeChangePasswordModal()"
+            class="flex-1 py-2 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+            Cancelar
+          </button>
+          <button type="submit" id="changePasswordSubmitBtn"
+            class="flex-1 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <!-- CONTENEDOR OCULTO PARA IMPRESIÓN / GENERACIÓN DE PDF -->
   <!-- ================================================================== -->
   <div id="printableClosingReceipt" class="hidden">
@@ -2561,7 +2738,17 @@
       const { data: { session } } = await supabaseClient.auth.getSession();
       await applySessionState(session);
 
+      if (window.location.hash && window.location.hash.includes("type=recovery")) {
+        openResetPasswordModal();
+      }
+
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          currentSession = session;
+          currentUser = session?.user ?? null;
+          openResetPasswordModal();
+          return;
+        }
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
           await applySessionState(session);
         }
@@ -2853,16 +3040,19 @@
         clearAuthFeedback();
       }
 
+      const forgotLink = document.getElementById("forgotPasswordLinkBtn");
       if (mode === "signup") {
         signupBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
         loginBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
         storeField.classList.remove("hidden");
         submitBtn.textContent = "Registrar mi Negocio";
+        if (forgotLink) forgotLink.classList.add("hidden");
       } else {
         loginBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
         signupBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
         storeField.classList.add("hidden");
         submitBtn.textContent = "Ingresar a mi Negocio";
+        if (forgotLink) forgotLink.classList.remove("hidden");
       }
     }
 
@@ -2983,6 +3173,222 @@
       } finally {
         btn.disabled = false;
         btn.textContent = originalText;
+      }
+    }
+
+    // =========================================================================
+    // GESTIÓN DE CONTRASEÑA: RECUPERACIÓN (OLVIDÉ CLAVE) Y CAMBIO DESDE CUENTA
+    // =========================================================================
+    function openForgotPasswordModal() {
+      const email = document.getElementById("authEmail")?.value?.trim() || "";
+      const input = document.getElementById("forgotEmailInput");
+      if (input && email) {
+        input.value = email;
+      }
+      clearForgotFeedback();
+      const modal = document.getElementById("forgotPasswordModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+    }
+
+    function closeForgotPasswordModal() {
+      const modal = document.getElementById("forgotPasswordModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+    }
+
+    function clearForgotFeedback() {
+      const box = document.getElementById("forgotFeedbackBox");
+      if (!box) return;
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function showForgotFeedback(msg, isError = true) {
+      const box = document.getElementById("forgotFeedbackBox");
+      if (!box) return;
+      box.textContent = msg;
+      box.className = `p-3 rounded-lg text-xs font-mono border break-words ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.classList.remove("hidden");
+    }
+
+    async function handleSendPasswordReset() {
+      clearForgotFeedback();
+      const email = document.getElementById("forgotEmailInput")?.value?.trim();
+      if (!email || !email.includes("@")) {
+        showForgotFeedback("Por favor ingresa un correo electrónico válido.", true);
+        return;
+      }
+
+      const btn = document.getElementById("forgotSubmitBtn");
+      btn.disabled = true;
+      btn.textContent = "Enviando enlace...";
+
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        });
+
+        if (error) {
+          showForgotFeedback(formatAuthErrorMessage(error), true);
+          return;
+        }
+
+        showForgotFeedback("¡Enlace de recuperación enviado! Revisa tu bandeja de entrada o carpeta de spam y haz clic en el enlace para cambiar tu contraseña.", false);
+        showToast("Enlace de recuperación enviado a tu correo");
+      } catch (err) {
+        showForgotFeedback(err?.message || "Error al enviar correo de recuperación.", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Enviar Enlace";
+      }
+    }
+
+    function openResetPasswordModal() {
+      clearResetPasswordFeedback();
+      const modal = document.getElementById("resetPasswordModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+    }
+
+    function closeResetPasswordModal() {
+      const modal = document.getElementById("resetPasswordModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+    }
+
+    function clearResetPasswordFeedback() {
+      const box = document.getElementById("resetPasswordFeedbackBox");
+      if (!box) return;
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function showResetPasswordFeedback(msg, isError = true) {
+      const box = document.getElementById("resetPasswordFeedbackBox");
+      if (!box) return;
+      box.textContent = msg;
+      box.className = `p-3 rounded-lg text-xs font-mono border break-words ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.classList.remove("hidden");
+    }
+
+    async function handleSaveResetPassword() {
+      clearResetPasswordFeedback();
+      const newPass = document.getElementById("resetNewPasswordInput")?.value;
+      const confirmPass = document.getElementById("resetConfirmPasswordInput")?.value;
+
+      if (!newPass || newPass.length < 6) {
+        showResetPasswordFeedback("La contraseña debe tener al menos 6 caracteres.", true);
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showResetPasswordFeedback("Las contraseñas no coinciden. Verifícalas.", true);
+        return;
+      }
+
+      const btn = document.getElementById("resetPasswordSubmitBtn");
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+        if (error) {
+          showResetPasswordFeedback(formatAuthErrorMessage(error), true);
+          return;
+        }
+        closeResetPasswordModal();
+        showToast("¡Contraseña restablecida exitosamente!");
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+        await applySessionState(currentSession);
+      } catch (err) {
+        showResetPasswordFeedback(err?.message || "Error al actualizar la contraseña.", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Guardar Nueva Contraseña";
+      }
+    }
+
+    function openChangePasswordModal() {
+      clearChangePasswordFeedback();
+      const emailEl = document.getElementById("changePasswordUserEmail");
+      if (emailEl && currentUser) {
+        emailEl.textContent = currentUser.email || "";
+      }
+      const p1 = document.getElementById("changeNewPasswordInput");
+      const p2 = document.getElementById("changeConfirmPasswordInput");
+      if (p1) p1.value = "";
+      if (p2) p2.value = "";
+      const modal = document.getElementById("changePasswordModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+    }
+
+    function closeChangePasswordModal() {
+      const modal = document.getElementById("changePasswordModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+    }
+
+    function clearChangePasswordFeedback() {
+      const box = document.getElementById("changePasswordFeedbackBox");
+      if (!box) return;
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function showChangePasswordFeedback(msg, isError = true) {
+      const box = document.getElementById("changePasswordFeedbackBox");
+      if (!box) return;
+      box.textContent = msg;
+      box.className = `p-3 rounded-lg text-xs font-mono border break-words ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.classList.remove("hidden");
+    }
+
+    async function handleUpdatePasswordFromAccount() {
+      clearChangePasswordFeedback();
+      const newPass = document.getElementById("changeNewPasswordInput")?.value;
+      const confirmPass = document.getElementById("changeConfirmPasswordInput")?.value;
+
+      if (!newPass || newPass.length < 6) {
+        showChangePasswordFeedback("La nueva contraseña debe tener al menos 6 caracteres.", true);
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showChangePasswordFeedback("Las contraseñas no coinciden. Verifícalas.", true);
+        return;
+      }
+
+      const btn = document.getElementById("changePasswordSubmitBtn");
+      btn.disabled = true;
+      btn.textContent = "Actualizando...";
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+        if (error) {
+          showChangePasswordFeedback(formatAuthErrorMessage(error), true);
+          return;
+        }
+        closeChangePasswordModal();
+        showToast("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión en tu PC.");
+      } catch (err) {
+        showChangePasswordFeedback(err?.message || "Error al cambiar contraseña.", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Guardar";
       }
     }
 
