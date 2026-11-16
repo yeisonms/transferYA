@@ -45,7 +45,8 @@ class SentinelNotificationListener : NotificationListenerService() {
             if (packageName.isNullOrBlank()) return false
             if (SUPPORTED_PACKAGES.contains(packageName)) return true
             val lower = packageName.lowercase()
-            return lower.contains("daviplata") || lower.contains("nequi")
+            if (lower.contains("daviplata") || lower.contains("nequi")) return true
+            return NotificationFilter.isSmsPackage(packageName)
         }
 
         @Volatile
@@ -172,12 +173,20 @@ class SentinelNotificationListener : NotificationListenerService() {
                         continue
                     }
 
-                    if (dao.exists(sbn.packageName, rawTitle, rawText, sbn.postTime)) {
+                    val isSms = NotificationFilter.isSmsPackage(sbn.packageName)
+                    if (isSms && !NotificationFilter.isBankingSms(rawTitle, rawText)) {
+                        Log.d(TAG, "Notificación SMS activa descartada por no ser alerta bancaria oficial: $rawTitle")
+                        continue
+                    }
+
+                    val effectivePackage = if (isSms) NotificationFilter.resolveBankingPackageForSms(rawTitle, rawText) else sbn.packageName
+
+                    if (dao.exists(effectivePackage, rawTitle, rawText, sbn.postTime)) {
                         Log.d(TAG, "Notificación activa ya registrada previamente en SQLite: $rawTitle | $rawText")
                         continue
                     }
 
-                    Log.i(TAG, "Procesando retroactivamente notificación bancaria represada de [${sbn.packageName}]: $rawTitle | $rawText")
+                    Log.i(TAG, "Procesando retroactivamente notificación bancaria represada de [$effectivePackage] (origen: ${sbn.packageName}): $rawTitle | $rawText")
                     onNotificationPosted(sbn)
                 }
             }
@@ -280,6 +289,14 @@ class SentinelNotificationListener : NotificationListenerService() {
             return
         }
 
+        val isSms = NotificationFilter.isSmsPackage(packageName)
+        if (isSms && !NotificationFilter.isBankingSms(rawTitle, rawText)) {
+            Log.d(TAG, "Notificación SMS descartada por no ser alerta bancaria oficial: $rawTitle")
+            return
+        }
+
+        val effectivePackage = if (isSms) NotificationFilter.resolveBankingPackageForSms(rawTitle, rawText) else packageName
+
         // Ticket 21: Bloqueo comercial Centinela (Kill-Switch local)
         val credentials = SharedPreferencesCredentialsStorage(this)
         val subStatus = credentials.getSubscriptionStatus()
@@ -288,10 +305,10 @@ class SentinelNotificationListener : NotificationListenerService() {
             return
         }
 
-        Log.i(TAG, "Notificación bancaria detectada de [$packageName]: $rawTitle | $rawText")
+        Log.i(TAG, "Notificación bancaria detectada de [$effectivePackage] (origen: $packageName): $rawTitle | $rawText")
 
         val event = RawNotificationEvent(
-            packageName = packageName,
+            packageName = effectivePackage,
             title = rawTitle,
             text = rawText,
             postTime = sbn.postTime

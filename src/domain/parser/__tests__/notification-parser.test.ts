@@ -99,6 +99,32 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
       }
     });
 
+    it('debe parsear SMS oficial de Nequi Negocios / Bre-B (890806)', () => {
+      const rawText =
+        'Nequi: Tu negocio LA SINVERGUECERIA BURGUER recibio $110 de YEISON MURCIA el 15/11/2026 a las 10:25 p.m. a través de Bre-B - Vende mas con Nequi Negocios.';
+      const res = parseBankingNotification(rawText, '890806', 'com.google.android.apps.messaging');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('NEQUI');
+        expect(res.payment.amount).toBe(110);
+        expect(res.payment.senderName).toBe('Yeison Murcia');
+      }
+    });
+
+    it('debe parsear SMS oficial de Nequi Bre-B directo sin prefijo de negocio', () => {
+      const rawText =
+        'Nequi: Recibiste $50.000 de PEDRO PEREZ el 15/11/2026 a través de Bre-B';
+      const res = parseBankingNotification(rawText, '890806', 'com.android.mms');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('NEQUI');
+        expect(res.payment.amount).toBe(50000);
+        expect(res.payment.senderName).toBe('Pedro Perez');
+      }
+    });
+
     it('debe parsear formato real de produccion Nequi: EDWIN MURCIA te envió 100000, ¡lo mejor!', () => {
       const rawText = 'EDWIN MURCIA te envió 100000, ¡lo mejor!';
       const res = parseBankingNotification(rawText, 'Envío', 'com.nequi.MobileApp');

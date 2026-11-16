@@ -48,5 +48,85 @@ class NotificationFilterTest {
             )
         )
     }
+
+    @Test
+    fun `4 debe identificar correctamente paquetes de mensajeria SMS`() {
+        assertTrue(NotificationFilter.isSmsPackage("com.google.android.apps.messaging"))
+        assertTrue(NotificationFilter.isSmsPackage("com.android.mms"))
+        assertTrue(NotificationFilter.isSmsPackage("com.samsung.android.messaging"))
+        assertTrue(NotificationFilter.isSmsPackage("com.miui.smsextra"))
+        assertFalse(NotificationFilter.isSmsPackage("com.nequi.MobileApp"))
+        assertFalse(NotificationFilter.isSmsPackage("com.whatsapp"))
+    }
+
+    @Test
+    fun `5 debe validar y aceptar exclusivamente SMS transaccionales bancarios de Nequi Bre-B y DaviPlata`() {
+        // SMS oficial Nequi Negocios Bre-B desde 890806
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "890806",
+                rawText = "Nequi: Tu negocio LA SINVERGUECERIA BURGUER recibio $110 de YEISON MURCIA el 15/11/2026 a las 10:25 p.m. a través de Bre-B - Vende mas con Nequi Negocios."
+            )
+        )
+
+        // SMS oficial DaviPlata desde 85888
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "85888",
+                rawText = "DaviPlata le informa que recibio $25.000 de Carlos Mendoza."
+            )
+        )
+
+        // SMS de Nequi sin titulo 890806 pero con texto de Nequi
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "Mensaje nuevo",
+                rawText = "Nequi: Recibiste $50.000 a través de Bre-B"
+            )
+        )
+    }
+
+    @Test
+    fun `6 debe rechazar de inmediato mensajes SMS personales o de terceros protegiendo Habeas Data`() {
+        // Mensajes personales
+        assertFalse(
+            NotificationFilter.isBankingSms(
+                rawTitle = "+573001234567",
+                rawText = "Hola amor, ya voy para la casa"
+            )
+        )
+        // Publicidad de operadores
+        assertFalse(
+            NotificationFilter.isBankingSms(
+                rawTitle = "Claro",
+                rawText = "Tu factura ya está disponible, paga antes del 20"
+            )
+        )
+        // Códigos de seguridad de otras apps (ej. Uber, Facebook)
+        assertFalse(
+            NotificationFilter.isBankingSms(
+                rawTitle = "Uber",
+                rawText = "Tu código de verificación es 4821"
+            )
+        )
+    }
+
+    @Test
+    fun `7 debe resolver el paquete bancario adecuado para SMS`() {
+        org.junit.jupiter.api.Assertions.assertEquals(
+            "com.nequi.MobileApp",
+            NotificationFilter.resolveBankingPackageForSms(
+                "890806",
+                "Nequi: Tu negocio recibio $110 a través de Bre-B"
+            )
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            "com.davivienda.daviplata",
+            NotificationFilter.resolveBankingPackageForSms(
+                "85888",
+                "DaviPlata le informa que recibio $50.000"
+            )
+        )
+    }
 }
 
