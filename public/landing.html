@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-CO" class="scroll-smooth">
+<html lang="es-CO" class="scroll-smooth overflow-x-hidden">
 
 <head>
   <meta charset="UTF-8" />
@@ -53,7 +53,7 @@
   </style>
 </head>
 
-<body class="bg-[#F7F5EF] text-[#0E1B2B] antialiased selection:bg-[#19C37D]/30 selection:text-[#0E1B2B] min-h-screen flex flex-col">
+<body class="bg-[#F7F5EF] text-[#0E1B2B] antialiased selection:bg-[#19C37D]/30 selection:text-[#0E1B2B] min-h-screen flex flex-col overflow-x-hidden">
 
   <!-- ========================================== -->
   <!-- 1. BARRA SUPERIOR AMIGABLE -->
@@ -133,7 +133,9 @@
           <div class="lg:col-span-7 space-y-5 text-left">
             
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/15 text-[#0B7A4B] font-bold text-xs tracking-wide">
-              <span>🛡️</span>
+              <svg class="w-4 h-4 text-[#19C37D] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
               <span>Antifraude para Nequi, DaviPlata y Bre-B</span>
             </div>
 
@@ -173,7 +175,7 @@
           </div>
 
           <!-- EL MOMENTO MÁGICO: EL CELULAR CON EL WHATSAPP REAL -->
-          <div class="lg:col-span-5">
+          <div class="lg:col-span-5 pb-8 sm:pb-0">
             <div class="relative mx-auto max-w-[340px] sm:max-w-[380px]">
               
               <!-- Marco del Teléfono Móvil -->
@@ -189,8 +191,8 @@
                     <span class="text-[10px] bg-[#19C37D] text-[#0E1B2B] font-bold px-1.5 py-0.5 rounded">En línea</span>
                   </div>
 
-                  <!-- Conversación de WhatsApp del Cajero -->
-                  <div class="bg-[#EFEAE2] p-4 min-h-[320px] flex flex-col justify-end space-y-3">
+                  <!-- Conversación de WhatsApp del Cajero (Sin hueco en blanco superior) -->
+                  <div class="bg-[#EFEAE2] p-3.5 sm:p-4 flex flex-col space-y-3">
                     
                     <!-- Mensaje de prueba interactivo -->
                     <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-black/5 max-w-[95%] self-start space-y-2">
@@ -213,10 +215,14 @@
                     </div>
 
                     <!-- Botón para Escuchar cómo canta la caja -->
-                    <div class="pt-2">
+                    <div class="pt-1">
                       <button type="button" onclick="probarSonido()"
                         class="w-full py-2.5 px-3 rounded-xl bg-[#0E1B2B] text-white hover:bg-black transition-all flex items-center justify-center gap-2 text-xs font-bold shadow">
-                        <span class="text-[#19C37D]">🔊</span>
+                        <svg class="w-4 h-4 text-[#19C37D] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        </svg>
                         <span id="btnAudioText">Toca aquí para oír cómo canta</span>
                       </button>
                     </div>
@@ -226,14 +232,14 @@
                 </div>
               </div>
 
-              <!-- Sticker de caja sobrepuesto -->
-              <div class="absolute -bottom-5 -left-4 sm:-left-6 bg-white rounded-full py-2 px-3.5 counter-sticker border border-gray-200 flex items-center gap-2 shadow-lg">
-                <svg class="w-5 h-5 text-[#19C37D]" viewBox="0 0 64 64" fill="none">
+              <!-- Sticker de caja sobrepuesto (calibrado para no desbordar móvil) -->
+              <div class="absolute -bottom-3 left-2 sm:-left-4 max-w-[calc(100%-1rem)] bg-white rounded-full py-1.5 px-3 sm:py-2 sm:px-3.5 counter-sticker border border-gray-200 flex items-center gap-2 shadow-md z-10">
+                <svg class="w-5 h-5 text-[#19C37D] shrink-0" viewBox="0 0 64 64" fill="none">
                   <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
                   <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
                 </svg>
-                <span class="text-xs font-bold text-[#0E1B2B]">Aquí verificamos tus pagos</span>
+                <span class="text-xs font-bold text-[#0E1B2B] truncate">Aquí verificamos tus pagos</span>
               </div>
 
             </div>
@@ -288,24 +294,38 @@
 
         <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
           
-          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
-            <div class="text-2xl">📱</div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-3">
+            <div class="w-11 h-11 rounded-xl bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+                <path d="M12 18h.01"/>
+              </svg>
+            </div>
             <h3 class="text-base font-bold text-[#0E1B2B]">Sin prestar el celular</h3>
             <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
               Tus cajeros y meseros reciben la confirmación en su propio WhatsApp o escuchan el altavoz. Jamás tocan tu cuenta.
             </p>
           </div>
 
-          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
-            <div class="text-2xl">🚫</div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-3">
+            <div class="w-11 h-11 rounded-xl bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="m9 12 2 2 4-4"/>
+              </svg>
+            </div>
             <h3 class="text-base font-bold text-[#0E1B2B]">El fraude no pasa</h3>
             <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
               Una captura de pantalla de Nequi se edita con cualquier aplicación. Si la caja no canta y no llega el WhatsApp, no se entrega.
             </p>
           </div>
 
-          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
-            <div class="text-2xl">⚡</div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-3">
+            <div class="w-11 h-11 rounded-xl bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
             <h3 class="text-base font-bold text-[#0E1B2B]">Despacho en 1 segundo</h3>
             <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
               El cliente paga, la caja canta y tu equipo entrega el producto sin hacer esperar al cliente ni armar filas.
@@ -401,7 +421,10 @@
           <!-- Columna Izquierda: Información del Sticker Antifraude -->
           <div class="lg:col-span-7 space-y-5 text-left">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFB020]/20 text-[#0E1B2B] font-bold text-xs tracking-wide">
-              <span>🏷️</span>
+              <svg class="w-4 h-4 text-[#0E1B2B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+                <circle cx="7" cy="7" r=".5" fill="currentColor"/>
+              </svg>
               <span>INCLUIDO Y GRATIS PARA TU LOCAL</span>
             </div>
 
@@ -415,16 +438,27 @@
 
             <!-- Características del Sticker -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1.5">
-                <span class="text-lg">🖨️</span>
+              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2">
+                <div class="w-8 h-8 rounded-lg bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect width="12" height="8" x="6" y="14"/>
+                  </svg>
+                </div>
                 <h4 class="font-bold text-sm text-[#0E1B2B]">Listo para imprimir en casa</h4>
                 <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
                   Genera una hoja con 8 stickers con guías de corte para tijeras. O imprímelo en papel adhesivo.
                 </p>
               </div>
 
-              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1.5">
-                <span class="text-lg">🏷️</span>
+              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2">
+                <div class="w-8 h-8 rounded-lg bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </div>
                 <h4 class="font-bold text-sm text-[#0E1B2B]">Personalizable con tu nombre</h4>
                 <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
                   Puedes incluir el nombre comercial de tu local para que el aviso sea 100% oficial y formal.
@@ -436,7 +470,11 @@
             <div class="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
               <a href="/sticker.html" target="_blank"
                 class="px-7 py-3.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-sm hover:brightness-105 shadow-md shadow-[#19C37D]/25 transition-all text-center flex items-center justify-center gap-2">
-                <span>🖨️</span>
+                <svg class="w-4 h-4 text-[#0E1B2B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect width="12" height="8" x="6" y="14"/>
+                </svg>
                 <span>Generar e Imprimir Mis Stickers Gratis</span>
               </a>
               <span class="text-xs text-[#0E1B2B]/60 text-center sm:text-left">
@@ -590,47 +628,88 @@
 
         </div>
 
-        <div class="mt-8 text-center text-xs text-[#0E1B2B]/60">
-          Garantía y respaldo bajo la Ley 1581 de Protección de Datos en Colombia (Habeas Data) por MurSat Solutions.
+        <div class="mt-8 text-center text-xs text-[#0E1B2B]/65">
+          <span>Tratamiento de datos personales conforme a la Ley 1581 de 2012 de Colombia.</span>
+          <button type="button" onclick="openPrivacyModal()" class="text-[#0B7A4B] font-bold underline hover:text-[#0E1B2B] ml-1 transition-colors">
+            Ver Política de Tratamiento de Datos
+          </button>
         </div>
 
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 7. ¿POR QUÉ NO COMPRAR UN PARLANTE DE $230.000? -->
+    <!-- 7. COMPARATIVA OBJETIVA DE MOSTRADOR -->
     <!-- ========================================== -->
-    <section class="py-16 sm:py-24 bg-[#0E1B2B] text-white">
+    <section class="py-16 sm:py-24 bg-[#F7F5EF] border-b border-[#0E1B2B]/10 text-[#0E1B2B]">
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
         
         <div class="text-center max-w-2xl mx-auto mb-14">
-          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            ¿Por qué pagar $230.000 por un parlante si ya tienes pantallas?
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#19C37D]/15 text-[#0B7A4B] font-bold text-xs tracking-wide mb-3">
+            COMPARATIVA OBJETIVA
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0E1B2B]">
+            Aparato físico de mostrador vs. TransferYA en tus pantallas actuales
           </h2>
-          <p class="mt-3 text-sm sm:text-base text-white/70">
-            Ahorra dinero y tiempo. TransferYA usa los celulares y tablets que ya tienes en tu negocio.
+          <p class="mt-3 text-sm sm:text-base text-[#0E1B2B]/75 leading-relaxed">
+            Compara de forma transparente antes de comprar hardware adicional para tu local.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           
-          <div class="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-4">
-            <span class="text-xs font-bold text-[#D93F44] uppercase tracking-wider block">El parlante de $230.000</span>
-            <ul class="space-y-3 text-xs sm:text-sm text-white/70">
-              <li>✕ Tienes que pagar más de $200.000 por un aparato plástico.</li>
-              <li>✕ Tienes que esperar 2 a 3 días a que llegue por correo.</li>
-              <li>✕ Solo suena en la pared donde esté enchufado.</li>
-              <li>✕ No le avisa a los meseros ni cajeros por WhatsApp.</li>
+          <!-- Opción 1: Dispositivo físico dedicado -->
+          <div class="p-7 sm:p-8 rounded-3xl bg-white border border-[#0E1B2B]/10 shadow-sm space-y-4 text-left">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+              <span class="text-xs font-bold text-[#D93F44] uppercase tracking-wider block">Dispositivo físico dedicado</span>
+              <span class="text-[11px] font-mono text-gray-500 font-semibold">Parlante o datáfono</span>
+            </div>
+            <ul class="space-y-3.5 text-xs sm:text-sm text-[#0E1B2B]/75">
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold shrink-0">✕</span>
+                <span><strong>Inversión inicial en hardware:</strong> Requiere compra obligatoria del equipo físico (precio habitual de mercado en Colombia: $150.000 a $250.000 COP).</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold shrink-0">✕</span>
+                <span><strong>Punto fijo de aviso:</strong> El audio solo suena en el lugar específico donde el aparato esté conectado.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold shrink-0">✕</span>
+                <span><strong>Sin aviso móvil al personal:</strong> Los cajeros o meseros en bodega o mesas no reciben la confirmación en su propio celular.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold shrink-0">✕</span>
+                <span><strong>Sin pantalla de verificación:</strong> No permite ver el historial detallado de ventas ni cuadre de turno en tiempo real.</span>
+              </li>
             </ul>
           </div>
 
-          <div class="p-8 rounded-3xl bg-[#19C37D]/15 border-2 border-[#19C37D] space-y-4">
-            <span class="text-xs font-bold text-[#19C37D] uppercase tracking-wider block">Con TransferYA</span>
-            <ul class="space-y-3 text-xs sm:text-sm text-white">
-              <li>✓ <strong>$0 en aparatos nuevos:</strong> usas cualquier celular o tablet.</li>
-              <li>✓ <strong>Funcionando en 10 minutos</strong> en tu propio local.</li>
-              <li>✓ <strong>Avisa por WhatsApp</strong> a tus cajeros aunque estén en bodega.</li>
-              <li>✓ <strong>Canta en voz alta</strong> y la pantalla nunca se apaga.</li>
+          <!-- Opción 2: Con TransferYA -->
+          <div class="p-7 sm:p-8 rounded-3xl bg-white border-2 border-[#19C37D] shadow-md space-y-4 text-left relative">
+            <span class="absolute -top-3 right-6 px-3 py-0.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-[10px] uppercase tracking-wider">
+              Recomendado
+            </span>
+            <div class="flex items-center justify-between border-b border-[#19C37D]/20 pb-3">
+              <span class="text-xs font-bold text-[#0B7A4B] uppercase tracking-wider block">Con TransferYA</span>
+              <span class="text-[11px] font-mono text-[#0B7A4B] font-bold">En tus pantallas</span>
+            </div>
+            <ul class="space-y-3.5 text-xs sm:text-sm text-[#0E1B2B]/90">
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold shrink-0">✓</span>
+                <span><strong>$0 en compra de aparatos:</strong> Funciona directamente en los celulares, tablets o computadores que ya tienes en tu negocio.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold shrink-0">✓</span>
+                <span><strong>Aviso por WhatsApp directo:</strong> Cada cajero recibe el comprobante legítimo en su WhatsApp personal o corporativo al instante.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold shrink-0">✓</span>
+                <span><strong>Voz alta y pantalla activa:</strong> La pantalla canta el pago inmediatamente y nunca se suspende durante el turno.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold shrink-0">✓</span>
+                <span><strong>Cuadre diario y cierre de turno:</strong> Suma todas las transferencias del día para cuadrar caja en 1 minuto sin errores.</span>
+              </li>
             </ul>
           </div>
 
@@ -831,31 +910,111 @@
         <span>· Elaborado en Colombia por <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="font-bold text-[#0B7A4B] hover:underline">MurSat Solutions</a></span>
       </div>
 
-      <div>
-        Cero comisiones · Cero intermediación de fondos
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <span>Cero comisiones · Cero intermediación de fondos</span>
+        <span class="text-[#0E1B2B]/30">•</span>
+        <button type="button" onclick="openPrivacyModal()" class="text-[#0B7A4B] font-semibold hover:underline cursor-pointer">
+          Tratamiento de Datos (Ley 1581)
+        </button>
       </div>
 
     </div>
   </footer>
 
   <!-- ========================================== -->
-  <!-- 13. BOTÓN FLOTANTE DE WHATSAPP -->
+  <!-- 13. BOTÓN FLOTANTE DE WHATSAPP (CALIBRADO PARA MÓVIL) -->
   <!-- ========================================== -->
   <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20tengo%20dudas%20sobre%20TransferYA%20para%20mi%20negocio"
     target="_blank" rel="noopener noreferrer"
-    class="fixed bottom-5 right-5 z-50 bg-[#25D366] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 font-bold text-xs sm:text-sm hover:scale-105 transition-transform"
+    id="floatingWhatsApp"
+    class="fixed bottom-4 right-4 z-40 bg-[#25D366] text-white w-12 h-12 sm:w-auto sm:h-auto p-3 sm:px-5 sm:py-3.5 rounded-full shadow-xl flex items-center justify-center sm:justify-start gap-2.5 font-bold text-xs sm:text-sm hover:scale-105 transition-transform"
     title="Chatear con soporte de TransferYA">
-    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.58 1.961.948 2.791.948 3.18 0 5.767-2.587 5.768-5.766.001-3.18-2.585-5.767-5.768-5.767zm9.969 5.828c0 5.523-4.477 10-10 10-1.745 0-3.385-.45-4.819-1.238l-7.181 1.88 1.914-6.994c-.878-1.479-1.386-3.21-1.386-5.048 0-5.523 4.477-10 10-10s10 4.477 10 10z"/></svg>
+    <svg class="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.58 1.961.948 2.791.948 3.18 0 5.767-2.587 5.768-5.766.001-3.18-2.585-5.767-5.768-5.767zm9.969 5.828c0 5.523-4.477 10-10 10-1.745 0-3.385-.45-4.819-1.238l-7.181 1.88 1.914-6.994c-.878-1.479-1.386-3.21-1.386-5.048 0-5.523 4.477-10 10-10s10 4.477 10 10z"/></svg>
     <span class="hidden sm:inline">¿Dudas? Escríbenos</span>
   </a>
 
   <!-- ========================================== -->
-  <!-- 14. SCRIPT SIMPLE DE DEMO DE SONIDO -->
+  <!-- MODAL: POLÍTICA DE TRATAMIENTO DE DATOS (LEY 1581) -->
+  <!-- ========================================== -->
+  <div id="privacyModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#0E1B2B]/10 space-y-5 text-left relative max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#19C37D]/15 flex items-center justify-center text-[#19C37D]">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-[#0E1B2B] leading-tight">
+              Tratamiento de Datos Personales
+            </h3>
+            <span class="text-[11px] font-mono text-gray-500">Habeas Data · Ley 1581 de 2012 (Colombia)</span>
+          </div>
+        </div>
+        <button type="button" onclick="closePrivacyModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-[#0E1B2B]/80 leading-relaxed">
+        <p class="font-medium text-[#0E1B2B]">
+          En cumplimiento del Régimen General de Protección de Datos Personales en Colombia (Ley Estatutaria 1581 de 2012 y Decreto 1377 de 2013), TransferYA y MurSat Solutions informan:
+        </p>
+
+        <div class="p-3.5 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1">
+          <strong class="text-[#0E1B2B] block text-xs uppercase tracking-wider">1. Responsable del Tratamiento:</strong>
+          <span>MurSat Solutions, sociedad legalmente constituida en Colombia. Canal oficial de atención para consultas, reclamos o ejercicio de derechos de Habeas Data: <a href="mailto:soporte@transferya.vercel.app" class="text-[#0B7A4B] font-bold underline">soporte@transferya.vercel.app</a> o vía WhatsApp corporativo.</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1">
+          <strong class="text-[#0E1B2B] block text-xs uppercase tracking-wider">2. Finalidad Exclusiva de los Datos:</strong>
+          <span>Los datos de pago (monto, entidad emisora, nombre o identificador público del pagador, fecha y hora) se procesan <strong>única y transitoriamente</strong> para reproducir el anuncio en voz alta en el mostrador del comercio y despachar el mensaje de confirmación a los cajeros autorizados.</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1">
+          <strong class="text-[#0E1B2B] block text-xs uppercase tracking-wider">3. Seguridad y No Intermediación Financiera:</strong>
+          <span>TransferYA <strong>no almacena contraseñas, claves dinámicas ni credenciales bancarias</strong>. No tenemos acceso a los saldos totales ni custodiamos dinero de clientes ni comercios: el 100% de los fondos entra directo a tu cuenta de siempre.</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1">
+          <strong class="text-[#0E1B2B] block text-xs uppercase tracking-wider">4. Derechos del Titular:</strong>
+          <span>Todo usuario o titular tiene derecho a conocer, actualizar, rectificar y solicitar la supresión de sus datos personales registrados en cualquier momento.</span>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex justify-end">
+        <button type="button" onclick="closePrivacyModal()" class="px-6 py-2.5 rounded-xl bg-[#19C37D] text-[#0E1B2B] font-extrabold text-xs hover:brightness-105 transition-all">
+          Entendido y Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 14. SCRIPTS DE INTERACCIÓN -->
   <!-- ========================================== -->
   <script>
+    function openPrivacyModal() {
+      const modal = document.getElementById("privacyModal");
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function closePrivacyModal() {
+      const modal = document.getElementById("privacyModal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    // Cerrar modal con tecla Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePrivacyModal();
+    });
+
     function probarSonido() {
       const btn = document.getElementById("btnAudioText");
-      if (btn) btn.textContent = "🔊 Cantando pago...";
+      if (btn) btn.textContent = "Cantando pago...";
 
       // Sonido Chime con Web Audio
       try {
@@ -888,7 +1047,7 @@
         utter.lang = "es-CO";
         utter.rate = 1.05;
         utter.onend = () => {
-          if (btn) btn.textContent = "✓ ¡Listo! Así canta tu caja (toca para repetir)";
+          if (btn) btn.textContent = "Listo. Así canta tu caja (toca para repetir)";
         };
         window.speechSynthesis.speak(utter);
       } else {

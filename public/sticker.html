@@ -100,7 +100,11 @@
         </a>
         <button onclick="window.print()"
           class="px-5 py-2 sm:py-2.5 rounded-xl bg-[#19C37D] hover:brightness-105 text-[#0E1B2B] font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-[#19C37D]/25 transition-all">
-          <span>🖨️</span>
+          <svg class="w-4 h-4 text-[#0E1B2B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect width="12" height="8" x="6" y="14"/>
+          </svg>
           <span>Imprimir Stickers</span>
         </button>
       </div>
@@ -116,7 +120,10 @@
       
       <div>
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#19C37D]/15 text-[#0B7A4B] font-bold text-xs mb-2">
-          <span>🏷️</span>
+          <svg class="w-3.5 h-3.5 text-[#0B7A4B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+            <circle cx="7" cy="7" r=".5" fill="currentColor"/>
+          </svg>
           <span>Material Oficial Antifraude</span>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0E1B2B] tracking-tight">
@@ -166,7 +173,13 @@
 
       <!-- Barra de Ayuda Rápida -->
       <div class="p-4 rounded-2xl bg-[#19C37D]/10 border border-[#19C37D]/25 flex items-start gap-3 text-xs text-[#0B7A4B]">
-        <span class="text-base">💡</span>
+        <div class="w-6 h-6 rounded-lg bg-[#19C37D]/20 flex items-center justify-center text-[#0B7A4B] shrink-0 mt-0.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </div>
         <div class="space-y-1">
           <span class="font-bold block text-[#0E1B2B]">Consejo de instalación:</span>
           <span>Imprime esta hoja en papel adhesivo o papel normal, fórralo con cinta transparente ancha para protegerlo de la grasa y pégalo justo debajo de tu QR de Nequi o DaviPlata.</span>
@@ -342,8 +355,11 @@
             </div>
             ${getStickerTemplate('strip', theme, merchantName)}
             <div class="no-print pt-6 text-center">
-              <button onclick="window.print()" class="px-6 py-3 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-md hover:brightness-105">
-                🖨️ Imprimir esta Tira
+              <button onclick="window.print()" class="px-6 py-3 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-md hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir esta Tira</span>
               </button>
             </div>
           </div>
@@ -356,8 +372,11 @@
             </div>
             ${getStickerTemplate('square', theme, merchantName)}
             <div class="no-print pt-6 text-center">
-              <button onclick="window.print()" class="px-6 py-3 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-md hover:brightness-105">
-                🖨️ Imprimir este Sticker Cuadrado
+              <button onclick="window.print()" class="px-6 py-3 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-md hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir este Sticker Cuadrado</span>
               </button>
             </div>
           </div>
@@ -368,7 +387,7 @@
         for (let i = 0; i < 8; i++) {
           gridItems += `
             <div class="relative p-2 border border-dashed border-gray-400 rounded-2xl flex flex-col justify-center">
-              <span class="no-print absolute -top-2.5 left-4 bg-white px-1 text-[9px] text-gray-400 font-mono">✂ Cortar</span>
+              <span class="no-print absolute -top-2.5 left-4 bg-white px-1 text-[9px] text-gray-400 font-mono">Cortar</span>
               ${getStickerTemplate('grid', theme, merchantName)}
             </div>
           `;
@@ -380,7 +399,7 @@
             <div class="print-only hidden mb-4 pb-2 border-b border-gray-200 text-xs flex justify-between items-center text-gray-600">
               <span class="font-bold">TransferYA • Stickers Oficiales de Mostrador</span>
               <span>www.transferya.vercel.app</span>
-              <span>Líneas de corte con tijera ✂</span>
+              <span>Líneas de corte con tijera</span>
             </div>
 
             <div class="no-print text-center mb-6">
@@ -393,8 +412,11 @@
             </div>
 
             <div class="no-print pt-8 text-center">
-              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105">
-                🖨️ Imprimir Hoja Completa de 8 Stickers
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Hoja Completa de 8 Stickers</span>
               </button>
             </div>
           </div>
