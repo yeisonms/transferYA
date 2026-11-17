@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none">
+  <!-- Isotipo Check que suena -->
+  <g transform="translate(0, 0)">
+    <path d="M8 34 L21 47 L42 18" stroke="#19C37D" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M46 24 C49 27.5 49 34.5 46 38" stroke="#19C37D" stroke-width="4" stroke-linecap="round"/>
+    <path d="M53 18 C58 24 58 38 53 44" stroke="#19C37D" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <!-- Texto: transfer en color corriente y YA en verde -->
+  <text x="68" y="44" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="34" letter-spacing="-0.03em" fill="currentColor">transfer<tspan fill="#19C37D">YA</tspan></text>
+</svg>

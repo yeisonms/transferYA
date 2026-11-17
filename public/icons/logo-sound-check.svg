@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Check redondeado (Opción A: Check que suena) -->
+  <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Onda de sonido interior -->
+  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Onda de sonido exterior -->
+  <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+</svg>

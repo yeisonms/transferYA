@@ -1,364 +1,235 @@
 <!DOCTYPE html>
-<html lang="es-CO" class="dark scroll-smooth">
+<html lang="es-CO" class="scroll-smooth">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>TransferYA — Altavoz Inteligente y Verificación QR en Voz Alta al Instante | MurSat Solutions</title>
+  <title>TransferYA — Pantallazo falso, no pasa | Tu cajero confirma cada pago por WhatsApp</title>
   <meta name="description"
-    content="TransferYA canta en voz alta cada pago QR que entra a tu Nequi, DaviPlata o Bre-B en menos de 500 ms. Cero inversión en parlantes de $230.000, sin esperar envíos por encomienda y con alertas instantáneas a tus cajeros por WhatsApp." />
-  <meta name="keywords"
-    content="altavoz pagos qr colombia, parlante pagos nequi, anunciador pagos bre-b, daviplata voz alta, transferya, evitar estafas comprobantes falsos nequi, mursat solutions" />
+    content="TransferYA avisa a tu cajero por WhatsApp y canta en voz alta cada pago de Nequi, DaviPlata o Bre-B en menos de 1 segundo. Sin comprar aparatos costosos, sin comisiones y sin darle tu clave a nadie." />
   <meta name="author" content="MurSat Solutions" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="TransferYA — Tu caja canta tus pagos en voz alta al instante" />
+  <meta property="og:title" content="TransferYA — Pantallazo falso, no pasa" />
   <meta property="og:description"
-    content="Un pantallazo se edita. La voz de tu caja, no. Detecta pagos de Nequi, DaviPlata y Bre-B en sub-segundo sin comprar aparatos costosos." />
+    content="Tu cajero confirma cada pago en su WhatsApp, al instante. Sin comisiones, sin aparatos nuevos y sin darle tu clave a nadie." />
   <meta property="og:image" content="/images/og-share.jpg" />
   <meta property="og:locale" content="es_CO" />
 
-  <!-- Favicon e Íconos -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/icons/logo-sound-check.svg" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-  <!-- Tipografía Oficial: Plus Jakarta Sans + JetBrains Mono -->
+  <!-- Tipografía Oficial: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
     rel="stylesheet" />
 
-  <!-- Estilos Compilados Tailwind -->
+  <!-- Estilos Compilados -->
   <link rel="stylesheet" href="/css/app.css" />
 
   <style>
-    /* Estilos del Cockpit Financiero TransferYA según DESIGN.md de Stitch */
+    /* Nueva Paleta Oficial TransferYA */
     :root {
-      --ty-substrate: #090D16;
-      --ty-emerald: #00D26A;
-      --ty-cyan: #38BDF8;
-      --ty-nequi: #E10098;
-      --ty-daviplata: #ED1C24;
-      --ty-amber: #F59E0B;
+      --ty-green: #19C37D;
+      --ty-green-dark: #0B7A4B;
+      --ty-ink: #0E1B2B;
+      --ty-cream: #F7F5EF;
+      --ty-mango: #FFB020;
+      --ty-alert: #D93F44;
     }
 
-    /* Fondo táctico con rejilla fina */
-    .bg-grid-cockpit {
-      background-size: 32px 32px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     }
 
-    /* Radar de onda de audio */
-    .waveform-bar {
-      transition: height 0.15s ease, background-color 0.2s ease;
-    }
-
-    /* Animación del pulso de comprobante en vivo */
-    @keyframes greenPulseGlow {
-      0%, 100% { box-shadow: 0 0 25px rgba(0, 210, 106, 0.15), inset 0 0 15px rgba(0, 210, 106, 0.05); }
-      50% { box-shadow: 0 0 50px rgba(0, 210, 106, 0.35), inset 0 0 25px rgba(0, 210, 106, 0.12); }
-    }
-
-    .pos-card-active {
-      animation: greenPulseGlow 3s infinite ease-in-out;
-    }
-
-    /* Scrollbar personalizada */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #090D16;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #182032;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #222B40;
+    /* Sticker de mostrador */
+    .counter-sticker {
+      box-shadow: 0 4px 20px -2px rgba(14, 27, 43, 0.12);
     }
   </style>
 </head>
 
-<body class="bg-[#090D16] text-[#F8FAFC] font-sans antialiased selection:bg-[#00D26A]/30 selection:text-white min-h-screen flex flex-col overflow-x-hidden">
+<body class="bg-[#F7F5EF] text-[#0E1B2B] antialiased selection:bg-[#19C37D]/30 selection:text-[#0E1B2B] min-h-screen flex flex-col">
 
   <!-- ========================================== -->
-  <!-- 1. TOP TELEMETRY BANNER -->
+  <!-- 1. BARRA SUPERIOR AMIGABLE -->
   <!-- ========================================== -->
-  <aside class="bg-[#0B101C] border-b border-white/[0.08] py-2 px-4 text-xs font-mono text-[#94A3B8] z-50">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
-      <div class="flex items-center gap-2.5">
-        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#00D26A]/15 text-[#00D26A] font-bold text-[10px] border border-[#00D26A]/30 tracking-wider">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#00D26A] animate-ping"></span>
-          COLOMBIA REALTIME
+  <aside class="bg-[#0E1B2B] text-white py-2 px-4 text-xs">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#19C37D]/20 text-[#19C37D] font-bold text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#19C37D] animate-pulse"></span>
+          Colombia
         </span>
-        <span class="hidden sm:inline text-white/90">Detección nativa &lt; 500 ms · 0% comisión sobre ventas</span>
+        <span class="text-white/90 text-[11px] sm:text-xs">Te lo dejamos funcionando en tu local en 10 minutos</span>
       </div>
-      <div class="flex items-center gap-4 ml-auto text-[11px]">
-        <span class="text-white/60 hidden md:inline">Respaldado por</span>
-        <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer"
-          class="text-[#38BDF8] hover:underline inline-flex items-center gap-1 font-semibold group">
-          <span>MurSat Solutions</span>
-          <svg class="w-3 h-3 text-[#38BDF8] group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
+      <div class="text-[11px] text-white/70">
+        Por <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="text-[#38BDF8] hover:underline font-semibold">MurSat Solutions</a>
       </div>
     </div>
   </aside>
 
   <!-- ========================================== -->
-  <!-- 2. NAVBAR PRINCIPAL STICKY -->
+  <!-- 2. NAVBAR SIMPLE Y CLARO (4 OPCIONES) -->
   <!-- ========================================== -->
-  <header class="sticky top-0 z-40 backdrop-blur-xl bg-[#090D16]/90 border-b border-white/[0.08]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-[#F7F5EF]/95 border-b border-[#0E1B2B]/10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-18 sm:h-20 flex items-center justify-between gap-4">
       
-      <!-- Logo TransferYA -->
-      <a href="/landing" class="flex items-center gap-3.5 group">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#00D26A]/20 via-[#111726] to-[#38BDF8]/20 border border-[#00D26A]/40 flex items-center justify-center p-2.5 shadow-[0_0_20px_rgba(0,210,106,0.2)] group-hover:border-[#00D26A] transition-all">
-          <svg viewBox="0 0 40 40" class="w-full h-full" fill="none">
-            <path d="M8 12 L20 4 L32 12 L32 28 L20 36 L8 28 Z" stroke="#00D26A" stroke-width="2.5" stroke-linejoin="round"/>
-            <path d="M14 18 L20 14 L26 18 L26 24 L20 28 L14 24 Z" fill="#00D26A" fill-opacity="0.3"/>
-            <path d="M15 20 L25 20" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M20 15 L20 25" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-mono">transfer<span class="text-[#00D26A]">YA</span></span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30 uppercase">Cockpit</span>
-          </div>
-          <p class="text-[10px] font-mono text-[#94A3B8] tracking-wider uppercase">Altavoz y Verificación POS</p>
-        </div>
+      <!-- Logo: Check que suena + transferYA -->
+      <a href="/landing" class="flex items-center gap-2.5 group">
+        <!-- Ícono SVG Check que suena -->
+        <svg class="w-8 h-8 sm:w-9 sm:h-9 text-[#19C37D] shrink-0" viewBox="0 0 64 64" fill="none">
+          <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+        <span class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0E1B2B]">
+          transfer<span class="text-[#19C37D]">YA</span>
+        </span>
       </a>
 
-      <!-- Menú Desktop -->
-      <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-[#94A3B8]">
-        <a href="#como-funciona" class="hover:text-white transition-colors">¿Cómo Funciona?</a>
-        <a href="#vs-parlantes" class="hover:text-white transition-colors">Vs Parlantes de $230.000</a>
-        <a href="#simulador" class="hover:text-white transition-colors flex items-center gap-1.5 text-[#38BDF8]">
-          <span class="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping"></span>
-          Probar Audio
-        </a>
-        <a href="#bento" class="hover:text-white transition-colors">Poderes</a>
-        <a href="#precios" class="hover:text-white transition-colors">Tarifas</a>
-        <a href="#faq" class="hover:text-white transition-colors">Preguntas</a>
+      <!-- Menú Compacto (4 opciones) -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-[#0E1B2B]/80">
+        <a href="#como-funciona" class="hover:text-[#0B7A4B] transition-colors">Cómo funciona</a>
+        <a href="#seguridad" class="hover:text-[#0B7A4B] transition-colors">¿Es seguro?</a>
+        <a href="#precios" class="hover:text-[#0B7A4B] transition-colors">Precios</a>
+        <a href="#faq" class="hover:text-[#0B7A4B] transition-colors">Preguntas</a>
       </nav>
 
-      <!-- Botones de Acción -->
-      <div class="flex items-center gap-3">
+      <!-- Acción Principal: Probar Gratis -->
+      <div class="flex items-center gap-2.5">
         <a href="/"
-          class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold bg-[#111726] border border-white/[0.12] text-white hover:border-[#38BDF8] hover:text-[#38BDF8] transition-all">
-          Iniciar Sesión
+          class="hidden sm:inline-block px-3.5 py-2 rounded-full text-xs font-semibold text-[#0E1B2B] hover:bg-[#0E1B2B]/5 transition-all">
+          Iniciar sesión
         </a>
-        <a href="/"
-          class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold bg-[#00D26A] text-[#041E0F] hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.3)] transition-all flex items-center gap-2 group">
-          <span>Abrir App</span>
-          <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-          </svg>
+        <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20probar%20TransferYA%20gratis%20por%207%20d%C3%ADas%20en%20mi%20negocio"
+          target="_blank" rel="noopener noreferrer"
+          class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold bg-[#19C37D] text-[#0E1B2B] hover:brightness-105 shadow-md shadow-[#19C37D]/20 transition-all flex items-center gap-1.5 font-bold">
+          <span>Pruébalo gratis 7 días</span>
         </a>
       </div>
+
     </div>
   </header>
 
   <!-- ========================================== -->
-  <!-- 3. HERO ASIMÉTRICO CON SIMULADOR TÁCTICO -->
+  <!-- 3. HERO: EL DOLOR Y EL MOMENTO MÁGICO -->
   <!-- ========================================== -->
   <main class="flex-1">
-    <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden bg-grid-cockpit border-b border-white/[0.08]">
-      
-      <!-- Destellos de luz ambiental de fondo -->
-      <div class="absolute -top-40 left-1/4 w-[500px] h-[500px] bg-[#00D26A]/10 rounded-full blur-[140px] pointer-events-none"></div>
-      <div class="absolute top-1/3 right-10 w-[450px] h-[450px] bg-[#38BDF8]/10 rounded-full blur-[140px] pointer-events-none"></div>
-
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section class="pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-[#0E1B2B]/10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
-          <!-- COLUMNA IZQUIERDA: COPYWRITING CONTUNDENTE -->
-          <div class="lg:col-span-7 space-y-6 text-left">
+          <!-- TEXTO PRINCIPAL -->
+          <div class="lg:col-span-7 space-y-5 text-left">
             
-            <!-- Badge Táctico -->
-            <div class="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#111726] border border-[#00D26A]/40 text-xs font-mono shadow-lg">
-              <span class="w-2 h-2 rounded-full bg-[#00D26A] animate-pulse"></span>
-              <span class="text-[#00D26A] font-bold">ANTI-FRAUDE DIRECTO</span>
-              <span class="text-white/20">•</span>
-              <span class="text-[#94A3B8]">Para Nequi, DaviPlata y Bre-B</span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/15 text-[#0B7A4B] font-bold text-xs tracking-wide">
+              <span>🛡️</span>
+              <span>Antifraude para Nequi, DaviPlata y Bre-B</span>
             </div>
 
-            <!-- Titular Monumental Anti-Slop -->
-            <h1 class="text-4xl sm:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
-              Un pantallazo se edita.<br />
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00D26A] via-[#38BDF8] to-white">
-                La voz de tu caja, no.
-              </span>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#0E1B2B] tracking-tight leading-[1.12]">
+              Pantallazo falso,<br />
+              <span class="text-[#19C37D]">no pasa.</span>
             </h1>
 
-            <!-- Subtítulo de Conversión -->
-            <p class="text-base sm:text-xl text-[#94A3B8] leading-relaxed max-w-2xl font-normal">
-              TransferYA canta en <strong class="text-white font-semibold">voz alta</strong> cada transferencia QR que entra a tu cuenta bancaria en <strong class="text-[#00D26A] font-mono">&lt; 500 ms</strong>. Sin pagar $230.000 por un parlante de plástico, sin esperar días de envío y con alertas automáticas a tus cajeros por <strong class="text-[#38BDF8]">WhatsApp</strong>.
+            <p class="text-xl sm:text-2xl font-bold text-[#0E1B2B]/90 leading-snug">
+              Tu cajero confirma cada pago en su WhatsApp, al instante.
             </p>
 
-            <!-- Acciones Principales -->
-            <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 max-w-lg">
-              <a href="/"
-                class="px-8 py-4 rounded-2xl bg-[#00D26A] text-[#041E0F] font-mono font-bold text-base hover:brightness-110 shadow-[0_0_30px_rgba(0,210,106,0.35)] transition-all flex items-center justify-center gap-2 text-center group">
-                <span>Comenzar en 30 Segundos</span>
-                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+            <p class="text-base sm:text-lg text-[#0E1B2B]/75 leading-relaxed font-normal max-w-xl">
+              Sin comisiones, sin aparatos nuevos y sin darle tu clave de Nequi a nadie. Te lo dejamos funcionando en tu local en 10 minutos.
+            </p>
+
+            <!-- Acciones Claras -->
+            <div class="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 max-w-md">
+              <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20probar%20TransferYA%20gratis%20por%207%20d%C3%ADas%20en%20mi%20negocio"
+                target="_blank" rel="noopener noreferrer"
+                class="px-7 py-3.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-bold text-base hover:brightness-105 shadow-lg shadow-[#19C37D]/25 transition-all text-center">
+                Pruébalo gratis 7 días
               </a>
-              <a href="#simulador"
-                class="px-6 py-4 rounded-2xl bg-[#111726] border border-white/[0.12] hover:border-[#38BDF8] text-white font-mono text-sm flex items-center justify-center gap-2.5 transition-all text-center">
-                <span>🔊 Probar Sonido en Vivo</span>
+              <a href="#como-funciona"
+                class="px-6 py-3.5 rounded-full border-2 border-[#0E1B2B]/20 bg-white hover:border-[#0E1B2B] text-[#0E1B2B] font-semibold text-sm transition-all text-center">
+                Ver cómo funciona
               </a>
             </div>
 
-            <!-- Micro-compromisos de confianza -->
-            <div class="flex items-center gap-4 sm:gap-6 text-xs font-mono text-[#94A3B8] pt-2 flex-wrap">
-              <span class="flex items-center gap-1.5"><span class="text-[#00D26A]">✓</span> 0% de comisión</span>
-              <span class="flex items-center gap-1.5"><span class="text-[#00D26A]">✓</span> Sin contratos</span>
-              <span class="flex items-center gap-1.5"><span class="text-[#00D26A]">✓</span> Activación hoy mismo</span>
-              <span class="flex items-center gap-1.5"><span class="text-[#00D26A]">✓</span> Cero Hardware extra</span>
-            </div>
-
-            <!-- Logotipos de Ecosistema Integrado -->
-            <div class="pt-6 border-t border-white/[0.08]">
-              <p class="text-[11px] font-mono text-[#94A3B8] uppercase tracking-wider mb-3">Tus clientes pagan con su app favorita. Tu caja recibe y canta:</p>
-              <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-[#E10098]/30">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[#E10098]"></span>
-                  <span class="text-xs font-bold text-white">Nequi</span>
-                  <span class="text-[9px] font-mono text-[#00D26A] bg-[#00D26A]/10 px-1 rounded">Push + SMS</span>
-                </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-[#ED1C24]/30">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[#ED1C24]"></span>
-                  <span class="text-xs font-bold text-white">DaviPlata</span>
-                  <span class="text-[9px] font-mono text-[#00D26A] bg-[#00D26A]/10 px-1 rounded">Realtime</span>
-                </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-[#38BDF8]/30">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[#38BDF8]"></span>
-                  <span class="text-xs font-bold text-white">Bre-B</span>
-                  <span class="text-[9px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-1 rounded">Todos los bancos</span>
-                </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-white/[0.1]">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[#FDDA24]"></span>
-                  <span class="text-xs font-bold text-white">Bancolombia</span>
-                </div>
-              </div>
+            <!-- Stickers / Sellos de Confianza -->
+            <div class="pt-4 flex items-center gap-5 text-xs text-[#0E1B2B]/70 font-medium flex-wrap">
+              <span class="flex items-center gap-1.5"><span class="text-[#19C37D] text-base">✓</span> 0% de comisión</span>
+              <span class="flex items-center gap-1.5"><span class="text-[#19C37D] text-base">✓</span> Sin contratos</span>
+              <span class="flex items-center gap-1.5"><span class="text-[#19C37D] text-base">✓</span> Instalación guiada</span>
             </div>
 
           </div>
 
-          <!-- COLUMNA DERECHA: COCKPIT TERMINAL INTERACTIVO -->
-          <div class="lg:col-span-5" id="simulador">
-            <div class="rounded-3xl bg-[#0B101C] border border-white/[0.12] p-6 sm:p-7 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+          <!-- EL MOMENTO MÁGICO: EL CELULAR CON EL WHATSAPP REAL -->
+          <div class="lg:col-span-5">
+            <div class="relative mx-auto max-w-[340px] sm:max-w-[380px]">
               
-              <!-- Decoración superior del terminal -->
-              <div class="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-5">
-                <div class="flex items-center gap-2">
-                  <span class="w-3 h-3 rounded-full bg-[#ED1C24]/70"></span>
-                  <span class="w-3 h-3 rounded-full bg-[#F59E0B]/70"></span>
-                  <span class="w-3 h-3 rounded-full bg-[#00D26A]/70"></span>
-                  <span class="text-xs font-mono text-[#94A3B8] ml-2 font-semibold">Pantalla POS Mostrador #1</span>
+              <!-- Marco del Teléfono Móvil -->
+              <div class="rounded-[2.5rem] bg-[#0E1B2B] p-3 shadow-2xl ring-1 ring-black/10">
+                <div class="rounded-[2rem] bg-white overflow-hidden border border-gray-200">
+                  
+                  <!-- Barra de Estado del Celular -->
+                  <div class="bg-[#075E54] text-white px-4 py-2.5 flex items-center justify-between text-xs font-semibold">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z"/></svg>
+                      <span>TransferYA · Pagos</span>
+                    </div>
+                    <span class="text-[10px] bg-[#19C37D] text-[#0E1B2B] font-bold px-1.5 py-0.5 rounded">En línea</span>
+                  </div>
+
+                  <!-- Conversación de WhatsApp del Cajero -->
+                  <div class="bg-[#EFEAE2] p-4 min-h-[320px] flex flex-col justify-end space-y-3">
+                    
+                    <!-- Mensaje de prueba interactivo -->
+                    <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-black/5 max-w-[95%] self-start space-y-2">
+                      <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-1.5">
+                        <span class="text-[11px] font-bold text-[#19C37D] flex items-center gap-1">
+                          ✓ PAGO CONFIRMADO EN NEQUI
+                        </span>
+                        <span class="text-[10px] text-gray-400">Ahora</span>
+                      </div>
+                      <div class="text-2xl font-extrabold text-[#0E1B2B]">
+                        $ 25.000
+                      </div>
+                      <p class="text-xs text-gray-600 leading-snug">
+                        Cliente: <strong class="text-[#0E1B2B]">Carlos Mendoza</strong><br/>
+                        Caja: <strong class="text-[#0E1B2B]">Mostrador #1</strong>
+                      </p>
+                      <div class="bg-[#19C37D]/10 text-[#0B7A4B] text-[11px] font-bold px-2 py-1 rounded text-center">
+                        ✓ Verificado · Puedes entregar el pedido
+                      </div>
+                    </div>
+
+                    <!-- Botón para Escuchar cómo canta la caja -->
+                    <div class="pt-2">
+                      <button type="button" onclick="probarSonido()"
+                        class="w-full py-2.5 px-3 rounded-xl bg-[#0E1B2B] text-white hover:bg-black transition-all flex items-center justify-center gap-2 text-xs font-bold shadow">
+                        <span class="text-[#19C37D]">🔊</span>
+                        <span id="btnAudioText">Toca aquí para oír cómo canta</span>
+                      </button>
+                    </div>
+
+                  </div>
+
                 </div>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30">
-                  Voz: Activa 🔊
-                </span>
               </div>
 
-              <!-- Selector de Simulación Rápida -->
-              <div class="mb-5">
-                <label class="text-[11px] font-mono text-[#94A3B8] uppercase tracking-wider block mb-2">
-                  Prueba la voz y la pantalla tocando un monto:
-                </label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button type="button" onclick="triggerSimulation(5000, 'Nequi', 'CARLOS PÉREZ', '312***4812')"
-                    class="py-2.5 px-2 rounded-xl bg-[#111726] border border-white/[0.08] hover:border-[#00D26A] text-white font-mono text-xs font-bold transition-all text-center group">
-                    <span class="text-[#00D26A] group-hover:scale-110 inline-block transition-transform">▶</span> $5.000
-                  </button>
-                  <button type="button" onclick="triggerSimulation(20000, 'Nequi', 'MARÍA GÓMEZ', '315***9021')"
-                    class="py-2.5 px-2 rounded-xl bg-[#111726] border border-white/[0.08] hover:border-[#00D26A] text-white font-mono text-xs font-bold transition-all text-center group">
-                    <span class="text-[#00D26A] group-hover:scale-110 inline-block transition-transform">▶</span> $20.000
-                  </button>
-                  <button type="button" onclick="triggerSimulation(50000, 'DaviPlata', 'ANDRÉS ROJAS', '300***1145')"
-                    class="py-2.5 px-2 rounded-xl bg-[#111726] border border-white/[0.08] hover:border-[#00D26A] text-white font-mono text-xs font-bold transition-all text-center group">
-                    <span class="text-[#00D26A] group-hover:scale-110 inline-block transition-transform">▶</span> $50.000
-                  </button>
-                  <button type="button" onclick="triggerSimulation(150000, 'Bre-B', 'LAURA MEJÍA', '311***7788')"
-                    class="py-2.5 px-2 rounded-xl bg-[#111726] border border-white/[0.08] hover:border-[#38BDF8] text-white font-mono text-xs font-bold transition-all text-center group">
-                    <span class="text-[#38BDF8] group-hover:scale-110 inline-block transition-transform">▶</span> $150.000
-                  </button>
-                </div>
-              </div>
-
-              <!-- TARJETA INTERACTIVA DEL COBRADOR POS -->
-              <div id="cockpitPosCard" class="rounded-2xl bg-[#090D16] border border-white/[0.1] p-6 text-center transition-all duration-300 relative">
-                
-                <!-- ONDA VISUALIZADORA DE AUDIO SINTETIZADO -->
-                <div class="flex items-center justify-center gap-1.5 h-6 mb-4" id="audioWaveformContainer">
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-2"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-4"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-6"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-3"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-5"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-2"></span>
-                  <span class="w-1 bg-[#182032] rounded-full waveform-bar h-4"></span>
-                </div>
-
-                <!-- Ícono / Badge de Estado -->
-                <div id="cockpitStatusIcon" class="w-16 h-16 rounded-2xl bg-[#111726] border border-white/[0.08] mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner transition-transform">
-                  💳
-                </div>
-
-                <!-- Título y Monto -->
-                <div id="cockpitStatusLabel" class="text-xs font-mono text-[#94A3B8] uppercase tracking-wider">
-                  Esperando transferencia...
-                </div>
-                <div id="cockpitAmountDisplay" class="text-3xl sm:text-4xl font-extrabold font-mono text-white mt-1.5 tabular-nums">
-                  $ 0 COP
-                </div>
-                <div id="cockpitSenderDisplay" class="text-xs font-mono text-[#94A3B8] mt-1">
-                  Toca un botón para ver cómo reacciona tu mostrador
-                </div>
-
-                <!-- Detalles técnicos de verificación -->
-                <div class="mt-6 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-2 text-left text-[11px] font-mono">
-                  <div class="p-2 rounded bg-[#111726]">
-                    <span class="text-[#94A3B8] block text-[9px] uppercase">Billetera / Canal</span>
-                    <span id="cockpitWalletBadge" class="text-white font-bold">—</span>
-                  </div>
-                  <div class="p-2 rounded bg-[#111726]">
-                    <span class="text-[#94A3B8] block text-[9px] uppercase">Tiempo de Validación</span>
-                    <span id="cockpitLatencyBadge" class="text-[#00D26A] font-bold">⚡ 480 ms (Sub-segundo)</span>
-                  </div>
-                </div>
-
-                <!-- Alerta WhatsApp enviada a cajeros -->
-                <div id="cockpitWaToast" class="mt-3 p-2.5 rounded-xl bg-[#00D26A]/10 border border-[#00D26A]/30 text-left text-[11px] font-mono text-white flex items-center gap-2 opacity-0 transition-opacity">
-                  <span class="text-base">💬</span>
-                  <div class="truncate">
-                    <span class="text-[#00D26A] font-bold">WhatsApp enviado a Cajero:</span>
-                    <span id="cockpitWaText" class="text-[#94A3B8]">Despachar orden...</span>
-                  </div>
-                </div>
-
-              </div>
-
-              <!-- Pie del Simulador -->
-              <div class="mt-4 flex items-center justify-between text-[11px] font-mono text-[#94A3B8]">
-                <span class="flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-[#00D26A]"></span>
-                  Conexión WebSocket Activa
-                </span>
-                <span class="text-white/40">HMAC-SHA256 Validado</span>
+              <!-- Sticker de caja sobrepuesto -->
+              <div class="absolute -bottom-5 -left-4 sm:-left-6 bg-white rounded-full py-2 px-3.5 counter-sticker border border-gray-200 flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5 text-[#19C37D]" viewBox="0 0 64 64" fill="none">
+                  <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+                </svg>
+                <span class="text-xs font-bold text-[#0E1B2B]">Aquí verificamos tus pagos</span>
               </div>
 
             </div>
@@ -370,127 +241,43 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 4. RADAR DE ACTIVIDAD EN VIVO (COLOMBIA) -->
+    <!-- 4. EL DOLOR: ¿TE HAN PASADO UN PANTALLAZO FALSO? -->
     <!-- ========================================== -->
-    <section class="bg-[#0B101C] border-b border-white/[0.08] py-3.5 px-4 overflow-hidden">
-      <div class="max-w-7xl mx-auto flex items-center gap-4 text-xs font-mono">
-        <div class="flex items-center gap-2 text-[#00D26A] font-bold shrink-0">
-          <span class="w-2 h-2 rounded-full bg-[#00D26A] animate-ping"></span>
-          <span>EN VIVO:</span>
-        </div>
-        <div class="overflow-hidden relative w-full">
-          <div id="liveActivityTicker" class="whitespace-nowrap transition-all duration-700 text-[#94A3B8]">
-            <span class="text-white font-bold">[Cali · 16:54]</span> La Sinvergüencería Burguer verificó <strong class="text-[#00D26A]">$35.000 COP</strong> vía Nequi • 
-            <span class="text-white font-bold ml-4">[Medellín · 16:53]</span> Barbería Don Carlos verificó <strong class="text-[#00D26A]">$25.000 COP</strong> vía Bre-B • 
-            <span class="text-white font-bold ml-4">[Bogotá · 16:51]</span> Panadería El Trigal verificó <strong class="text-[#00D26A]">$12.000 COP</strong> vía DaviPlata • 
-            <span class="text-white font-bold ml-4">[Barranquilla · 16:49]</span> Droguería La Central verificó <strong class="text-[#00D26A]">$48.000 COP</strong> vía Nequi
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 5. TRANSFERYA VS PARLANTES FÍSICOS (KANTI) -->
-    <!-- ========================================== -->
-    <section id="vs-parlantes" class="py-24 bg-[#090D16] border-b border-white/[0.08] relative">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-16 sm:py-20 bg-white border-b border-[#0E1B2B]/10">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] text-xs font-mono font-bold mb-4">
-            INGENIERÍA INTELIGENTE
-          </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            ¿Por qué pagar $230.000 por un parlante si ya tienes pantallas?
-          </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            Otras soluciones venden un aparato de plástico importado con entrega tardía. TransferYA convierte tu celular, tablet o computador en un terminal táctico con voz en 30 segundos.
-          </p>
-        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
+          ¿Cuántas veces te han pasado un pantallazo falso?
+        </h2>
+        
+        <p class="mt-4 text-base sm:text-lg text-[#0E1B2B]/75 leading-relaxed max-w-2xl mx-auto">
+          En hora pico no puedes estar con el celular en la mano revisando la cuenta bancaria. Y tus cajeros no deberían tener que llamarte a cada rato para preguntar: <em>"Jefe, ¿ya entró la plata?"</em>.
+        </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
           
-          <!-- PARLANTE FÍSICO TRADICIONAL (KANTI) -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 sm:p-10 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-mono uppercase text-[#94A3B8] tracking-wider">Altavoces Físicos de Mostrador</span>
-                <span class="px-2.5 py-1 rounded-full bg-[#ED1C24]/10 border border-[#ED1C24]/30 text-[#ED1C24] text-xs font-mono font-bold">Costo Alto</span>
-              </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Comprar un parlante plástico</h3>
-              <p class="text-xs text-[#94A3B8] mb-8">Dependes de un hardware cerrado conectado a la pared del local.</p>
-
-              <ul class="space-y-4 text-sm text-[#94A3B8]">
-                <li class="flex items-start gap-3">
-                  <span class="text-[#ED1C24] font-bold text-base">✕</span>
-                  <span><strong>Alto desembolso inicial:</strong> Pagas entre $229.000 y $400.000 COP por el dispositivo.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#ED1C24] font-bold text-base">✕</span>
-                  <span><strong>Espera de 24 a 48 horas:</strong> Tienes que esperar que llegue la encomienda para empezar a cobrar.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#ED1C24] font-bold text-base">✕</span>
-                  <span><strong>Reenvío lento de correos:</strong> Dependen de que tu banco envíe un email y lo procesen (retrasos de minutos).</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#ED1C24] font-bold text-base">✕</span>
-                  <span><strong>Solo suena en 1 punto:</strong> Si estás en la cocina, bodega o en otra mesa, no lo escuchas; no avisa por WhatsApp.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#ED1C24] font-bold text-base">✕</span>
-                  <span><strong>Si se avería el aparato,</strong> tu negocio queda desprotegido hasta comprar otro.</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/[0.08] text-xs font-mono text-[#94A3B8] text-center">
-              Gasto 1er año: $229.000 a $400.000 COP + Renovación anual
-            </div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
+            <div class="text-2xl">📱</div>
+            <h3 class="text-base font-bold text-[#0E1B2B]">Sin prestar el celular</h3>
+            <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
+              Tus cajeros y meseros reciben la confirmación en su propio WhatsApp o escuchan el altavoz. Jamás tocan tu cuenta.
+            </p>
           </div>
 
-          <!-- TRANSFERYA (SOFTWARE ZERO-TRUST) -->
-          <div class="rounded-3xl bg-[#111726] border-2 border-[#00D26A] p-8 sm:p-10 flex flex-col justify-between shadow-[0_0_50px_rgba(0,210,106,0.15)] relative">
-            <div class="absolute -top-3.5 right-8 px-3.5 py-1 rounded-full bg-[#00D26A] text-[#041E0F] text-xs font-mono font-bold uppercase tracking-wider shadow">
-              Elección Inteligente
-            </div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
+            <div class="text-2xl">🚫</div>
+            <h3 class="text-base font-bold text-[#0E1B2B]">El fraude no pasa</h3>
+            <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
+              Una captura de pantalla de Nequi se edita con cualquier aplicación. Si la caja no canta y no llega el WhatsApp, no se entrega.
+            </p>
+          </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-mono uppercase text-[#00D26A] tracking-wider font-bold">TransferYA Zero-Trust</span>
-                <span class="px-2.5 py-1 rounded-full bg-[#00D26A]/20 border border-[#00D26A]/40 text-[#00D26A] text-xs font-mono font-bold">Inmediato</span>
-              </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Voz + Pantalla POS + WhatsApp</h3>
-              <p class="text-xs text-[#94A3B8] mb-8">Usa cualquier celular Android, tablet o computador que ya tengas.</p>
-
-              <ul class="space-y-4 text-sm text-[#F8FAFC]">
-                <li class="flex items-start gap-3">
-                  <span class="text-[#00D26A] font-bold text-base">✓</span>
-                  <span><strong>$0 en hardware obligatorio:</strong> Aprovechas las pantallas que ya están en tu negocio.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#00D26A] font-bold text-base">✓</span>
-                  <span><strong>Activación en 30 segundos:</strong> Descargas el Centinela, inicias sesión y listo hoy mismo.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#00D26A] font-bold text-base">✓</span>
-                  <span><strong>Sub-segundo real (&lt; 500 ms):</strong> Lee las alertas oficiales de Nequi/DaviPlata al instante en el teléfono.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#00D26A] font-bold text-base">✓</span>
-                  <span><strong>Alertas a cajeros por WhatsApp:</strong> Todo tu equipo recibe la confirmación con el nombre y monto.</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-[#00D26A] font-bold text-base">✓</span>
-                  <span><strong>Multi-Caja Realtime & Cierre de Turno:</strong> Totaliza ventas y cuadra caja con reporte Excel diario.</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/[0.08]">
-              <a href="/" class="block w-full py-3.5 rounded-xl bg-[#00D26A] text-[#041E0F] font-mono font-bold text-xs uppercase tracking-wider text-center hover:brightness-110 shadow-lg transition-all">
-                Probar Gratis Ahora
-              </a>
-            </div>
+          <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-2.5">
+            <div class="text-2xl">⚡</div>
+            <h3 class="text-base font-bold text-[#0E1B2B]">Despacho en 1 segundo</h3>
+            <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
+              El cliente paga, la caja canta y tu equipo entrega el producto sin hacer esperar al cliente ni armar filas.
+            </p>
           </div>
 
         </div>
@@ -499,71 +286,70 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 6. CÓMO FUNCIONA EN 3 PASOS TÁCTICOS -->
+    <!-- 5. CÓMO FUNCIONA EN 3 PASOS ILUSTRADOS -->
     <!-- ========================================== -->
-    <section id="como-funciona" class="py-24 bg-[#0B101C] border-b border-white/[0.08]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="como-funciona" class="py-16 sm:py-24 bg-[#F7F5EF] border-b border-[#0E1B2B]/10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D26A]/10 border border-[#00D26A]/30 text-[#00D26A] text-xs font-mono font-bold mb-4">
-            FLUJO SIN FRICCIÓN
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-bold text-xs tracking-wide mb-3">
+            PASO A PASO
           </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Tres pasos. Blindaje total.
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
+            Así de fácil funciona en tu mostrador
           </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            Tu cliente paga como de costumbre. Tu negocio despacha con la certeza auditada de que la plata ya está en la cuenta.
+          <p class="mt-3 text-base text-[#0E1B2B]/70">
+            Tus clientes pagan como siempre. Tu equipo atiende con total tranquilidad.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           <!-- PASO 1 -->
-          <div class="rounded-3xl bg-[#111726] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#00D26A]/40 transition-all">
+          <div class="bg-white p-7 rounded-3xl border border-[#0E1B2B]/10 flex flex-col justify-between shadow-sm">
             <div>
-              <div class="w-14 h-14 rounded-2xl bg-[#090D16] border border-white/[0.1] flex items-center justify-center font-mono font-extrabold text-[#00D26A] text-2xl mb-6 shadow-inner">
-                01
+              <div class="w-12 h-12 rounded-2xl bg-[#F7F5EF] text-[#0E1B2B] font-extrabold text-xl flex items-center justify-center mb-5 border border-[#0E1B2B]/10">
+                1
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">El cliente escanea y paga</h3>
-              <p class="text-sm text-[#94A3B8] leading-relaxed">
-                Escanea tu código QR habitual de <strong class="text-white">Nequi, DaviPlata o Bre-B</strong> desde cualquier entidad bancaria. El dinero entra directo a tu cuenta como siempre (0% intermediación).
+              <h3 class="text-lg font-bold text-[#0E1B2B] mb-2">Tu cliente escanea y paga</h3>
+              <p class="text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed">
+                Escanea tu código QR habitual de <strong class="text-[#0E1B2B]">Nequi, DaviPlata o Bre-B</strong> desde cualquier entidad bancaria. El dinero entra directo a tu cuenta bancaria.
               </p>
             </div>
-            <div class="mt-8 pt-5 border-t border-white/[0.08] text-xs font-mono text-[#00D26A] flex items-center gap-2">
-              <span>✓</span> Dinero 100% en tu cuenta
+            <div class="mt-6 pt-4 border-t border-gray-100 text-xs font-bold text-[#0B7A4B]">
+              ✓ Cero comisiones de venta
             </div>
           </div>
 
           <!-- PASO 2 -->
-          <div class="rounded-3xl bg-[#111726] border border-[#00D26A]/50 p-8 flex flex-col justify-between shadow-xl relative">
+          <div class="bg-white p-7 rounded-3xl border-2 border-[#19C37D] flex flex-col justify-between shadow-md">
             <div>
-              <div class="w-14 h-14 rounded-2xl bg-[#00D26A]/20 border border-[#00D26A]/40 flex items-center justify-center font-mono font-extrabold text-[#00D26A] text-2xl mb-6 shadow-inner">
-                02
+              <div class="w-12 h-12 rounded-2xl bg-[#19C37D]/20 text-[#0B7A4B] font-extrabold text-xl flex items-center justify-center mb-5">
+                2
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">Centinela valida en &lt; 500 ms</h3>
-              <p class="text-sm text-[#94A3B8] leading-relaxed">
-                La app <strong class="text-white">TransferYA Centinela</strong> en tu celular detecta la notificación oficial (Push o SMS de Bre-B) al instante, la firma con token HMAC y la sincroniza con la nube.
+              <h3 class="text-lg font-bold text-[#0E1B2B] mb-2">Te avisa en menos de 1 segundo</h3>
+              <p class="text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed">
+                El aplicativo en tu celular lee la notificación oficial del banco de forma inmediata. Es <strong class="text-[#0E1B2B]">imposible de falsificar</strong>.
               </p>
             </div>
-            <div class="mt-8 pt-5 border-t border-white/[0.08] text-xs font-mono text-[#00D26A] flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[#00D26A] animate-pulse"></span>
-              <span>Inmune a pantallazos falsos</span>
+            <div class="mt-6 pt-4 border-t border-gray-100 text-xs font-bold text-[#0B7A4B]">
+              ✓ Blindado contra comprobantes falsos
             </div>
           </div>
 
           <!-- PASO 3 -->
-          <div class="rounded-3xl bg-[#111726] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#38BDF8]/40 transition-all">
+          <div class="bg-white p-7 rounded-3xl border border-[#0E1B2B]/10 flex flex-col justify-between shadow-sm">
             <div>
-              <div class="w-14 h-14 rounded-2xl bg-[#090D16] border border-white/[0.1] flex items-center justify-center font-mono font-extrabold text-[#38BDF8] text-2xl mb-6 shadow-inner">
-                03
+              <div class="w-12 h-12 rounded-2xl bg-[#F7F5EF] text-[#0E1B2B] font-extrabold text-xl flex items-center justify-center mb-5 border border-[#0E1B2B]/10">
+                3
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">La caja canta y avisa</h3>
-              <p class="text-sm text-[#94A3B8] leading-relaxed">
-                Tu pantalla se enciende en verde, el altavoz canta: <em class="text-white font-semibold">"¡Recibiste $25.000 por Nequi!"</em> y tus cajeros reciben el WhatsApp instantáneo con el nombre del cliente.
+              <h3 class="text-lg font-bold text-[#0E1B2B] mb-2">Tu cajero lo ve y la caja lo canta</h3>
+              <p class="text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed">
+                A tu cajero le llega un <strong class="text-[#0E1B2B]">WhatsApp</strong> con el valor y el nombre del cliente, y la pantalla anuncia el pago en voz alta.
               </p>
             </div>
-            <div class="mt-8 pt-5 border-t border-white/[0.08] text-xs font-mono text-[#38BDF8] flex items-center gap-2">
-              <span>✓</span> Despacho seguro al segundo
+            <div class="mt-6 pt-4 border-t border-gray-100 text-xs font-bold text-[#0B7A4B]">
+              ✓ Despacho inmediato sin dudas
             </div>
           </div>
 
@@ -573,200 +359,121 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 7. BENTO GRID DE ARQUITECTURA Y PODERES -->
+    <!-- 6. SECCIÓN CRUCIAL: ¿ES SEGURO? (LA OBJECIÓN #1) -->
     <!-- ========================================== -->
-    <section id="bento" class="py-24 bg-[#090D16] border-b border-white/[0.08]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="seguridad" class="py-16 sm:py-24 bg-white border-b border-[#0E1B2B]/10">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D26A]/10 border border-[#00D26A]/30 text-[#00D26A] text-xs font-mono font-bold mb-4">
-            POTENCIA COMPLETA
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-bold text-xs tracking-wide mb-3">
+            TRANQUILIDAD TOTAL
           </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Todo lo que un mostrador colombiano necesita
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
+            ¿Es seguro? La respuesta a tu tranquilidad
           </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            Funcionalidades creadas para la vida real: hora pico, manos ocupadas y múltiples empleados.
+          <p class="mt-3 text-base text-[#0E1B2B]/70">
+            Tu plata y tus claves son tuyas. No somos un banco ni un intermediario financiero.
           </p>
         </div>
 
-        <!-- Bento Asimétrico -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          <!-- BENTO 1: ALTAVOZ DE VOZ (Doble ancho) -->
-          <div class="md:col-span-2 rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#00D26A]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">🔊</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30">Voz Natural</span>
-              </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Altavoz Web en el Mostrador</h3>
-              <p class="text-sm text-[#94A3B8] leading-relaxed max-w-md">
-                Tu tablet o PC de caja canta con voz en español colombiano el monto y la entidad. Conéctala por Bluetooth al parlante del local para que todo el equipo escuche la venta sin mirar el teléfono.
-              </p>
+          <!-- LO QUE NUNCA VE NI TOCA -->
+          <div class="p-7 rounded-3xl bg-[#F7F5EF] border border-[#D93F44]/20 space-y-4">
+            <div class="flex items-center gap-2 text-[#D93F44] font-bold text-sm uppercase tracking-wide">
+              <span>✕</span>
+              <span>Lo que TransferYA NUNCA ve ni toca:</span>
             </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] flex items-center gap-4 text-xs font-mono text-[#94A3B8]">
-              <span>• Síntesis en navegador</span>
-              <span>• Conexión a bafle Bluetooth</span>
-              <span>• Volumen automático</span>
-            </div>
+            <ul class="space-y-3 text-sm text-[#0E1B2B]/80 font-medium">
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold">✕</span>
+                <span><strong>Tus contraseñas o claves bancarias</strong> (no te las pedimos).</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold">✕</span>
+                <span><strong>El saldo de tu cuenta</strong> (no sabemos cuánta plata tienes).</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold">✕</span>
+                <span><strong>Tus chats ni fotos privadas</strong> (no tenemos acceso).</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#D93F44] font-bold">✕</span>
+                <span><strong>Tu dinero</strong> (el 100% va directo de tu cliente a tu cuenta).</span>
+              </li>
+            </ul>
           </div>
 
-          <!-- BENTO 2: WHATSAPP A CAJEROS -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#00D26A]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">💬</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30">WhatsApp Cloud</span>
-              </div>
-              <h3 class="text-xl font-bold text-white mb-2">WhatsApp a Cajeros</h3>
-              <p class="text-xs text-[#94A3B8] leading-relaxed">
-                Vincula el WhatsApp de tus meseros o cajeros. En cuanto el cliente paga, les llega un mensaje instantáneo con el nombre y el valor.
-              </p>
+          <!-- LO ÚNICO QUE HACE -->
+          <div class="p-7 rounded-3xl bg-[#19C37D]/10 border border-[#19C37D]/30 space-y-4">
+            <div class="flex items-center gap-2 text-[#0B7A4B] font-bold text-sm uppercase tracking-wide">
+              <span>✓</span>
+              <span>Lo ÚNICO que hace:</span>
             </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] text-xs font-mono text-[#00D26A]">
-              ✓ Cero gritos al mostrador
-            </div>
+            <ul class="space-y-3 text-sm text-[#0E1B2B]/80 font-medium">
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold">✓</span>
+                <span><strong>Lee la alerta de pago recibido</strong> que tu banco muestra en pantalla ("Recibiste $25.000").</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold">✓</span>
+                <span><strong>Le avisa por WhatsApp al cajero</strong> para que despache.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold">✓</span>
+                <span><strong>Canta el pago en voz alta</strong> en el mostrador.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-[#0B7A4B] font-bold">✓</span>
+                <span><strong>Apunta el total del día</strong> para que cuadres caja al cerrar.</span>
+              </li>
+            </ul>
           </div>
 
-          <!-- BENTO 3: WAKE LOCK PANTALLA ACTIVA -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#38BDF8]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">💡</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">Wake Lock</span>
-              </div>
-              <h3 class="text-xl font-bold text-white mb-2">Pantalla Siempre Activa</h3>
-              <p class="text-xs text-[#94A3B8] leading-relaxed">
-                El modo POS mantiene la pantalla encendida sin bloquearse ni entrar en reposo durante toda tu jornada de trabajo.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] text-xs font-mono text-[#38BDF8]">
-              ✓ Siempre lista en hora pico
-            </div>
-          </div>
+        </div>
 
-          <!-- BENTO 4: CIERRE DE TURNO Y ARQUEO -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#F59E0B]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">📊</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">Arqueo</span>
-              </div>
-              <h3 class="text-xl font-bold text-white mb-2">Cierre de Caja y Excel</h3>
-              <p class="text-xs text-[#94A3B8] leading-relaxed">
-                Olvídate de sumar transferencias a mano. Cierra turno con un clic: total en Nequi, DaviPlata y Bre-B listo para exportar a Excel.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] text-xs font-mono text-[#F59E0B]">
-              ✓ Cuadre exacto en 1 minuto
-            </div>
-          </div>
-
-          <!-- BENTO 5: MULTI-CAJA REALTIME (Doble ancho) -->
-          <div class="md:col-span-2 rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#00D26A]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">📱</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30">Multi-Caja</span>
-              </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Múltiples Cajas y Dispositivos</h3>
-              <p class="text-sm text-[#94A3B8] leading-relaxed max-w-md">
-                ¿Tienes varias cajas o domiciliarios? Cada punto tiene su pantalla independiente sincronizada por WebSockets en tiempo real con cero desfase.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] flex items-center gap-4 text-xs font-mono text-[#94A3B8]">
-              <span>• Sincronización milimétrica</span>
-              <span>• Filtro por caja #1, #2, #3</span>
-              <span>• Sin límite de pantallas</span>
-            </div>
-          </div>
-
-          <!-- BENTO 6: ZERO-TRUST PRIVACIDAD -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 flex flex-col justify-between hover:border-[#00D26A]/40 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-3xl">🔒</span>
-                <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase bg-[#00D26A]/15 text-[#00D26A] border border-[#00D26A]/30">Ley 1581</span>
-              </div>
-              <h3 class="text-xl font-bold text-white mb-2">Privacidad Zero-Trust</h3>
-              <p class="text-xs text-[#94A3B8] leading-relaxed">
-                Jamás pedimos claves, saldos ni correos personales. Solo leemos la notificación de pago entrante con firma criptográfica.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] text-xs font-mono text-[#00D26A]">
-              ✓ Cumplimiento Habeas Data
-            </div>
-          </div>
-
+        <div class="mt-8 text-center text-xs text-[#0E1B2B]/60">
+          Garantía y respaldo bajo la Ley 1581 de Protección de Datos en Colombia (Habeas Data) por MurSat Solutions.
         </div>
 
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 8. EXPERIENCIAS DE COMERCIANTES REALES -->
+    <!-- 7. ¿POR QUÉ NO COMPRAR UN PARLANTE DE $230.000? -->
     <!-- ========================================== -->
-    <section class="py-24 bg-[#0B101C] border-b border-white/[0.08]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-16 sm:py-24 bg-[#0E1B2B] text-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-mono font-bold mb-4">
-            COMERCIOS EN COLOMBIA
-          </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Negocios que ya no miran el celular
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            ¿Por qué pagar $230.000 por un parlante si ya tienes pantallas?
           </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            Así es la tranquilidad en caja cuando el sonido confirma cada venta.
+          <p class="mt-3 text-sm sm:text-base text-white/70">
+            Ahorra dinero y tiempo. TransferYA usa los celulares y tablets que ya tienes en tu negocio.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           
-          <div class="rounded-3xl bg-[#111726] border border-white/[0.08] p-8 flex flex-col justify-between">
-            <p class="text-[#F8FAFC] text-sm leading-relaxed italic">
-              "En la hamburguesería en hora pico era un estrés total: filas de clientes mostrando el celular y los cajeros gritándome para ver si ya había entrado. Con TransferYA la tablet canta el monto y la cocina despacha al segundo. Cero pantallazos falsos."
-            </p>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-[#00D26A]/20 border border-[#00D26A]/30 flex items-center justify-center font-bold text-[#00D26A] font-mono">
-                LB
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white">La Sinvergüencería Burguer</h4>
-                <p class="text-xs text-[#94A3B8] font-mono">Restaurante · Cali</p>
-              </div>
-            </div>
+          <div class="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+            <span class="text-xs font-bold text-[#D93F44] uppercase tracking-wider block">El parlante de $230.000</span>
+            <ul class="space-y-3 text-xs sm:text-sm text-white/70">
+              <li>✕ Tienes que pagar más de $200.000 por un aparato plástico.</li>
+              <li>✕ Tienes que esperar 2 a 3 días a que llegue por correo.</li>
+              <li>✕ Solo suena en la pared donde esté enchufado.</li>
+              <li>✕ No le avisa a los meseros ni cajeros por WhatsApp.</li>
+            </ul>
           </div>
 
-          <div class="rounded-3xl bg-[#111726] border border-white/[0.08] p-8 flex flex-col justify-between">
-            <p class="text-[#F8FAFC] text-sm leading-relaxed italic">
-              "Tengo 3 barberos. Antes todos me pedían el celular para ver si el cliente ya había transferido el corte. Ahora a cada barbero le llega su WhatsApp automático o lo escuchan por el parlante Bluetooth del local. Me ahorró horas de trabajo."
-            </p>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-[#38BDF8]/20 border border-[#38BDF8]/30 flex items-center justify-center font-bold text-[#38BDF8] font-mono">
-                DB
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white">Don Carlos Barber Shop</h4>
-                <p class="text-xs text-[#94A3B8] font-mono">Barbería · Medellín</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="rounded-3xl bg-[#111726] border border-white/[0.08] p-8 flex flex-col justify-between">
-            <p class="text-[#F8FAFC] text-sm leading-relaxed italic">
-              "El cierre de caja al final del día era una pesadilla sumando transferencias en un cuaderno. Con TransferYA el reporte sale listo con los totales exactos por Nequi y DaviPlata. Y lo mejor: no gastamos ni un peso en aparatos raros."
-            </p>
-            <div class="mt-6 pt-4 border-t border-white/[0.08] flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-[#F59E0B]/20 border border-[#F59E0B]/30 flex items-center justify-center font-bold text-[#F59E0B] font-mono">
-                PT
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white">Panadería El Trigal</h4>
-                <p class="text-xs text-[#94A3B8] font-mono">Panadería y Café · Bogotá</p>
-              </div>
-            </div>
+          <div class="p-8 rounded-3xl bg-[#19C37D]/15 border-2 border-[#19C37D] space-y-4">
+            <span class="text-xs font-bold text-[#19C37D] uppercase tracking-wider block">Con TransferYA</span>
+            <ul class="space-y-3 text-xs sm:text-sm text-white">
+              <li>✓ <strong>$0 en aparatos nuevos:</strong> usas cualquier celular o tablet.</li>
+              <li>✓ <strong>Funcionando en 10 minutos</strong> en tu propio local.</li>
+              <li>✓ <strong>Avisa por WhatsApp</strong> a tus cajeros aunque estén en bodega.</li>
+              <li>✓ <strong>Canta en voz alta</strong> y la pantalla nunca se apaga.</li>
+            </ul>
           </div>
 
         </div>
@@ -775,273 +482,146 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 9. PLANES Y PRECIOS TRANSPARENTES -->
+    <!-- 8. COMERCIOS FUNDADORES (100 PRIMEROS) -->
     <!-- ========================================== -->
-    <section id="precios" class="py-24 bg-[#090D16] border-b border-white/[0.08]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-16 sm:py-20 bg-[#F7F5EF] border-b border-[#0E1B2B]/10 text-center">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D26A]/10 border border-[#00D26A]/30 text-[#00D26A] text-xs font-mono font-bold mb-4">
-            TARIFAS SIN LETRA CHICA
-          </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Planes adaptados a tu negocio
-          </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            0% de comisión sobre tus ventas. El dinero entra directo a tu banco. Cancela cuando quieras.
-          </p>
+        <span class="inline-block px-3.5 py-1 rounded-full bg-[#FFB020]/20 text-[#0E1B2B] font-bold text-xs mb-3">
+          PROGRAMA EXCLUSIVO
+        </span>
 
-          <!-- Toggle Mensual / Anual -->
-          <div class="mt-8 inline-flex items-center gap-3 p-1.5 rounded-2xl bg-[#0B101C] border border-white/[0.08]">
-            <button type="button" id="btnToggleMonthly" onclick="setBilling('monthly')"
-              class="px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold bg-[#00D26A] text-[#041E0F] shadow transition-all">
-              Facturación Mensual
-            </button>
-            <button type="button" id="btnToggleYearly" onclick="setBilling('yearly')"
-              class="px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold text-[#94A3B8] hover:text-white transition-all flex items-center gap-1.5">
-              <span>Anual</span>
-              <span class="px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] text-[10px] font-mono">Ahorra 25%</span>
-            </button>
-          </div>
-        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
+          Sé uno de los primeros 100 comercios fundadores
+        </h2>
 
-        <!-- Tarjetas de Precios -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-          
-          <!-- PLAN EMPRENDEDOR -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 sm:p-10 flex flex-col justify-between hover:border-white/[0.2] transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xl font-bold text-white">Emprendedor</h3>
-                <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-[#111726] text-[#94A3B8] border border-white/[0.08]">1 Caja</span>
-              </div>
-              <p class="text-xs text-[#94A3B8] mb-6">Para tiendas individuales, puestos o negocios personales.</p>
+        <p class="mt-4 text-base text-[#0E1B2B]/75 leading-relaxed">
+          Estamos acompañando personalmente a los primeros 100 negocios en Colombia a blindar su caja contra fraudes. Recibe instalación guiada por WhatsApp, soporte prioritario y 7 días de prueba completa.
+        </p>
 
-              <div class="mb-6">
-                <div class="flex items-baseline gap-1">
-                  <span id="cardPrice1" class="text-4xl font-extrabold font-mono text-white">$19.900</span>
-                  <span id="cardPeriod1" class="text-xs font-mono text-[#94A3B8]">COP / mes</span>
-                </div>
-                <div id="cardSub1" class="text-[11px] font-mono text-[#94A3B8] mt-1">Sin cláusulas de permanencia</div>
-              </div>
-
-              <ul class="space-y-3.5 text-xs sm:text-sm text-[#94A3B8] border-t border-white/[0.08] pt-6">
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Pagos Nequi y DaviPlata ilimitados</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>1 Pantalla de Cobro POS en vivo</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Altavoz con voz en el navegador</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Historial de transferencias del día</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>0% comisiones sobre ventas</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/[0.08]">
-              <a href="/"
-                class="block w-full py-3.5 text-center rounded-xl bg-[#111726] border border-white/[0.1] hover:border-[#00D26A] text-white font-mono font-bold text-xs uppercase tracking-wider transition-all">
-                Empezar con Básico
-              </a>
-            </div>
-          </div>
-
-          <!-- PLAN NEGOCIO PRO (RECOMENDADO) -->
-          <div class="rounded-3xl bg-[#111726] border-2 border-[#00D26A] p-8 sm:p-10 flex flex-col justify-between shadow-[0_0_40px_rgba(0,210,106,0.15)] relative lg:-translate-y-2">
-            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#00D26A] text-[#041E0F] text-xs font-mono font-bold uppercase tracking-wider shadow">
-              Más Recomendado
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-3 mt-1">
-                <h3 class="text-xl font-bold text-white">Negocio Pro</h3>
-                <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-[#00D26A]/20 text-[#00D26A] border border-[#00D26A]/40">Multi-Caja</span>
-              </div>
-              <p class="text-xs text-[#94A3B8] mb-6">Para restaurantes, cafeterías y negocios con empleados en mostrador.</p>
-
-              <div class="mb-6">
-                <div class="flex items-baseline gap-1">
-                  <span id="cardPrice2" class="text-4xl font-extrabold font-mono text-[#00D26A]">$39.900</span>
-                  <span id="cardPeriod2" class="text-xs font-mono text-[#94A3B8]">COP / mes</span>
-                </div>
-                <div id="cardSub2" class="text-[11px] font-mono text-[#00D26A] mt-1">Incluye WhatsApp automático a cajeros</div>
-              </div>
-
-              <ul class="space-y-3.5 text-xs sm:text-sm text-[#F8FAFC] border-t border-white/[0.08] pt-6">
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span><strong>Todo lo del plan Emprendedor</strong></span>
-                </li>
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span><strong>Alertas instantáneas por WhatsApp a cajeros</strong></span>
-                </li>
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Hasta 3 Cajas sincronizadas en tiempo real</span>
-                </li>
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Soporte para Bre-B (SMS y Notificaciones)</span>
-                </li>
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Cierre de Turno y Cuadre de Caja con Excel</span>
-                </li>
-                <li class="flex items-center gap-2.5">
-                  <span class="text-[#00D26A] font-bold">✓</span>
-                  <span>Soporte prioritario MurSat por WhatsApp</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/[0.08]">
-              <a href="/"
-                class="block w-full py-4 text-center rounded-xl bg-[#00D26A] text-[#041E0F] font-mono font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg transition-all">
-                Activar Plan Pro
-              </a>
-            </div>
-          </div>
-
-          <!-- PLAN CORPORATIVO / CADENAS -->
-          <div class="rounded-3xl bg-[#0B101C] border border-white/[0.08] p-8 sm:p-10 flex flex-col justify-between hover:border-white/[0.2] transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xl font-bold text-white">Cadenas & Franquicias</h3>
-                <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">A Medida</span>
-              </div>
-              <p class="text-xs text-[#94A3B8] mb-6">Para marcas con múltiples sucursales, sedes o alto volumen.</p>
-
-              <div class="mb-6">
-                <div class="flex items-baseline gap-1">
-                  <span class="text-3xl font-extrabold font-mono text-white">A Medida</span>
-                </div>
-                <div class="text-[11px] font-mono text-[#38BDF8] mt-1">Atención corporativa personalizada</div>
-              </div>
-
-              <ul class="space-y-3.5 text-xs sm:text-sm text-[#94A3B8] border-t border-white/[0.08] pt-6">
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#38BDF8] font-bold">✓</span>
-                  <span>Cajas y pantallas ilimitadas</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#38BDF8] font-bold">✓</span>
-                  <span>Múltiples sucursales y sedes</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#38BDF8] font-bold">✓</span>
-                  <span>Número de WhatsApp exclusivo</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#38BDF8] font-bold">✓</span>
-                  <span>Integración POS y facturación electrónica</span>
-                </li>
-                <li class="flex items-center gap-2.5 text-[#F8FAFC]">
-                  <span class="text-[#38BDF8] font-bold">✓</span>
-                  <span>Onboarding asistido por MurSat</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/[0.08]">
-              <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20cotizar%20TransferYA%20para%20mi%20empresa%20o%20cadena" target="_blank" rel="noopener noreferrer"
-                class="block w-full py-3.5 text-center rounded-xl bg-[#111726] border border-[#38BDF8]/40 hover:border-[#38BDF8] text-[#38BDF8] font-mono font-bold text-xs uppercase tracking-wider transition-all">
-                Contactar Asesor
-              </a>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="mt-12 text-center text-xs font-mono text-[#94A3B8] max-w-xl mx-auto">
-          🛡️ <strong>Garantía 0% Comisión:</strong> TransferYA jamás descuenta dinero de tus cobros. El 100% de cada pago ingresa directo a tu cuenta bancaria.
+        <div class="mt-8">
+          <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20ser%20comercio%20fundador%20de%20TransferYA"
+            target="_blank" rel="noopener noreferrer"
+            class="inline-block px-8 py-4 rounded-full bg-[#19C37D] text-[#0E1B2B] font-bold text-base hover:brightness-105 shadow-lg shadow-[#19C37D]/25 transition-all">
+            Quiero ser comercio fundador ➜
+          </a>
         </div>
 
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 10. PREGUNTAS FRECUENTES (FAQ ACORDEÓN) -->
+    <!-- 9. PRECIOS (PLANTILLA CLARA EN CONSTRUCCIÓN) -->
     <!-- ========================================== -->
-    <section id="faq" class="py-24 bg-[#0B101C] border-b border-white/[0.08]">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="precios" class="py-16 sm:py-24 bg-white border-b border-[#0E1B2B]/10">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
         
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] text-xs font-mono font-bold mb-4">
-            RESOLVEMOS TUS DUDAS
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-bold text-xs tracking-wide mb-3">
+          TARIFAS TRANSPARENTES
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
+          Planes diseñados para tu negocio
+        </h2>
+        <p class="mt-2 text-sm sm:text-base text-[#0E1B2B]/70">
+          0% de comisión. Tu dinero entra completo a tu banco. Cancela cuando quieras.
+        </p>
+
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+          
+          <!-- Plan Emprendedor -->
+          <div class="p-7 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-4">
+            <h3 class="text-lg font-bold text-[#0E1B2B]">Plan Negocio</h3>
+            <p class="text-xs text-[#0E1B2B]/70">Para tiendas, panaderías, cafeterías y locales comerciales.</p>
+            <div class="text-3xl font-extrabold text-[#19C37D]">$ 29.900 <span class="text-xs font-normal text-[#0E1B2B]/60">COP / mes</span></div>
+            <ul class="space-y-2 text-xs text-[#0E1B2B]/80 font-medium">
+              <li>✓ Verificación ilimitada Nequi y DaviPlata</li>
+              <li>✓ Pantalla POS con voz alta</li>
+              <li>✓ Notificaciones por WhatsApp a cajeros</li>
+              <li>✓ Cierre de turno y cuadre diario</li>
+              <li>✓ Sin contratos de permanencia</li>
+            </ul>
+            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20el%20Plan%20Negocio%20de%20TransferYA" target="_blank" rel="noopener noreferrer"
+              class="block w-full py-3 rounded-full bg-[#0E1B2B] text-white text-xs font-bold text-center hover:bg-black transition-all">
+              Probar 7 días gratis
+            </a>
           </div>
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+
+          <!-- Plan Cadenas -->
+          <div class="p-7 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-4">
+            <h3 class="text-lg font-bold text-[#0E1B2B]">Cadenas & Franquicias</h3>
+            <p class="text-xs text-[#0E1B2B]/70">Para negocios con varias sucursales o múltiples cajas.</p>
+            <div class="text-3xl font-extrabold text-[#0E1B2B]">A Medida</div>
+            <ul class="space-y-2 text-xs text-[#0E1B2B]/80 font-medium">
+              <li>✓ Múltiples sedes y cajas ilimitadas</li>
+              <li>✓ WhatsApp dedicado para la empresa</li>
+              <li>✓ Reporte consolidado de todas las cajas</li>
+              <li>✓ Instalación y acompañamiento prioritario</li>
+            </ul>
+            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20cotizar%20TransferYA%20para%20mis%20sucursales" target="_blank" rel="noopener noreferrer"
+              class="block w-full py-3 rounded-full border-2 border-[#0E1B2B] bg-white text-[#0E1B2B] text-xs font-bold text-center hover:bg-[#0E1B2B] hover:text-white transition-all">
+              Hablar con un asesor
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 10. PREGUNTAS FRECUENTES (DON JORGE) -->
+    <!-- ========================================== -->
+    <section id="faq" class="py-16 sm:py-24 bg-[#F7F5EF] border-b border-[#0E1B2B]/10">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        
+        <div class="text-center mb-12">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
             Preguntas Frecuentes
           </h2>
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg">
-            Todo lo que necesitas saber antes de empezar a cantar pagos en tu mostrador.
+          <p class="mt-2 text-sm text-[#0E1B2B]/70">
+            Respuestas claras y sin rodeos.
           </p>
         </div>
 
         <div class="space-y-4">
           
-          <details class="group rounded-2xl bg-[#111726] border border-white/[0.08] p-6 transition-all [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex items-center justify-between cursor-pointer text-base sm:text-lg font-bold text-white group-hover:text-[#00D26A] transition-colors">
-              <span>¿Tengo que comprar algún aparato, parlante o altavoz físico?</span>
-              <span class="text-[#94A3B8] group-open:rotate-180 transition-transform">▼</span>
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>¿Tengo que comprar un parlante o aparato nuevo?</span>
+              <span class="text-[#0B7A4B]">▼</span>
             </summary>
-            <p class="mt-4 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.08] pt-4">
-              <strong>No, absolutamente ninguno.</strong> A diferencia de otras opciones que te cobran más de $200.000 por un aparato plástico, TransferYA aprovecha las pantallas y dispositivos que ya tienes en el negocio: cualquier celular Android viejo o actual, una tablet en el mostrador o un computador. Además, puedes conectar cualquier parlante Bluetooth si quieres que suene más fuerte.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
+              No. Funciona con el celular donde recibes tus pagos y con cualquier tablet, computador o celular que ya tengas en caja. Puedes conectarlo por Bluetooth a cualquier parlante que ya tengas en el local si quieres que suene más duro.
             </p>
           </details>
 
-          <details class="group rounded-2xl bg-[#111726] border border-white/[0.08] p-6 transition-all [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex items-center justify-between cursor-pointer text-base sm:text-lg font-bold text-white group-hover:text-[#00D26A] transition-colors">
-              <span>¿Con qué bancos y billeteras digitales funciona?</span>
-              <span class="text-[#94A3B8] group-open:rotate-180 transition-transform">▼</span>
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>¿Qué pasa si yo no estoy en el negocio?</span>
+              <span class="text-[#0B7A4B]">▼</span>
             </summary>
-            <p class="mt-4 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.08] pt-4">
-              Tus clientes te pueden pagar desde <strong>cualquier banco de Colombia</strong> a través del sistema Bre-B, Nequi o DaviPlata. Tú recibes el dinero en tu cuenta y TransferYA detecta las alertas al instante (tanto notificaciones push como mensajes de texto SMS oficiales de Bre-B).
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
+              No tienes que estar en el negocio. Apenas entra la plata a tu cuenta, el sistema le envía un mensaje por WhatsApp al número de tus cajeros y la pantalla en caja canta el pago. Nadie tiene que llamarte para saber si pagaron.
             </p>
           </details>
 
-          <details class="group rounded-2xl bg-[#111726] border border-white/[0.08] p-6 transition-all [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex items-center justify-between cursor-pointer text-base sm:text-lg font-bold text-white group-hover:text-[#00D26A] transition-colors">
-              <span>¿Cómo se enteran mis cajeros si yo no estoy en el local?</span>
-              <span class="text-[#94A3B8] group-open:rotate-180 transition-transform">▼</span>
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>¿Tengo que darle mi clave de Nequi a los cajeros?</span>
+              <span class="text-[#0B7A4B]">▼</span>
             </summary>
-            <p class="mt-4 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.08] pt-4">
-              Por dos vías automáticas:
-              <br /><br />
-              1. <strong>La Pantalla POS en caja:</strong> Se actualiza en sub-segundo y canta el pago en voz alta.
-              <br />
-              2. <strong>WhatsApp a Cajeros:</strong> Registras los números de tus colaboradores; al entrar la transferencia, el sistema les manda un mensaje con el valor, el banco y el nombre del cliente para entregar el producto.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
+              Nunca. Tus empleados solo reciben el aviso del pago con el valor y el nombre del cliente. Jamás tienen acceso a tu cuenta bancaria ni a tus contraseñas.
             </p>
           </details>
 
-          <details class="group rounded-2xl bg-[#111726] border border-white/[0.08] p-6 transition-all [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex items-center justify-between cursor-pointer text-base sm:text-lg font-bold text-white group-hover:text-[#00D26A] transition-colors">
-              <span>¿TransferYA tiene acceso a mis claves o a mi dinero?</span>
-              <span class="text-[#94A3B8] group-open:rotate-180 transition-transform">▼</span>
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>¿Cómo lo instalo en mi negocio?</span>
+              <span class="text-[#0B7A4B]">▼</span>
             </summary>
-            <p class="mt-4 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.08] pt-4">
-              <strong>Jamás.</strong> Operamos bajo arquitectura Zero-Trust. La aplicación TransferYA Centinela únicamente lee las alertas de pagos entrantes emitidas por las entidades bancarias en tu teléfono. No tiene acceso a tus contraseñas, saldos ni conversaciones personales, bajo la Ley 1581 de 2012 de Habeas Data en Colombia.
-            </p>
-          </details>
-
-          <details class="group rounded-2xl bg-[#111726] border border-white/[0.08] p-6 transition-all [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex items-center justify-between cursor-pointer text-base sm:text-lg font-bold text-white group-hover:text-[#00D26A] transition-colors">
-              <span>¿Cuánto tiempo demora la instalación?</span>
-              <span class="text-[#94A3B8] group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            <p class="mt-4 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.08] pt-4">
-              Menos de <strong>1 minuto</strong>. Instalas la app Centinela en el celular donde te llegan las ventas, escaneas el código QR seguro para vincularlo y abres la pantalla de cobro en tu mostrador. Quedas listo hoy mismo sin esperar paquetes por correo.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
+              Te acompañamos paso a paso por WhatsApp. Instalas la aplicación en el celular donde te llegan los pagos, vinculas la pantalla del local con un código y listo en 10 minutos.
             </p>
           </details>
 
@@ -1051,40 +631,25 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 11. BANNER FINAL CTA -->
+    <!-- 11. LLAMADO FINAL A LA ACCIÓN -->
     <!-- ========================================== -->
-    <section class="py-24 relative overflow-hidden bg-gradient-to-b from-[#090D16] via-[#111726] to-[#090D16]">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <section class="py-16 sm:py-20 bg-[#0E1B2B] text-white text-center">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
         
-        <div class="p-10 sm:p-16 rounded-3xl bg-gradient-to-br from-[#111726] to-[#182032] border border-[#00D26A]/40 shadow-2xl relative">
-          
-          <span class="px-3.5 py-1 rounded-full bg-[#00D26A]/20 text-[#00D26A] text-xs font-mono font-bold uppercase tracking-wider inline-block mb-5">
-            Activación Inmediata Hoy Mismo
-          </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+          Protege tu negocio hoy mismo
+        </h2>
+        
+        <p class="text-base text-white/70 max-w-xl mx-auto">
+          Prueba TransferYA durante 7 días sin costo y comprueba la tranquilidad de que tu caja cante cada pago.
+        </p>
 
-          <h2 class="text-3xl sm:text-5xl font-extrabold text-white max-w-2xl mx-auto tracking-tight">
-            Blindar tu negocio toma menos de un minuto
-          </h2>
-
-          <p class="mt-4 text-[#94A3B8] text-base sm:text-lg max-w-xl mx-auto">
-            Únete a los comerciantes en Colombia que atienden tranquilos mientras su caja canta cada pago.
-          </p>
-
-          <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="/"
-              class="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#00D26A] text-[#041E0F] font-mono font-bold text-base hover:brightness-110 shadow-[0_0_25px_rgba(0,210,106,0.35)] transition-all">
-              Abrir TransferYA Gratis
-            </a>
-            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20conocer%20m%C3%A1s%20sobre%20TransferYA" target="_blank" rel="noopener noreferrer"
-              class="w-full sm:w-auto px-6 py-4 rounded-xl bg-[#111726] border border-white/[0.12] hover:border-[#00D26A] text-white font-mono text-sm flex items-center justify-center gap-2 transition-all">
-              <span>💬 Hablar con Soporte MurSat</span>
-            </a>
-          </div>
-
-          <div class="mt-6 text-xs font-mono text-[#94A3B8]">
-            Desarrollado y respaldado en Colombia por <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="text-[#38BDF8] hover:underline font-bold">MurSat Solutions</a>
-          </div>
-
+        <div class="pt-2">
+          <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20probar%20TransferYA%20gratis%20por%207%20d%C3%ADas%20en%20mi%20negocio"
+            target="_blank" rel="noopener noreferrer"
+            class="inline-block px-8 py-4 rounded-full bg-[#19C37D] text-[#0E1B2B] font-bold text-base hover:brightness-105 shadow-xl transition-all">
+            Pruébalo gratis 7 días en tu local
+          </a>
         </div>
 
       </div>
@@ -1093,277 +658,87 @@
   </main>
 
   <!-- ========================================== -->
-  <!-- 12. FOOTER OFICIAL MURSAT SOLUTIONS -->
+  <!-- 12. FOOTER CERCANO -->
   <!-- ========================================== -->
-  <footer class="bg-[#0B101C] border-t border-white/[0.08] py-14">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <footer class="bg-[#F7F5EF] border-t border-[#0E1B2B]/10 py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#0E1B2B]/70">
       
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-        
-        <div class="space-y-3.5">
-          <div class="flex items-center gap-2">
-            <span class="text-xl font-bold font-mono text-white">transfer<span class="text-[#00D26A]">YA</span></span>
-            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00D26A]/15 text-[#00D26A]">PRO</span>
-          </div>
-          <p class="text-xs text-[#94A3B8] leading-relaxed">
-            Plataforma líder en Colombia de anuncio por voz y verificación instantánea de transferencias bancarias para el comercio minorista.
-          </p>
-          <div class="pt-2">
-            <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer"
-              class="text-xs text-[#94A3B8] hover:text-white inline-flex items-center gap-1.5 group font-mono">
-              <span>Elaborado por</span>
-              <span class="text-[#38BDF8] font-bold group-hover:underline flex items-center gap-1">
-                MurSat Solutions
-                <svg class="w-3 h-3 text-[#38BDF8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-              </span>
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <h4 class="text-xs font-mono uppercase tracking-wider text-white font-bold mb-3.5">Navegación</h4>
-          <ul class="space-y-2.5 text-xs text-[#94A3B8] font-mono">
-            <li><a href="#como-funciona" class="hover:text-white transition-colors">¿Cómo Funciona?</a></li>
-            <li><a href="#vs-parlantes" class="hover:text-white transition-colors">Vs Parlantes de $230.000</a></li>
-            <li><a href="#simulador" class="hover:text-white transition-colors">Simulador de Audio</a></li>
-            <li><a href="#precios" class="hover:text-white transition-colors">Tarifas y Planes</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="text-xs font-mono uppercase tracking-wider text-white font-bold mb-3.5">Compatibilidad</h4>
-          <ul class="space-y-2.5 text-xs text-[#94A3B8] font-mono">
-            <li><span>Nequi (Push y SMS)</span></li>
-            <li><span>DaviPlata Realtime</span></li>
-            <li><span>Bre-B Interoperable</span></li>
-            <li><span>WhatsApp Cloud API</span></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="text-xs font-mono uppercase tracking-wider text-white font-bold mb-3.5">Contacto y Legal</h4>
-          <ul class="space-y-2.5 text-xs text-[#94A3B8] font-mono">
-            <li><a href="https://wa.me/573113654315" target="_blank" rel="noopener noreferrer" class="hover:text-[#00D26A] transition-colors">Soporte WhatsApp</a></li>
-            <li><a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="hover:text-[#38BDF8] transition-colors">mursatsolutions.com</a></li>
-            <li><span class="text-[11px] text-[#94A3B8]">Ley 1581 Habeas Data (Colombia)</span></li>
-          </ul>
-        </div>
-
+      <div class="flex items-center gap-2">
+        <svg class="w-6 h-6 text-[#19C37D]" viewBox="0 0 64 64" fill="none">
+          <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+        <span class="font-bold text-[#0E1B2B]">transferYA</span>
+        <span>· Elaborado en Colombia por <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="font-bold text-[#0B7A4B] hover:underline">MurSat Solutions</a></span>
       </div>
 
-      <div class="pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#94A3B8]">
-        <div>
-          © 2026 TransferYA · Un desarrollo de <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer" class="text-[#38BDF8] hover:underline">MurSat Solutions</a>. Todos los derechos reservados.
-        </div>
-        <div>
-          Colombia 🇨🇴 · Cero Intermediación de Fondos
-        </div>
+      <div>
+        Cero comisiones · Cero intermediación de fondos
       </div>
 
     </div>
   </footer>
 
   <!-- ========================================== -->
-  <!-- 13. SCRIPT DEL COCKPIT INTERACTIVO -->
+  <!-- 13. BOTÓN FLOTANTE DE WHATSAPP -->
+  <!-- ========================================== -->
+  <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20tengo%20dudas%20sobre%20TransferYA%20para%20mi%20negocio"
+    target="_blank" rel="noopener noreferrer"
+    class="fixed bottom-5 right-5 z-50 bg-[#25D366] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 font-bold text-xs sm:text-sm hover:scale-105 transition-transform"
+    title="Chatear con soporte de TransferYA">
+    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.58 1.961.948 2.791.948 3.18 0 5.767-2.587 5.768-5.766.001-3.18-2.585-5.767-5.768-5.767zm9.969 5.828c0 5.523-4.477 10-10 10-1.745 0-3.385-.45-4.819-1.238l-7.181 1.88 1.914-6.994c-.878-1.479-1.386-3.21-1.386-5.048 0-5.523 4.477-10 10-10s10 4.477 10 10z"/></svg>
+    <span class="hidden sm:inline">¿Dudas? Escríbenos</span>
+  </a>
+
+  <!-- ========================================== -->
+  <!-- 14. SCRIPT SIMPLE DE DEMO DE SONIDO -->
   <!-- ========================================== -->
   <script>
-    // Sintetizador de sonido chime de caja registradora con Web Audio API
-    function playChimeAudio() {
+    function probarSonido() {
+      const btn = document.getElementById("btnAudioText");
+      if (btn) btn.textContent = "🔊 Cantando pago...";
+
+      // Sonido Chime con Web Audio
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        const now = ctx.currentTime;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const now = ctx.currentTime;
+          const osc1 = ctx.createOscillator();
+          const gain = ctx.createGain();
 
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
+          osc1.type = "sine";
+          osc1.frequency.setValueAtTime(587.33, now);
+          osc1.frequency.exponentialRampToValueAtTime(880, now + 0.1);
 
-        // Tono brillante D5 -> A5
-        osc1.type = "sine";
-        osc1.frequency.setValueAtTime(587.33, now);
-        osc1.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
-        // Armónico de campana D6
-        osc2.type = "triangle";
-        osc2.frequency.setValueAtTime(880, now + 0.06);
-        osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22);
+          osc1.connect(gain);
+          gain.connect(ctx.destination);
 
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc1.start(now);
+          osc1.stop(now + 0.4);
+        }
+      } catch (e) {}
 
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc1.start(now);
-        osc2.start(now + 0.06);
-        osc1.stop(now + 0.5);
-        osc2.stop(now + 0.5);
-      } catch (err) {
-        console.warn("Web Audio API no soportado", err);
-      }
-    }
-
-    // Animación de la onda de audio
-    let waveInterval = null;
-    function animateWaveform(active) {
-      const bars = document.querySelectorAll(".waveform-bar");
-      if (waveInterval) clearInterval(waveInterval);
-
-      if (active) {
-        bars.forEach(b => {
-          b.classList.remove("bg-[#182032]");
-          b.classList.add("bg-[#00D26A]");
-        });
-        waveInterval = setInterval(() => {
-          bars.forEach(b => {
-            const h = Math.floor(Math.random() * 20) + 6;
-            b.style.height = h + "px";
-          });
-        }, 80);
-      } else {
-        bars.forEach((b, idx) => {
-          b.classList.remove("bg-[#00D26A]");
-          b.classList.add("bg-[#182032]");
-          b.style.height = [8, 16, 24, 12, 20, 8, 16][idx] + "px";
-        });
-      }
-    }
-
-    // Disparador principal de simulación
-    function triggerSimulation(amount, wallet, sender, phone) {
-      playChimeAudio();
-      animateWaveform(true);
-
-      const formatted = new Intl.NumberFormat("es-CO").format(amount);
-      const textToSpeak = "¡Recibiste " + formatted + " pesos en " + wallet + "!";
-
-      // Actualizar tarjeta visual
-      const card = document.getElementById("cockpitPosCard");
-      const icon = document.getElementById("cockpitStatusIcon");
-      const label = document.getElementById("cockpitStatusLabel");
-      const amountDisp = document.getElementById("cockpitAmountDisplay");
-      const senderDisp = document.getElementById("cockpitSenderDisplay");
-      const walletBadge = document.getElementById("cockpitWalletBadge");
-      const waToast = document.getElementById("cockpitWaToast");
-      const waText = document.getElementById("cockpitWaText");
-
-      if (card) {
-        card.className = "rounded-2xl bg-[#090D16] border-2 border-[#00D26A] p-6 text-center transition-all duration-300 relative pos-card-active";
-      }
-
-      if (icon) {
-        icon.textContent = "✓";
-        icon.className = "w-16 h-16 rounded-2xl bg-[#00D26A] text-[#041E0F] font-extrabold text-3xl mx-auto flex items-center justify-center shadow-lg transition-transform scale-110";
-      }
-
-      if (label) {
-        label.textContent = "¡PAGO AUDITADO Y CONFIRMADO!";
-        label.className = "text-xs font-mono text-[#00D26A] font-bold tracking-wider";
-      }
-
-      if (amountDisp) {
-        amountDisp.textContent = "$ " + formatted + " COP";
-        amountDisp.className = "text-3xl sm:text-4xl font-extrabold font-mono text-[#00D26A] mt-1.5 tabular-nums";
-      }
-
-      if (senderDisp) {
-        senderDisp.textContent = "Pagador: " + sender + " (" + phone + ")";
-        senderDisp.className = "text-xs font-mono text-white mt-1 font-semibold";
-      }
-
-      if (walletBadge) {
-        walletBadge.textContent = wallet + " (Verificado)";
-      }
-
-      if (waToast && waText) {
-        waText.textContent = sender + " pagó $" + formatted + " COP. Despachar orden.";
-        waToast.classList.remove("opacity-0");
-        waToast.classList.add("opacity-100");
-      }
-
-      // Síntesis de Voz en el Navegador
+      // Síntesis de voz en español
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(textToSpeak);
+        const utter = new SpeechSynthesisUtterance("¡Recibiste veinticinco mil pesos en Nequi!");
         utter.lang = "es-CO";
         utter.rate = 1.05;
-        utter.pitch = 1.0;
-
         utter.onend = () => {
-          animateWaveform(false);
+          if (btn) btn.textContent = "✓ ¡Listo! Así canta tu caja (toca para repetir)";
         };
-        utter.onerror = () => {
-          animateWaveform(false);
-        };
-
         window.speechSynthesis.speak(utter);
       } else {
-        setTimeout(() => animateWaveform(false), 2000);
-      }
-    }
-
-    // Toggle de periodo de facturación (Mensual / Anual)
-    function setBilling(period) {
-      const btnMonthly = document.getElementById("btnToggleMonthly");
-      const btnYearly = document.getElementById("btnToggleYearly");
-      
-      const price1 = document.getElementById("cardPrice1");
-      const period1 = document.getElementById("cardPeriod1");
-      const sub1 = document.getElementById("cardSub1");
-
-      const price2 = document.getElementById("cardPrice2");
-      const period2 = document.getElementById("cardPeriod2");
-      const sub2 = document.getElementById("cardSub2");
-
-      if (period === "yearly") {
-        btnYearly.className = "px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold bg-[#00D26A] text-[#041E0F] shadow transition-all";
-        btnMonthly.className = "px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold text-[#94A3B8] hover:text-white transition-all";
-
-        if (price1) price1.textContent = "$14.900";
-        if (period1) period1.textContent = "COP / mes (anual)";
-        if (sub1) sub1.textContent = "Facturado anualmente ($178.800/año)";
-
-        if (price2) price2.textContent = "$29.900";
-        if (period2) period2.textContent = "COP / mes (anual)";
-        if (sub2) sub2.textContent = "Facturado anualmente ($358.800/año)";
-      } else {
-        btnMonthly.className = "px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold bg-[#00D26A] text-[#041E0F] shadow transition-all";
-        btnYearly.className = "px-5 py-2 rounded-xl text-xs sm:text-sm font-mono font-bold text-[#94A3B8] hover:text-white transition-all";
-
-        if (price1) price1.textContent = "$19.900";
-        if (period1) period1.textContent = "COP / mes";
-        if (sub1) sub1.textContent = "Sin cláusulas de permanencia";
-
-        if (price2) price2.textContent = "$39.900";
-        if (period2) period2.textContent = "COP / mes";
-        if (sub2) sub2.textContent = "Incluye WhatsApp automático a cajeros";
-      }
-    }
-
-    // Rotación sutil de eventos en el radar de actividad
-    const liveEvents = [
-      '<span class="text-white font-bold">[Cali · Hace 10s]</span> La Sinvergüencería Burguer verificó <strong class="text-[#00D26A]">$35.000 COP</strong> vía Nequi',
-      '<span class="text-white font-bold">[Medellín · Hace 24s]</span> Barbería Don Carlos verificó <strong class="text-[#00D26A]">$25.000 COP</strong> vía Bre-B',
-      '<span class="text-white font-bold">[Bogotá · Hace 45s]</span> Panadería El Trigal verificó <strong class="text-[#00D26A]">$12.000 COP</strong> vía DaviPlata',
-      '<span class="text-white font-bold">[Barranquilla · Hace 1m]</span> Droguería La Central verificó <strong class="text-[#00D26A]">$48.000 COP</strong> vía Nequi',
-      '<span class="text-white font-bold">[Bucaramanga · Hace 1m]</span> Café La 70 verificó <strong class="text-[#00D26A]">$18.500 COP</strong> vía Bre-B',
-      '<span class="text-white font-bold">[Popayán · Hace 2m]</span> Frutería El Vergel verificó <strong class="text-[#00D26A]">$9.000 COP</strong> vía Nequi'
-    ];
-
-    let currentEventIdx = 0;
-    setInterval(() => {
-      currentEventIdx = (currentEventIdx + 1) % liveEvents.length;
-      const ticker = document.getElementById("liveActivityTicker");
-      if (ticker) {
-        ticker.style.opacity = "0";
         setTimeout(() => {
-          ticker.innerHTML = liveEvents[currentEventIdx] + ' • ' + liveEvents[(currentEventIdx + 1) % liveEvents.length];
-          ticker.style.opacity = "1";
-        }, 300);
+          if (btn) btn.textContent = "Toca aquí para oír cómo canta";
+        }, 2000);
       }
-    }, 4500);
+    }
   </script>
 </body>
 </html>
