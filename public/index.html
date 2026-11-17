@@ -271,8 +271,8 @@
   <!-- ================================================================== -->
   <div id="loadingScreen" class="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
     <div
-      class="w-16 h-16 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,210,106,0.35)] border border-ty-border animate-pulse">
-      <img src="/icons/icon-192.png" alt="TransferYA" class="w-full h-full object-cover" />
+      class="w-16 h-16 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(25,195,125,0.35)] border border-ty-border bg-white/5 p-2.5 flex items-center justify-center animate-pulse">
+      <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
     </div>
     <p class="text-xs font-mono text-ty-muted tracking-wider uppercase">Verificando sesión segura...</p>
   </div>
@@ -285,15 +285,16 @@
       <!-- Brand & Commercial Badges -->
       <div class="space-y-3">
         <div class="flex items-center gap-3.5">
-          <img src="/icons/icon-192.png" alt="TransferYA Logo"
-            class="w-14 h-14 rounded-2xl shadow-[0_0_20px_rgba(0,210,106,0.3)] shrink-0 object-cover border border-ty-border" />
+          <div class="w-14 h-14 rounded-2xl bg-white/5 border border-ty-border p-2 shadow-[0_0_20px_rgba(25,195,125,0.25)] shrink-0 flex items-center justify-center">
+            <img src="/icons/logo-sound-check.svg" alt="TransferYA Logo" class="w-full h-full object-contain" />
+          </div>
           <div>
             <div class="flex items-center gap-2">
               <span class="text-2xl font-black tracking-tight text-white block leading-tight">transfer<span
-                  class="text-ty-emerald">YA</span></span>
+                  class="text-ty-green">YA</span></span>
               <span
-                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">En
-                Vivo</span>
+                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-green/15 text-ty-green border border-ty-green/30">En
+                Línea</span>
             </div>
             <div class="flex items-center gap-2 mt-0.5">
               <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Verificación al Instante</span>
@@ -486,11 +487,12 @@
       class="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-ty-surface-low border-r border-ty-border flex-col justify-between p-4 z-40">
       <div class="flex flex-col gap-6">
         <div class="flex items-center gap-3 px-2 pt-2">
-          <img src="/icons/icon-192.png" alt="TransferYA"
-            class="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(0,210,106,0.3)] object-cover border border-ty-border shrink-0" />
+          <div class="w-10 h-10 rounded-xl bg-white/5 border border-ty-border p-1.5 shadow-[0_0_15px_rgba(25,195,125,0.25)] shrink-0 flex items-center justify-center">
+            <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
+          </div>
           <div>
             <span class="text-xl font-black tracking-tight text-white block leading-tight">transfer<span
-                class="text-ty-emerald">YA</span></span>
+                class="text-ty-green">YA</span></span>
             <span class="text-[9px] font-mono uppercase tracking-wider text-ty-muted">Verificación al Instante</span>
           </div>
         </div>
@@ -540,6 +542,17 @@
             </svg>
             <span class="text-sm">Cajeros WhatsApp</span>
           </button>
+
+          <!-- ENLACE STICKERS DE CAJA / MOSTRADOR -->
+          <a href="/sticker.html" target="_blank"
+            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left group">
+            <div class="flex items-center gap-3">
+              <span class="text-base group-hover:scale-110 transition-transform">🏷️</span>
+              <span class="text-sm font-medium">Stickers de Caja</span>
+            </div>
+            <span
+              class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-green/20 text-ty-green border border-ty-green/30">Imprimir</span>
+          </a>
 
           <!-- SUPER-ADMIN BOTÓN (SOLO VISIBLE PARA MURSAT) -->
           <button onclick="switchTab('admin')" id="nav-btn-admin"
@@ -619,8 +632,8 @@
       <header
         class="w-full min-h-[4rem] py-2 bg-ty-surface-low border-b border-ty-border sticky top-0 z-30 px-4 lg:px-6 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-3">
-          <div class="lg:hidden w-8 h-8 rounded-lg overflow-hidden border border-ty-border shadow-sm shrink-0">
-            <img src="/icons/icon-192.png" alt="TransferYA" class="w-full h-full object-cover" />
+          <div class="lg:hidden w-8 h-8 rounded-lg overflow-hidden border border-ty-border shadow-sm shrink-0 bg-white/5 p-1 flex items-center justify-center">
+            <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
           </div>
           <div>
             <div class="flex items-center gap-2">

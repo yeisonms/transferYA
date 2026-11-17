@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 36" fill="none">
+  <!-- Símbolo Bre-B -->
+  <rect x="2" y="2" width="32" height="32" rx="8" fill="#0A192F"/>
+  <!-- Trazo dinámico amarillo/azul Bre-B -->
+  <circle cx="18" cy="18" r="9" stroke="#FFC709" stroke-width="3.5"/>
+  <path d="M18 11 V18 H23" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Texto Bre-B -->
+  <text x="40" y="24" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="18" letter-spacing="-0.03em" fill="#0A192F">Bre<tspan fill="#FFC709">-</tspan>B</text>
+</svg>

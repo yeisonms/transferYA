@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 36" fill="none">
+  <!-- Trazo cinta Bancolombia -->
+  <g transform="translate(4, 8)">
+    <path d="M0 14 C6 4, 14 0, 22 2" stroke="#FDDA24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M4 17 C10 8, 18 5, 26 8" stroke="#002F6C" stroke-width="3" stroke-linecap="round"/>
+    <path d="M8 20 C14 13, 22 10, 29 13" stroke="#ED1C24" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- Texto Bancolombia -->
+  <text x="38" y="23" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="15" letter-spacing="-0.02em" fill="#0E1B2B">Bancolombia</text>
+</svg>

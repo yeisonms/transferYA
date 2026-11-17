@@ -92,9 +92,13 @@
         </span>
       </a>
 
-      <!-- Menú Compacto (4 opciones) -->
-      <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-[#0E1B2B]/80">
+      <!-- Menú Compacto (5 opciones amigables) -->
+      <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-[#0E1B2B]/80">
         <a href="#como-funciona" class="hover:text-[#0B7A4B] transition-colors">Cómo funciona</a>
+        <a href="#stickers" class="hover:text-[#0B7A4B] transition-colors flex items-center gap-1.5">
+          <span>Stickers</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FFB020]/25 text-[#0E1B2B]">Imprimir</span>
+        </a>
         <a href="#seguridad" class="hover:text-[#0B7A4B] transition-colors">¿Es seguro?</a>
         <a href="#precios" class="hover:text-[#0B7A4B] transition-colors">Precios</a>
         <a href="#faq" class="hover:text-[#0B7A4B] transition-colors">Preguntas</a>
@@ -241,6 +245,34 @@
     </section>
 
     <!-- ========================================== -->
+    <!-- 3.1 BANNER DE ENTIDADES COMPATIBLES -->
+    <!-- ========================================== -->
+    <section class="py-6 sm:py-7 bg-white border-b border-[#0E1B2B]/10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div class="text-center lg:text-left">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#0B7A4B] block">Compatible con tu cuenta de siempre</span>
+            <span class="text-sm font-extrabold text-[#0E1B2B]">Sin cambiar de banco ni entregar tu clave personal a nadie</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <div class="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/10 hover:border-[#19C37D]/50 transition-colors shadow-2xs" title="Nequi Colombia">
+              <img src="/icons/bank-nequi.svg" alt="Nequi" class="h-6 w-auto object-contain" />
+            </div>
+            <div class="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/10 hover:border-[#19C37D]/50 transition-colors shadow-2xs" title="DaviPlata Davivienda">
+              <img src="/icons/bank-daviplata.svg" alt="DaviPlata" class="h-6 w-auto object-contain" />
+            </div>
+            <div class="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/10 hover:border-[#19C37D]/50 transition-colors shadow-2xs" title="Bre-B Sistema Banco de la República">
+              <img src="/icons/bank-breb.svg" alt="Bre-B" class="h-6 w-auto object-contain" />
+            </div>
+            <div class="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/10 hover:border-[#19C37D]/50 transition-colors shadow-2xs" title="Bancolombia">
+              <img src="/icons/bank-bancolombia.svg" alt="Bancolombia" class="h-6 w-auto object-contain" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
     <!-- 4. EL DOLOR: ¿TE HAN PASADO UN PANTALLAZO FALSO? -->
     <!-- ========================================== -->
     <section class="py-16 sm:py-20 bg-white border-b border-[#0E1B2B]/10">
@@ -351,6 +383,132 @@
             <div class="mt-6 pt-4 border-t border-gray-100 text-xs font-bold text-[#0B7A4B]">
               ✓ Despacho inmediato sin dudas
             </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 5.1 EL STICKER OFICIAL DE MOSTRADOR Y DEMO REAL -->
+    <!-- ========================================== -->
+    <section id="stickers" class="py-16 sm:py-20 bg-white border-b border-[#0E1B2B]/10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          <!-- Columna Izquierda: Información del Sticker Antifraude -->
+          <div class="lg:col-span-7 space-y-5 text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFB020]/20 text-[#0E1B2B] font-bold text-xs tracking-wide">
+              <span>🏷️</span>
+              <span>INCLUIDO Y GRATIS PARA TU LOCAL</span>
+            </div>
+
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight leading-tight">
+              El sticker oficial que frena a los vivos antes de pagar
+            </h2>
+
+            <p class="text-base sm:text-lg text-[#0E1B2B]/75 leading-relaxed font-normal">
+              Pégalo al lado de tu código QR de Nequi o DaviPlata. Los estafadores buscan negocios distraídos; cuando ven el aviso de <strong>«Aquí verificamos tus pagos»</strong>, prefieren pagar de verdad o marcharse.
+            </p>
+
+            <!-- Características del Sticker -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1.5">
+                <span class="text-lg">🖨️</span>
+                <h4 class="font-bold text-sm text-[#0E1B2B]">Listo para imprimir en casa</h4>
+                <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
+                  Genera una hoja con 8 stickers con guías de corte para tijeras. O imprímelo en papel adhesivo.
+                </p>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-1.5">
+                <span class="text-lg">🏷️</span>
+                <h4 class="font-bold text-sm text-[#0E1B2B]">Personalizable con tu nombre</h4>
+                <p class="text-xs text-[#0E1B2B]/70 leading-relaxed">
+                  Puedes incluir el nombre comercial de tu local para que el aviso sea 100% oficial y formal.
+                </p>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              <a href="/sticker.html" target="_blank"
+                class="px-7 py-3.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-sm hover:brightness-105 shadow-md shadow-[#19C37D]/25 transition-all text-center flex items-center justify-center gap-2">
+                <span>🖨️</span>
+                <span>Generar e Imprimir Mis Stickers Gratis</span>
+              </a>
+              <span class="text-xs text-[#0E1B2B]/60 text-center sm:text-left">
+                No requiere tarjeta de crédito ni registro previo.
+              </span>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Mockup Interactivo del Sticker y Demo en Video -->
+          <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Sticker Preview Card -->
+            <div class="p-6 rounded-3xl bg-[#F7F5EF] border-2 border-dashed border-[#0E1B2B]/20 shadow-sm relative group hover:border-[#19C37D] transition-all">
+              <span class="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-[10px] uppercase tracking-wider">
+                Sticker de Mostrador (1:1)
+              </span>
+
+              <div class="bg-white rounded-2xl p-4 sm:p-5 border-2 border-[#0E1B2B] shadow-md flex items-center justify-between gap-3 text-left">
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-xl bg-white border border-black/15 p-1.5 shrink-0 flex items-center justify-center">
+                    <svg class="w-full h-full text-[#19C37D]" viewBox="0 0 64 64" fill="none">
+                      <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+                      <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <span class="text-sm sm:text-base font-extrabold text-[#0E1B2B] block leading-tight">Aquí verificamos tus pagos</span>
+                    <span class="text-[11px] text-[#0E1B2B]/70 block font-medium">Validación por audio y WhatsApp</span>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-mono font-bold block">transfer<span class="text-[#19C37D]">YA</span></span>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-center justify-between text-xs text-[#0E1B2B]/70 font-medium">
+                <span>Tamaño recomendado: 12 x 4 cm</span>
+                <a href="/sticker.html" target="_blank" class="text-[#0B7A4B] font-bold hover:underline inline-flex items-center gap-1">
+                  Ver plantilla completa →
+                </a>
+              </div>
+            </div>
+
+            <!-- Contenedor / Demostrador de Video 30s TikTok/Reels -->
+            <div class="p-5 rounded-3xl bg-[#0E1B2B] text-white shadow-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-[#19C37D] font-bold flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#19C37D] animate-ping"></span>
+                  Demostración en Mostrador Real
+                </span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white/80">35 seg</span>
+              </div>
+              
+              <!-- Video Player Mockup -->
+              <div class="relative aspect-video rounded-2xl bg-gradient-to-tr from-black/80 to-[#19C37D]/20 border border-white/10 overflow-hidden flex flex-col items-center justify-center p-6 text-center group cursor-pointer">
+                <div class="w-14 h-14 rounded-full bg-[#19C37D] text-[#0E1B2B] flex items-center justify-center pl-1 shadow-lg group-hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+                <div class="mt-3 space-y-0.5">
+                  <span class="text-xs font-bold text-white block">Escucha cómo canta el pago</span>
+                  <span class="text-[10px] text-white/70 block">«¡Recibiste veinticinco mil pesos por Nequi!»</span>
+                </div>
+              </div>
+
+              <p class="text-[11px] text-white/60 text-center">
+                Grabado en hamburguesería en hora pico: cero llamadas al dueño, cero dudas.
+              </p>
+            </div>
+
           </div>
 
         </div>

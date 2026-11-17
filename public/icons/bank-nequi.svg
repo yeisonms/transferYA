@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 36" fill="none">
+  <!-- Icono Nequi -->
+  <rect x="2" y="2" width="32" height="32" rx="8" fill="#200020"/>
+  <!-- N estilizada magenta Nequi -->
+  <path d="M11 26 V10 H16.5 L22.5 20 V10 H25 V26 H19.5 L13.5 16 V26 H11 Z" fill="#FF007A"/>
+  <rect x="21" y="8" width="4.5" height="4.5" rx="1.5" fill="#FF007A"/>
+  <!-- Texto nequi -->
+  <text x="40" y="24" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="18" letter-spacing="-0.03em" fill="#200020">nequi</text>
+</svg>
