@@ -54,6 +54,22 @@ export class MerchantRoutingService {
                 // Ignorar cajeros con número telefónico malformado o irrecuperable
             }
         }
+        if (validActiveRecipients.length === 0 && merchant.billingPhone) {
+            try {
+                const fallbackOwnerPhone = normalizePhoneNumberE164(merchant.billingPhone);
+                validActiveRecipients.push({
+                    id: `owner_${merchant.id}`,
+                    merchantId: merchant.id,
+                    deviceId: null,
+                    name: merchant.name || 'Dueño del Comercio',
+                    phoneNumber: fallbackOwnerPhone,
+                    isActive: true,
+                });
+            }
+            catch {
+                // Ignorar si el número no es normalizable
+            }
+        }
         if (validActiveRecipients.length === 0) {
             return {
                 success: false,

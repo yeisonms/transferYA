@@ -54,7 +54,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           const billingReconciliationService = new BillingReconciliationService({
             config: {
               billingSentinelDeviceId:
-                process.env.BILLING_SENTINEL_DEVICE_ID || 'dev_5f38cd_caja_1',
+                process.env.BILLING_SENTINEL_DEVICE_ID || '',
               minPlanPriceCop: Number(process.env.PLAN_PRO_PRICE_COP || 50000),
               defaultPlanDays: 30,
             },

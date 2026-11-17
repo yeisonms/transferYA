@@ -131,7 +131,7 @@ describe('Módulo de Mapeo Comercio-Dispositivo-Cajero (Ticket 10)', () => {
                 expect(result.message).toMatch(/suscripcion del comercio expirada/i);
             }
         });
-        it('debe fallar si el comercio no tiene ningún cajero activo registrado', async () => {
+        it('debe fallar si el comercio no tiene ningún cajero activo registrado y no tiene billingPhone', async () => {
             repo.registerDeviceMerchant('dev_centinela_sin_cajeros', activeMerchant);
             repo.registerCashierRecipient(cashierInactivo); // Único cajero está inactivo
             const result = await service.resolveRoute('dev_centinela_sin_cajeros');
@@ -139,6 +139,21 @@ describe('Módulo de Mapeo Comercio-Dispositivo-Cajero (Ticket 10)', () => {
             if (!result.success) {
                 expect(result.reason).toBe('NO_ACTIVE_RECIPIENTS');
                 expect(result.message).toMatch(/no hay destinatarios de caja activos/i);
+            }
+        });
+        it('debe usar el teléfono de contacto del dueño (billingPhone) si no hay cajeros registrados', async () => {
+            const merchantWithBillingPhone = {
+                ...activeMerchant,
+                id: 'merchant_con_billing_phone',
+                billingPhone: '+573119998877',
+            };
+            repo.registerDeviceMerchant('dev_centinela_fallback_owner', merchantWithBillingPhone);
+            const result = await service.resolveRoute('dev_centinela_fallback_owner');
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.recipients).toHaveLength(1);
+                expect(result.recipients[0].phoneNumber).toBe('+573119998877');
+                expect(result.recipients[0].name).toContain('Farmacia San Jorge');
             }
         });
         it('debe descartar cajeros con números telefónicos inválidos y normalizar los válidos', async () => {
