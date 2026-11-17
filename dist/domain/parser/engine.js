@@ -103,6 +103,14 @@ const PARSING_RULES = [
         amountGroup: 1,
         defaultSender: 'Transferencia Bre-B',
     },
+    // Nequi Negocios / Bre-B SMS oficial (890806):
+    // "Nequi: Tu negocio LA SINVERGUECERIA BURGUER recibio $110 de YEISON MURCIA el 15/11/2026 a las 10:25 p.m. a través de Bre-B - Vende mas con Nequi Negocios."
+    {
+        wallet: 'NEQUI',
+        pattern: /Nequi:\s*(?:Tu negocio\s+(.+?)\s+)?recibi(?:ste|[oó])\s+([\$\d.,\s]+?)\s+de\s+(.+?)(?:\s+el\s+[\d/]+|\s+a trav[eé]s de Bre-B|\.|$)/i,
+        amountGroup: 2,
+        senderGroup: 3,
+    },
     // Genérico Nequi sin remitente: "Te enviaron $66.000. Entra a tu app y revisa tu saldo."
     {
         wallet: 'NEQUI',
