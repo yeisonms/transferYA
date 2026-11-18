@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { parseInboundEmail } from '../../domain/parser/email-parser.js';
+import { parseInboundEmail, stripHtml } from '../../domain/parser/email-parser.js';
 import type { InboundEmailInput } from '../../domain/parser/types.js';
 import { getSupabaseRepository } from '../supabase/client.js';
 import { MerchantRoutingService } from '../../domain/routing/service.js';
@@ -304,12 +304,13 @@ export async function handleInboundEmail(
         );
       } catch { }
 
-      // Guardar notificación capturada en base de datos
+      // Guardar notificación capturada en base de datos (con texto limpio legible sin etiquetas HTML)
+      const cleanBody = (text || stripHtml(html)).trim();
       const storedRecord: StoredNotificationRecord = {
         deviceId: cloudDeviceId,
         walletPackage: 'com.nequi.inbound.email',
         rawTitle: subject || 'Transferencia Nequi recibida por Correo',
-        rawText: text || html || '',
+        rawText: cleanBody || subject || '',
         capturedAt: receivedAt,
         dispatchedAt: now,
         receivedAt: now,

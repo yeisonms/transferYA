@@ -178,7 +178,49 @@ export class PaymentProcessingPipeline {
       // Si la resolución de ruta falla tempranamente, continúa sin merchantId
     }
 
-    // 3. Generar y evaluar Huella de Idempotencia
+    // 3. Evaluar duplicados cruzados multicanal (Centinela vs Gmail) e Idempotencia previa
+    if (this.deps.notificationRepository.findRecentDuplicatePayment && merchantId) {
+      const recentDup = await this.deps.notificationRepository.findRecentDuplicatePayment({
+        merchantId,
+        amount: receipt.amount,
+        capturedAt: notification.capturedAt,
+        currentDeviceId: notification.deviceId,
+        currentNotificationId: notification.id,
+        reference: receipt.reference,
+        senderName: receipt.senderName,
+        rawTitle: notification.rawTitle,
+      });
+
+      if (recentDup) {
+        await this.deps.notificationRepository.updateNotification(
+          notificationId,
+          {
+            status: 'DUPLICATE_PAYMENT',
+            amount: receipt.amount,
+            senderName: receipt.senderName,
+            paymentReference: receipt.reference,
+            failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
+          },
+        );
+
+        return {
+          status: 'DUPLICATE_PAYMENT',
+          notificationId,
+          fingerprint: `dup:${recentDup.id}`,
+          existingFingerprintRecord: {
+            id: recentDup.id,
+            deviceId: recentDup.deviceId || notification.deviceId,
+            fingerprint: `dup:${recentDup.id}`,
+            wallet: receipt.wallet,
+            amount: receipt.amount,
+            senderName: receipt.senderName,
+            capturedAt: recentDup.capturedAt || notification.capturedAt,
+          },
+        };
+      }
+    }
+
+    // 4. Generar y evaluar Huella de Idempotencia estándar
     const fingerprint = this.fingerprintGenerator(
       receipt,
       notification.capturedAt,

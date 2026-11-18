@@ -51,6 +51,16 @@ export interface IPipelineNotificationRepository {
     id: string,
     update: PipelineNotificationUpdate,
   ): Promise<void>;
+  findRecentDuplicatePayment?(params: {
+    merchantId: string;
+    amount: number;
+    capturedAt: number;
+    currentDeviceId: string;
+    currentNotificationId: string;
+    reference?: string | null;
+    senderName?: string;
+    rawTitle?: string;
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number } | null>;
 }
 
 export type PipelineResult =

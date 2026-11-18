@@ -39,6 +39,7 @@ import type {
 } from '../billing/types.js';
 import { generateInvoiceReferenceCode } from '../billing/utils.js';
 import { resolveSubscriptionEndsAt } from '../../domain/routing/billing.js';
+import { normalizeSenderForFingerprint } from '../../domain/idempotency/fingerprint.js';
 
 export interface SupabaseConfig {
   supabaseUrl: string;
@@ -361,6 +362,99 @@ export class SupabaseRepository
     if (!res.ok) {
       const errText = await res.text();
       console.error(`Error actualizando notificación ${id} (${res.status}): ${errText}`);
+    }
+  }
+
+  async findRecentDuplicatePayment(params: {
+    merchantId: string;
+    amount: number;
+    capturedAt: number;
+    currentDeviceId: string;
+    currentNotificationId: string;
+    reference?: string | null;
+    senderName?: string;
+    rawTitle?: string;
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number } | null> {
+    try {
+      // 1. Obtener los IDs de todos los dispositivos de este comercio
+      const devRes = await fetch(
+        `${this.baseUrl}/rest/v1/devices?merchant_id=eq.${encodeURIComponent(params.merchantId)}&select=id`,
+        { headers: this.headers }
+      );
+      if (!devRes.ok) return null;
+      const devRows = (await devRes.json()) as Array<{ id: string }>;
+      const deviceIds = new Set(devRows.map((d) => d.id));
+      deviceIds.add(params.currentDeviceId);
+
+      // 2. Buscar notificaciones procesadas con el mismo monto
+      const notifRes = await fetch(
+        `${this.baseUrl}/rest/v1/captured_notifications?status=eq.PROCESSED&amount=eq.${params.amount}&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,wallet_package&order=captured_at.desc&limit=25`,
+        { headers: this.headers }
+      );
+      if (!notifRes.ok) return null;
+      const candidates = (await notifRes.json()) as any[];
+
+      let cleanSender = '';
+      try {
+        if (params.senderName) cleanSender = normalizeSenderForFingerprint(params.senderName);
+      } catch {}
+
+      for (const row of candidates) {
+        if (row.id === params.currentNotificationId) continue;
+        if (!deviceIds.has(row.device_id)) continue;
+
+        // Criterio 1: Misma referencia bancaria explícita
+        if (
+          params.reference &&
+          row.payment_reference &&
+          params.reference.trim().toUpperCase() === row.payment_reference.trim().toUpperCase()
+        ) {
+          return { id: row.id, deviceId: row.device_id, capturedAt: Number(row.captured_at), amount: Number(row.amount) };
+        }
+
+        const rowTime = Number(row.captured_at);
+        const timeDiff = Math.abs(rowTime - params.capturedAt);
+
+        // Criterio 2: Cruce multicanal (Centinela vs Gmail) para el mismo pago
+        const isCrossChannel =
+          (row.device_id.startsWith('cloud_email_') && !params.currentDeviceId.startsWith('cloud_email_')) ||
+          (!row.device_id.startsWith('cloud_email_') && params.currentDeviceId.startsWith('cloud_email_'));
+
+        if (isCrossChannel && timeDiff <= 60_000) {
+          let rowSender = '';
+          try {
+            if (row.sender_name) rowSender = normalizeSenderForFingerprint(row.sender_name);
+          } catch {}
+
+          const isBreB =
+            /bre-b/i.test(row.raw_title || '') ||
+            /bre-b/i.test(params.rawTitle || '') ||
+            row.wallet_package === 'com.nequi.inbound.email' ||
+            row.sender_name === 'Transferencia Bre-B' ||
+            params.senderName === 'Transferencia Bre-B';
+
+          if (isBreB || (cleanSender && rowSender && cleanSender === rowSender)) {
+            return { id: row.id, deviceId: row.device_id, capturedAt: rowTime, amount: Number(row.amount) };
+          }
+        }
+
+        // Criterio 3: Re-envío duplicado del mismo dispositivo
+        if (row.device_id === params.currentDeviceId && timeDiff <= 10_000) {
+          let rowSender = '';
+          try {
+            if (row.sender_name) rowSender = normalizeSenderForFingerprint(row.sender_name);
+          } catch {}
+
+          if (!cleanSender || !rowSender || cleanSender === rowSender) {
+            return { id: row.id, deviceId: row.device_id, capturedAt: rowTime, amount: Number(row.amount) };
+          }
+        }
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[SupabaseRepository] Error en findRecentDuplicatePayment:', err);
+      return null;
     }
   }
 

@@ -48,6 +48,41 @@ class InMemoryPipelineNotificationRepository
     }
     this.updates.push({ id, update });
   }
+
+  async findRecentDuplicatePayment(params: {
+    merchantId: string;
+    amount: number;
+    capturedAt: number;
+    currentDeviceId: string;
+    currentNotificationId: string;
+    reference?: string | null;
+    senderName?: string;
+    rawTitle?: string;
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number } | null> {
+    for (const [id, notif] of this.notifications.entries()) {
+      if (id === params.currentNotificationId) continue;
+      if (notif.status !== 'PROCESSED') continue;
+      if (notif.amount !== params.amount) continue;
+
+      if (
+        params.reference &&
+        notif.paymentReference &&
+        params.reference.trim().toUpperCase() === notif.paymentReference.trim().toUpperCase()
+      ) {
+        return { id, deviceId: notif.deviceId, capturedAt: notif.capturedAt, amount: notif.amount ?? undefined };
+      }
+
+      const timeDiff = Math.abs(notif.capturedAt - params.capturedAt);
+      const isCrossChannel =
+        (notif.deviceId.startsWith('cloud_email_') && !params.currentDeviceId.startsWith('cloud_email_')) ||
+        (!notif.deviceId.startsWith('cloud_email_') && params.currentDeviceId.startsWith('cloud_email_'));
+
+      if (isCrossChannel && timeDiff <= 60_000) {
+        return { id, deviceId: notif.deviceId, capturedAt: notif.capturedAt, amount: notif.amount ?? undefined };
+      }
+    }
+    return null;
+  }
 }
 
 describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)', () => {
@@ -300,6 +335,108 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
       'notif_payment_sms_burst',
     );
     expect(updatedDup?.status).toBe('DUPLICATE_PAYMENT');
+  });
+
+  it('4.b Deduplicación Cruzada Multicanal (Gmail procesa primero, Centinela llega acumulada y se marca DUPLICATE_PAYMENT)', async () => {
+    const cloudDeviceId = `cloud_email_${merchant.id}`;
+    routingRepo.registerDeviceMerchant(cloudDeviceId, merchant);
+
+    // 1. Notificación que llega primero vía Gmail (Canal B)
+    const emailNotif: StoredNotificationRecord & { id: string } = {
+      id: 'notif_email_breb_001',
+      deviceId: cloudDeviceId,
+      walletPackage: 'com.nequi.inbound.email',
+      rawTitle: '¡Recibiste plata por Bre-B!',
+      rawText: 'Recibiste 120 de YEISON STIVEN MURCIA CALVO a la 1:28 p.m.',
+      capturedAt: now,
+      dispatchedAt: now + 500,
+      receivedAt: now + 500,
+      latencyMs: 500,
+      isStale: false,
+      status: 'RECEIVED',
+    };
+
+    // 2. Notificación que llega 40 minutos después por Centinela (cuando el celular se reconecta)
+    const centinelaNotif: StoredNotificationRecord & { id: string } = {
+      id: 'notif_centinela_breb_delayed_002',
+      deviceId,
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Te enviaron plata por Bre-B',
+      rawText: 'Te enviaron $120. Entra a tu app y revisa tu saldo.',
+      capturedAt: now + 800, // Menos de 1 segundo de diferencia con la original
+      dispatchedAt: now + 2_400_000, // 40 minutos después
+      receivedAt: now + 2_400_000,
+      latencyMs: 2_400_000,
+      isStale: true,
+      status: 'RECEIVED',
+    };
+
+    notificationRepo.seed(emailNotif);
+    notificationRepo.seed(centinelaNotif);
+
+    vi.spyOn(mockWhatsappClient, 'sendPaymentAlert').mockResolvedValue({
+      success: true,
+      messageId: 'wamid.EMAIL_FIRST',
+    });
+
+    // 1er procesamiento (Gmail): Debe ser PROCESSED
+    const res1 = await pipeline.processCapturedNotification('notif_email_breb_001');
+    expect(res1.status).toBe('PROCESSED');
+    expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(1);
+
+    // 2do procesamiento (Centinela con retraso): Debe ser DUPLICATE_PAYMENT
+    const res2 = await pipeline.processCapturedNotification('notif_centinela_breb_delayed_002');
+    expect(res2.status).toBe('DUPLICATE_PAYMENT');
+
+    // No debe reenviar WhatsApp para el duplicado (sigue en 1)
+    expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(1);
+
+    const updated = await notificationRepo.getNotificationById('notif_centinela_breb_delayed_002');
+    expect(updated?.status).toBe('DUPLICATE_PAYMENT');
+  });
+
+  it('4.c Permite dos pagos legítimos del mismo valor ($20.000) si son de personas o momentos distintos', async () => {
+    const notifClientA: StoredNotificationRecord & { id: string } = {
+      id: 'notif_client_A',
+      deviceId,
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Pedro Gomez te envio $20.000 a tu Nequi',
+      capturedAt: now,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 100,
+      isStale: false,
+      status: 'RECEIVED',
+    };
+
+    const notifClientB: StoredNotificationRecord & { id: string } = {
+      id: 'notif_client_B',
+      deviceId,
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Maria Rodriguez te envio $20.000 a tu Nequi',
+      capturedAt: now + 4000, // 4 segundos después, pero remitente distinto
+      dispatchedAt: now + 4000,
+      receivedAt: now + 4000,
+      latencyMs: 100,
+      isStale: false,
+      status: 'RECEIVED',
+    };
+
+    notificationRepo.seed(notifClientA);
+    notificationRepo.seed(notifClientB);
+
+    vi.spyOn(mockWhatsappClient, 'sendPaymentAlert').mockResolvedValue({
+      success: true,
+      messageId: 'wamid.VALID_P2P',
+    });
+
+    const resA = await pipeline.processCapturedNotification('notif_client_A');
+    expect(resA.status).toBe('PROCESSED');
+
+    const resB = await pipeline.processCapturedNotification('notif_client_B');
+    expect(resB.status).toBe('PROCESSED');
   });
 
   it('5. Fallo de Enrutamiento (Dispositivo no mapeado -> ROUTING_FAILED)', async () => {
