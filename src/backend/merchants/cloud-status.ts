@@ -126,7 +126,7 @@ export async function handleMerchantCloudStatusRequest(
   const inboundDomain =
     deps.inboundDomain ||
     process.env.INBOUND_EMAIL_DOMAIN ||
-    'inbound.transferya.app';
+    'transferya.app';
   const cloudDeviceId = `cloud_email_${cleanMerchantId}`;
   const inboundEmail = `pago+${cleanMerchantId}@${inboundDomain}`;
   const verificationProvider =
