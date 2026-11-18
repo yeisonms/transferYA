@@ -26,6 +26,7 @@ export default {
   ): Promise<void> {
     console.log(`[EmailWorker] Correo entrante detectado: De: ${message.from} | Para: ${message.to}`);
     try {
+      let fromAddress = message.from;
       let subject = message.headers.get('subject') || '';
       let text = '';
       let html = '';
@@ -33,6 +34,9 @@ export default {
       try {
         // Opción 1: Pasar el stream nativo message.raw directamente a PostalMime
         const parsedEmail = await PostalMime.parse(message.raw);
+        if (parsedEmail.from?.address) {
+          fromAddress = parsedEmail.from.address;
+        }
         subject = parsedEmail.subject || subject;
         text = parsedEmail.text || '';
         html = parsedEmail.html || '';
@@ -47,10 +51,10 @@ export default {
         }
       }
 
-      console.log(`[EmailWorker] Asunto: "${subject}" | Texto: ${text.length} chars | HTML: ${html.length} chars`);
+      console.log(`[EmailWorker] Asunto: "${subject}" | De: ${fromAddress} | Texto: ${text.length} chars | HTML: ${html.length} chars`);
 
       const payload = {
-        from: message.from,
+        from: fromAddress,
         to: message.to,
         subject,
         text,

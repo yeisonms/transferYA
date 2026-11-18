@@ -86,6 +86,15 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
       };
       expect(parseGoogleForwardingEmail(regularEmail)).toBeNull();
     });
+
+    it('debe retornar null si el correo proviene del envelope de Gmail pero es un pago real de Bre-B', () => {
+      const autoForwardedPayment: InboundEmailInput = {
+        from: 'forwarding-noreply+caf_=pago=transferya.app@google.com',
+        subject: '¡Recibiste plata por Bre-B!',
+        text: '¡Hola, Yeison Stiven Murcia Calvo!\n\nRecibiste 120 de YEISON STIVEN MURCIA CALVO el 18 de noviembre de 2026 a la 1:28 p.m, desde el banco Daviplata.',
+      };
+      expect(parseGoogleForwardingEmail(autoForwardedPayment)).toBeNull();
+    });
   });
 
   describe('3. Extracción de Comprobantes de Pago de Nequi por Correo', () => {
@@ -224,6 +233,23 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
         expect(result.payment.amount).toBe(80000);
         expect(result.payment.senderName).toBe('Pedro Perez');
         expect(result.payment.reference).toBe('M55443322');
+      }
+    });
+
+    it('debe clasificar como PAYMENT un pago de Bre-B reenviado por Google envelope', () => {
+      const email: InboundEmailInput = {
+        from: 'forwarding-noreply+caf_=pago=transferya.app@google.com',
+        to: 'pago+5f38cd0c-7802-4cbf-98a3-e4fc71482dcb@transferya.app',
+        subject: '¡Recibiste plata por Bre-B!',
+        text: '¡Hola, Yeison Stiven Murcia Calvo!\n\nRecibiste 120 de YEISON STIVEN MURCIA CALVO el 18 de noviembre de 2026 a la 1:28 p.m, desde el banco Daviplata.',
+      };
+
+      const result = parseInboundEmail(email);
+      expect(result.success).toBe(true);
+      if (result.success && result.type === 'PAYMENT') {
+        expect(result.payment.amount).toBe(120);
+        expect(result.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+        expect(result.payment.wallet).toBe('NEQUI');
       }
     });
   });

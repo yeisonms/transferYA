@@ -54,14 +54,25 @@ export function parseGoogleForwardingEmail(
   const bodyText = (email.text || stripHtml(email.html || '')).trim();
   const combined = `${subject}\n${bodyText}`;
 
-  const isGoogleSender =
-    from.includes('forwarding-noreply@google.com') ||
-    from.includes('google.com') ||
+  // Si el correo contiene palabras clave explícitas de pagos o transferencias, nunca es verificación de Google
+  if (
+    /¡?recibiste plata|te enviaron plata|bre-b|comprobante|transferencia/i.test(subject) ||
+    /¡?recibiste plata|te enviaron plata por bre-b/i.test(combined)
+  ) {
+    return null;
+  }
+
+  const isGoogleSubject =
     /solicitud de reenv[ií]o de gmail/i.test(subject) ||
     /confirmaci[oó]n de reenv[ií]o de gmail/i.test(subject) ||
-    /gmail forwarding confirmation/i.test(subject);
+    /gmail forwarding confirmation/i.test(subject) ||
+    /reenv[ií]o de gmail/i.test(subject);
 
-  if (!isGoogleSender) {
+  const isGoogleSender =
+    from.includes('forwarding-noreply@google.com') ||
+    isGoogleSubject;
+
+  if (!isGoogleSender && !isGoogleSubject) {
     return null;
   }
 
@@ -93,6 +104,11 @@ export function parseGoogleForwardingEmail(
 
   if (urlMatch) {
     confirmationUrl = urlMatch[1].trim();
+  }
+
+  // Si no contiene código de verificación numérico ni enlace de confirmación, no es una verificación de Google
+  if (!verificationCode && !confirmationUrl) {
+    return null;
   }
 
   // 3. Extraer correo de destino solicitado
