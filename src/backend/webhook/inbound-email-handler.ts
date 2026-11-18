@@ -302,7 +302,7 @@ export async function handleInboundEmail(
           'cloud_inbound_secret',
           'Respaldo Cloud (Gmail)',
         );
-      } catch {}
+      } catch { }
 
       // Guardar notificación capturada en base de datos
       const storedRecord: StoredNotificationRecord = {

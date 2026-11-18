@@ -24,27 +24,40 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
+    console.log(`[EmailWorker] Correo entrante detectado: De: ${message.from} | Para: ${message.to}`);
     try {
-      // 1. Convertir el flujo crudo del correo a ArrayBuffer para parseo MIME
-      const rawEmail = await new Response(message.raw).arrayBuffer();
-      const parser = new PostalMime();
-      const parsedEmail = await parser.parse(rawEmail);
+      let subject = '';
+      let text = '';
+      let html = '';
+
+      try {
+        const rawEmail = await new Response(message.raw).arrayBuffer();
+        const parser = new PostalMime();
+        const parsedEmail = await parser.parse(rawEmail);
+        subject = parsedEmail.subject || '';
+        text = parsedEmail.text || '';
+        html = parsedEmail.html || '';
+      } catch (parseErr: any) {
+        console.error('[EmailWorker] Error parseando MIME:', parseErr);
+      }
+
+      console.log(`[EmailWorker] Asunto: "${subject}" | Texto: ${text.length} chars | HTML: ${html.length} chars`);
 
       const payload = {
         from: message.from,
         to: message.to,
-        subject: parsedEmail.subject || '',
-        text: parsedEmail.text || '',
-        html: parsedEmail.html || '',
+        subject,
+        text,
+        html,
         receivedAt: Date.now(),
       };
 
       const webhookUrl =
         env.TRANSFERYA_WEBHOOK_URL ||
         'https://www.transferya.app/api/v1/webhooks/inbound-email';
-      const secret = env.INBOUND_EMAIL_SECRET || '';
+      const secret = env.INBOUND_EMAIL_SECRET || 'transferya_secret_cloud_inbound_2026';
 
-      // 2. Disparar el webhook hacia Vercel (Edge a Vercel con baja latencia)
+      console.log(`[EmailWorker] Despachando a webhook: ${webhookUrl}`);
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -55,16 +68,8 @@ export default {
         redirect: 'follow',
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          `[EmailWorker] Error entregando a TransferYA Webhook [${response.status}]:`,
-          errorText,
-        );
-      } else {
-        const resultText = await response.text();
-        console.log(`[EmailWorker] Correo entregado exitosamente:`, resultText);
-      }
+      const responseText = await response.text();
+      console.log(`[EmailWorker] Respuesta webhook [${response.status}]:`, responseText);
     } catch (error: any) {
       console.error('[EmailWorker] Error procesando correo entrante:', error);
     }
@@ -74,6 +79,58 @@ export default {
    * Manejador HTTP para diagnósticos y verificación de estado (Healthcheck).
    */
   async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === '/test-webhook') {
+      try {
+        const webhookUrl =
+          env.TRANSFERYA_WEBHOOK_URL ||
+          'https://www.transferya.app/api/v1/webhooks/inbound-email';
+        const secret =
+          env.INBOUND_EMAIL_SECRET || 'transferya_secret_cloud_inbound_2026';
+
+        const testPayload = {
+          from: 'forwarding-noreply@google.com',
+          to: 'pago+5f38cd0c-7802-4cbf-98a3-e4fc71482dcb@transferya.app',
+          subject: 'Confirmación de reenvío de Gmail: prueba de conectividad edge',
+          text: 'Código de confirmación: 777888999\nPara confirmar haz clic en https://mail.google.com/mail/vf-edge-test',
+          receivedAt: Date.now(),
+        };
+
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-inbound-secret': secret,
+          },
+          body: JSON.stringify(testPayload),
+          redirect: 'follow',
+        });
+
+        const status = res.status;
+        const text = await res.text();
+        let parsed = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          parsed = text;
+        }
+
+        return new Response(
+          JSON.stringify({
+            target: webhookUrl,
+            status,
+            response: parsed,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      } catch (err: any) {
+        return new Response(
+          JSON.stringify({ error: err.message, stack: err.stack }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+    }
+
     return new Response(
       JSON.stringify({
         status: 'ok',
