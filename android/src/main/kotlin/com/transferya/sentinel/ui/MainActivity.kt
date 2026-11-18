@@ -493,7 +493,7 @@ class MainActivity : AppCompatActivity() {
             setTypeface(null, Typeface.BOLD)
             setOnClickListener {
                 try {
-                    val serverUrl = credentialsStorage.getServerUrl().ifBlank { "https://transferya.vercel.app" }
+                    val serverUrl = credentialsStorage.getServerUrl().ifBlank { "https://www.transferya.app" }
                     val browserIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(serverUrl))
                     startActivity(browserIntent)
                 } catch (_: Exception) {
@@ -660,7 +660,7 @@ class MainActivity : AppCompatActivity() {
             enrollButton.text = "📷 Cambiar o Re-vincular Código QR"
             startSentinelService()
         } else {
-            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\n¿Estás usando este mismo teléfono? Toca 'Vincular desde este Celular' para abrir el panel y conectar en 1 Clic.\n\n¿Tienes computador? Abre transferya.vercel.app y escanea el código QR."
+            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\n¿Estás usando este mismo teléfono? Toca 'Vincular desde este Celular' para abrir el panel y conectar en 1 Clic.\n\n¿Tienes computador? Abre www.transferya.app y escanea el código QR."
             statusView.setTextColor(Color.parseColor("#F59E0B"))
             enrollButton.text = "📷 Vincular con Código QR (Desde PC)"
         }
