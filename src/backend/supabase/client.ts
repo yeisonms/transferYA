@@ -5,6 +5,8 @@ let instance: SupabaseRepository | null = null;
 const DEFAULT_SUPABASE_URL = 'https://yljfzscbxhwdflpkcboy.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsamZ6c2NieGh3ZGZscGtjYm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNTE5OTQsImV4cCI6MjEwOTgyNzk5NH0.QrtmgJeTHiHSBzgxDNQkcU_UrMGBoFkgvUS-r-RPu2I';
+const DEFAULT_SUPABASE_SERVICE_ROLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsamZ6c2NieGh3ZGZscGtjYm95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDI1MTk5NCwiZXhwIjoyMTA5ODI3OTk0fQ.SfvQENqLGZP1pPqGClNmN174-u93R7WBGuvcSHBB3zE';
 
 export function getSupabaseEnvConfig(): {
   supabaseUrl: string;
@@ -17,7 +19,9 @@ export function getSupabaseEnvConfig(): {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     DEFAULT_SUPABASE_ANON_KEY;
   const serviceOrFallbackKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || anonKey;
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    DEFAULT_SUPABASE_SERVICE_ROLE_KEY ||
+    anonKey;
 
   return { supabaseUrl, anonKey, serviceOrFallbackKey };
 }

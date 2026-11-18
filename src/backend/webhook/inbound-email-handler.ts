@@ -217,30 +217,43 @@ export async function handleInboundEmail(
       if (merchantIdentifier) {
         try {
           const cloudDeviceId = `cloud_email_${merchantIdentifier}`;
-          await repository.registerDevice?.(
-            cloudDeviceId,
-            merchantIdentifier,
-            'cloud_inbound_secret',
-            'Respaldo Cloud (Gmail)',
-          );
+          if (typeof repository.registerDevice === 'function') {
+            await repository.registerDevice(
+              cloudDeviceId,
+              merchantIdentifier,
+              'cloud_inbound_secret',
+              'Respaldo Cloud (Gmail)',
+            );
+          } else if (typeof repository.registerDeviceSecret === 'function') {
+            await repository.registerDeviceSecret(
+              cloudDeviceId,
+              merchantIdentifier,
+              'cloud_inbound_secret',
+              'Respaldo Cloud (Gmail)',
+            );
+          }
 
-          await repository.saveReceivedNotification?.({
-            deviceId: cloudDeviceId,
-            walletPackage: 'com.google.android.gm',
-            rawTitle: 'VERIFICACION_GMAIL',
-            rawText: JSON.stringify({
-              code: verification.verificationCode,
-              url: verification.confirmationUrl,
-              requestedAddress: verification.requestedAddress,
-            }),
-            capturedAt: receivedAt,
-            dispatchedAt: now,
-            receivedAt: now,
-            latencyMs: 0,
-            isStale: false,
-            status: 'PROCESSED',
-          });
-        } catch {}
+          if (typeof repository.saveReceivedNotification === 'function') {
+            await repository.saveReceivedNotification({
+              deviceId: cloudDeviceId,
+              walletPackage: 'com.google.android.gm',
+              rawTitle: 'VERIFICACION_GMAIL',
+              rawText: JSON.stringify({
+                code: verification.verificationCode,
+                url: verification.confirmationUrl,
+                requestedAddress: verification.requestedAddress,
+              }),
+              capturedAt: receivedAt,
+              dispatchedAt: now,
+              receivedAt: now,
+              latencyMs: 0,
+              isStale: false,
+              status: 'PROCESSED',
+            });
+          }
+        } catch (err: any) {
+          console.error('[InboundEmailHandler] Error persistiendo verificación Google en DB:', err);
+        }
       }
 
       res.statusCode = 200;

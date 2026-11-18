@@ -210,6 +210,15 @@ export class SupabaseRepository
     }
   }
 
+  async registerDevice(
+    deviceId: string,
+    merchantId: string,
+    secretHash: string,
+    label?: string,
+  ): Promise<void> {
+    return this.registerDeviceSecret(deviceId, merchantId, secretHash, label);
+  }
+
   async revokeDevice(deviceId: string, merchantId: string): Promise<boolean> {
     const res = await fetch(
       `${this.baseUrl}/rest/v1/devices?id=eq.${encodeURIComponent(deviceId)}&merchant_id=eq.${encodeURIComponent(merchantId)}`,
