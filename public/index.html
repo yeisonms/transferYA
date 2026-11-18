@@ -245,6 +245,7 @@
       #adminPhoneModal,
       #turnClosingModal,
       #securityPrivacyModal,
+      #gmailGuideModal,
       #forgotPasswordModal,
       #resetPasswordModal,
       #changePasswordModal,
@@ -919,6 +920,19 @@
           </button>
         </div>
 
+        <!-- Banner informativo si Centinela está offline pero Cloud Email está activo -->
+        <div id="cloudRedundancyActiveBanner"
+          class="hidden p-3.5 rounded-xl bg-ty-cyan/10 border border-ty-cyan/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-ty-cyan/20 border border-ty-cyan/40 text-ty-cyan flex items-center justify-center shrink-0">☁️</span>
+            <div>
+              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">Redundancia Cloud en Guardia</div>
+              <p class="text-xs text-white/90">Aunque tu celular Centinela esté desconectado, tus comprobantes de Nequi siguen llegando por Reenvío de Gmail.</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono text-ty-cyan font-bold bg-ty-cyan/15 px-2.5 py-1 rounded-full border border-ty-cyan/30 shrink-0 self-start sm:self-center">Zero-Downtime Activo</span>
+        </div>
+
         <!-- ============================================================ -->
         <!-- TAB 1: RESUMEN Y CAJA -->
         <!-- ============================================================ -->
@@ -1384,15 +1398,14 @@
         </section>
 
         <!-- ============================================================ -->
-        <!-- TAB 4: CELULARES Y CAJAS REGISTRADORAS -->
+        <!-- TAB 4: CELULARES, CAJAS Y RUTA CLOUD -->
         <!-- ============================================================ -->
         <section id="tab-devices" class="hidden space-y-6">
           <div
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Celulares y Cajas Registradoras</h2>
-              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio que reciben las notificaciones de
-                Nequi y DaviPlata</p>
+              <h2 class="text-lg font-bold text-white">Celulares, Cajas y Ruta Cloud (Gmail)</h2>
+              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio y la Ruta Cloud para recibir alertas de Nequi sin depender de hardware</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="toggleQuickStartGuide(true); switchTab('dashboard');"
@@ -1416,6 +1429,100 @@
                 </svg>
                 <span>Conectar Nuevo Celular (QR)</span>
               </button>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- TARJETA: ARQUITECTURA HÍBRIDA - RUTA CLOUD (RESPALDO GMAIL) -->
+          <!-- ============================================================ -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ty-border/60 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-ty-cyan/15 border border-ty-cyan/40 text-ty-cyan flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-base font-bold text-white">Canal B: Respaldo Cloud (Reenvío Gmail)</h3>
+                    <span id="cloudStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-surface-high text-ty-muted border border-ty-border">Consultando...</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25">Redundancia Activa</span>
+                  </div>
+                  <p class="text-xs text-ty-muted mt-0.5">Recibe comprobantes de Nequi aunque tu celular de caja esté apagado, sin internet o de viaje.</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="openGmailGuideModal()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-xs font-mono text-ty-cyan font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                  <span>📖 Guía en 3 Pasos</span>
+                </button>
+                <button type="button" onclick="loadMerchantCloudStatus(true)" id="btnCheckCloudCode" class="px-3 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-ty-emerald animate-spin hidden" id="cloudCheckSpinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Sincronizar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Contenido: Correo + Caja de Código de Verificación en Vivo -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <!-- Columna Izquierda: Dirección de Reenvío Exclusiva -->
+              <div class="lg:col-span-6 bg-ty-surface p-4 rounded-xl border border-ty-border space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider">Tu Dirección de Reenvío Exclusiva</label>
+                  <span class="text-[10px] font-mono text-ty-emerald font-bold">Zero-Hardware</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="cloudInboundEmailInput" readonly value="Cargando correo..."
+                    class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-ty-border font-mono text-xs text-white selection:bg-ty-emerald selection:text-black focus:outline-none" />
+                  <button type="button" onclick="copyInboundEmail()" id="btnCopyInboundEmail"
+                    class="px-3 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,210,106,0.2)]">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    <span>Copiar</span>
+                  </button>
+                </div>
+                <p class="text-[11px] text-ty-muted leading-relaxed">
+                  Agrega esta dirección en la sección <em>Reenvío</em> de tu Gmail. Nequi te enviará los comprobantes a tu Gmail, y tu Gmail nos lanzará una copia en milisegundos.
+                </p>
+              </div>
+
+              <!-- Columna Derecha: Código de Confirmación de Google en Vivo -->
+              <div class="lg:col-span-6 bg-ty-surface p-4 rounded-xl border border-ty-border space-y-2.5" id="cloudVerificationContainer">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider">Código de Confirmación de Google</label>
+                  <span id="cloudPollingPill" class="text-[10px] font-mono text-ty-muted flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-ty-emerald animate-pulse"></span> Escuchando en vivo
+                  </span>
+                </div>
+
+                <!-- Estado: Esperando código -->
+                <div id="cloudCodePendingBox" class="p-3.5 rounded-lg bg-black/30 border border-dashed border-ty-border text-center space-y-1">
+                  <p class="text-xs text-white/90 font-medium">Esperando código de confirmación de Gmail...</p>
+                  <p class="text-[11px] text-ty-muted">Al agregar tu dirección en Gmail, Google nos enviará el código y aparecerá aquí automáticamente en 3 segundos.</p>
+                </div>
+
+                <!-- Estado: Código recibido con éxito -->
+                <div id="cloudCodeSuccessBox" class="hidden p-3.5 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 flex items-center justify-between gap-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
+                  <div>
+                    <div class="text-[10px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1">
+                      <span>✓</span> ¡Código de Google Detectado!
+                    </div>
+                    <div id="cloudGoogleCodeValue" class="text-2xl font-mono font-extrabold text-white tracking-widest mt-0.5 select-all">--- --- ---</div>
+                    <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted mt-0.5">Recibido hace un momento</div>
+                  </div>
+                  <div class="flex flex-col gap-1.5 shrink-0">
+                    <button type="button" onclick="copyGoogleCode()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all flex items-center gap-1 shadow-sm">
+                      <span>Copiar Código</span>
+                    </button>
+                    <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-[10px] font-mono text-ty-cyan hover:underline text-center">
+                      Confirmar en Gmail ↗
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2541,6 +2648,119 @@
   </div>
 
   <!-- ================================================================== -->
+  <!-- MODAL: GUÍA DE CONFIGURACIÓN DE REENVÍO GMAIL (RUTA CLOUD) -->
+  <!-- ================================================================== -->
+  <div id="gmailGuideModal"
+    class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div
+      class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-2xl w-full p-5 sm:p-7 space-y-6 relative shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
+      <button onclick="closeGmailGuideModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1.5 rounded-lg bg-ty-surface border border-ty-border transition-colors"
+        title="Cerrar ventana">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Encabezado del Modal -->
+      <div class="flex items-start gap-3.5 border-b border-ty-border pb-4 pr-8">
+        <div
+          class="w-12 h-12 rounded-xl bg-ty-cyan/15 border border-ty-cyan/40 flex items-center justify-center text-ty-cyan shrink-0 shadow-[0_0_20px_rgba(0,229,255,0.25)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-lg font-bold text-white">Guía en 3 Pasos: Reenvío de Nequi en Gmail</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 font-bold">Sin Celular Extra</span>
+          </div>
+          <p class="text-xs text-ty-muted mt-1">
+            Configura tu cuenta de correo para que los comprobantes bancarios de Nequi se reenvíen a TransferYA en tiempo real.
+          </p>
+        </div>
+      </div>
+
+      <!-- Pasos Interactivos -->
+      <div class="space-y-4 text-xs">
+        <!-- Paso 1 -->
+        <div class="p-4 rounded-xl bg-ty-surface border border-ty-border space-y-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-lg bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30 font-mono font-bold flex items-center justify-center shrink-0">1</span>
+            <h4 class="font-bold text-white text-sm">Añade tu dirección de reenvío en Gmail</h4>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-8">
+            Desde tu computador o navegador, abre tu cuenta de Gmail. Haz clic en el engranaje ⚙️ <strong>(Configuración)</strong> &gt; <strong>Ver todos los ajustes</strong> &gt; pestaña <strong>"Reenvío y correo POP/IMAP"</strong> y pulsa en <strong>"Añadir una dirección de reenvío"</strong>.
+          </p>
+          <div class="pl-8 pt-1">
+            <div class="flex items-center gap-2 max-w-lg">
+              <input type="text" id="modalGuideInboundEmail" readonly value="Cargando..."
+                class="flex-1 px-3 py-1.5 rounded-lg bg-black/50 border border-ty-border font-mono text-[11px] text-white selection:bg-ty-emerald selection:text-black focus:outline-none" />
+              <button type="button" onclick="copyInboundEmail()"
+                class="px-3 py-1.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all shrink-0">
+                Copiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="p-4 rounded-xl bg-ty-surface border border-ty-border space-y-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-lg bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30 font-mono font-bold flex items-center justify-center shrink-0">2</span>
+            <h4 class="font-bold text-white text-sm">Copia el Código de Confirmación de Google</h4>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-8">
+            Google enviará inmediatamente un correo de verificación. Nuestro servidor lo captura automáticamente y te mostrará el código aquí en menos de 5 segundos:
+          </p>
+          <div class="pl-8 pt-1">
+            <div id="modalGuideCodeBox" class="p-3 rounded-lg bg-black/40 border border-ty-border flex items-center justify-between gap-3 max-w-lg">
+              <div>
+                <span class="text-[10px] font-mono text-ty-muted uppercase block">Código detectado en vivo:</span>
+                <span id="modalGuideCodeValue" class="text-lg font-mono font-extrabold text-ty-emerald tracking-wider">Esperando a que lo solicites...</span>
+              </div>
+              <button type="button" onclick="copyGoogleCode()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all">
+                Copiar Código
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 3: Filtro Estricto de Privacidad -->
+        <div class="p-4 rounded-xl bg-ty-emerald/10 border border-ty-emerald/30 space-y-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-lg bg-ty-emerald text-black font-mono font-bold flex items-center justify-center shrink-0">3</span>
+            <h4 class="font-bold text-white text-sm">Crea el Filtro de Seguridad (¡Privacidad Garantizada!)</h4>
+          </div>
+          <div class="text-ty-muted space-y-2 leading-relaxed pl-8">
+            <p>
+              En Gmail ve a la pestaña <strong>"Filtros y direcciones bloqueadas"</strong> &gt; pulsa <strong>"Crear un filtro nuevo"</strong>:
+            </p>
+            <div class="p-2.5 rounded-lg bg-black/50 border border-ty-border/60 font-mono text-[11px] text-white/90 space-y-1">
+              <div><strong class="text-ty-cyan">De:</strong> <span class="text-ty-emerald">escribenos@nequi.com</span></div>
+              <div><strong class="text-ty-cyan">Acción:</strong> Marcar casilla <em>"Reenviar a: tu_correo_transferya"</em></div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-ty-rose/10 border border-ty-rose/30 text-white/90">
+              <strong class="text-ty-rose">⚠️ AVISO DE SEGURIDAD Y PRIVACIDAD (Habeas Data):</strong><br>
+              ¡Nunca actives la opción general de "Reenviar todos los correos entrantes"! Al usar el filtro anterior, <strong>únicamente se reenviarán los comprobantes de Nequi</strong>. Tus correos familiares, facturas y mensajes personales permanecen 100% privados.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="border-t border-ty-border pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span class="text-[11px] font-mono text-ty-muted">¿Dudas? Nuestro soporte está listo en WhatsApp.</span>
+        <button onclick="closeGmailGuideModal()"
+          class="w-full sm:w-auto px-6 py-2 rounded-xl bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all">
+          ¡Listo, entendido!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <!-- MODAL: RECUPERAR CONTRASEÑA (OLVIDÉ MI CONTRASEÑA) -->
   <!-- ================================================================== -->
   <div id="forgotPasswordModal"
@@ -3531,6 +3751,7 @@
       populateDeviceSelectors();
       evaluateDeviceHealthViews(false);
       renderCashiersList();
+      loadMerchantCloudStatus(false);
 
       const noDevicesBanner = document.getElementById("noDevicesBanner");
       if (merchantDevices.length === 0) {
@@ -3964,7 +4185,11 @@
           : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40">DAVIPLATA</span>`;
         const countable = isCountableMoney(tx);
         const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
-        const boxInfo = tx.payment_reference ? `${getDeviceLabel(tx.device_id)} • ${tx.payment_reference}` : getDeviceLabel(tx.device_id);
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const boxLabel = isCloud
+          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 inline-flex items-center gap-1" title="Procesado vía Respaldo Cloud (Gmail)">☁️ Cloud</span>`
+          : `<span>⚡ ${escapeHtml(getDeviceLabel(tx.device_id))}</span>`;
+        const boxInfo = tx.payment_reference ? `${boxLabel} <span class="text-ty-muted">• ${escapeHtml(tx.payment_reference)}</span>` : boxLabel;
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
 
         return `
@@ -3998,7 +4223,7 @@
               <span class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">${amtText}</span>
             </div>
             <div class="flex items-center justify-between text-xs font-mono text-ty-muted">
-              <span>${getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
+              <span>${tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" ? "☁️ Respaldo Cloud" : getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
               ${getStatusBadgeHtml(tx)}
             </div>
           </div>
@@ -4609,6 +4834,18 @@
     }
 
     function getDeviceConnectionHealth(device, nowMs = Date.now()) {
+      if (device?.id?.startsWith("cloud_email_")) {
+        return {
+          state: "ONLINE",
+          badgeLabel: "NUBE ACTIVA",
+          dotClass: "bg-ty-cyan shadow-[0_0_8px_rgba(0,229,255,0.6)]",
+          badgeClass: "bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30",
+          cardBorderClass: "border-ty-cyan/40",
+          relativeText: "Siempre en guardia (Serverless Cloud)",
+          pingColorClass: "text-ty-cyan"
+        };
+      }
+
       if (!device || device.status !== "ACTIVE") {
         const isRevoked = device?.status === "REVOKED";
         return {
@@ -4714,6 +4951,9 @@
       }
 
       const offlineBanner = document.getElementById("devicesOfflineBanner");
+      const cloudRedundancyBanner = document.getElementById("cloudRedundancyActiveBanner");
+      const isCloudConfigured = merchantDevices.some((d) => d.id?.startsWith("cloud_email_") && d.status === "ACTIVE");
+
       if (offlineBanner) {
         if (currentOfflineIds.size > 0) {
           document.getElementById("devicesOfflineBannerTitle").textContent =
@@ -4723,8 +4963,13 @@
           document.getElementById("devicesOfflineBannerBody").textContent =
             `${offlineNames.join(", ")} lleva más de 5 minutos sin conexión. Verifica que el celular tenga internet y la app TransferYA abierta.`;
           offlineBanner.classList.remove("hidden");
+          if (cloudRedundancyBanner) {
+            if (isCloudConfigured) cloudRedundancyBanner.classList.remove("hidden");
+            else cloudRedundancyBanner.classList.add("hidden");
+          }
         } else {
           offlineBanner.classList.add("hidden");
+          if (cloudRedundancyBanner) cloudRedundancyBanner.classList.add("hidden");
         }
       }
 
@@ -4777,21 +5022,22 @@
                 <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose hover:bg-ty-rose/20">
                   Eliminar
                 </button>
-                <button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald hover:bg-ty-emerald/25">
-                  Ver QR
-                </button>
+                ${d.id.startsWith("cloud_email_")
+                  ? `<button onclick="openGmailGuideModal()" class="px-2.5 py-1 rounded bg-ty-cyan/15 border border-ty-cyan/40 text-xs font-mono font-bold text-ty-cyan hover:bg-ty-cyan/25">Guía Gmail</button>`
+                  : `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald hover:bg-ty-emerald/25">Ver QR</button>`}
               </div>
             </div>
           </div>
         `;
       }).join("");
 
+      const phoneCount = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_")).length;
       const addSlot = `
         <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-ty-emerald/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[190px]">
           <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </div>
-          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Celular #${merchantDevices.length + 1}</h3>
+          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Celular #${phoneCount + 1}</h3>
           <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para conectar otro celular de caja a ${escapeHtml(currentMerchant.name)}.</p>
         </div>
       `;
@@ -4970,6 +5216,161 @@
       if (!modal) return;
       modal.classList.add("hidden");
       document.body.classList.remove("overflow-hidden");
+    }
+
+    // =========================================================================
+    // 5.B RUTA CLOUD (RESPALDO POR GMAIL & HANDSHAKE DE GOOGLE)
+    // =========================================================================
+    let cloudPollingInterval = null;
+    let lastKnownGoogleCode = null;
+
+    function openGmailGuideModal() {
+      const modal = document.getElementById("gmailGuideModal");
+      if (!modal) return;
+      modal.classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+      const emailInput = document.getElementById("cloudInboundEmailInput");
+      const guideEmail = document.getElementById("modalGuideInboundEmail");
+      if (emailInput && guideEmail) {
+        guideEmail.value = emailInput.value;
+      }
+      loadMerchantCloudStatus();
+      startCloudPolling();
+    }
+
+    function closeGmailGuideModal() {
+      const modal = document.getElementById("gmailGuideModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    async function loadMerchantCloudStatus(showToastFeedback = false) {
+      if (!currentMerchant?.id || !currentSession?.access_token) return;
+      const spinner = document.getElementById("cloudCheckSpinner");
+      if (spinner) spinner.classList.remove("hidden");
+
+      try {
+        const res = await fetch(`/api/v1/merchants/cloud-status?merchantId=${encodeURIComponent(currentMerchant.id)}`, {
+          headers: {
+            "Authorization": `Bearer ${currentSession.access_token}`
+          }
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success || !json.data) {
+          if (showToastFeedback) showToast("No se pudo sincronizar el estado Cloud", true);
+          return;
+        }
+
+        const data = json.data;
+        const emailInput = document.getElementById("cloudInboundEmailInput");
+        const guideEmail = document.getElementById("modalGuideInboundEmail");
+        if (emailInput) {
+          emailInput.value = data.inboundEmail || `pago+${currentMerchant.id}@inbound.transferya.app`;
+        }
+        if (guideEmail) {
+          guideEmail.value = data.inboundEmail || `pago+${currentMerchant.id}@inbound.transferya.app`;
+        }
+
+        const badge = document.getElementById("cloudStatusBadge");
+        if (badge) {
+          if (data.status === "ACTIVE") {
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30";
+            badge.textContent = "● Conectado y en Guardia";
+          } else if (data.status === "REVOKED") {
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-rose/15 text-ty-rose border border-ty-rose/30";
+            badge.textContent = "Pausado";
+          } else {
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30";
+            badge.textContent = "○ Listo para Vincular";
+          }
+        }
+
+        // Google Verification Code display
+        const pendingBox = document.getElementById("cloudCodePendingBox");
+        const successBox = document.getElementById("cloudCodeSuccessBox");
+        const codeValEl = document.getElementById("cloudGoogleCodeValue");
+        const codeTimeEl = document.getElementById("cloudGoogleCodeTime");
+        const confirmLink = document.getElementById("cloudGoogleConfirmLink");
+        const modalGuideCodeVal = document.getElementById("modalGuideCodeValue");
+
+        if (data.googleVerification?.code) {
+          const rawCode = String(data.googleVerification.code).trim();
+          lastKnownGoogleCode = rawCode;
+          const formattedCode = rawCode.length === 9
+            ? `${rawCode.slice(0, 3)} ${rawCode.slice(3, 6)} ${rawCode.slice(6, 9)}`
+            : rawCode;
+
+          if (pendingBox) pendingBox.classList.add("hidden");
+          if (successBox) successBox.classList.remove("hidden");
+          if (codeValEl) codeValEl.textContent = formattedCode;
+          if (modalGuideCodeVal) modalGuideCodeVal.textContent = formattedCode;
+
+          if (codeTimeEl && data.googleVerification.receivedAt) {
+            const diffSec = Math.max(0, Math.round((Date.now() - data.googleVerification.receivedAt) / 1000));
+            codeTimeEl.textContent = diffSec < 60 ? `Recibido hace ${diffSec} segundos` : `Recibido a las ${new Date(data.googleVerification.receivedAt).toLocaleTimeString('es-CO')}`;
+          }
+          if (confirmLink && data.googleVerification.url) {
+            confirmLink.href = data.googleVerification.url;
+            confirmLink.classList.remove("hidden");
+          }
+          stopCloudPolling();
+        } else {
+          if (pendingBox) pendingBox.classList.remove("hidden");
+          if (successBox) successBox.classList.add("hidden");
+          if (modalGuideCodeVal) modalGuideCodeVal.textContent = "Esperando a que lo solicites...";
+        }
+
+        if (showToastFeedback) {
+          showToast("Estado de Ruta Cloud sincronizado");
+        }
+      } catch (err) {
+        if (showToastFeedback) showToast("Error de conexión al consultar Ruta Cloud", true);
+      } finally {
+        if (spinner) spinner.classList.add("hidden");
+      }
+    }
+
+    function startCloudPolling() {
+      if (cloudPollingInterval) return;
+      cloudPollingInterval = setInterval(() => {
+        loadMerchantCloudStatus(false);
+      }, 4000);
+    }
+
+    function stopCloudPolling() {
+      if (cloudPollingInterval) {
+        clearInterval(cloudPollingInterval);
+        cloudPollingInterval = null;
+      }
+    }
+
+    function copyInboundEmail() {
+      const el = document.getElementById("cloudInboundEmailInput");
+      if (!el || !el.value) return;
+      navigator.clipboard.writeText(el.value).then(() => {
+        showToast("¡Dirección de reenvío copiada al portapapeles!");
+      }).catch(() => {
+        el.select();
+        document.execCommand("copy");
+        showToast("¡Dirección copiada!");
+      });
+    }
+
+    function copyGoogleCode() {
+      if (!lastKnownGoogleCode) {
+        const el = document.getElementById("cloudGoogleCodeValue");
+        if (el) lastKnownGoogleCode = el.textContent.replace(/\s+/g, '');
+      }
+      if (!lastKnownGoogleCode) {
+        showToast("Aún no ha llegado ningún código de Google", true);
+        return;
+      }
+      navigator.clipboard.writeText(lastKnownGoogleCode).then(() => {
+        showToast("¡Código de Google copiado al portapapeles!");
+      }).catch(() => {
+        showToast("Código: " + lastKnownGoogleCode);
+      });
     }
 
     function startCountdown(durationSeconds) {
@@ -5617,6 +6018,14 @@
       } else {
         releaseWakeLock();
       }
+
+      if (tabId === "devices") {
+        loadMerchantCloudStatus();
+        startCloudPolling();
+      } else {
+        stopCloudPolling();
+      }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
