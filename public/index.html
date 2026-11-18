@@ -924,9 +924,9 @@
         <div id="cloudRedundancyActiveBanner"
           class="hidden p-3.5 rounded-xl bg-ty-cyan/10 border border-ty-cyan/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div class="flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-lg bg-ty-cyan/20 border border-ty-cyan/40 text-ty-cyan flex items-center justify-center shrink-0">☁️</span>
+            <span class="w-8 h-8 rounded-lg bg-ty-cyan/20 border border-ty-cyan/40 text-ty-cyan flex items-center justify-center shrink-0">✉️</span>
             <div>
-              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">Redundancia Cloud en Guardia</div>
+              <div class="text-xs font-mono font-bold uppercase text-ty-cyan">Redundancia Gmail en Guardia</div>
               <p class="text-xs text-white/90">Aunque tu celular Centinela esté desconectado, tus comprobantes de Nequi siguen llegando por Reenvío de Gmail.</p>
             </div>
           </div>
@@ -1404,8 +1404,8 @@
           <div
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Celulares, Cajas y Ruta Cloud (Gmail)</h2>
-              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio y la Ruta Cloud para recibir alertas de Nequi sin depender de hardware</p>
+              <h2 class="text-lg font-bold text-white">Celulares, Cajas y Reenvío Gmail</h2>
+              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio y la conexión con Gmail para recibir alertas de Nequi sin depender de hardware</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="toggleQuickStartGuide(true); switchTab('dashboard');"
@@ -1445,7 +1445,7 @@
                 </div>
                 <div>
                   <div class="flex flex-wrap items-center gap-2">
-                    <h3 class="text-base font-bold text-white">Canal B: Respaldo Cloud (Reenvío Gmail)</h3>
+                    <h3 class="text-base font-bold text-white">Canal B: Respaldo Gmail (Reenvío Automático)</h3>
                     <span id="cloudStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-surface-high text-ty-muted border border-ty-border">Consultando...</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25">Redundancia Activa</span>
                   </div>
@@ -3809,6 +3809,9 @@
     }
 
     function getDeviceLabel(deviceId) {
+      if (deviceId?.startsWith("cloud_email_")) {
+        return "Gmail";
+      }
       const found = merchantDevices.find((d) => d.id === deviceId);
       return found?.label || deviceId || "Caja";
     }
@@ -4187,7 +4190,7 @@
         const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
         const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
         const boxLabel = isCloud
-          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 inline-flex items-center gap-1" title="Procesado vía Respaldo Cloud (Gmail)">☁️ Cloud</span>`
+          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 inline-flex items-center gap-1" title="Procesado vía Reenvío Gmail">✉️ Gmail</span>`
           : `<span>⚡ ${escapeHtml(getDeviceLabel(tx.device_id))}</span>`;
         const boxInfo = tx.payment_reference ? `${boxLabel} <span class="text-ty-muted">• ${escapeHtml(tx.payment_reference)}</span>` : boxLabel;
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
@@ -4223,7 +4226,7 @@
               <span class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">${amtText}</span>
             </div>
             <div class="flex items-center justify-between text-xs font-mono text-ty-muted">
-              <span>${tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" ? "☁️ Respaldo Cloud" : getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
+              <span>${tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" ? "✉️ Gmail" : getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
               ${getStatusBadgeHtml(tx)}
             </div>
           </div>
@@ -4837,11 +4840,11 @@
       if (device?.id?.startsWith("cloud_email_")) {
         return {
           state: "ONLINE",
-          badgeLabel: "NUBE ACTIVA",
+          badgeLabel: "GMAIL ACTIVO",
           dotClass: "bg-ty-cyan shadow-[0_0_8px_rgba(0,229,255,0.6)]",
           badgeClass: "bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30",
           cardBorderClass: "border-ty-cyan/40",
-          relativeText: "Siempre en guardia (Serverless Cloud)",
+          relativeText: "Siempre en guardia (Reenvío Gmail)",
           pingColorClass: "text-ty-cyan"
         };
       }
@@ -4987,7 +4990,7 @@
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full ${health.dotClass}"></span>
-                  <span class="font-bold text-white text-base">${escapeHtml(d.label || d.id)}</span>
+                  <span class="font-bold text-white text-base">${escapeHtml(d.id.startsWith("cloud_email_") ? "Respaldo Gmail" : (d.label || d.id))}</span>
                 </div>
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${health.badgeClass}">${escapeHtml(health.badgeLabel)}</span>
               </div>
@@ -5322,10 +5325,10 @@
         }
 
         if (showToastFeedback) {
-          showToast("Estado de Ruta Cloud sincronizado");
+          showToast("Estado de Reenvío Gmail sincronizado");
         }
       } catch (err) {
-        if (showToastFeedback) showToast("Error de conexión al consultar Ruta Cloud", true);
+        if (showToastFeedback) showToast("Error de conexión al consultar Reenvío Gmail", true);
       } finally {
         if (spinner) spinner.classList.add("hidden");
       }
