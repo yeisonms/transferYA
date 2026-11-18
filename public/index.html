@@ -4200,7 +4200,7 @@
               <div class="font-bold text-white text-sm">${escapeHtml(tx.sender_name || tx.raw_title || "Notificación")}</div>
               <div class="text-[11px] text-ty-muted truncate max-w-xs">${escapeHtml(tx.raw_text || "")}</div>
             </td>
-            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${escapeHtml(boxInfo)}</td>
+            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${boxInfo}</td>
             <td class="py-3 px-4 whitespace-nowrap">${getStatusBadgeHtml(tx)}</td>
             <td class="py-3 px-4 font-mono text-xs text-ty-cyan text-right whitespace-nowrap">${tx.latency_ms > 0 ? `${tx.latency_ms} ms` : "--"}</td>
             <td class="py-3 px-4 text-right tabular-nums text-sm whitespace-nowrap ${countable ? "text-white font-extrabold" : "text-ty-muted line-through"}">${amtText}</td>
