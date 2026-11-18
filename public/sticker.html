@@ -147,11 +147,13 @@
           <label class="text-xs font-bold uppercase tracking-wider text-[#0E1B2B]/60">1. Formato a Imprimir</label>
           <select id="formatSelect" onchange="updatePreview()"
             class="w-full px-4 py-2.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/15 text-sm font-semibold text-[#0E1B2B] focus:outline-none focus:border-[#19C37D]">
-            <option value="sheet">Hoja Completa A4/Carta (8 Stickers con guías de corte)</option>
-            <option value="strip">Tira de Mostrador (1 grande para borde de caja)</option>
-            <option value="square">Compañero de QR Cuadrado (Para pegar junto al acrílico)</option>
+            <option value="circle-sheet" selected>⭐ Sello Redondo de Seguridad (4 por hoja - Ø 9.5 cm) — Más Visible</option>
+            <option value="circle-giant">Sello Redondo Gigante de Vitrina/Vidrio (1 por hoja - Ø 18 cm)</option>
+            <option value="qr-topper">Compañero de QR Acrílico (Topper 10 x 4.5 cm)</option>
+            <option value="strip">Tira de Mostrador (1 grande para borde de caja - 18 x 6 cm)</option>
+            <option value="sheet">Hoja Clásica (8 Etiquetas Rectangulares)</option>
           </select>
-          <span class="text-[11px] text-[#0E1B2B]/60 block">Recomendado: Hoja completa para recortar varios con tijeras.</span>
+          <span class="text-[11px] text-[#0E1B2B]/60 block">Recomendado: Sello redondo para máxima visibilidad en caja.</span>
         </div>
 
         <!-- 2. Nombre del Negocio (Opcional) -->
@@ -159,7 +161,7 @@
           <label class="text-xs font-bold uppercase tracking-wider text-[#0E1B2B]/60">2. Nombre de tu Negocio (Opcional)</label>
           <input type="text" id="merchantNameInput" oninput="updatePreview()" placeholder="Ej: La Sinvergüencería Burguer"
             class="w-full px-4 py-2.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/15 text-sm font-semibold text-[#0E1B2B] placeholder:text-[#0E1B2B]/40 focus:outline-none focus:border-[#19C37D]" />
-          <span class="text-[11px] text-[#0E1B2B]/60 block">Se incluirá en una esquina del sticker.</span>
+          <span class="text-[11px] text-[#0E1B2B]/60 block">Se rotulará en el sello o badge.</span>
         </div>
 
         <!-- 3. Estilo / Color -->
@@ -167,11 +169,11 @@
           <label class="text-xs font-bold uppercase tracking-wider text-[#0E1B2B]/60">3. Estilo de Color</label>
           <select id="themeSelect" onchange="updatePreview()"
             class="w-full px-4 py-2.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/15 text-sm font-semibold text-[#0E1B2B] focus:outline-none focus:border-[#19C37D]">
-            <option value="light">Clásico Blanco & Verde (Ahorro de tinta)</option>
-            <option value="mango">Mango Antifraude (Alta visibilidad amarilla)</option>
-            <option value="dark">Negro Noche (Elegante para bares y restaurantes)</option>
+            <option value="mango" selected>Mango Antifraude (#FFB020) — Máximo Contraste y Alerta</option>
+            <option value="light">Clásico Blanco & Verde — Ahorro de Tinta</option>
+            <option value="dark">Negro Noche Premium (#0E1B2B) — Elegante para Bares y Restaurantes</option>
           </select>
-          <span class="text-[11px] text-[#0E1B2B]/60 block">Para impresoras de tinta común usa "Clásico Blanco".</span>
+          <span class="text-[11px] text-[#0E1B2B]/60 block">Mango es el más llamativo contra estafas.</span>
         </div>
 
       </div>
@@ -227,24 +229,159 @@
   <script>
     function getStickerTemplate(type, theme, merchantName) {
       // Configuración de temas de color
-      let bgClass = "bg-white text-[#0E1B2B] border-2 border-[#0E1B2B]";
-      let badgeClass = "bg-[#19C37D]/15 text-[#0B7A4B] border border-[#19C37D]/40";
+      let bgClass = "bg-white text-[#0E1B2B] border-4 border-[#0E1B2B]";
+      let badgeClass = "bg-[#19C37D]/20 text-[#0B7A4B] border border-[#19C37D]/40";
       let brandColor = "#0E1B2B";
       let greenColor = "#19C37D";
       let secondaryText = "text-[#0E1B2B]/75";
+      let iconBg = "bg-[#0E1B2B]";
+      let iconStroke = "#19C37D";
+      let titleHighlight = "text-[#19C37D]";
 
       if (theme === 'mango') {
-        bgClass = "bg-[#FFB020] text-[#0E1B2B] border-2 border-[#0E1B2B]";
-        badgeClass = "bg-white/80 text-[#0E1B2B] border border-[#0E1B2B]/20";
+        bgClass = "bg-[#FFB020] text-[#0E1B2B] border-4 border-[#0E1B2B]";
+        badgeClass = "bg-[#0E1B2B] text-white border border-[#0E1B2B]";
         secondaryText = "text-[#0E1B2B]/90";
+        iconBg = "bg-[#0E1B2B]";
+        iconStroke = "#19C37D";
+        titleHighlight = "text-[#0E1B2B] underline decoration-[#0E1B2B] decoration-2";
       } else if (theme === 'dark') {
-        bgClass = "bg-[#0E1B2B] text-white border-2 border-[#19C37D]";
-        badgeClass = "bg-[#19C37D]/20 text-[#19C37D] border border-[#19C37D]/40";
+        bgClass = "bg-[#0E1B2B] text-white border-4 border-[#19C37D]";
+        badgeClass = "bg-[#19C37D] text-[#0E1B2B] border border-[#19C37D]";
         brandColor = "#FFFFFF";
         secondaryText = "text-white/80";
+        iconBg = "bg-white/10";
+        iconStroke = "#19C37D";
+        titleHighlight = "text-[#19C37D]";
       }
 
-      const businessLabel = merchantName ? `<span class="text-[10px] font-bold uppercase tracking-wider opacity-75">${merchantName}</span>` : '';
+      const businessLabel = merchantName ? `<span class="px-2.5 py-0.5 rounded-full bg-black/10 text-[10px] font-black uppercase tracking-wider block mx-auto max-w-[200px] truncate">${merchantName}</span>` : '';
+
+      // TIPO: SELLO REDONDO DE SEGURIDAD (Diámetro ~9.5 cm / 4 por hoja)
+      if (type === 'circle') {
+        return `
+          <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-full ${bgClass} p-4 sm:p-5 shadow-sm flex flex-col items-center justify-between text-center mx-auto overflow-hidden">
+            <!-- Arco superior / Badge de seguridad -->
+            <div class="mt-1">
+              <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${badgeClass} px-3 py-0.5 rounded-full inline-block shadow-sm">
+                ● AUDIO &amp; WHATSAPP EN VIVO ●
+              </span>
+            </div>
+
+            <!-- Centro: Ícono Check que suena + Titular Contundente -->
+            <div class="flex flex-col items-center gap-1.5 my-auto">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${iconBg} p-2.5 border border-white/20 flex items-center justify-center shadow-md">
+                <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
+                  <path d="M10 34 L23 47 L44 18" stroke="${iconStroke}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <div class="space-y-0.5">
+                <h3 class="text-base sm:text-lg font-black uppercase tracking-tight leading-tight">
+                  AQUÍ VERIFICAMOS<br><span class="${titleHighlight}">TUS PAGOS</span>
+                </h3>
+                <p class="text-[10px] sm:text-[11px] font-bold ${secondaryText} leading-snug">
+                  Alerta en voz alta y confirmación en caja
+                </p>
+              </div>
+
+              ${businessLabel}
+            </div>
+
+            <!-- Pie: Bancos Soportados + Marca TransferYA -->
+            <div class="w-full pb-1 border-t border-current/20 pt-1.5 flex flex-col items-center gap-0.5">
+              <span class="text-[9px] sm:text-[10px] font-mono font-bold tracking-tight opacity-80">
+                Nequi • DaviPlata • Bre-B • Bancolombia
+              </span>
+              <span class="text-[10px] font-black tracking-tight">
+                transfer<span class="text-[#19C37D]">YA</span>
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      // TIPO: SELLO REDONDO GIGANTE DE VITRINA/VIDRIO (Diámetro ~18 cm / 1 por hoja)
+      if (type === 'circle-giant') {
+        return `
+          <div class="relative w-80 h-80 sm:w-[420px] sm:h-[420px] rounded-full ${bgClass} p-8 sm:p-10 shadow-lg flex flex-col items-center justify-between text-center mx-auto overflow-hidden">
+            <!-- Badge Superior -->
+            <div class="mt-2">
+              <span class="text-xs sm:text-sm font-black uppercase tracking-widest ${badgeClass} px-5 py-1.5 rounded-full inline-block shadow-sm">
+                🛡️ ZONA PROTEGIDA ANTIFRAUDE
+              </span>
+            </div>
+
+            <!-- Centro Gigante -->
+            <div class="flex flex-col items-center gap-3 my-auto">
+              <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${iconBg} p-3.5 border-2 border-white/25 flex items-center justify-center shadow-xl">
+                <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
+                  <path d="M10 34 L23 47 L44 18" stroke="${iconStroke}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <div class="space-y-1">
+                <h2 class="text-xl sm:text-2xl font-black uppercase tracking-tight leading-tight">
+                  AQUÍ VERIFICAMOS<br><span class="${titleHighlight}">TUS PAGOS EN VIVO</span>
+                </h2>
+                <p class="text-xs sm:text-sm font-bold ${secondaryText} max-w-xs mx-auto">
+                  El sistema canta cada transferencia en voz alta y avisa al WhatsApp de la caja al instante.
+                </p>
+              </div>
+
+              ${businessLabel ? `<div class="px-3 py-1 rounded-lg bg-black/10 text-xs font-black uppercase tracking-wider">${businessLabel}</div>` : ''}
+
+              <div class="px-3 py-1.5 rounded-xl bg-black/10 border border-current/15 text-[10px] sm:text-xs font-bold">
+                <span>⚠️ Por favor espere la confirmación sonora de la caja antes de retirar mercancía</span>
+              </div>
+            </div>
+
+            <!-- Pie Gigante -->
+            <div class="w-full pb-2 border-t-2 border-current/20 pt-2 flex flex-col items-center gap-0.5">
+              <span class="text-xs font-mono font-bold tracking-tight opacity-90">
+                Nequi • DaviPlata • Bre-B • Bancolombia
+              </span>
+              <span class="text-sm font-black tracking-tight">
+                transfer<span class="text-[#19C37D]">YA</span>
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      // TIPO: COMPAÑERO DE QR ACRÍLICO (Topper / Base 10 x 4.5 cm)
+      if (type === 'qr-topper') {
+        return `
+          <div class="relative rounded-2xl ${bgClass} p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-4 max-w-md mx-auto">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl ${iconBg} p-2 border border-white/20 shrink-0 flex items-center justify-center shadow-sm">
+                <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
+                  <path d="M10 34 L23 47 L44 18" stroke="${iconStroke}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs sm:text-sm font-black uppercase tracking-tight">Verificación en Vivo</span>
+                  ${businessLabel}
+                </div>
+                <p class="text-[10px] sm:text-[11px] font-bold ${secondaryText} leading-snug">
+                  Tu pago canta en la caja y avisa por WhatsApp.
+                </p>
+              </div>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="text-xs font-mono font-black block">transfer<span class="text-[#19C37D]">YA</span></span>
+              <span class="text-[8px] uppercase font-bold block opacity-75">Anti-Pantallazos</span>
+            </div>
+          </div>
+        `;
+      }
 
       // TIPO 1: Tira Horizontal para mostrador
       if (type === 'strip') {
@@ -252,11 +389,11 @@
           <div class="relative rounded-2xl ${bgClass} p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
             <div class="flex items-center gap-3.5">
               <!-- Check que suena -->
-              <div class="w-12 h-12 rounded-xl bg-white/90 p-2 border border-[#0E1B2B]/20 shrink-0 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-xl ${iconBg} p-2 border border-white/20 shrink-0 flex items-center justify-center">
                 <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
-                  <path d="M10 34 L23 47 L44 18" stroke="${greenColor}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${greenColor}" stroke-width="4.5" stroke-linecap="round"/>
-                  <path d="M55 18 C60 24 60 38 55 44" stroke="${greenColor}" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M10 34 L23 47 L44 18" stroke="${iconStroke}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="${iconStroke}" stroke-width="4.5" stroke-linecap="round"/>
                 </svg>
               </div>
               <div>
@@ -281,52 +418,16 @@
         `;
       }
 
-      // TIPO 2: Cuadrado compañero de QR (Ideal para poner al lado del QR)
-      if (type === 'square') {
-        return `
-          <div class="relative rounded-3xl ${bgClass} p-6 shadow-sm flex flex-col items-center text-center justify-between gap-4 max-w-[320px] mx-auto aspect-square">
-            ${businessLabel ? `<div class="w-full text-center">${businessLabel}</div>` : ''}
-
-            <!-- Check que suena grande -->
-            <div class="w-20 h-20 rounded-2xl bg-white/90 p-3 border border-[#0E1B2B]/20 flex items-center justify-center shadow-inner">
-              <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
-                <path d="M10 34 L23 47 L44 18" stroke="${greenColor}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${greenColor}" stroke-width="4.5" stroke-linecap="round"/>
-                <path d="M55 18 C60 24 60 38 55 44" stroke="${greenColor}" stroke-width="4.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-
-            <div class="space-y-1">
-              <span class="text-xs font-bold uppercase tracking-wider ${badgeClass} px-2.5 py-0.5 rounded-full inline-block">
-                Verificación en Vivo
-              </span>
-              <h2 class="text-xl font-extrabold leading-tight">
-                Aquí verificamos tus pagos
-              </h2>
-              <p class="text-[11px] ${secondaryText} font-medium leading-relaxed">
-                El sistema canta en voz alta y avisa al WhatsApp de la caja de inmediato.
-              </p>
-            </div>
-
-            <div class="w-full border-t border-current/20 pt-2 flex items-center justify-between text-[10px] font-bold">
-              <span>Nequi · DaviPlata · Bre-B</span>
-              <span>transfer<strong class="text-[#19C37D]">YA</strong></span>
-            </div>
-          </div>
-        `;
-      }
-
-      // TIPO 3: Sticker estándar para la grilla de la hoja completa
+      // TIPO: Sticker estándar para la grilla de la hoja completa (rectangular clásico)
       return `
-        <div class="relative rounded-2xl ${bgClass} p-3.5 shadow-none flex flex-col justify-between gap-2.5 h-full border-2 border-black">
-          
+        <div class="relative rounded-2xl ${bgClass} p-3.5 shadow-none flex flex-col justify-between gap-2.5 h-full">
           <div class="flex items-start justify-between gap-2">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-lg bg-white p-1 border border-black/20 shrink-0 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-lg ${iconBg} p-1 border border-white/20 shrink-0 flex items-center justify-center">
                 <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
-                  <path d="M10 34 L23 47 L44 18" stroke="${greenColor}" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${greenColor}" stroke-width="5" stroke-linecap="round"/>
-                  <path d="M55 18 C60 24 60 38 55 44" stroke="${greenColor}" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M10 34 L23 47 L44 18" stroke="${iconStroke}" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="${iconStroke}" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M55 18 C60 24 60 38 55 44" stroke="${iconStroke}" stroke-width="5" stroke-linecap="round"/>
                 </svg>
               </div>
               <div>
@@ -341,7 +442,6 @@
             <span class="text-[9px] tracking-tight opacity-75">Nequi • DaviPlata • Bre-B</span>
             <span class="font-mono">transfer<span class="text-[#19C37D]">YA</span></span>
           </div>
-
         </div>
       `;
     }
@@ -352,7 +452,103 @@
       const merchantName = document.getElementById('merchantNameInput').value.trim();
       const container = document.getElementById('printContainer');
 
-      if (format === 'strip') {
+      if (format === 'circle-sheet') {
+        // 4 sellos redondos por hoja A4/Carta
+        let circleItems = '';
+        for (let i = 0; i < 4; i++) {
+          circleItems += `
+            <div class="relative p-3 border-2 border-dashed border-gray-400 rounded-full flex flex-col items-center justify-center">
+              <span class="no-print absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Cortar círculo</span>
+              ${getStickerTemplate('circle', theme, merchantName)}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div>
+            <div class="print-only hidden mb-4 pb-2 border-b border-gray-200 text-xs flex justify-between items-center text-gray-600">
+              <span class="font-bold">TransferYA • Sellos Redondos Oficiales de Seguridad</span>
+              <span>www.transferya.app</span>
+              <span>Guías de corte circulares con tijera</span>
+            </div>
+
+            <div class="no-print text-center mb-6">
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Hoja con 4 Sellos Redondos Oficiales (Ø 9.5 cm)</span>
+              <span class="text-xs text-gray-400">Tamaño perfecto para mostrador, acrílico de QR y caja registradora</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center items-center">
+              ${circleItems}
+            </div>
+
+            <div class="no-print pt-8 text-center">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Hoja de 4 Sellos Redondos</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'circle-giant') {
+        // 1 sello gigante de vitrina por hoja
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="no-print text-center pb-2">
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Vista previa: Sello Gigante de Vitrina o Vidrio de Caja (Ø 18 cm)</span>
+              <span class="text-xs text-gray-400">Visible a más de 3 metros de distancia</span>
+            </div>
+            
+            <div class="relative p-4 border-2 border-dashed border-gray-400 rounded-full inline-flex flex-col items-center justify-center mx-auto w-full">
+              <span class="no-print absolute top-1 left-1/2 -translate-x-1/2 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Cortar por la línea punteada</span>
+              ${getStickerTemplate('circle-giant', theme, merchantName)}
+            </div>
+
+            <div class="no-print pt-6 text-center">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Sello Gigante de Vitrina</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'qr-topper') {
+        // 4 tiras toppers para soportes de acrílico QR
+        let topperItems = '';
+        for (let i = 0; i < 4; i++) {
+          topperItems += `
+            <div class="relative p-3 border-2 border-dashed border-gray-400 rounded-2xl">
+              <span class="no-print absolute -top-2.5 left-4 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Cortar</span>
+              ${getStickerTemplate('qr-topper', theme, merchantName)}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="no-print text-center pb-2">
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Vista previa: 4 Compañeros Topper de Acrílico QR (10 x 4.5 cm)</span>
+              <span class="text-xs text-gray-400">Pégalo encima o debajo del código QR de Bancolombia / Nequi</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              ${topperItems}
+            </div>
+
+            <div class="no-print pt-6 text-center">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Toppers de Acrílico QR</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'strip') {
         container.innerHTML = `
           <div class="space-y-6">
             <div class="no-print text-center pb-2">
@@ -369,25 +565,8 @@
             </div>
           </div>
         `;
-      } else if (format === 'square') {
-        container.innerHTML = `
-          <div class="space-y-6">
-            <div class="no-print text-center pb-2">
-              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Vista previa: Tarjeta Cuadrada de QR Compañero (10 x 10 cm)</span>
-            </div>
-            ${getStickerTemplate('square', theme, merchantName)}
-            <div class="no-print pt-6 text-center">
-              <button onclick="window.print()" class="px-6 py-3 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-md hover:brightness-105 inline-flex items-center gap-2">
-                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
-                </svg>
-                <span>Imprimir este Sticker Cuadrado</span>
-              </button>
-            </div>
-          </div>
-        `;
       } else {
-        // Hoja completa (8 stickers con guías de corte punteadas)
+        // Hoja clásica (8 stickers rectangulares con guías de corte punteadas)
         let gridItems = '';
         for (let i = 0; i < 8; i++) {
           gridItems += `
@@ -400,15 +579,14 @@
 
         container.innerHTML = `
           <div>
-            <!-- Encabezado técnico visible solo al imprimir en la cabecera de la hoja -->
             <div class="print-only hidden mb-4 pb-2 border-b border-gray-200 text-xs flex justify-between items-center text-gray-600">
-              <span class="font-bold">TransferYA • Stickers Oficiales de Mostrador</span>
-              <span>www.transferya.vercel.app</span>
+              <span class="font-bold">TransferYA • Stickers de Mostrador</span>
+              <span>www.transferya.app</span>
               <span>Líneas de corte con tijera</span>
             </div>
 
             <div class="no-print text-center mb-6">
-              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Hoja Completa A4 / Carta con 8 Stickers y Guías de Corte</span>
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Hoja Completa A4 / Carta con 8 Etiquetas Rectangulares</span>
               <span class="text-xs text-gray-400">Recorta cada uno siguiendo las líneas punteadas</span>
             </div>
 
