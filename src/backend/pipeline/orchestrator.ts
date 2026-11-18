@@ -185,7 +185,7 @@ export class PaymentProcessingPipeline {
         amount: receipt.amount,
         capturedAt: notification.capturedAt,
         currentDeviceId: notification.deviceId,
-        currentNotificationId: notification.id,
+        currentNotificationId: notification.id || notificationId,
         reference: receipt.reference,
         senderName: receipt.senderName,
         rawTitle: notification.rawTitle,
