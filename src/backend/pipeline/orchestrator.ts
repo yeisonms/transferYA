@@ -1,5 +1,9 @@
-import { generatePaymentFingerprint } from '../../domain/idempotency/fingerprint.js';
+import {
+  generateCanonicalPaymentFingerprint,
+  generatePaymentFingerprint,
+} from '../../domain/idempotency/fingerprint.js';
 import { parseBankingNotification } from '../../domain/parser/engine.js';
+import { parseNequiEmailReceipt } from '../../domain/parser/email-parser.js';
 import type {
   ParsedPaymentReceipt,
   ParseResult,
@@ -41,7 +45,7 @@ export class PaymentProcessingPipeline {
   constructor(private readonly deps: PaymentPipelineDependencies) {
     this.parser = deps.parser ?? parseBankingNotification;
     this.fingerprintGenerator =
-      deps.fingerprintGenerator ?? generatePaymentFingerprint;
+      deps.fingerprintGenerator ?? generateCanonicalPaymentFingerprint;
     this.nowProvider = deps.nowProvider ?? (() => Date.now());
     this.billingNoticeCooldownMs =
       deps.billingNoticeCooldownMs ?? 6 * 60 * 60 * 1000;
@@ -131,12 +135,19 @@ export class PaymentProcessingPipeline {
         status: 'PROCESSING',
       });
 
-    // 2. Ejecutar motor de parsing
-    const parseResult = this.parser(
-      notification.rawText,
-      notification.rawTitle,
-      notification.walletPackage,
-    );
+    // 2. Ejecutar motor de parsing (soporta notificaciones push locales y comprobantes de correo inbound)
+    const parseResult =
+      notification.walletPackage === 'com.nequi.inbound.email'
+        ? parseNequiEmailReceipt({
+            from: '',
+            subject: notification.rawTitle,
+            text: notification.rawText,
+          })
+        : this.parser(
+            notification.rawText,
+            notification.rawTitle,
+            notification.walletPackage,
+          );
 
     if (!parseResult.success) {
       await this.deps.notificationRepository.updateNotification(
@@ -156,6 +167,17 @@ export class PaymentProcessingPipeline {
 
     const receipt = parseResult.payment;
 
+    // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
+    let merchantId: string | undefined;
+    try {
+      const earlyRoute = await this.deps.routingService.resolveRoute(notification.deviceId);
+      if (earlyRoute.merchant) {
+        merchantId = earlyRoute.merchant.id;
+      }
+    } catch {
+      // Si la resolución de ruta falla tempranamente, continúa sin merchantId
+    }
+
     // 3. Generar y evaluar Huella de Idempotencia
     const fingerprint = this.fingerprintGenerator(
       receipt,
@@ -164,6 +186,7 @@ export class PaymentProcessingPipeline {
 
     const fpResult = await this.deps.fingerprintRepository.registerFingerprint({
       deviceId: notification.deviceId,
+      merchantId,
       fingerprint,
       wallet: receipt.wallet,
       amount: receipt.amount,
