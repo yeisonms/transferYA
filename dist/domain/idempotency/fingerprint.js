@@ -55,14 +55,48 @@ export function generatePaymentFingerprint(receipt, captureTimestamp, windowBuck
     return createHash('sha256').update(canonicalString, 'utf-8').digest('hex');
 }
 /**
+ * Genera la Huella Canónica Multicanal para arquitecturas híbridas (Centinela Push + Inbound Email).
+ *
+ * 1. Si el comprobante cuenta con una Referencia Bancaria explícita (ej. "Ref: M123456" de Nequi),
+ *    la huella se basa exclusivamente en la billetera y la referencia. Esto garantiza que
+ *    el Push (T=0s) y el Correo (T=15s) generen EXACTAMENTE la misma huella determinista,
+ *    independiente de variaciones en el timestamp o milisegundos.
+ *
+ * 2. Si el comprobante NO incluye referencia bancaria (ej. notificaciones cortas o DaviPlata básico),
+ *    delega en `generatePaymentFingerprint` utilizando un time-bucket de 10 minutos para
+ *    absorber retrasos entre la red celular y el encolado de correos.
+ */
+export function generateCanonicalPaymentFingerprint(receipt, captureTimestamp, windowBucketMinutes = 10) {
+    if ('reference' in receipt && receipt.reference && receipt.reference.trim()) {
+        const cleanRef = receipt.reference.trim().toUpperCase();
+        const canonical = `${receipt.wallet.toUpperCase()}|REF:${cleanRef}`;
+        return createHash('sha256').update(canonical, 'utf-8').digest('hex');
+    }
+    return generatePaymentFingerprint(receipt, captureTimestamp, windowBucketMinutes);
+}
+/**
  * Implementación en memoria del repositorio de huellas para tests unitarios y decoupling de dominio.
- * Aplica la restricción de unicidad lógica: UNIQUE (deviceId, fingerprint).
+ * Aplica la restricción de unicidad lógica:
+ * - A nivel dispositivo: UNIQUE (deviceId, fingerprint)
+ * - A nivel comercio multicanal (si merchantId está presente): UNIQUE (merchantId, fingerprint)
  */
 export class InMemoryPaymentFingerprintRepository {
     records = new Map();
+    recordsByMerchant = new Map();
     async registerFingerprint(record) {
-        const key = `${record.deviceId}:${record.fingerprint}`;
-        const existing = this.records.get(key);
+        // Si viene merchantId, evaluamos unicidad por comercio (multicanal híbrido)
+        if (record.merchantId) {
+            const merchantKey = `${record.merchantId}:${record.fingerprint}`;
+            const existingByMerchant = this.recordsByMerchant.get(merchantKey);
+            if (existingByMerchant) {
+                return {
+                    isDuplicate: true,
+                    existingRecord: existingByMerchant,
+                };
+            }
+        }
+        const deviceKey = `${record.deviceId}:${record.fingerprint}`;
+        const existing = this.records.get(deviceKey);
         if (existing) {
             return {
                 isDuplicate: true,
@@ -74,7 +108,10 @@ export class InMemoryPaymentFingerprintRepository {
             id: record.id ?? `fp_${Math.random().toString(36).substring(2, 11)}`,
             createdAt: record.createdAt ?? Date.now(),
         };
-        this.records.set(key, stored);
+        this.records.set(deviceKey, stored);
+        if (record.merchantId) {
+            this.recordsByMerchant.set(`${record.merchantId}:${record.fingerprint}`, stored);
+        }
         return {
             isDuplicate: false,
         };
@@ -82,5 +119,9 @@ export class InMemoryPaymentFingerprintRepository {
     async findByFingerprint(deviceId, fingerprint) {
         const key = `${deviceId}:${fingerprint}`;
         return this.records.get(key) ?? null;
+    }
+    async findByMerchantFingerprint(merchantId, fingerprint) {
+        const key = `${merchantId}:${fingerprint}`;
+        return this.recordsByMerchant.get(key) ?? null;
     }
 }

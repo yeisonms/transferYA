@@ -25,3 +25,42 @@ export type ParseResult =
       reason: string;
     };
 
+/**
+ * Datos extraídos de un correo de verificación de reenvío de Google (Gmail Forwarding).
+ */
+export interface GoogleForwardingVerification {
+  type: 'GOOGLE_FORWARDING_VERIFICATION';
+  verificationCode: string;
+  confirmationUrl?: string;
+  requestedAddress?: string;
+  rawText: string;
+}
+
+/**
+ * Carga útil de un correo entrante recibido por webhook (Cloudflare / Mailgun / etc).
+ */
+export interface InboundEmailInput {
+  from: string;
+  to?: string;
+  subject: string;
+  text?: string;
+  html?: string;
+  receivedAt?: number;
+}
+
+/**
+ * Resultado del parsing de un correo entrante para la Ruta Cloud de TransferYA.
+ */
+export type InboundEmailParseResult =
+  | { success: true; type: 'PAYMENT'; payment: ParsedPaymentReceipt }
+  | {
+      success: true;
+      type: 'GOOGLE_VERIFICATION';
+      verification: GoogleForwardingVerification;
+    }
+  | {
+      success: false;
+      error: 'NOT_A_PAYMENT' | 'UNSUPPORTED_EMAIL_FORMAT';
+      reason: string;
+    };
+

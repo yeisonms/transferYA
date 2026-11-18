@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generatePaymentFingerprint, InMemoryPaymentFingerprintRepository, normalizeSenderForFingerprint, } from '../fingerprint.js';
+import { generatePaymentFingerprint, generateCanonicalPaymentFingerprint, InMemoryPaymentFingerprintRepository, normalizeSenderForFingerprint, } from '../fingerprint.js';
 describe('Motor de Huella de Idempotencia para Pagos P2P (Ticket 09)', () => {
     const baseReceipt = {
         wallet: 'NEQUI',
@@ -173,6 +173,100 @@ describe('Motor de Huella de Idempotencia para Pagos P2P (Ticket 09)', () => {
             const resB = await repo.registerFingerprint(recordDeviceB);
             expect(resA.isDuplicate).toBe(false);
             expect(resB.isDuplicate).toBe(false);
+        });
+        it('DEBE colisionar y deduplicar si dos canales distintos (Centinela Push y Cloud Email) reportan el mismo pago para el MISMO comercio (merchantId)', async () => {
+            const repo = new InMemoryPaymentFingerprintRepository();
+            const sharedFingerprint = 'd'.repeat(64);
+            const merchantId = 'merchant_sinverguenceria_123';
+            // Canal A: Llega primero el Centinela Android (T = 0s)
+            const recordPush = {
+                deviceId: 'dev_centinela_caja_principal',
+                merchantId,
+                fingerprint: sharedFingerprint,
+                wallet: 'NEQUI',
+                amount: 50000,
+                senderName: 'Carlos Andres Gomez',
+                capturedAt: 1715000000000,
+            };
+            const pushResult = await repo.registerFingerprint(recordPush);
+            expect(pushResult.isDuplicate).toBe(false);
+            // Canal B: Llega 15 segundos después el Reenvío de Gmail a la Ruta Cloud
+            const recordEmail = {
+                deviceId: 'cloud_inbound_email',
+                merchantId, // Mismo comercio
+                fingerprint: sharedFingerprint,
+                wallet: 'NEQUI',
+                amount: 50000,
+                senderName: 'Carlos Andres Gomez',
+                capturedAt: 1715000015000,
+            };
+            const emailResult = await repo.registerFingerprint(recordEmail);
+            expect(emailResult.isDuplicate).toBe(true);
+            expect(emailResult.existingRecord).toBeDefined();
+            expect(emailResult.existingRecord?.deviceId).toBe('dev_centinela_caja_principal');
+        });
+        it('NO debe colisionar si dos comercios distintos reciben una transferencia con huella idéntica (merchantId distinto)', async () => {
+            const repo = new InMemoryPaymentFingerprintRepository();
+            const sharedFingerprint = 'e'.repeat(64);
+            const recordMerchantA = {
+                deviceId: 'dev_centinela_1',
+                merchantId: 'merchant_panaderia_a',
+                fingerprint: sharedFingerprint,
+                wallet: 'NEQUI',
+                amount: 10000,
+                senderName: 'Maria Lopez',
+                capturedAt: Date.now(),
+            };
+            const recordMerchantB = {
+                deviceId: 'cloud_inbound_email',
+                merchantId: 'merchant_restaurante_b',
+                fingerprint: sharedFingerprint,
+                wallet: 'NEQUI',
+                amount: 10000,
+                senderName: 'Maria Lopez',
+                capturedAt: Date.now(),
+            };
+            const resA = await repo.registerFingerprint(recordMerchantA);
+            const resB = await repo.registerFingerprint(recordMerchantB);
+            expect(resA.isDuplicate).toBe(false);
+            expect(resB.isDuplicate).toBe(false);
+        });
+    });
+    describe('7. Huella Canónica Multicanal (generateCanonicalPaymentFingerprint)', () => {
+        it('debe generar la MISMA huella exacta para Push y Correo si ambos tienen la misma referencia de Nequi', () => {
+            const pushReceipt = {
+                wallet: 'NEQUI',
+                amount: 45000,
+                senderName: 'Juan Carlos Restrepo',
+                reference: 'M87654321',
+                rawText: 'Te enviaron $45.000. Ref: M87654321',
+            };
+            const emailReceipt = {
+                wallet: 'NEQUI',
+                amount: 45000,
+                senderName: 'JUAN CARLOS RESTREPO',
+                reference: 'M87654321',
+                rawText: 'Comprobante Nequi. Monto: $45.000. Referencia: M87654321',
+            };
+            // Aunque lleguen con 20 minutos de diferencia (buckets temporales distintos)
+            const fpPush = generateCanonicalPaymentFingerprint(pushReceipt, 1715000000000);
+            const fpEmail = generateCanonicalPaymentFingerprint(emailReceipt, 1715001200000);
+            expect(fpPush).toBe(fpEmail);
+            expect(fpPush).toMatch(/^[a-f0-9]{64}$/);
+        });
+        it('debe recurrir al time-bucket de 10 min si no hay referencia explícita', () => {
+            const receiptNoRef = {
+                wallet: 'NEQUI',
+                amount: 25000,
+                senderName: 'Diana Uribe',
+                reference: null,
+                rawText: 'Te enviaron $25.000',
+            };
+            const t1 = 1715000000000;
+            const t2 = t1 + 30_000; // 30 segundos después (mismo bucket de 10 min)
+            const fp1 = generateCanonicalPaymentFingerprint(receiptNoRef, t1, 10);
+            const fp2 = generateCanonicalPaymentFingerprint(receiptNoRef, t2, 10);
+            expect(fp1).toBe(fp2);
         });
     });
 });

@@ -16,6 +16,7 @@ export interface FingerprintSource {
 export interface PaymentFingerprintRecord {
   id?: string;
   deviceId: string;
+  merchantId?: string;
   fingerprint: string;
   wallet: SupportedWallet;
   amount: number;
@@ -50,6 +51,14 @@ export interface IPaymentFingerprintRepository {
    */
   findByFingerprint(
     deviceId: string,
+    fingerprint: string,
+  ): Promise<PaymentFingerprintRecord | null>;
+
+  /**
+   * Consulta si existe una huella previamente registrada a nivel de comercio (multicanal híbrido).
+   */
+  findByMerchantFingerprint?(
+    merchantId: string,
     fingerprint: string,
   ): Promise<PaymentFingerprintRecord | null>;
 }

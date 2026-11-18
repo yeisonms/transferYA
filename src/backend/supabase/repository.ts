@@ -437,6 +437,16 @@ export class SupabaseRepository
   async registerFingerprint(
     record: PaymentFingerprintRecord,
   ): Promise<RegisterFingerprintResult> {
+    if (record.merchantId) {
+      const existingByMerchant = await this.findByMerchantFingerprint(
+        record.merchantId,
+        record.fingerprint,
+      );
+      if (existingByMerchant) {
+        return { isDuplicate: true, existingRecord: existingByMerchant };
+      }
+    }
+
     const existing = await this.findByFingerprint(
       record.deviceId,
       record.fingerprint,
@@ -445,25 +455,29 @@ export class SupabaseRepository
       return { isDuplicate: true, existingRecord: existing };
     }
 
+    const payload: Record<string, any> = {
+      device_id: record.deviceId,
+      payment_fingerprint: record.fingerprint,
+      wallet: record.wallet,
+      amount: record.amount,
+      sender_name: record.senderName,
+      captured_at: record.capturedAt,
+    };
+    if (record.merchantId) {
+      payload.merchant_id = record.merchantId;
+    }
+
     const res = await fetch(`${this.baseUrl}/rest/v1/payment_fingerprints`, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify({
-        device_id: record.deviceId,
-        payment_fingerprint: record.fingerprint,
-        wallet: record.wallet,
-        amount: record.amount,
-        sender_name: record.senderName,
-        captured_at: record.capturedAt,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
       // Si falló por restricción única (409 / conflict) por condición de carrera, recuperar el registro ganador
-      const conflictRecord = await this.findByFingerprint(
-        record.deviceId,
-        record.fingerprint,
-      );
+      const conflictRecord = record.merchantId
+        ? await this.findByMerchantFingerprint(record.merchantId, record.fingerprint)
+        : await this.findByFingerprint(record.deviceId, record.fingerprint);
       return {
         isDuplicate: true,
         existingRecord: conflictRecord ?? record,
@@ -528,6 +542,35 @@ export class SupabaseRepository
     return {
       id: r.id,
       deviceId: r.device_id,
+      merchantId: r.merchant_id,
+      fingerprint: r.payment_fingerprint,
+      wallet: r.wallet,
+      amount: Number(r.amount),
+      senderName: r.sender_name,
+      capturedAt: Number(r.captured_at),
+    };
+  }
+
+  async findByMerchantFingerprint(
+    merchantId: string,
+    fingerprint: string,
+  ): Promise<PaymentFingerprintRecord | null> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/payment_fingerprints?merchant_id=eq.${encodeURIComponent(merchantId)}&payment_fingerprint=eq.${encodeURIComponent(fingerprint)}&select=*`,
+      {
+        headers: this.headers,
+      },
+    );
+
+    if (!res.ok) return null;
+    const rows = (await res.json()) as any[];
+    if (!rows || rows.length === 0) return null;
+
+    const r = rows[0];
+    return {
+      id: r.id,
+      deviceId: r.device_id,
+      merchantId: r.merchant_id,
       fingerprint: r.payment_fingerprint,
       wallet: r.wallet,
       amount: Number(r.amount),
