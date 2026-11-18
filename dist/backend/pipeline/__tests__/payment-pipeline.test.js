@@ -26,7 +26,7 @@ class InMemoryPipelineNotificationRepository {
         for (const [id, notif] of this.notifications.entries()) {
             if (id === params.currentNotificationId)
                 continue;
-            if (notif.status !== 'PROCESSED')
+            if (notif.status !== 'PROCESSED' && notif.status !== 'PROCESSING')
                 continue;
             if (notif.amount !== params.amount)
                 continue;
@@ -756,6 +756,61 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
             const updated = await notificationRepo.getNotificationById('notif_low_amount');
             expect(updated?.status).toBe('ROUTING_FAILED');
             expect(updated?.failureReason).toContain('inferior al precio oficial del Plan Pro');
+        });
+        it('debe serializar y deduplicar pagos concurrentes multicanal (Centinela Push + Gmail Inbound) para despachar exactamente 1 WhatsApp', async () => {
+            vi.spyOn(mockWhatsappClient, 'sendPaymentAlert').mockResolvedValue({
+                success: true,
+                messageId: 'wa_multi_race_1',
+            });
+            const cloudDeviceId = `cloud_email_${merchant.id}`;
+            routingRepo.registerDeviceMerchant(cloudDeviceId, merchant);
+            routingRepo.registerCashierRecipient({
+                id: 'cajero_multi_1',
+                merchantId: merchant.id,
+                deviceId: cloudDeviceId,
+                name: 'Caja Multicanal',
+                phoneNumber: '+573001112233',
+                isActive: true,
+            });
+            // Simular dos notificaciones que llegan al mismo milisegundo (Centinela Push + Correo Gmail)
+            const pushNotification = {
+                id: 'notif_push_breb_race',
+                deviceId,
+                walletPackage: 'com.nequi.MobileApp',
+                rawTitle: 'Te enviaron plata por Bre-B',
+                rawText: 'Te enviaron $11. Entra a tu app y revisa tu saldo.',
+                capturedAt: now,
+                dispatchedAt: now,
+                receivedAt: now,
+                latencyMs: 120,
+                isStale: false,
+                status: 'RECEIVED',
+            };
+            const emailNotification = {
+                id: 'notif_email_breb_race',
+                deviceId: cloudDeviceId,
+                walletPackage: 'com.nequi.inbound.email',
+                rawTitle: '¡Recibiste plata por Bre-B!',
+                rawText: 'NEQUI ¡Recibiste plata por Bre-B! ¡Hola, Yeison Murcia! Recibiste 11 de YEISON STIVEN MURCIA CALVO el 18 de noviembre...',
+                capturedAt: now + 50,
+                dispatchedAt: now + 50,
+                receivedAt: now + 50,
+                latencyMs: 500,
+                isStale: false,
+                status: 'RECEIVED',
+            };
+            notificationRepo.seed(pushNotification);
+            notificationRepo.seed(emailNotification);
+            // Ejecutar ambos procesamientos simultáneamente en paralelo
+            const [resPush, resEmail] = await Promise.all([
+                pipeline.processCapturedNotification('notif_push_breb_race'),
+                pipeline.processCapturedNotification('notif_email_breb_race'),
+            ]);
+            const statuses = [resPush.status, resEmail.status];
+            expect(statuses.filter((s) => s === 'PROCESSED')).toHaveLength(1);
+            expect(statuses.filter((s) => s === 'DUPLICATE_PAYMENT')).toHaveLength(1);
+            // WhatsApp debe haberse llamado únicamente para los cajeros del pago ganador (2 cajeros de dev_caja_1)
+            expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(2);
         });
     });
 });

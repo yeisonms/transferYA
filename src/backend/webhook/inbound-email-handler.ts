@@ -304,8 +304,9 @@ export async function handleInboundEmail(
         );
       } catch { }
 
-      // Guardar notificación capturada en base de datos (con texto limpio legible sin etiquetas HTML)
+      // Guardar notificación capturada en base de datos (con texto limpio legible sin etiquetas HTML y datos de pago)
       const cleanBody = (text || stripHtml(html)).trim();
+      const paymentData = parseResult.payment;
       const storedRecord: StoredNotificationRecord = {
         deviceId: cloudDeviceId,
         walletPackage: 'com.nequi.inbound.email',
@@ -317,6 +318,9 @@ export async function handleInboundEmail(
         latencyMs: Math.max(0, now - receivedAt),
         isStale: false,
         status: 'RECEIVED',
+        amount: paymentData.amount,
+        senderName: paymentData.senderName,
+        paymentReference: paymentData.reference ?? null,
       };
 
       const saved = await repository.saveReceivedNotification(storedRecord);

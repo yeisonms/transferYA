@@ -40,6 +40,7 @@ import type {
 import { generateInvoiceReferenceCode } from '../billing/utils.js';
 import { resolveSubscriptionEndsAt } from '../../domain/routing/billing.js';
 import { normalizeSenderForFingerprint } from '../../domain/idempotency/fingerprint.js';
+import { cleanCopAmount } from '../../domain/parser/engine.js';
 
 export interface SupabaseConfig {
   supabaseUrl: string;
@@ -374,7 +375,7 @@ export class SupabaseRepository
     reference?: string | null;
     senderName?: string;
     rawTitle?: string;
-  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null } | null> {
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null; senderName?: string | null } | null> {
     try {
       // 1. Obtener los IDs de todos los dispositivos de este comercio
       const devRes = await fetch(
@@ -386,9 +387,9 @@ export class SupabaseRepository
       const deviceIds = new Set(devRows.map((d) => d.id));
       deviceIds.add(params.currentDeviceId);
 
-      // 2. Buscar notificaciones activas o procesadas con el mismo monto
+      // 2. Buscar notificaciones activas o procesadas con el mismo monto o en procesamiento
       const notifRes = await fetch(
-        `${this.baseUrl}/rest/v1/captured_notifications?status=in.(PROCESSED,PROCESSING,RECEIVED)&amount=eq.${params.amount}&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,wallet_package&order=captured_at.desc&limit=25`,
+        `${this.baseUrl}/rest/v1/captured_notifications?status=in.(PROCESSED,PROCESSING,RECEIVED)&or=(amount.eq.${params.amount},amount.is.null)&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,raw_text,wallet_package&order=captured_at.desc&limit=25`,
         { headers: this.headers }
       );
       if (!notifRes.ok) return null;
@@ -402,6 +403,15 @@ export class SupabaseRepository
       for (const row of candidates) {
         if (row.id === params.currentNotificationId) continue;
         if (!deviceIds.has(row.device_id)) continue;
+
+        let rowAmount = row.amount != null ? Number(row.amount) : null;
+        if (rowAmount == null && row.raw_text) {
+          try {
+            const parsedCop = cleanCopAmount(row.raw_text);
+            if (parsedCop > 0) rowAmount = parsedCop;
+          } catch {}
+        }
+        if (rowAmount !== params.amount) continue;
 
         // Criterio 1: Misma referencia bancaria explícita de la entidad financiera
         const isOfficialBankRef =
@@ -417,8 +427,9 @@ export class SupabaseRepository
             id: row.id,
             deviceId: row.device_id,
             capturedAt: Number(row.captured_at),
-            amount: Number(row.amount),
+            amount: Number(rowAmount),
             paymentReference: row.payment_reference,
+            senderName: row.sender_name ?? null,
           };
         }
 
@@ -443,13 +454,14 @@ export class SupabaseRepository
             row.sender_name === 'Transferencia Bre-B' ||
             params.senderName === 'Transferencia Bre-B';
 
-          if (isBreB || (cleanSender && rowSender && cleanSender === rowSender)) {
+          if (isBreB || (cleanSender && rowSender && cleanSender === rowSender) || !cleanSender || !rowSender) {
             return {
               id: row.id,
               deviceId: row.device_id,
               capturedAt: rowTime,
-              amount: Number(row.amount),
+              amount: Number(rowAmount),
               paymentReference: row.payment_reference ?? null,
+              senderName: row.sender_name ?? null,
             };
           }
         }
@@ -466,8 +478,9 @@ export class SupabaseRepository
               id: row.id,
               deviceId: row.device_id,
               capturedAt: rowTime,
-              amount: Number(row.amount),
+              amount: Number(rowAmount),
               paymentReference: row.payment_reference ?? null,
+              senderName: row.sender_name ?? null,
             };
           }
         }

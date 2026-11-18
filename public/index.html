@@ -4002,6 +4002,7 @@
       const pkg = (tx.wallet_package || "").toLowerCase();
       const title = (tx.raw_title || "").toLowerCase();
       const text = (tx.raw_text || "").toLowerCase();
+      if (pkg.includes("nequi") || title.includes("nequi") || text.startsWith("nequi") || title.includes("bre-b") || text.includes("recibiste plata por bre-b")) return "NEQUI";
       if (pkg.includes("daviplata") || title.includes("daviplata") || text.includes("daviplata")) return "DAVIPLATA";
       return "NEQUI";
     }

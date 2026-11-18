@@ -2,6 +2,27 @@ import { generateCanonicalPaymentFingerprint, } from '../../domain/idempotency/f
 import { parseBankingNotification } from '../../domain/parser/engine.js';
 import { parseNequiEmailReceipt } from '../../domain/parser/email-parser.js';
 import { normalizePhoneNumberE164 } from '../../domain/routing/phone-utils.js';
+// Cola de promesas en memoria para serializar solicitudes concurrentes del mismo monto y comercio
+const inFlightDeduplicationLocks = new Map();
+async function acquireDeduplicationLock(key) {
+    while (inFlightDeduplicationLocks.has(key)) {
+        try {
+            await inFlightDeduplicationLocks.get(key);
+        }
+        catch { }
+    }
+    let release;
+    const promise = new Promise((resolve) => {
+        release = resolve;
+    });
+    inFlightDeduplicationLocks.set(key, promise);
+    return () => {
+        if (inFlightDeduplicationLocks.get(key) === promise) {
+            inFlightDeduplicationLocks.delete(key);
+        }
+        release();
+    };
+}
 /**
  * Orquestador principal del pipeline de procesamiento de pagos y despacho a WhatsApp.
  *
@@ -83,59 +104,65 @@ export class PaymentProcessingPipeline {
         if (!notification) {
             throw new Error(`Notificación capturada no encontrada: ${notificationId}`);
         }
+        // 1. Ejecutar motor de parsing (soporta notificaciones push locales y comprobantes de correo inbound)
+        const parseResult = notification.walletPackage === 'com.nequi.inbound.email'
+            ? parseNequiEmailReceipt({
+                from: '',
+                subject: notification.rawTitle,
+                text: notification.rawText,
+            })
+            : this.parser(notification.rawText, notification.rawTitle, notification.walletPackage);
+        if (!parseResult.success) {
+            await this.deps.notificationRepository.updateNotification(notificationId, {
+                status: 'IGNORED_NON_PAYMENT',
+                failureReason: parseResult.reason,
+            });
+            return {
+                status: 'IGNORED_NON_PAYMENT',
+                notificationId,
+                reason: parseResult.reason,
+            };
+        }
+        const receipt = parseResult.payment;
+        // Determinar o generar Referencia de Transferencia para auditoría y trazabilidad
+        const hasOfficialRef = Boolean(receipt.reference && receipt.reference.trim());
+        const finalReference = hasOfficialRef
+            ? receipt.reference.trim().toUpperCase()
+            : (() => {
+                const isBreB = /bre-b/i.test(notification.rawTitle || '') ||
+                    /bre-b/i.test(notification.rawText || '') ||
+                    notification.walletPackage === 'com.nequi.inbound.email' ||
+                    receipt.senderName === 'Transferencia Bre-B';
+                const prefix = isBreB ? 'BREB' : 'TRF';
+                const rawId = (notification.id || notificationId).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                const shortId = rawId.length > 8 ? rawId.slice(-8) : rawId;
+                return `${prefix}-${shortId}`;
+            })();
+        if (hasOfficialRef) {
+            receipt.reference = finalReference;
+        }
+        // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
+        let merchantId;
         try {
-            // 1. Marcar como PROCESSING
+            const earlyRoute = await this.deps.routingService.resolveRoute(notification.deviceId);
+            if (earlyRoute.merchant) {
+                merchantId = earlyRoute.merchant.id;
+            }
+        }
+        catch {
+            // Si la resolución de ruta falla tempranamente, continúa sin merchantId
+        }
+        // Serializar el procesamiento de pagos del mismo comercio y monto para evitar condiciones de carrera concurrentes
+        const lockKey = `${merchantId || 'global'}:${receipt.amount}`;
+        const releaseLock = await acquireDeduplicationLock(lockKey);
+        try {
+            // Inmediatamente marcar como PROCESSING e incluir monto, remitente y referencia para auditoría en tiempo real
             await this.deps.notificationRepository.updateNotification(notificationId, {
                 status: 'PROCESSING',
+                amount: receipt.amount,
+                senderName: receipt.senderName,
+                paymentReference: finalReference,
             });
-            // 2. Ejecutar motor de parsing (soporta notificaciones push locales y comprobantes de correo inbound)
-            const parseResult = notification.walletPackage === 'com.nequi.inbound.email'
-                ? parseNequiEmailReceipt({
-                    from: '',
-                    subject: notification.rawTitle,
-                    text: notification.rawText,
-                })
-                : this.parser(notification.rawText, notification.rawTitle, notification.walletPackage);
-            if (!parseResult.success) {
-                await this.deps.notificationRepository.updateNotification(notificationId, {
-                    status: 'IGNORED_NON_PAYMENT',
-                    failureReason: parseResult.reason,
-                });
-                return {
-                    status: 'IGNORED_NON_PAYMENT',
-                    notificationId,
-                    reason: parseResult.reason,
-                };
-            }
-            const receipt = parseResult.payment;
-            // Determinar o generar Referencia de Transferencia para auditoría y trazabilidad
-            const hasOfficialRef = Boolean(receipt.reference && receipt.reference.trim());
-            const finalReference = hasOfficialRef
-                ? receipt.reference.trim().toUpperCase()
-                : (() => {
-                    const isBreB = /bre-b/i.test(notification.rawTitle || '') ||
-                        /bre-b/i.test(notification.rawText || '') ||
-                        notification.walletPackage === 'com.nequi.inbound.email' ||
-                        receipt.senderName === 'Transferencia Bre-B';
-                    const prefix = isBreB ? 'BREB' : 'TRF';
-                    const rawId = (notification.id || notificationId).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                    const shortId = rawId.length > 8 ? rawId.slice(-8) : rawId;
-                    return `${prefix}-${shortId}`;
-                })();
-            if (hasOfficialRef) {
-                receipt.reference = finalReference;
-            }
-            // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
-            let merchantId;
-            try {
-                const earlyRoute = await this.deps.routingService.resolveRoute(notification.deviceId);
-                if (earlyRoute.merchant) {
-                    merchantId = earlyRoute.merchant.id;
-                }
-            }
-            catch {
-                // Si la resolución de ruta falla tempranamente, continúa sin merchantId
-            }
             // 3. Evaluar duplicados cruzados multicanal (Centinela vs Gmail) e Idempotencia previa
             if (this.deps.notificationRepository.findRecentDuplicatePayment && merchantId) {
                 const recentDup = await this.deps.notificationRepository.findRecentDuplicatePayment({
@@ -157,6 +184,18 @@ export class PaymentProcessingPipeline {
                         paymentReference: canonicalRef,
                         failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
                     });
+                    // Si el registro original tenía nombre genérico 'Transferencia Bre-B' y el nuevo tiene nombre real, enriquecer
+                    if (recentDup.senderName === 'Transferencia Bre-B' &&
+                        receipt.senderName &&
+                        receipt.senderName !== 'Transferencia Bre-B') {
+                        try {
+                            await this.deps.notificationRepository.updateNotification(recentDup.id, {
+                                status: 'PROCESSED',
+                                senderName: receipt.senderName,
+                            });
+                        }
+                        catch { }
+                    }
                     return {
                         status: 'DUPLICATE_PAYMENT',
                         notificationId,
@@ -338,6 +377,9 @@ export class PaymentProcessingPipeline {
                 failureReason: err instanceof Error ? err.message : String(err),
             });
             throw err;
+        }
+        finally {
+            releaseLock();
         }
     }
 }

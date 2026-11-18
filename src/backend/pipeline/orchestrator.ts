@@ -16,6 +16,28 @@ import type {
   PipelineResult,
 } from './types.js';
 
+// Cola de promesas en memoria para serializar solicitudes concurrentes del mismo monto y comercio
+const inFlightDeduplicationLocks = new Map<string, Promise<void>>();
+
+async function acquireDeduplicationLock(key: string): Promise<() => void> {
+  while (inFlightDeduplicationLocks.has(key)) {
+    try {
+      await inFlightDeduplicationLocks.get(key);
+    } catch {}
+  }
+  let release: () => void;
+  const promise = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  inFlightDeduplicationLocks.set(key, promise);
+  return () => {
+    if (inFlightDeduplicationLocks.get(key) === promise) {
+      inFlightDeduplicationLocks.delete(key);
+    }
+    release();
+  };
+}
+
 /**
  * Orquestador principal del pipeline de procesamiento de pagos y despacho a WhatsApp.
  *
@@ -129,13 +151,7 @@ export class PaymentProcessingPipeline {
       );
     }
 
-    try {
-      // 1. Marcar como PROCESSING
-      await this.deps.notificationRepository.updateNotification(notificationId, {
-        status: 'PROCESSING',
-      });
-
-    // 2. Ejecutar motor de parsing (soporta notificaciones push locales y comprobantes de correo inbound)
+    // 1. Ejecutar motor de parsing (soporta notificaciones push locales y comprobantes de correo inbound)
     const parseResult =
       notification.walletPackage === 'com.nequi.inbound.email'
         ? parseNequiEmailReceipt({
@@ -198,48 +214,75 @@ export class PaymentProcessingPipeline {
       // Si la resolución de ruta falla tempranamente, continúa sin merchantId
     }
 
-    // 3. Evaluar duplicados cruzados multicanal (Centinela vs Gmail) e Idempotencia previa
-    if (this.deps.notificationRepository.findRecentDuplicatePayment && merchantId) {
-      const recentDup = await this.deps.notificationRepository.findRecentDuplicatePayment({
-        merchantId,
+    // Serializar el procesamiento de pagos del mismo comercio y monto para evitar condiciones de carrera concurrentes
+    const lockKey = `${merchantId || 'global'}:${receipt.amount}`;
+    const releaseLock = await acquireDeduplicationLock(lockKey);
+
+    try {
+      // Inmediatamente marcar como PROCESSING e incluir monto, remitente y referencia para auditoría en tiempo real
+      await this.deps.notificationRepository.updateNotification(notificationId, {
+        status: 'PROCESSING',
         amount: receipt.amount,
-        capturedAt: notification.capturedAt,
-        currentDeviceId: notification.deviceId,
-        currentNotificationId: notification.id || notificationId,
-        reference: hasOfficialRef ? finalReference : null,
         senderName: receipt.senderName,
-        rawTitle: notification.rawTitle,
+        paymentReference: finalReference,
       });
 
-      if (recentDup) {
-        const canonicalRef = recentDup.paymentReference || finalReference;
-        await this.deps.notificationRepository.updateNotification(
-          notificationId,
-          {
-            status: 'DUPLICATE_PAYMENT',
-            amount: receipt.amount,
-            senderName: receipt.senderName,
-            paymentReference: canonicalRef,
-            failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
-          },
-        );
+      // 3. Evaluar duplicados cruzados multicanal (Centinela vs Gmail) e Idempotencia previa
+      if (this.deps.notificationRepository.findRecentDuplicatePayment && merchantId) {
+        const recentDup = await this.deps.notificationRepository.findRecentDuplicatePayment({
+          merchantId,
+          amount: receipt.amount,
+          capturedAt: notification.capturedAt,
+          currentDeviceId: notification.deviceId,
+          currentNotificationId: notification.id || notificationId,
+          reference: hasOfficialRef ? finalReference : null,
+          senderName: receipt.senderName,
+          rawTitle: notification.rawTitle,
+        });
 
-        return {
-          status: 'DUPLICATE_PAYMENT',
-          notificationId,
-          fingerprint: `dup:${recentDup.id}`,
-          existingFingerprintRecord: {
-            id: recentDup.id,
-            deviceId: recentDup.deviceId || notification.deviceId,
+        if (recentDup) {
+          const canonicalRef = recentDup.paymentReference || finalReference;
+          await this.deps.notificationRepository.updateNotification(
+            notificationId,
+            {
+              status: 'DUPLICATE_PAYMENT',
+              amount: receipt.amount,
+              senderName: receipt.senderName,
+              paymentReference: canonicalRef,
+              failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
+            },
+          );
+
+          // Si el registro original tenía nombre genérico 'Transferencia Bre-B' y el nuevo tiene nombre real, enriquecer
+          if (
+            recentDup.senderName === 'Transferencia Bre-B' &&
+            receipt.senderName &&
+            receipt.senderName !== 'Transferencia Bre-B'
+          ) {
+            try {
+              await this.deps.notificationRepository.updateNotification(recentDup.id, {
+                status: 'PROCESSED',
+                senderName: receipt.senderName,
+              });
+            } catch {}
+          }
+
+          return {
+            status: 'DUPLICATE_PAYMENT',
+            notificationId,
             fingerprint: `dup:${recentDup.id}`,
-            wallet: receipt.wallet,
-            amount: receipt.amount,
-            senderName: receipt.senderName,
-            capturedAt: recentDup.capturedAt || notification.capturedAt,
-          },
-        };
+            existingFingerprintRecord: {
+              id: recentDup.id,
+              deviceId: recentDup.deviceId || notification.deviceId,
+              fingerprint: `dup:${recentDup.id}`,
+              wallet: receipt.wallet,
+              amount: receipt.amount,
+              senderName: receipt.senderName,
+              capturedAt: recentDup.capturedAt || notification.capturedAt,
+            },
+          };
+        }
       }
-    }
 
     // 4. Generar y evaluar Huella de Idempotencia estándar
     const fingerprint = this.fingerprintGenerator(
@@ -465,6 +508,8 @@ export class PaymentProcessingPipeline {
       failureReason: err instanceof Error ? err.message : String(err),
     });
     throw err;
+  } finally {
+    releaseLock();
   }
 }
 }
