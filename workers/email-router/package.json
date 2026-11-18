@@ -1,0 +1,19 @@
+{
+  "name": "transferya-email-router",
+  "version": "1.0.0",
+  "description": "Cloudflare Email Worker para captura y parseo de comprobantes de pago Inbound (Ruta Cloud TransferYA)",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "postal-mime": "^2.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240925.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^3.78.0"
+  }
+}

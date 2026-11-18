@@ -1,0 +1,10 @@
+name = "transferya-email-router"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# URL de producción del webhook en Vercel
+TRANSFERYA_WEBHOOK_URL = "https://transferya.app/api/v1/webhooks/inbound-email"
+# Secreto compartido para autenticar los webhooks entrantes (también configurar en Vercel como INBOUND_EMAIL_SECRET)
+INBOUND_EMAIL_SECRET = "transferya_secret_cloud_inbound_2026"
