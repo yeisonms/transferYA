@@ -14,6 +14,9 @@ export interface IMerchantCloudStatusRepo {
     label?: string,
   ): Promise<any>;
   revokeDevice?(deviceId: string, merchantId: string): Promise<boolean>;
+  getLatestGoogleVerification?(
+    deviceId: string,
+  ): Promise<{ code: string; url?: string; receivedAt: number } | null>;
 }
 
 export interface MerchantCloudStatusDeps {
@@ -171,7 +174,20 @@ export async function handleMerchantCloudStatusRequest(
         ? 'REVOKED'
         : 'PENDING_CONFIG';
 
-  const googleVerification = verificationProvider(cleanMerchantId);
+  let googleVerification =
+    verificationProvider(cleanMerchantId) ||
+    verificationProvider('global') ||
+    null;
+
+  if (
+    !googleVerification &&
+    typeof deps.serviceRepo.getLatestGoogleVerification === 'function'
+  ) {
+    try {
+      googleVerification =
+        await deps.serviceRepo.getLatestGoogleVerification(cloudDeviceId);
+    } catch {}
+  }
 
   return {
     statusCode: 200,

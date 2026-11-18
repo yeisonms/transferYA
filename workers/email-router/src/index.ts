@@ -41,7 +41,7 @@ export default {
 
       const webhookUrl =
         env.TRANSFERYA_WEBHOOK_URL ||
-        'https://transferya.app/api/v1/webhooks/inbound-email';
+        'https://www.transferya.app/api/v1/webhooks/inbound-email';
       const secret = env.INBOUND_EMAIL_SECRET || '';
 
       // 2. Disparar el webhook hacia Vercel (Edge a Vercel con baja latencia)
@@ -52,6 +52,7 @@ export default {
           'x-inbound-secret': secret,
         },
         body: JSON.stringify(payload),
+        redirect: 'follow',
       });
 
       if (!response.ok) {

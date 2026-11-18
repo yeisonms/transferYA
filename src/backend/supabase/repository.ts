@@ -355,6 +355,30 @@ export class SupabaseRepository
     }
   }
 
+  async getLatestGoogleVerification(
+    deviceId: string,
+  ): Promise<{ code: string; url?: string; receivedAt: number } | null> {
+    try {
+      const res = await fetch(
+        `${this.baseUrl}/rest/v1/captured_notifications?device_id=eq.${encodeURIComponent(deviceId)}&raw_title=eq.VERIFICACION_GMAIL&order=received_at.desc&limit=1&select=*`,
+        { headers: this.headers },
+      );
+      if (!res.ok) return null;
+      const rows = (await res.json()) as any[];
+      if (!rows || rows.length === 0) return null;
+      const rawText = rows[0].raw_text;
+      if (!rawText) return null;
+      const parsed = JSON.parse(rawText);
+      return {
+        code: parsed.code || '',
+        url: parsed.url,
+        receivedAt: Number(rows[0].received_at || Date.now()),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   // -------------------------------------------------------------
   // IDeviceHealthRepository
   // -------------------------------------------------------------

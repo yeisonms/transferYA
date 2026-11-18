@@ -64,12 +64,16 @@ export function parseGoogleForwardingEmail(
     return null;
   }
 
-  // 1. Extraer código de verificación numérico (habitualmente 8 a 10 dígitos)
+  // 1. Extraer código de verificación numérico (habitualmente 8 a 10 dígitos, típicamente 9)
   let verificationCode = '';
   const codeMatch =
     combined.match(
-      /(?:c[oó]digo de confirmaci[oó]n|confirmation code|c[oó]digo|code)[:\s]*([0-9]{8,10})/i,
-    ) || combined.match(/(?:#|n[uú]mero)[:\s]*([0-9]{8,10})/i);
+      /(?:c[oó]digo(?:\s+de\s+confirmaci[oó]n)?|confirmation\s+code|code)(?:\s+es|\s+is)?[:\s]*([0-9]{8,10})/i,
+    ) ||
+    combined.match(/(?:#|n[uú]mero)[:\s]*([0-9]{8,10})/i) ||
+    combined.match(/\(#?([0-9]{8,10})\)/i) ||
+    combined.match(/(?:confirmaci[oó]n|c[oó]digo|code)[^\d]*([0-9]{8,10})/i) ||
+    combined.match(/(?:\s|^)([0-9]{9})(?:\s|$|\.|\))/);
 
   if (codeMatch) {
     verificationCode = codeMatch[1].trim();

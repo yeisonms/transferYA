@@ -5294,12 +5294,12 @@
         const confirmLink = document.getElementById("cloudGoogleConfirmLink");
         const modalGuideCodeVal = document.getElementById("modalGuideCodeValue");
 
-        if (data.googleVerification?.code) {
-          const rawCode = String(data.googleVerification.code).trim();
+        if (data.googleVerification && (data.googleVerification.code || data.googleVerification.url)) {
+          const rawCode = String(data.googleVerification.code || '').trim();
           lastKnownGoogleCode = rawCode;
           const formattedCode = rawCode.length === 9
             ? `${rawCode.slice(0, 3)} ${rawCode.slice(3, 6)} ${rawCode.slice(6, 9)}`
-            : rawCode;
+            : (rawCode || 'Confirmar con Enlace');
 
           if (pendingBox) pendingBox.classList.add("hidden");
           if (successBox) successBox.classList.remove("hidden");
