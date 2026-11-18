@@ -206,8 +206,10 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
 
   // 4. Extraer Referencia Bancaria (M1234567, etc.)
   let reference: string | null = null;
-  const refMatch = combined.match(
-    /(?:N[uú]mero de referencia|Referencia|Nro\.?\s*de transacci[oó]n|Ref)[:\s]*([a-zA-Z0-9]+)/i,
+  // Limpiar URLs antes de buscar la referencia para no capturar hashes o fragmentos de tracking
+  const textWithoutUrls = combined.replace(/https?:\/\/[^\s"'<>]+/gi, '');
+  const refMatch = textWithoutUrls.match(
+    /(?:N[uú]mero\s+de\s+referencia|Referencia|Nro\.?\s*de\s+transacci[oó]n|\bRef\b)[:\s#]*([a-zA-Z0-9]{5,})/i,
   );
   if (refMatch && refMatch[1]) {
     reference = refMatch[1].trim().toUpperCase();

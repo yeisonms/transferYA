@@ -500,14 +500,24 @@ export class SupabaseRepository
       payload.merchant_id = record.merchantId;
     }
 
-    const res = await fetch(`${this.baseUrl}/rest/v1/payment_fingerprints`, {
+    let res = await fetch(`${this.baseUrl}/rest/v1/payment_fingerprints`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
-      // Si falló por restricción única (409 / conflict) por condición de carrera, recuperar el registro ganador
+    // Si falló con 400 porque la columna merchant_id no existe en la base de datos de Supabase
+    if (res.status === 400 && payload.merchant_id) {
+      delete payload.merchant_id;
+      res = await fetch(`${this.baseUrl}/rest/v1/payment_fingerprints`, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(payload),
+      });
+    }
+
+    // Únicamente el código HTTP 409 (Conflict) representa un duplicado real de llave única
+    if (res.status === 409) {
       const conflictRecord = record.merchantId
         ? await this.findByMerchantFingerprint(record.merchantId, record.fingerprint)
         : await this.findByFingerprint(record.deviceId, record.fingerprint);
@@ -515,6 +525,12 @@ export class SupabaseRepository
         isDuplicate: true,
         existingRecord: conflictRecord ?? record,
       };
+    }
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[SupabaseRepository] Error insertando payment_fingerprints (${res.status}): ${errText}`);
+      return { isDuplicate: false };
     }
 
     return { isDuplicate: false };
