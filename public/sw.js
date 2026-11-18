@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v25';
+const CACHE_NAME = 'transferya-cache-v26';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -9,6 +9,8 @@ const STATIC_ASSETS = [
   '/icons/icon.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon-maskable-192.png',
+  '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
   '/icons/logo-sound-check.svg',
   '/icons/logo-transferya-horizontal.svg',
