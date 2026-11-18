@@ -147,13 +147,16 @@
           <label class="text-xs font-bold uppercase tracking-wider text-[#0E1B2B]/60">1. Formato a Imprimir</label>
           <select id="formatSelect" onchange="updatePreview()"
             class="w-full px-4 py-2.5 rounded-xl bg-[#F7F5EF] border border-[#0E1B2B]/15 text-sm font-semibold text-[#0E1B2B] focus:outline-none focus:border-[#19C37D]">
-            <option value="circle-sheet" selected>⭐ Sello Redondo de Seguridad (4 por hoja - Ø 9.5 cm) — Más Visible</option>
+            <option value="diecut-sheet" selected>🔥 Insignia Troquelada 3D Neón (2 por hoja - Mostrador/Acrílico) — Más Llamativa</option>
+            <option value="diecut-4">🔥 Insignia Troquelada 3D Neón (4 por hoja - Tamaño Caja)</option>
+            <option value="diecut-giant">🔥 Insignia Troquelada Gigante (1 por hoja - Vitrina/Vidrio)</option>
+            <option value="circle-sheet">⭐ Sello Redondo de Seguridad (4 por hoja - Ø 9.5 cm)</option>
             <option value="circle-giant">Sello Redondo Gigante de Vitrina/Vidrio (1 por hoja - Ø 18 cm)</option>
             <option value="qr-topper">Compañero de QR Acrílico (Topper 10 x 4.5 cm)</option>
             <option value="strip">Tira de Mostrador (1 grande para borde de caja - 18 x 6 cm)</option>
             <option value="sheet">Hoja Clásica (8 Etiquetas Rectangulares)</option>
           </select>
-          <span class="text-[11px] text-[#0E1B2B]/60 block">Recomendado: Sello redondo para máxima visibilidad en caja.</span>
+          <span class="text-[11px] text-[#0E1B2B]/60 block">Recomendado: La Insignia Troquelada 3D para máxima visibilidad y presencia comercial.</span>
         </div>
 
         <!-- 2. Nombre del Negocio (Opcional) -->
@@ -452,7 +455,136 @@
       const merchantName = document.getElementById('merchantNameInput').value.trim();
       const container = document.getElementById('printContainer');
 
-      if (format === 'circle-sheet') {
+      if (format === 'diecut-sheet') {
+        // 2 insignias troqueladas grandes por hoja (~16x11 cm)
+        let items = '';
+        for (let i = 0; i < 2; i++) {
+          items += `
+            <div class="relative p-4 border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center bg-white shadow-sm">
+              <span class="no-print absolute -top-2.5 left-6 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Guía de corte del troquelado</span>
+              <img src="/images/sticker-diecut-badge.jpg" alt="Sticker Oficial TransferYA" class="w-full max-w-[440px] h-auto object-contain" />
+              ${merchantName ? `<div class="mt-2 px-3 py-1 rounded-full bg-[#0E1B2B] text-white text-[11px] font-bold">● Negocio Protegido: ${merchantName} ●</div>` : ''}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="print-only hidden mb-4 pb-2 border-b border-gray-200 text-xs flex justify-between items-center text-gray-600">
+              <span class="font-bold">TransferYA • Insignias Troqueladas Oficiales</span>
+              <span>www.transferya.app</span>
+              <span>Recorta por el contorno blanco exterior</span>
+            </div>
+
+            <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
+              <div class="text-left">
+                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada 3D Neón (2 por hoja - ~16 × 11 cm)</span>
+                <span class="text-xs text-gray-500">Diseño oficial de alto impacto. Recorta el borde blanco exterior para obtener la silueta troquelada.</span>
+              </div>
+              <a href="/images/sticker-diecut-badge.jpg" download="TransferYA-Sticker-Troquelado-HD.jpg"
+                class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
+                title="Descargar imagen en alta resolución">
+                <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Descargar Imagen HD</span>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 max-w-lg mx-auto">
+              ${items}
+            </div>
+
+            <div class="no-print pt-6 text-center flex flex-wrap items-center justify-center gap-3">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Hoja de 2 Insignias</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'diecut-4') {
+        // 4 insignias troqueladas medianas por hoja (~11x7.5 cm)
+        let items = '';
+        for (let i = 0; i < 4; i++) {
+          items += `
+            <div class="relative p-2.5 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-white shadow-sm">
+              <span class="no-print absolute -top-2 left-4 bg-white px-1.5 text-[8px] text-gray-500 font-mono font-bold">✂ Cortar</span>
+              <img src="/images/sticker-diecut-badge.jpg" alt="Sticker Oficial TransferYA" class="w-full max-w-[280px] h-auto object-contain" />
+              ${merchantName ? `<div class="mt-1 px-2 py-0.5 rounded-full bg-[#0E1B2B] text-white text-[9px] font-bold">${merchantName}</div>` : ''}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="print-only hidden mb-4 pb-2 border-b border-gray-200 text-xs flex justify-between items-center text-gray-600">
+              <span class="font-bold">TransferYA • Insignias Troqueladas Oficiales (Caja/POS)</span>
+              <span>www.transferya.app</span>
+              <span>Recorta por el contorno blanco exterior</span>
+            </div>
+
+            <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
+              <div class="text-left">
+                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada 3D Neón (4 por hoja - ~11 × 7.5 cm)</span>
+                <span class="text-xs text-gray-500">Tamaño compacto para terminales de cobro, caja registradora o soporte de acrílico.</span>
+              </div>
+              <a href="/images/sticker-diecut-badge.jpg" download="TransferYA-Sticker-Troquelado-HD.jpg"
+                class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
+                title="Descargar imagen en alta resolución">
+                <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Descargar Imagen HD</span>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              ${items}
+            </div>
+
+            <div class="no-print pt-6 text-center">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Hoja de 4 Insignias</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'diecut-giant') {
+        // 1 insignia troquelada gigante (~22x15 cm)
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
+              <div class="text-left">
+                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada Gigante de Vitrina (~22 × 15 cm)</span>
+                <span class="text-xs text-gray-500">Máximo impacto visual para la puerta de entrada, vidrio de caja o mostrador principal.</span>
+              </div>
+              <a href="/images/sticker-diecut-badge.jpg" download="TransferYA-Sticker-Troquelado-HD.jpg"
+                class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
+                title="Descargar imagen en alta resolución">
+                <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Descargar Imagen HD</span>
+              </a>
+            </div>
+
+            <div class="relative p-6 border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center bg-white shadow-sm max-w-xl mx-auto">
+              <span class="no-print absolute top-2 left-6 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Guía de corte del troquelado</span>
+              <img src="/images/sticker-diecut-badge.jpg" alt="Sticker Oficial TransferYA Gigante" class="w-full max-w-[560px] h-auto object-contain" />
+              ${merchantName ? `<div class="mt-3 px-4 py-1 rounded-full bg-[#0E1B2B] text-white text-sm font-bold">● Negocio Protegido: ${merchantName} ●</div>` : ''}
+            </div>
+
+            <div class="no-print pt-6 text-center">
+              <button onclick="window.print()" class="px-8 py-3.5 rounded-full bg-[#19C37D] font-extrabold text-sm text-[#0E1B2B] shadow-lg shadow-[#19C37D]/25 hover:brightness-105 inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0E1B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                <span>Imprimir Insignia Gigante</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (format === 'circle-sheet') {
         // 4 sellos redondos por hoja A4/Carta
         let circleItems = '';
         for (let i = 0; i < 4; i++) {
