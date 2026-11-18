@@ -26,19 +26,25 @@ export default {
   ): Promise<void> {
     console.log(`[EmailWorker] Correo entrante detectado: De: ${message.from} | Para: ${message.to}`);
     try {
-      let subject = '';
+      let subject = message.headers.get('subject') || '';
       let text = '';
       let html = '';
 
       try {
-        const rawEmail = await new Response(message.raw).arrayBuffer();
-        const parser = new PostalMime();
-        const parsedEmail = await parser.parse(rawEmail);
-        subject = parsedEmail.subject || '';
+        // Opción 1: Pasar el stream nativo message.raw directamente a PostalMime
+        const parsedEmail = await PostalMime.parse(message.raw);
+        subject = parsedEmail.subject || subject;
         text = parsedEmail.text || '';
         html = parsedEmail.html || '';
       } catch (parseErr: any) {
-        console.error('[EmailWorker] Error parseando MIME:', parseErr);
+        console.error('[EmailWorker] Error parseando MIME con PostalMime.parse(message.raw):', parseErr);
+        try {
+          // Opción 2: Leer el stream como texto sin procesar
+          const rawText = await new Response(message.raw).text();
+          text = rawText;
+        } catch (rawErr: any) {
+          console.error('[EmailWorker] Error leyendo raw stream como texto:', rawErr);
+        }
       }
 
       console.log(`[EmailWorker] Asunto: "${subject}" | Texto: ${text.length} chars | HTML: ${html.length} chars`);

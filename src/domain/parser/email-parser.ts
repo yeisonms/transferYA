@@ -58,6 +58,7 @@ export function parseGoogleForwardingEmail(
     from.includes('forwarding-noreply@google.com') ||
     from.includes('google.com') ||
     /solicitud de reenv[ií]o de gmail/i.test(subject) ||
+    /confirmaci[oó]n de reenv[ií]o de gmail/i.test(subject) ||
     /gmail forwarding confirmation/i.test(subject);
 
   if (!isGoogleSender) {
@@ -73,17 +74,23 @@ export function parseGoogleForwardingEmail(
     combined.match(/(?:#|n[uú]mero)[:\s]*([0-9]{8,10})/i) ||
     combined.match(/\(#?([0-9]{8,10})\)/i) ||
     combined.match(/(?:confirmaci[oó]n|c[oó]digo|code)[^\d]*([0-9]{8,10})/i) ||
-    combined.match(/(?:\s|^)([0-9]{9})(?:\s|$|\.|\))/);
+    combined.match(/\b([0-9]{9})\b/) ||
+    combined.match(/\b([0-9]{8,10})\b/);
 
   if (codeMatch) {
     verificationCode = codeMatch[1].trim();
   }
 
-  // 2. Extraer enlace de confirmación directa
+  // 2. Extraer enlace de confirmación directa (Google suele usar mail-settings.google.com o mail.google.com)
   let confirmationUrl: string | undefined;
-  const urlMatch = combined.match(
-    /(https:\/\/mail\.google\.com\/mail\/vf-[a-zA-Z0-9_\-]+)/i,
-  );
+  const urlMatch =
+    combined.match(
+      /(https:\/\/(?:[a-zA-Z0-9.-]+\.)?google\.com\/mail\/[^\s"'>)]+)/i,
+    ) ||
+    combined.match(
+      /(https:\/\/mail\.google\.com\/mail\/vf-[a-zA-Z0-9_\-]+)/i,
+    );
+
   if (urlMatch) {
     confirmationUrl = urlMatch[1].trim();
   }
@@ -97,17 +104,13 @@ export function parseGoogleForwardingEmail(
     requestedAddress = addressMatch[1].trim();
   }
 
-  if (verificationCode || confirmationUrl) {
-    return {
-      type: 'GOOGLE_FORWARDING_VERIFICATION',
-      verificationCode,
-      confirmationUrl,
-      requestedAddress,
-      rawText: combined,
-    };
-  }
-
-  return null;
+  return {
+    type: 'GOOGLE_FORWARDING_VERIFICATION',
+    verificationCode,
+    confirmationUrl,
+    requestedAddress,
+    rawText: combined,
+  };
 }
 
 // Patrones de descarte para correos de Nequi que no son pagos entrantes
