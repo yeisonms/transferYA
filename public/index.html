@@ -45,11 +45,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TransferYA" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=25" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=25" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=25" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png?v=25" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg?v=25" />
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -688,7 +688,11 @@
           </button>
 
           <button id="pwaInstallBtn" onclick="promptInstallPWA()"
-            class="hidden px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all items-center gap-1.5">
+            class="px-2.5 py-1.5 rounded-lg bg-ty-cyan/10 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+            title="Instalar aplicación TransferYA en este dispositivo">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
             <span>Instalar</span>
           </button>
 
@@ -5915,14 +5919,44 @@
       window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.getElementById("pwaInstallBtn")?.classList.remove("hidden");
+        const btn = document.getElementById("pwaInstallBtn");
+        if (btn) btn.classList.remove("hidden");
+      });
+
+      window.addEventListener("appinstalled", () => {
+        deferredPrompt = null;
+        showToast("¡TransferYA instalada con éxito en este dispositivo!");
+        const btn = document.getElementById("pwaInstallBtn");
+        if (btn) {
+          btn.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-ty-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="text-ty-emerald">Instalada</span>
+          `;
+          btn.title = "TransferYA ya está instalada en tu dispositivo";
+        }
       });
     }
 
     function promptInstallPWA() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        showToast("TransferYA ya está instalada y activa en modo app independiente.");
+        return;
+      }
+
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById("pwaInstallBtn").classList.add("hidden"); });
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult && choiceResult.outcome === "accepted") {
+            showToast("Instalando TransferYA...");
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // Fallback didáctico para navegadores de escritorio (Chrome, Brave, Edge) o móviles
+        showToast("Para instalar: haz clic en el icono 💻/📱 en la barra de direcciones de tu navegador o en el menú ⋮ > 'Instalar TransferYA'.");
       }
     }
 
