@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(logoView)
 
         val titleView = TextView(this).apply {
-            text = "transferYA Centinela"
+            text = "TransferYA Centinela"
             textSize = 26f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
