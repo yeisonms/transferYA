@@ -449,74 +449,110 @@
       `;
     }
 
-    // Imagen base de la insignia troquelada en memoria para renderizado dinámico
-    const diecutBaseImg = new Image();
-    diecutBaseImg.crossOrigin = "anonymous";
-    diecutBaseImg.src = "/images/sticker-diecut-badge.jpg";
-    diecutBaseImg.onload = () => {
-      const format = document.getElementById("formatSelect")?.value;
-      if (format && format.startsWith("diecut")) {
-        updatePreview();
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function getDiecutCardHtml(maxWidthClass, merchantName) {
+      const cleanName = merchantName ? escapeHtml(merchantName.trim().toUpperCase()) : '';
+      return `
+        <div class="relative w-full ${maxWidthClass} aspect-[1024/682] select-none mx-auto">
+          <!-- Imagen base HD del troquelado -->
+          <img src="/images/sticker-diecut-badge.jpg" alt="Sticker Oficial TransferYA" class="w-full h-full object-contain pointer-events-none drop-shadow-md" />
+
+          ${cleanName ? `
+            <!-- Franja dinámica con el nombre del negocio -->
+            <div class="absolute left-[20.2%] right-[20.2%] top-[68.2%] h-[8.5%] flex flex-col items-center justify-center text-center overflow-hidden z-10 pointer-events-none" style="background-color: rgb(1, 14, 30);">
+              <span class="text-[9px] sm:text-[11px] font-semibold text-slate-200 leading-tight block">Aquí verificamos los pagos en vivo de:</span>
+              <span class="text-[12px] sm:text-[14px] md:text-[16px] font-extrabold text-[#19C37D] uppercase tracking-wide leading-tight truncate max-w-full drop-shadow-[0_0_8px_rgba(25,195,125,0.7)]">${cleanName}</span>
+              <div class="w-16 h-[2px] bg-[#19C37D] rounded-full mt-0.5"></div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function downloadCustomDiecutHD() {
+      const merchantName = document.getElementById('merchantNameInput')?.value.trim() || '';
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = '/images/sticker-diecut-badge.jpg';
+        img.onload = () => {
+          try {
+            if (!merchantName) {
+              const a = document.createElement('a');
+              a.href = '/images/sticker-diecut-badge.jpg';
+              a.download = 'TransferYA-Sticker-Oficial-HD.jpg';
+              a.click();
+              return;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 1024;
+            canvas.height = img.naturalHeight || 682;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const cleanName = merchantName.toUpperCase();
+            ctx.fillStyle = 'rgb(1, 14, 30)';
+            ctx.fillRect(205, 466, 614, 56);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = "600 15px 'Plus Jakarta Sans', system-ui, sans-serif";
+            ctx.fillStyle = '#E2E8F0';
+            ctx.fillText('Aquí verificamos los pagos en vivo de:', 512, 478);
+
+            let fontSize = 23;
+            ctx.font = `800 ${fontSize}px 'Plus Jakarta Sans', system-ui, sans-serif`;
+            let textWidth = ctx.measureText(cleanName).width;
+            while (textWidth > 580 && fontSize > 12) {
+              fontSize -= 1;
+              ctx.font = `800 ${fontSize}px 'Plus Jakarta Sans', system-ui, sans-serif`;
+              textWidth = ctx.measureText(cleanName).width;
+            }
+
+            ctx.shadowColor = '#19C37D';
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = '#19C37D';
+            ctx.fillText(cleanName, 512, 501);
+
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#19C37D';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            const lineHalfW = Math.min(textWidth / 2 + 12, 280);
+            ctx.moveTo(512 - lineHalfW, 516);
+            ctx.quadraticCurveTo(512, 518, 512 + lineHalfW, 516);
+            ctx.stroke();
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.96);
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `TransferYA-Sticker-${cleanName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+            a.click();
+          } catch (e) {
+            const a = document.createElement('a');
+            a.href = '/images/sticker-diecut-badge.jpg';
+            a.download = 'TransferYA-Sticker-Oficial-HD.jpg';
+            a.click();
+          }
+        };
+        img.onerror = () => {
+          const a = document.createElement('a');
+          a.href = '/images/sticker-diecut-badge.jpg';
+          a.download = 'TransferYA-Sticker-Oficial-HD.jpg';
+          a.click();
+        };
+      } catch (e) {
+        window.open('/images/sticker-diecut-badge.jpg', '_blank');
       }
-    };
-
-    function renderCustomDiecutBadge(merchantName) {
-      if (!diecutBaseImg.complete || diecutBaseImg.naturalWidth === 0) {
-        return "/images/sticker-diecut-badge.jpg";
-      }
-      if (!merchantName || !merchantName.trim()) {
-        return "/images/sticker-diecut-badge.jpg";
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = diecutBaseImg.naturalWidth || 1024;
-      canvas.height = diecutBaseImg.naturalHeight || 682;
-      const ctx = canvas.getContext("2d");
-
-      // 1. Dibujar el sticker base original
-      ctx.drawImage(diecutBaseImg, 0, 0);
-
-      // 2. Limpiar franja con el color exacto de fondo (#010E1E)
-      const cleanName = merchantName.trim().toUpperCase();
-      ctx.save();
-      ctx.fillStyle = "rgb(1, 14, 30)";
-      ctx.fillRect(205, 466, 614, 56);
-
-      // 3. Texto superior de introducción
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "600 15px 'Plus Jakarta Sans', system-ui, sans-serif";
-      ctx.fillStyle = "#E2E8F0";
-      ctx.fillText("Aquí verificamos los pagos en vivo de:", 512, 478);
-
-      // 4. Nombre del negocio con auto-escalado según longitud
-      let fontSize = 23;
-      ctx.font = `800 ${fontSize}px 'Plus Jakarta Sans', system-ui, sans-serif`;
-      let textWidth = ctx.measureText(cleanName).width;
-      while (textWidth > 580 && fontSize > 12) {
-        fontSize -= 1;
-        ctx.font = `800 ${fontSize}px 'Plus Jakarta Sans', system-ui, sans-serif`;
-        textWidth = ctx.measureText(cleanName).width;
-      }
-
-      // Sombra de brillo verde neón
-      ctx.shadowColor = "#19C37D";
-      ctx.shadowBlur = 8;
-      ctx.fillStyle = "#19C37D";
-      ctx.fillText(cleanName, 512, 501);
-
-      // 5. Subrayado curvado verde neón característico
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#19C37D";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      const lineHalfW = Math.min(textWidth / 2 + 12, 280);
-      ctx.moveTo(512 - lineHalfW, 516);
-      ctx.quadraticCurveTo(512, 518, 512 + lineHalfW, 516);
-      ctx.stroke();
-
-      ctx.restore();
-      return canvas.toDataURL("image/jpeg", 0.96);
     }
 
     function updatePreview() {
@@ -526,16 +562,13 @@
       const container = document.getElementById('printContainer');
 
       if (format === 'diecut-sheet') {
-        const diecutSrc = renderCustomDiecutBadge(merchantName);
-        const downloadFilename = merchantName ? `TransferYA-Sticker-${merchantName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg` : 'TransferYA-Sticker-Oficial-HD.jpg';
-
         // 2 insignias troqueladas grandes por hoja (~16x11 cm)
         let items = '';
         for (let i = 0; i < 2; i++) {
           items += `
             <div class="relative p-4 border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center bg-white shadow-sm">
               <span class="no-print absolute -top-2.5 left-6 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Guía de corte del troquelado</span>
-              <img src="${diecutSrc}" alt="Sticker Oficial TransferYA" class="w-full max-w-[440px] h-auto object-contain" />
+              ${getDiecutCardHtml('max-w-[440px]', merchantName)}
             </div>
           `;
         }
@@ -551,14 +584,14 @@
             <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
               <div class="text-left">
                 <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada 3D Neón (2 por hoja - ~16 × 11 cm)</span>
-                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${merchantName}</strong>` : 'Diseño oficial de alto impacto. Escribe el nombre de tu negocio arriba para personalizarlo en vivo.'}</span>
+                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${escapeHtml(merchantName)}</strong>` : 'Diseño oficial de alto impacto. Escribe el nombre de tu negocio arriba para personalizarlo en vivo.'}</span>
               </div>
-              <a href="${diecutSrc}" download="${downloadFilename}"
+              <button onclick="downloadCustomDiecutHD()"
                 class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
                 title="Descargar imagen en alta resolución con el nombre de tu negocio">
                 <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Descargar Imagen HD</span>
-              </a>
+              </button>
             </div>
 
             <div class="grid grid-cols-1 gap-6 max-w-lg mx-auto">
@@ -576,16 +609,13 @@
           </div>
         `;
       } else if (format === 'diecut-4') {
-        const diecutSrc = renderCustomDiecutBadge(merchantName);
-        const downloadFilename = merchantName ? `TransferYA-Sticker-${merchantName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg` : 'TransferYA-Sticker-Oficial-HD.jpg';
-
         // 4 insignias troqueladas medianas por hoja (~11x7.5 cm)
         let items = '';
         for (let i = 0; i < 4; i++) {
           items += `
             <div class="relative p-2.5 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-white shadow-sm">
               <span class="no-print absolute -top-2 left-4 bg-white px-1.5 text-[8px] text-gray-500 font-mono font-bold">✂ Cortar</span>
-              <img src="${diecutSrc}" alt="Sticker Oficial TransferYA" class="w-full max-w-[280px] h-auto object-contain" />
+              ${getDiecutCardHtml('max-w-[280px]', merchantName)}
             </div>
           `;
         }
@@ -601,14 +631,14 @@
             <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
               <div class="text-left">
                 <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada 3D Neón (4 por hoja - ~11 × 7.5 cm)</span>
-                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${merchantName}</strong>` : 'Tamaño compacto para terminales de cobro, caja registradora o soporte de acrílico.'}</span>
+                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${escapeHtml(merchantName)}</strong>` : 'Tamaño compacto para terminales de cobro, caja registradora o soporte de acrílico.'}</span>
               </div>
-              <a href="${diecutSrc}" download="${downloadFilename}"
+              <button onclick="downloadCustomDiecutHD()"
                 class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
                 title="Descargar imagen en alta resolución con el nombre de tu negocio">
                 <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Descargar Imagen HD</span>
-              </a>
+              </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -626,28 +656,25 @@
           </div>
         `;
       } else if (format === 'diecut-giant') {
-        const diecutSrc = renderCustomDiecutBadge(merchantName);
-        const downloadFilename = merchantName ? `TransferYA-Sticker-${merchantName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg` : 'TransferYA-Sticker-Oficial-HD.jpg';
-
         // 1 insignia troquelada gigante (~22x15 cm)
         container.innerHTML = `
           <div class="space-y-6">
             <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100">
               <div class="text-left">
                 <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Insignia Troquelada Gigante de Vitrina (~22 × 15 cm)</span>
-                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${merchantName}</strong>` : 'Máximo impacto visual para la puerta de entrada, vidrio de caja o mostrador principal.'}</span>
+                <span class="text-xs text-gray-500">${merchantName ? `Personalizado con éxito para: <strong>${escapeHtml(merchantName)}</strong>` : 'Máximo impacto visual para la puerta de entrada, vidrio de caja o mostrador principal.'}</span>
               </div>
-              <a href="${diecutSrc}" download="${downloadFilename}"
+              <button onclick="downloadCustomDiecutHD()"
                 class="px-4 py-2 rounded-xl bg-[#0E1B2B] hover:bg-[#1a2d42] text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition-all shrink-0 shadow-sm"
                 title="Descargar imagen en alta resolución con el nombre de tu negocio">
                 <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Descargar Imagen HD</span>
-              </a>
+              </button>
             </div>
 
             <div class="relative p-6 border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center bg-white shadow-sm max-w-xl mx-auto">
               <span class="no-print absolute top-2 left-6 bg-white px-2 text-[9px] text-gray-500 font-mono font-bold">✂ Guía de corte del troquelado</span>
-              <img src="${diecutSrc}" alt="Sticker Oficial TransferYA Gigante" class="w-full max-w-[560px] h-auto object-contain" />
+              ${getDiecutCardHtml('max-w-[560px]', merchantName)}
             </div>
 
             <div class="no-print pt-6 text-center">
