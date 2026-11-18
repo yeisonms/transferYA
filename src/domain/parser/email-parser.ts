@@ -146,7 +146,8 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
     /Valor[:\s]*([\$\d.,\s]+)/i,
     /Monto[:\s]*([\$\d.,\s]+)/i,
     /Valor recibido[:\s]*([\$\d.,\s]+)/i,
-    /(?:Te enviaron|recibiste)\s+([\$\d.,\s]+?)(?:\s+a tu Nequi|\s+en Nequi|\s+por Bre-B|\.|$)/i,
+    /(?:Te enviaron|recibiste)\s+([\$\d.,\s]+?)(?:\s+de\s+|\s+a tu Nequi|\s+en Nequi|\s+por Bre-B|\.|$)/i,
+    /(?:Te enviaron|recibiste)\s+([\$\d.,\s]+)/i,
   ];
 
   for (const pat of amountPatterns) {
@@ -169,6 +170,7 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
   // 3. Extraer Remitente
   let rawSender = '';
   const senderPatterns = [
+    /(?:recibiste|te enviaron)\s+[\$\d.,\s]+\s+de\s+([a-zA-Z\s]+?)(?:\s+el|\s+a las|\s+desde|\.|$)/i,
     /(?:^|\n)\s*¿Qui[eé]n te la envi[oó]\?[:\s]*([^\n\r]+)/i,
     /(?:^|\n)\s*Env[ií]a[:\s]*([^\n\r]+)/i,
     /(?:^|\n)\s*Nombre[:\s]*([^\n\r]+)/i,

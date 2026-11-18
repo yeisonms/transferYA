@@ -139,6 +139,26 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
       }
     });
 
+    it('debe parsear el formato de transferencias Bre-B recibido desde notificaciones@nequi.com.co', () => {
+      const email: InboundEmailInput = {
+        from: 'notificaciones@nequi.com.co',
+        subject: '¡Recibiste plata por Bre-B!',
+        text: `
+          ¡Hola, YEISON MURCIA!
+
+          Recibiste 200 de EDWIN MURCIA el 18 de noviembre de 2026 a las 12:05 p.m, desde el banco Nequi. Revisa el detalle en los movimientos de tu app o descarga el comprobante si lo necesitas.
+        `,
+      };
+
+      const result = parseNequiEmailReceipt(email);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.payment.wallet).toBe('NEQUI');
+        expect(result.payment.amount).toBe(200);
+        expect(result.payment.senderName).toBe('Edwin Murcia');
+      }
+    });
+
     it('debe parsear transferencias por Bre-B / Transfiya notificadas por correo', () => {
       const email: InboundEmailInput = {
         from: 'notificaciones@nequi.com.co',
