@@ -60,7 +60,7 @@ export interface IPipelineNotificationRepository {
     reference?: string | null;
     senderName?: string;
     rawTitle?: string;
-  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number } | null>;
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null } | null>;
 }
 
 export type PipelineResult =

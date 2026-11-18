@@ -108,6 +108,23 @@ export class PaymentProcessingPipeline {
                 };
             }
             const receipt = parseResult.payment;
+            // Determinar o generar Referencia de Transferencia para auditoría y trazabilidad
+            const hasOfficialRef = Boolean(receipt.reference && receipt.reference.trim());
+            const finalReference = hasOfficialRef
+                ? receipt.reference.trim().toUpperCase()
+                : (() => {
+                    const isBreB = /bre-b/i.test(notification.rawTitle || '') ||
+                        /bre-b/i.test(notification.rawText || '') ||
+                        notification.walletPackage === 'com.nequi.inbound.email' ||
+                        receipt.senderName === 'Transferencia Bre-B';
+                    const prefix = isBreB ? 'BREB' : 'TRF';
+                    const rawId = (notification.id || notificationId).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                    const shortId = rawId.length > 8 ? rawId.slice(-8) : rawId;
+                    return `${prefix}-${shortId}`;
+                })();
+            if (hasOfficialRef) {
+                receipt.reference = finalReference;
+            }
             // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
             let merchantId;
             try {
@@ -119,7 +136,44 @@ export class PaymentProcessingPipeline {
             catch {
                 // Si la resolución de ruta falla tempranamente, continúa sin merchantId
             }
-            // 3. Generar y evaluar Huella de Idempotencia
+            // 3. Evaluar duplicados cruzados multicanal (Centinela vs Gmail) e Idempotencia previa
+            if (this.deps.notificationRepository.findRecentDuplicatePayment && merchantId) {
+                const recentDup = await this.deps.notificationRepository.findRecentDuplicatePayment({
+                    merchantId,
+                    amount: receipt.amount,
+                    capturedAt: notification.capturedAt,
+                    currentDeviceId: notification.deviceId,
+                    currentNotificationId: notification.id || notificationId,
+                    reference: hasOfficialRef ? finalReference : null,
+                    senderName: receipt.senderName,
+                    rawTitle: notification.rawTitle,
+                });
+                if (recentDup) {
+                    const canonicalRef = recentDup.paymentReference || finalReference;
+                    await this.deps.notificationRepository.updateNotification(notificationId, {
+                        status: 'DUPLICATE_PAYMENT',
+                        amount: receipt.amount,
+                        senderName: receipt.senderName,
+                        paymentReference: canonicalRef,
+                        failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
+                    });
+                    return {
+                        status: 'DUPLICATE_PAYMENT',
+                        notificationId,
+                        fingerprint: `dup:${recentDup.id}`,
+                        existingFingerprintRecord: {
+                            id: recentDup.id,
+                            deviceId: recentDup.deviceId || notification.deviceId,
+                            fingerprint: `dup:${recentDup.id}`,
+                            wallet: receipt.wallet,
+                            amount: receipt.amount,
+                            senderName: receipt.senderName,
+                            capturedAt: recentDup.capturedAt || notification.capturedAt,
+                        },
+                    };
+                }
+            }
+            // 4. Generar y evaluar Huella de Idempotencia estándar
             const fingerprint = this.fingerprintGenerator(receipt, notification.capturedAt);
             const fpResult = await this.deps.fingerprintRepository.registerFingerprint({
                 deviceId: notification.deviceId,
@@ -136,7 +190,7 @@ export class PaymentProcessingPipeline {
                     status: 'DUPLICATE_PAYMENT',
                     amount: receipt.amount,
                     senderName: receipt.senderName,
-                    paymentReference: receipt.reference,
+                    paymentReference: receipt.reference || finalReference,
                 });
                 return {
                     status: 'DUPLICATE_PAYMENT',
@@ -249,7 +303,7 @@ export class PaymentProcessingPipeline {
                     status: 'PROCESSED',
                     amount: receipt.amount,
                     senderName: receipt.senderName,
-                    paymentReference: receipt.reference,
+                    paymentReference: receipt.reference || finalReference,
                     whatsappMessageIds: messageIds,
                     processedAt: now,
                 });

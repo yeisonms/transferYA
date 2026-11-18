@@ -167,6 +167,26 @@ export class PaymentProcessingPipeline {
 
     const receipt = parseResult.payment;
 
+    // Determinar o generar Referencia de Transferencia para auditoría y trazabilidad
+    const hasOfficialRef = Boolean(receipt.reference && receipt.reference.trim());
+    const finalReference = hasOfficialRef
+      ? receipt.reference!.trim().toUpperCase()
+      : (() => {
+          const isBreB =
+            /bre-b/i.test(notification.rawTitle || '') ||
+            /bre-b/i.test(notification.rawText || '') ||
+            notification.walletPackage === 'com.nequi.inbound.email' ||
+            receipt.senderName === 'Transferencia Bre-B';
+          const prefix = isBreB ? 'BREB' : 'TRF';
+          const rawId = (notification.id || notificationId).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+          const shortId = rawId.length > 8 ? rawId.slice(-8) : rawId;
+          return `${prefix}-${shortId}`;
+        })();
+
+    if (hasOfficialRef) {
+      receipt.reference = finalReference;
+    }
+
     // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
     let merchantId: string | undefined;
     try {
@@ -186,19 +206,20 @@ export class PaymentProcessingPipeline {
         capturedAt: notification.capturedAt,
         currentDeviceId: notification.deviceId,
         currentNotificationId: notification.id || notificationId,
-        reference: receipt.reference,
+        reference: hasOfficialRef ? finalReference : null,
         senderName: receipt.senderName,
         rawTitle: notification.rawTitle,
       });
 
       if (recentDup) {
+        const canonicalRef = recentDup.paymentReference || finalReference;
         await this.deps.notificationRepository.updateNotification(
           notificationId,
           {
             status: 'DUPLICATE_PAYMENT',
             amount: receipt.amount,
             senderName: receipt.senderName,
-            paymentReference: receipt.reference,
+            paymentReference: canonicalRef,
             failureReason: `Pago duplicado multicanal (coincide con notificación ${recentDup.id})`,
           },
         );
@@ -244,7 +265,7 @@ export class PaymentProcessingPipeline {
           status: 'DUPLICATE_PAYMENT',
           amount: receipt.amount,
           senderName: receipt.senderName,
-          paymentReference: receipt.reference,
+          paymentReference: receipt.reference || finalReference,
         },
       );
 
@@ -403,7 +424,7 @@ export class PaymentProcessingPipeline {
           status: 'PROCESSED',
           amount: receipt.amount,
           senderName: receipt.senderName,
-          paymentReference: receipt.reference,
+          paymentReference: receipt.reference || finalReference,
           whatsappMessageIds: messageIds,
           processedAt: now,
         },

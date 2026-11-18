@@ -58,18 +58,31 @@ class InMemoryPipelineNotificationRepository
     reference?: string | null;
     senderName?: string;
     rawTitle?: string;
-  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number } | null> {
+  }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null } | null> {
     for (const [id, notif] of this.notifications.entries()) {
       if (id === params.currentNotificationId) continue;
       if (notif.status !== 'PROCESSED') continue;
       if (notif.amount !== params.amount) continue;
 
+      const isOfficialBankRef = Boolean(
+        params.reference &&
+          !params.reference.startsWith('BREB-') &&
+          !params.reference.startsWith('TRF-'),
+      );
+
       if (
+        isOfficialBankRef &&
         params.reference &&
         notif.paymentReference &&
         params.reference.trim().toUpperCase() === notif.paymentReference.trim().toUpperCase()
       ) {
-        return { id, deviceId: notif.deviceId, capturedAt: notif.capturedAt, amount: notif.amount ?? undefined };
+        return {
+          id,
+          deviceId: notif.deviceId,
+          capturedAt: notif.capturedAt,
+          amount: notif.amount ?? undefined,
+          paymentReference: notif.paymentReference,
+        };
       }
 
       const timeDiff = Math.abs(notif.capturedAt - params.capturedAt);
@@ -77,8 +90,14 @@ class InMemoryPipelineNotificationRepository
         (notif.deviceId.startsWith('cloud_email_') && !params.currentDeviceId.startsWith('cloud_email_')) ||
         (!notif.deviceId.startsWith('cloud_email_') && params.currentDeviceId.startsWith('cloud_email_'));
 
-      if (isCrossChannel && timeDiff <= 60_000) {
-        return { id, deviceId: notif.deviceId, capturedAt: notif.capturedAt, amount: notif.amount ?? undefined };
+      if (isCrossChannel && timeDiff <= 120_000) {
+        return {
+          id,
+          deviceId: notif.deviceId,
+          capturedAt: notif.capturedAt,
+          amount: notif.amount ?? undefined,
+          paymentReference: notif.paymentReference,
+        };
       }
     }
     return null;
