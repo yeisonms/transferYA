@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es-CO" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Política de Privacidad | TransferYA & TransferYA Centinela</title>
+  <meta name="description"
+    content="Política de Privacidad y Tratamiento de Datos Personales de TransferYA y TransferYA Centinela para Android. Conoce cómo protegemos tus datos, el uso del permiso de notificaciones y la garantía de cero acceso a claves bancarias o dinero." />
+  <meta name="author" content="MurSat Solutions" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://transferya.app/privacidad" />
+
+  <!-- Open Graph / Redes Sociales -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Política de Privacidad — TransferYA" />
+  <meta property="og:description"
+    content="Transparencia y seguridad: conoce qué datos procesa TransferYA Centinela en Android y por qué jamás tiene acceso a tus claves, saldos ni conversaciones." />
+  <meta property="og:url" content="https://transferya.app/privacidad" />
+  <meta property="og:image" content="/images/og-share.jpg" />
+  <meta property="og:locale" content="es_CO" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=25" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=25" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=25" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png?v=25" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg?v=25" />
+
+  <!-- Tipografía Oficial: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Estilos Base & Tailwind Compilado -->
+  <link rel="stylesheet" href="/css/app.css" />
+
+  <style>
+    :root {
+      --ty-midnight: #101C2D;
+      --ty-emerald: #13B981;
+      --ty-emerald-dark: #0D825B;
+      --ty-emerald-soft: #E8F7F0;
+      --ty-bg-light: #F5F7FA;
+      --ty-surface-light: #FFFFFF;
+      --ty-muted-light: #64748B;
+      --ty-border-light: #E2E8F0;
+      
+      --ty-bg: var(--ty-bg-light);
+      --ty-surface: var(--ty-surface-light);
+      --ty-text: var(--ty-midnight);
+      --ty-text-muted: var(--ty-muted-light);
+      --ty-border: var(--ty-border-light);
+    }
+
+    .dark {
+      --ty-bg: #0B111A;
+      --ty-surface: #101C2D;
+      --ty-text: #F8FAFC;
+      --ty-text-muted: #94A3B8;
+      --ty-border: #1E293B;
+      --ty-emerald-soft: rgba(19, 185, 129, 0.15);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--ty-bg);
+      color: var(--ty-text);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-surface {
+      background-color: var(--ty-surface);
+      border: 1px solid var(--ty-border);
+    }
+
+    /* Indicador de sección activa para scroll suave */
+    .toc-link.active {
+      color: #13B981;
+      font-weight: 700;
+      border-left: 2px solid #13B981;
+      padding-left: 0.75rem;
+    }
+
+    @media print {
+      header, nav, #themeToggleBtn, #tocSidebar, footer, .no-print {
+        display: none !important;
+      }
+      body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        font-size: 11pt;
+      }
+      .card-surface {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+
+  <script>
+    // Detección y persistencia de Tema (Light Premium predeterminado)
+    (function () {
+      const savedTheme = localStorage.getItem('ty_theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+</head>
+
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#13B981] selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-[#101C2D]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logotipo Oficial -->
+      <a href="/" class="flex items-center gap-3 group" title="Ir al inicio de TransferYA">
+        <div class="w-10 h-10 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-baseline">
+            <span class="text-xl font-extrabold tracking-tight text-[#101C2D] dark:text-white">transfer</span>
+            <span class="text-xl font-extrabold text-[#13B981]">YA</span>
+          </div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 -mt-1">
+            Privacidad &amp; Seguridad
+          </span>
+        </div>
+      </a>
+
+      <!-- Accesos Rápidos y Selector de Tema -->
+      <div class="flex items-center gap-3">
+        <button id="themeToggleBtn" type="button"
+          class="p-2 rounded-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title="Cambiar tema Claro / Oscuro" aria-label="Cambiar tema">
+          <svg id="themeIconSun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" stroke-width="2"></circle>
+            <path stroke-width="2" stroke-linecap="round" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <svg id="themeIconMoon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        <a href="/"
+          class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Inicio</span>
+        </a>
+
+        <a href="/#app"
+          class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-[#13B981] hover:bg-[#0D825B] text-white shadow-sm hover:shadow transition-all">
+          <span>Abrir Panel</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- HERO HEADER / TÍTULO DE LA POLÍTICA -->
+  <!-- ========================================================================= -->
+  <section class="bg-white dark:bg-[#101C2D] border-b border-gray-200 dark:border-gray-800 py-10 sm:py-14 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#13B981]/15 text-[#0D825B] dark:text-[#13B981] text-xs font-semibold uppercase tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#13B981] animate-pulse"></span>
+          <span>Transparencia y Protección de Datos</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#101C2D] dark:text-white tracking-tight leading-tight">
+          Política de Privacidad
+        </h1>
+        <p class="mt-3 text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+          Términos y condiciones de tratamiento de datos personales para la plataforma <strong>TransferYA</strong> y la aplicación móvil Android <strong>TransferYA Centinela</strong>.
+        </p>
+
+        <!-- Metadatos de Vigencia y Certificación -->
+        <div class="mt-6 flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 font-medium">
+            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Última actualización: <strong>19 de Noviembre de 2026</strong>
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 font-medium">
+            <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+            Google Play Policy Compliant
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 font-medium">
+            🇨🇴 Ley 1581 de 2012 (Habeas Data)
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- RESUMEN EJECUTIVO DESTACADO (CARDS DE CONFIANZA RÁPIDA) -->
+  <!-- ========================================================================= -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 z-10 relative">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- Card 1: Lo que sí lee -->
+      <div class="card-surface p-5 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-950/40 bg-white dark:bg-[#101C2D]">
+        <div class="flex items-center gap-2.5 mb-2 text-[#13B981]">
+          <div class="w-8 h-8 rounded-lg bg-[#13B981]/15 flex items-center justify-center font-bold">
+            ✓
+          </div>
+          <h2 class="text-sm font-bold text-[#101C2D] dark:text-white uppercase tracking-wider">
+            Lo que Únicamente Leemos
+          </h2>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+          Notificaciones bancarias oficiales de cobros entrantes (monto, remitente público y código de comprobante) de <strong>Nequi</strong> y <strong>DaviPlata</strong>.
+        </p>
+      </div>
+
+      <!-- Card 2: Lo que JAMÁS se lee -->
+      <div class="card-surface p-5 rounded-2xl shadow-sm border border-red-100 dark:border-red-950/40 bg-white dark:bg-[#101C2D]">
+        <div class="flex items-center gap-2.5 mb-2 text-rose-500">
+          <div class="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center font-bold">
+            ✕
+          </div>
+          <h2 class="text-sm font-bold text-[#101C2D] dark:text-white uppercase tracking-wider">
+            Lo que JAMÁS se Toca
+          </h2>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+          <strong>Cero acceso</strong> a tus claves bancarias, PINs, saldos de cuenta, chats de WhatsApp, mensajes de texto (SMS), fotos, contactos ni ubicación GPS.
+        </p>
+      </div>
+
+      <!-- Card 3: Cero intermediación -->
+      <div class="card-surface p-5 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-950/40 bg-white dark:bg-[#101C2D]">
+        <div class="flex items-center gap-2.5 mb-2 text-blue-500">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center font-bold">
+            🔒
+          </div>
+          <h2 class="text-sm font-bold text-[#101C2D] dark:text-white uppercase tracking-wider">
+            Cero Retención de Dinero
+          </h2>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+          TransferYA no es una pasarela ni capta fondos. El 100% del dinero entra directamente a tu cuenta bancaria de siempre, sin comisiones sobre ventas.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- CUERPO PRINCIPAL CON ÍNDICE LATERAL -->
+  <!-- ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex-grow">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+      
+      <!-- SIDEBAR ÍNDICE NAVEGABLE (Desktop) -->
+      <aside class="hidden lg:block lg:col-span-4" id="tocSidebar">
+        <div class="sticky top-24 card-surface p-5 rounded-2xl max-h-[calc(100vh-8rem)] overflow-y-auto space-y-3">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+            Índice de la Política
+          </p>
+          <nav class="space-y-1 text-xs">
+            <a href="#sec-responsable" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">1. Responsable del Tratamiento</a>
+            <a href="#sec-alcance" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">2. Alcance y Aplicación</a>
+            <a href="#sec-permiso-notificaciones" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] font-semibold transition-colors">3. Permiso Android: Escucha de Notificaciones</a>
+            <a href="#sec-datos-recopilados" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">4. Datos que Recopilamos</a>
+            <a href="#sec-datos-excluidos" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">5. Lo que JAMÁS Recopilamos</a>
+            <a href="#sec-finalidad" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">6. Finalidad del Tratamiento</a>
+            <a href="#sec-no-intermediacion" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">7. No Intermediación Financiera</a>
+            <a href="#sec-seguridad-cifrado" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">8. Seguridad, Cifrado y Retención</a>
+            <a href="#sec-terceros" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">9. Compartición con Terceros</a>
+            <a href="#sec-eliminacion-datos" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] font-semibold text-emerald-600 dark:text-emerald-400 transition-colors">10. Eliminación de Cuenta y Datos (Google Play)</a>
+            <a href="#sec-derechos-arco" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">11. Derechos ARCO y Habeas Data</a>
+            <a href="#sec-menores" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">12. Privacidad de Menores</a>
+            <a href="#sec-cambios" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">13. Modificaciones a la Política</a>
+            <a href="#sec-contacto" class="toc-link block py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#13B981] transition-colors">14. Canales de Contacto Oficial</a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- ARTÍCULO LEGAL COMPLETO -->
+      <article class="lg:col-span-8 space-y-10 leading-relaxed text-sm sm:text-base text-gray-700 dark:text-gray-300">
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 1: IDENTIFICACIÓN DEL RESPONSABLE -->
+        <!-- =================================================================== -->
+        <section id="sec-responsable" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">1</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Identificación del Responsable del Tratamiento
+            </h2>
+          </div>
+          <p>
+            El responsable del tratamiento de los datos personales obtenidos a través de la plataforma web <strong class="text-[#101C2D] dark:text-white">TransferYA</strong> y de la aplicación móvil para Android <strong class="text-[#101C2D] dark:text-white">TransferYA Centinela</strong> es:
+          </p>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 text-xs sm:text-sm space-y-2">
+            <div><strong>Razón Social / Titular:</strong> MurSat Solutions</div>
+            <div><strong>Producto Tecnológico:</strong> TransferYA &amp; TransferYA Centinela</div>
+            <div><strong>País de Domicilio:</strong> Colombia</div>
+            <div><strong>Portal Web Oficial:</strong> <a href="https://transferya.app" class="text-[#13B981] font-semibold hover:underline">https://transferya.app</a></div>
+            <div><strong>Correo de Contacto y Privacidad:</strong> <a href="mailto:soporte@transferya.app" class="text-[#13B981] font-semibold hover:underline">soporte@transferya.app</a> / <a href="mailto:contacto@transferya.app" class="text-[#13B981] font-semibold hover:underline">contacto@transferya.app</a></div>
+            <div><strong>Atención al Usuario / WhatsApp:</strong> <a href="https://wa.me/573113654315" target="_blank" rel="noopener noreferrer" class="text-[#13B981] font-semibold hover:underline">+57 311 365 4315</a></div>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            MurSat Solutions garantiza que todo tratamiento de información se rige estrictamente por la Ley Estatutaria 1581 de 2012, el Decreto Reglamentario 1377 de 2013 de la República de Colombia y las Directrices de Datos de Usuario del Programa para Desarrolladores de Google Play.
+          </p>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 2: ALCANCE Y APLICACIÓN -->
+        <!-- =================================================================== -->
+        <section id="sec-alcance" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">2</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Alcance y Aplicación
+            </h2>
+          </div>
+          <p>
+            Esta Política de Privacidad aplica a toda persona natural o jurídica que acceda, descargue, instale o utilice:
+          </p>
+          <ul class="list-disc list-inside space-y-2 text-sm pl-2">
+            <li>La aplicación móvil Android denominada <strong class="text-[#101C2D] dark:text-white">TransferYA Centinela</strong> (distribuida en Google Play Store).</li>
+            <li>El panel administrativo web y la pantalla de cobro para mostrador (POS) alojados en <strong class="text-[#101C2D] dark:text-white">transferya.app</strong>.</li>
+            <li>El servicio automatizado de despacho de notificaciones transaccionales a cajeros autorizados vía WhatsApp.</li>
+          </ul>
+          <p>
+            Al instalar y utilizar la aplicación o crear una cuenta en el sistema, el usuario declara haber leído, comprendido y aceptado en su totalidad las condiciones de este documento.
+          </p>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 3: DECLARACIÓN ESPECIAL GOOGLE PLAY — PERMISO SENSIBLE -->
+        <!-- =================================================================== -->
+        <section id="sec-permiso-notificaciones" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4 border-2 border-emerald-500/40 bg-emerald-50/20 dark:bg-emerald-950/10">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-[#13B981] text-white flex items-center justify-center font-bold text-xs">3</span>
+            <div>
+              <span class="text-[11px] font-mono uppercase font-bold tracking-wider text-[#0D825B] dark:text-[#13B981] block">
+                Divulgación Destacada · Requisito Google Play Developer
+              </span>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-[#101C2D] dark:text-white leading-tight">
+                Permiso Sensible de Android: Escucha de Notificaciones
+              </h2>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white dark:bg-[#101C2D] border border-emerald-200 dark:border-emerald-800 space-y-3">
+            <div class="flex items-center gap-2 text-xs font-mono font-semibold text-[#101C2D] dark:text-white">
+              <span class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[#0D825B] dark:text-[#13B981]">
+                android.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm leading-relaxed">
+              Para cumplir su función esencial de <strong>protección contra fraudes por comprobantes de pago falsos ("pantallazos falsos")</strong> en el mostrador del comercio, la aplicación <em>TransferYA Centinela</em> solicita el permiso especial del sistema operativo Android denominado <strong class="text-[#101C2D] dark:text-white">Acceso a Notificaciones (NotificationListenerService)</strong>.
+            </p>
+          </div>
+
+          <h3 class="text-base font-bold text-[#101C2D] dark:text-white pt-2">
+            A. ¿Por qué es estrictamente necesario este permiso?
+          </h3>
+          <p class="text-sm">
+            En Colombia, millones de pequeños comercios cobran a través de billeteras digitales como Nequi y DaviPlata. Los estafadores utilizan aplicaciones que simulan comprobantes de transferencia idénticos en la pantalla del cliente. Para validar un pago legítimo, el cajero habitualmente debe pedirle prestado el celular personal al dueño del negocio o desatender la fila.
+          </p>
+          <p class="text-sm">
+            Gracias al servicio de escucha de notificaciones, el teléfono Centinela detecta la alerta bancaria oficial en <strong>menos de un segundo</strong>, reproduce un aviso sonoro ("¡Recibiste $25.000!") y envía la confirmación al WhatsApp del cajero, sin exponer el celular personal ni requerir que el comerciante entregue sus claves.
+          </p>
+
+          <h3 class="text-base font-bold text-[#101C2D] dark:text-white pt-2">
+            B. Filtro Local Estricto en Memoria (On-Device Local Filtering)
+          </h3>
+          <p class="text-sm">
+            El código fuente de TransferYA Centinela implementa una lista blanca (whitelist) estricta a nivel de sistema. El analizador <strong>solamente procesa notificaciones provenientes de los siguientes paquetes de aplicaciones bancarias oficiales:</strong>
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono-code">
+            <div class="p-2.5 rounded-lg bg-white dark:bg-[#101C2D] border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">com.nequi.MobileApp</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold">Nequi</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-white dark:bg-[#101C2D] border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">com.davivienda.daviplata</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold">DaviPlata</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-white dark:bg-[#101C2D] border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">com.bancolombia.personas</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold">Bancolombia</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-white dark:bg-[#101C2D] border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">co.com.breb.app</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold">Bre-B Interoperable</span>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-200 space-y-1">
+            <strong>Garantía de Descarte Inmediato:</strong>
+            <p>
+              Toda notificación emitida por cualquier otra aplicación instalada en el dispositivo (incluyendo WhatsApp, Telegram, Gmail, SMS, llamadas, redes sociales o alarmas) es <strong>descartada en milisegundos en la memoria volátil (RAM) del teléfono</strong>. Jamás se lee su contenido, jamás se guarda en el almacenamiento local y jamás se transmite por internet.
+            </p>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 4: DATOS QUE RECOPILAMOS -->
+        <!-- =================================================================== -->
+        <section id="sec-datos-recopilados" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">4</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Categorías de Datos Recopilados y Tratados
+            </h2>
+          </div>
+          <p>
+            TransferYA recopila únicamente los datos indispensables para autenticar al comerciante y validar las ventas en tiempo real:
+          </p>
+
+          <div class="space-y-3 text-xs sm:text-sm">
+            
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <h3 class="font-bold text-[#101C2D] dark:text-white mb-1.5 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#13B981]"></span>
+                1. Datos de las Notificaciones Bancarias de Cobro
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 pl-2">
+                <li><strong>Monto de la transacción:</strong> Valor en pesos colombianos ($ COP) recibido.</li>
+                <li><strong>Entidad emisora:</strong> Nequi, DaviPlata o banco receptor.</li>
+                <li><strong>Nombre público o identificador del remitente:</strong> Tal como figura en el texto de la notificación bancaria pública.</li>
+                <li><strong>Número de comprobante / Referencia:</strong> Código alfanumérico generado por la entidad bancaria para evitar pagos duplicados.</li>
+                <li><strong>Marca de tiempo:</strong> Fecha, hora, minuto y segundo de la recepción.</li>
+              </ul>
+            </div>
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <h3 class="font-bold text-[#101C2D] dark:text-white mb-1.5 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#13B981]"></span>
+                2. Datos de Cuenta del Comerciante y Cajeros
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 pl-2">
+                <li><strong>Nombre comercial o razón social:</strong> Para personalizar los comprobantes y el panel.</li>
+                <li><strong>Correo electrónico del administrador:</strong> Utilizado como identificador de inicio de sesión y recuperación de cuenta.</li>
+                <li><strong>Contraseña cifrada:</strong> Almacenada exclusivamente mediante algoritmos de derivación de claves criptográficas seguras (hashing); ningún empleado de TransferYA tiene acceso a su contraseña en texto plano.</li>
+                <li><strong>Números telefónicos de WhatsApp de cajeros:</strong> Números autorizados por el comerciante para recibir las alertas transaccionales de venta.</li>
+              </ul>
+            </div>
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <h3 class="font-bold text-[#101C2D] dark:text-white mb-1.5 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#13B981]"></span>
+                3. Datos Técnicos del Dispositivo Centinela
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 pl-2">
+                <li><strong>Identificador de caja (box_id):</strong> Token criptográfico generado al momento del emparejamiento.</li>
+                <li><strong>Nombre asignado a la caja:</strong> Ej. "Caja 1", "Caja Mostrador".</li>
+                <li><strong>Estado de conectividad y nivel de batería:</strong> Para avisar oportunamente al dueño si el celular se quedó sin internet o está por apagarse.</li>
+                <li><strong>Versión de la aplicación y sistema operativo:</strong> Con fines de diagnóstico técnico y compatibilidad de software.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 5: LO QUE JAMÁS RECOPILAMOS -->
+        <!-- =================================================================== -->
+        <section id="sec-datos-excluidos" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center font-bold text-xs">5</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Lo que JAMÁS Recopilamos ni Accedemos
+            </h2>
+          </div>
+          <p>
+            Para brindar total tranquilidad al comerciante y a sus clientes, declaramos enfáticamente que TransferYA y la app Centinela <strong>no tienen la capacidad técnica ni la autorización de acceder a:</strong>
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Claves o PINs Bancarios</span>
+              <p class="text-gray-600 dark:text-gray-300">Jamás solicitamos ni leemos la clave de 4 dígitos de Nequi/DaviPlata, claves dinámicas, contraseñas de portales bancarios ni códigos CVV.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Saldos Totales de Cuenta</span>
+              <p class="text-gray-600 dark:text-gray-300">No podemos consultar el saldo total que tienes en tus cuentas de banco ni acceder a tus extractos patrimoniales.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Chats Privados o SMS</span>
+              <p class="text-gray-600 dark:text-gray-300">Jamás leemos mensajes privados de WhatsApp, Telegram, correos personales, SMS ordinarios ni códigos OTP de verificación telefónica.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Contactos, Fotos o Cámara</span>
+              <p class="text-gray-600 dark:text-gray-300">No solicitamos permisos de lectura de la libreta de contactos, galería multimedia de fotos o videos, ni uso de micrófono o cámara en segundo plano.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Ubicación Geográfica (GPS)</span>
+              <p class="text-gray-600 dark:text-gray-300">No rastreamos la ubicación física precisa (GPS) de los teléfonos ni realizamos geolocalización de tus movimientos cotidianos.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-1">
+              <span class="font-bold text-rose-600 dark:text-rose-400 block">🚫 Historial de Navegación</span>
+              <p class="text-gray-600 dark:text-gray-300">No instalamos rastreadores de navegación, cookies de publicidad invasiva ni inspeccionamos sitios web que visites.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 6: FINALIDADES DEL TRATAMIENTO -->
+        <!-- =================================================================== -->
+        <section id="sec-finalidad" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">6</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Finalidades del Tratamiento de Datos
+            </h2>
+          </div>
+          <p>
+            Los datos personales y transaccionales recopilados se utilizan única y exclusivamente para los siguientes propósitos legítimos:
+          </p>
+          <ol class="list-decimal list-inside space-y-2 text-sm pl-2">
+            <li><strong>Verificación inmediata y prevención del fraude:</strong> Proyectar en la pantalla de cobro del comercio (POS) y cantar en voz alta el anuncio del pago recibido para que el cajero entregue el producto con certeza absoluta de que el dinero ingresó.</li>
+            <li><strong>Despacho de notificaciones a cajeros:</strong> Remitir por WhatsApp el resumen del cobro a los colaboradores de turno autorizados por el comercio.</li>
+            <li><strong>Conciliación y cierre de caja:</strong> Consolidar los totales diarios y semanales de ventas para facilitar los cuadres y arqueos de turno sin margen de error humano.</li>
+            <li><strong>Monitoreo de estado operativo:</strong> Notificar al administrador si el celular Centinela se desconecta o pierde el nivel óptimo de batería para evitar que se pierdan alertas de venta.</li>
+            <li><strong>Soporte técnico y atención al cliente:</strong> Resolver inquietudes, diagnosticar fallas de sincronización y atender solicitudes formales de soporte.</li>
+          </ol>
+          <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 text-xs">
+            <strong>Prohibición Publicitaria:</strong> Bajo ninguna circunstancia los datos de ventas o clientes se emplean para construir perfiles publicitarios, remarketing invasivo ni envío de promociones no autorizadas de terceros.
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 7: NO INTERMEDIACIÓN FINANCIERA -->
+        <!-- =================================================================== -->
+        <section id="sec-no-intermediacion" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center font-bold text-xs">7</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Principio de No Intermediación Financiera y Cero Custodia
+            </h2>
+          </div>
+          <p>
+            TransferYA es una <strong class="text-[#101C2D] dark:text-white">herramienta de software de auditoría y notificación tecnológica</strong>.
+          </p>
+          <div class="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 space-y-2 text-xs sm:text-sm">
+            <p>
+              • <strong>No somos banco ni pasarela de pago:</strong> MurSat Solutions no capta dinero del público, no custodia recursos, no realiza compensación bancaria ni efectúa dispersión de fondos.
+            </p>
+            <p>
+              • <strong>Tu dinero va directo a tu cuenta:</strong> Cuando un cliente paga mediante Nequi o DaviPlata, el dinero viaja de forma instantánea entre las cuentas bancarias de las partes. TransferYA jamás retiene ni "congela" saldos.
+            </p>
+            <p>
+              • <strong>Cero comisiones porcentuales:</strong> TransferYA no cobra un porcentaje de tus transacciones. El servicio opera bajo una suscripción fija por el software.
+            </p>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 8: SEGURIDAD, CIFRADO Y RETENCIÓN -->
+        <!-- =================================================================== -->
+        <section id="sec-seguridad-cifrado" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">8</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Medidas de Seguridad, Cifrado y Retención
+            </h2>
+          </div>
+          <p>
+            Implementamos rigurosos estándares técnicos para proteger la integridad, confidencialidad y disponibilidad de la información:
+          </p>
+          <div class="space-y-3 text-xs sm:text-sm">
+            <div class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <strong class="text-[#101C2D] dark:text-white block mb-1">Cifrado en Tránsito (HTTPS / TLS 1.3):</strong>
+              Todas las comunicaciones entre la app Android, el panel web y los servidores centrales se realizan mediante canales cifrados con certificados SSL válidos de 256 bits, imposibilitando la interceptación de datos en redes públicas o Wi-Fi.
+            </div>
+            <div class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <strong class="text-[#101C2D] dark:text-white block mb-1">Firmas Criptográficas HMAC-SHA256:</strong>
+              Cada paquete transmitido por el Centinela viaja firmado criptográficamente para certificar la autenticidad del origen y prevenir ataques de suplantación o repetición (anti-replay con marcas de tiempo cortas).
+            </div>
+            <div class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+              <strong class="text-[#101C2D] dark:text-white block mb-1">Aislamiento por Fila (Row-Level Security - RLS):</strong>
+              La base de datos impone políticas estrictas a nivel de motor de datos donde cada comerciante únicamente puede consultar sus propios registros de transacciones y configuración, garantizando confidencialidad multinquilino absoluta.
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            <strong>Período de Retención:</strong> Los registros de transacciones se conservan en la base de datos mientras la cuenta del comercio se encuentre activa, con el fin exclusivo de permitir la consulta de históricos y arqueos contables. En caso de solicitar la supresión de la cuenta, se procede a su borrado permanente conforme al punto 10.
+          </p>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 9: DESTINATARIOS Y COMPARTICIÓN CON TERCEROS -->
+        <!-- =================================================================== -->
+        <section id="sec-terceros" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">9</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Compartición de Datos con Terceros y Proveedores
+            </h2>
+          </div>
+          <p>
+            TransferYA <strong>NO vende, NO alquila y NO comercializa</strong> los datos personales o transaccionales a terceros, corredores de bases de datos ni agencias publicitarias.
+          </p>
+          <p class="text-sm">
+            Únicamente transferimos datos a proveedores de infraestructura tecnológica indispensables para el funcionamiento del servicio, quienes operan bajo estrictos acuerdos de confidencialidad y procesamiento seguro de datos:
+          </p>
+          <div class="space-y-2 text-xs sm:text-sm">
+            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 flex items-start gap-3">
+              <span class="font-bold text-[#101C2D] dark:text-white shrink-0">• Supabase Inc. / AWS:</span>
+              <span>Alojamiento de base de datos relacional y autenticación cifrada, con certificaciones de seguridad SOC 2 Tipo II e ISO 27001.</span>
+            </div>
+            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 flex items-start gap-3">
+              <span class="font-bold text-[#101C2D] dark:text-white shrink-0">• Vercel Inc.:</span>
+              <span>Alojamiento de la infraestructura web, balanceo de carga y distribución perimetral global segura con SSL automatizado.</span>
+            </div>
+            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 flex items-start gap-3">
+              <span class="font-bold text-[#101C2D] dark:text-white shrink-0">• Meta Platforms / WhatsApp Cloud API:</span>
+              <span>Envío de mensajes transaccionales exclusivamente a los números de WhatsApp designados por el comerciante.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 10: ELIMINACIÓN DE CUENTA Y DATOS (MANDATO GOOGLE PLAY) -->
+        <!-- =================================================================== -->
+        <section id="sec-eliminacion-datos" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-5 border-2 border-emerald-500/30">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-[#13B981] text-white flex items-center justify-center font-bold text-xs">10</span>
+            <div>
+              <span class="text-[11px] font-mono uppercase font-bold tracking-wider text-[#0D825B] dark:text-[#13B981] block">
+                Google Play Data Safety Mandate
+              </span>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-[#101C2D] dark:text-white leading-tight">
+                Procedimiento para la Eliminación de Cuenta y Datos
+              </h2>
+            </div>
+          </div>
+
+          <p class="text-sm">
+            En cumplimiento estricto de las directrices de seguridad de datos de <strong>Google Play</strong> y del derecho fundamental de <em>Habeas Data</em>, cualquier comerciante o usuario registrado tiene el derecho inalienable de solicitar la eliminación total, definitiva e irreversible de su cuenta y de todos los datos personales y transaccionales asociados.
+          </p>
+
+          <div class="p-4 rounded-xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 space-y-3">
+            <h3 class="text-sm font-bold text-[#101C2D] dark:text-white">
+              ¿Qué datos se eliminan permanentemente al solicitar la supresión?
+            </h3>
+            <ul class="list-disc list-inside text-xs sm:text-sm text-gray-700 dark:text-gray-300 space-y-1 pl-2">
+              <li>El perfil de usuario, correo electrónico, nombre del comercio y credenciales de acceso.</li>
+              <li>El historial completo de pagos y transacciones registradas por el negocio.</li>
+              <li>Los teléfonos y listas de WhatsApp de cajeros registrados.</li>
+              <li>Los identificadores y tokens de emparejamiento de los dispositivos Android Centinela.</li>
+              <li>Los cierres de caja y registros de turnos históricos.</li>
+            </ul>
+          </div>
+
+          <h3 class="text-base font-bold text-[#101C2D] dark:text-white pt-1">
+            Mecanismos para Solicitar la Eliminación:
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Mecanismo 1: Vía Correo Directo -->
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-3">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <span>Opción A</span> · Correo Electrónico
+              </div>
+              <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                Envía un correo desde la dirección registrada en TransferYA con el asunto <strong class="text-[#101C2D] dark:text-white">"Solicitud de Eliminación de Cuenta y Datos"</strong> a:
+              </p>
+              <div class="pt-1">
+                <a href="mailto:soporte@transferya.app?subject=Solicitud%20de%20Eliminaci%C3%B3n%20de%20Cuenta%20y%20Datos%20-%20TransferYA&body=Hola%20equipo%20de%20TransferYA%2C%0A%0ASolicito%20la%20eliminaci%C3%B3n%20definitiva%20de%20mi%20cuenta%20y%20todos%20los%20datos%20asociados.%0A%0ACorreo%20registrado%3A%20%0ANombre%20del%20Comercio%3A%20%0AMotivo%20(opcional)%3A%20%0A%0AEntiendo%20que%20esta%20acci%C3%B3n%20es%20irreversible.%0AGracias."
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#101C2D] dark:bg-white text-white dark:text-[#101C2D] font-bold text-xs hover:opacity-90 transition-opacity">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                  <span>Redactar Correo de Eliminación</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Mecanismo 2: Desde el Panel Web -->
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-3">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <span>Opción B</span> · Panel de Autoservicio
+              </div>
+              <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                Inicia sesión en tu cuenta en <strong class="text-[#101C2D] dark:text-white">transferya.app</strong>, dirígete a:
+              </p>
+              <div class="p-2.5 rounded-lg bg-white dark:bg-[#101C2D] border border-gray-200 dark:border-gray-800 text-xs font-mono">
+                Menú &gt; Configuración &gt; Cuenta &gt; [Eliminar mi Cuenta]
+              </div>
+            </div>
+
+          </div>
+
+          <div class="text-xs text-gray-500 dark:text-gray-400 pt-1">
+            <strong>Plazo de Respuesta:</strong> Todas las solicitudes de eliminación son procesadas y ejecutadas de forma definitiva en un plazo no mayor a <strong>cinco (5) días hábiles</strong> tras confirmar la autenticidad de la petición.
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 11: DERECHOS ARCO Y HABEAS DATA -->
+        <!-- =================================================================== -->
+        <section id="sec-derechos-arco" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">11</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Derechos del Titular (Habeas Data · Ley 1581 de 2012)
+            </h2>
+          </div>
+          <p>
+            De conformidad con el artículo 8 de la Ley 1581 de 2012 de Colombia, el titular de los datos personales tiene derecho a:
+          </p>
+          <ul class="list-disc list-inside space-y-2 text-sm pl-2">
+            <li><strong>Conocer:</strong> Acceder de forma gratuita a los datos personales que hayan sido objeto de tratamiento.</li>
+            <li><strong>Actualizar y Rectificar:</strong> Solicitar la corrección de información parcial, inexacta, incompleta o fraccionada.</li>
+            <li><strong>Solicitar Prueba:</strong> Solicitar prueba de la autorización otorgada al responsable del tratamiento.</li>
+            <li><strong>Revocar y Suprimir:</strong> Revocar la autorización y/o solicitar la supresión del dato cuando no se respeten los principios, derechos y garantías constitucionales y legales.</li>
+            <li><strong>Presentar Quejas:</strong> Acudir ante la <em>Superintendencia de Industria y Comercio (SIC)</em> de Colombia para presentar quejas por infracciones a la normatividad de protección de datos personales.</li>
+          </ul>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 12: PRIVACIDAD DE MENORES -->
+        <!-- =================================================================== -->
+        <section id="sec-menores" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">12</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Privacidad de Menores de Edad
+            </h2>
+          </div>
+          <p class="text-sm">
+            La plataforma TransferYA y la app TransferYA Centinela están dirigidas con exclusividad a personas mayores de 18 años con capacidad legal para administrar actividades comerciales. <strong>No recopilamos de forma consciente ni intencional información personal de niños, niñas o adolescentes</strong>. Si tenemos conocimiento de que un menor de edad nos ha suministrado datos personales, procederemos a eliminarlos de inmediato de nuestros registros.
+          </p>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 13: CAMBIOS A LA POLÍTICA -->
+        <!-- =================================================================== -->
+        <section id="sec-cambios" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">13</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Modificaciones a esta Política de Privacidad
+            </h2>
+          </div>
+          <p class="text-sm">
+            Nos reservamos el derecho de actualizar o modificar esta Política de Privacidad en cualquier momento para reflejar cambios tecnológicos, mejoras en la plataforma o requerimientos normativos de Google Play Store o de las leyes colombianas.
+          </p>
+          <p class="text-sm">
+            Cualquier modificación será publicada de forma inmediata en esta misma URL pública (<a href="https://transferya.app/privacidad" class="text-[#13B981] font-semibold hover:underline">https://transferya.app/privacidad</a>). Si las modificaciones son sustanciales, notificaremos a los administradores a través del correo electrónico registrado o mediante un aviso destacado en el panel de control.
+          </p>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECCIÓN 14: CANALES DE CONTACTO OFICIAL -->
+        <!-- =================================================================== -->
+        <section id="sec-contacto" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-xs">14</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
+              Canales Oficiales de Contacto
+            </h2>
+          </div>
+          <p class="text-sm">
+            Para resolver cualquier duda, consulta sobre el tratamiento de tus datos o ejercer tus derechos de Habeas Data, puedes ponerte en contacto con nuestro equipo a través de cualquiera de los siguientes canales oficiales:
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-2">
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
+              <strong class="text-[#101C2D] dark:text-white block">Correo Electrónico de Soporte:</strong>
+              <a href="mailto:soporte@transferya.app" class="text-[#13B981] font-bold hover:underline">soporte@transferya.app</a>
+              <p class="text-gray-500 text-[11px] pt-1">Atención de lunes a sábado, 8:00 AM a 6:00 PM (COT).</p>
+            </div>
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
+              <strong class="text-[#101C2D] dark:text-white block">WhatsApp Corporativo:</strong>
+              <a href="https://wa.me/573113654315?text=Hola%2C%20tengo%20una%20consulta%20sobre%20la%20Pol%C3%ADtica%20de%20Privacidad%20de%20TransferYA" target="_blank" rel="noopener noreferrer" class="text-[#13B981] font-bold hover:underline">+57 311 365 4315</a>
+              <p class="text-gray-500 text-[11px] pt-1">Respuesta rápida y asistencia personalizada.</p>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER INFORMATIVO -->
+  <!-- ========================================================================= -->
+  <footer class="bg-white dark:bg-[#101C2D] border-t border-gray-200 dark:border-gray-800 py-8 text-xs text-gray-500 dark:text-gray-400 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-[#101C2D] dark:text-white">TransferYA</span>
+        <span>·</span>
+        <span>Desarrollado con orgullo por <strong>MurSat Solutions</strong></span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:text-[#13B981] transition-colors">Inicio</a>
+        <a href="/privacidad" class="text-[#13B981] font-semibold">Política de Privacidad</a>
+        <a href="https://wa.me/573113654315" target="_blank" rel="noopener noreferrer" class="hover:text-[#13B981] transition-colors">Contacto</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPTS DE INTERACCIÓN (TEMA OSCURO Y TOC ACTIVO) -->
+  <!-- ========================================================================= -->
+  <script>
+    // Manejo de Theme Toggle (Light / Dark)
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('ty_theme', isDark ? 'dark' : 'light');
+      });
+    }
+
+    // Scrollspy simple para iluminar la sección activa en el índice lateral
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          document.querySelectorAll('.toc-link').forEach(link => {
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    document.querySelectorAll('article section[id]').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "start": "node scripts/dev-server.js",
     "dev": "node scripts/dev-server.js",
     "dev:vercel": "vercel dev --listen 3000 --yes",
     "test": "vitest run",
