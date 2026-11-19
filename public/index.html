@@ -175,21 +175,44 @@
       border-color: #E2E8F0 !important;
       box-shadow: 0 1px 3px 0 rgba(16, 28, 45, 0.04), 0 1px 2px -1px rgba(16, 28, 45, 0.02) !important;
     }
-    html:not(.dark) main .bg-ty-surface {
+    html:not(.dark) main .bg-ty-surface,
+    html:not(.dark) .bg-ty-surface {
       background-color: #F8FAFC !important;
       border-color: #E2E8F0 !important;
     }
-    html:not(.dark) main .bg-ty-surface-high {
+    html:not(.dark) main .bg-ty-surface-high,
+    html:not(.dark) .bg-ty-surface-high {
       background-color: #F1F5F9 !important;
       border-color: #CBD5E1 !important;
+    }
+    html:not(.dark) main [class*="bg-ty-surface/"],
+    html:not(.dark) [class*="bg-ty-surface/"] {
+      background-color: #F8FAFC !important;
+      border-color: #E2E8F0 !important;
+    }
+    html:not(.dark) main .bg-ty-surface-highest,
+    html:not(.dark) .bg-ty-surface-highest {
+      background-color: #E2E8F0 !important;
+      color: #0F172A !important;
     }
     html:not(.dark) main .text-white {
       color: #101C2D !important;
     }
-    html:not(.dark) main .text-ty-muted {
+    html:not(.dark) main [class*="text-white/"],
+    html:not(.dark) [class*="text-white/"] {
+      color: #334155 !important;
+    }
+    html:not(.dark) .text-ty-text,
+    html:not(.dark) main .text-ty-text,
+    html:not(.dark) header .text-ty-text {
+      color: #101C2D !important;
+    }
+    html:not(.dark) main .text-ty-muted,
+    html:not(.dark) .text-ty-muted {
       color: #64748B !important;
     }
-    html:not(.dark) main .border-ty-border {
+    html:not(.dark) main .border-ty-border,
+    html:not(.dark) .border-ty-border {
       border-color: #E2E8F0 !important;
     }
     html:not(.dark) main input,
@@ -235,6 +258,110 @@
       background-color: #FFFFFF !important;
       color: #101C2D !important;
       border-color: #CBD5E1 !important;
+    }
+
+    /* Tablas en Light Mode */
+    html:not(.dark) table thead tr {
+      background-color: #F1F5F9 !important;
+      border-bottom-color: #CBD5E1 !important;
+    }
+    html:not(.dark) table thead th {
+      color: #334155 !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) table tfoot {
+      background-color: #F8FAFC !important;
+      border-top-color: #CBD5E1 !important;
+    }
+    html:not(.dark) table tfoot td {
+      color: #475569 !important;
+    }
+    html:not(.dark) table tbody tr:hover {
+      background-color: #F1F5F9 !important;
+    }
+
+    /* Banners de Alta Visibilidad en Light Mode */
+    html:not(.dark) #devicesOfflineBanner {
+      background-color: #FFF1F2 !important;
+      border-color: #FECDD3 !important;
+    }
+    html:not(.dark) #devicesOfflineBannerTitle {
+      color: #BE123C !important;
+    }
+    html:not(.dark) #devicesOfflineBannerBody {
+      color: #4C0519 !important;
+      font-weight: 500 !important;
+    }
+    html:not(.dark) #devicesOfflineBanner button {
+      background-color: #FFFFFF !important;
+      border-color: #FDA4AF !important;
+      color: #BE123C !important;
+    }
+    html:not(.dark) #devicesOfflineBanner button:hover {
+      background-color: #FFE4E6 !important;
+    }
+
+    html:not(.dark) #cloudRedundancyActiveBanner {
+      background-color: #F0F9FF !important;
+      border-color: #BAE6FD !important;
+    }
+    html:not(.dark) #cloudRedundancyActiveBanner .text-sky-400 {
+      color: #0369A1 !important;
+    }
+    html:not(.dark) #cloudRedundancyActiveBanner p {
+      color: #082F49 !important;
+      font-weight: 500 !important;
+    }
+    html:not(.dark) #cloudRedundancyActiveBanner span {
+      background-color: #E0F2FE !important;
+      border-color: #7DD3FC !important;
+      color: #0369A1 !important;
+    }
+
+    html:not(.dark) #boxesHealthCard {
+      background-color: #ECFDF5 !important;
+      border-color: #A7F3D0 !important;
+    }
+    html:not(.dark) #boxesHealthTitle {
+      color: #065F46 !important;
+    }
+    html:not(.dark) #boxesHealthSub {
+      color: #064E3B !important;
+    }
+
+    /* Botón Pantalla Completa y Controles POS en Light Mode */
+    html:not(.dark) #btnPosFullscreen {
+      background-color: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      color: #1E293B !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #btnPosFullscreen svg {
+      stroke: #1E293B !important;
+    }
+    html:not(.dark) #btnPosFullscreen:hover {
+      background-color: #F1F5F9 !important;
+      border-color: #94A3B8 !important;
+      color: #0F172A !important;
+    }
+    html:not(.dark) #posVoiceToggleBtn {
+      background-color: #ECFDF5 !important;
+      border-color: #A7F3D0 !important;
+      color: #047857 !important;
+    }
+    html:not(.dark) #posHeroCard {
+      background-color: #FFFFFF !important;
+    }
+    html:not(.dark) #posAlertStatusBadge {
+      background-color: #ECFDF5 !important;
+      color: #065F46 !important;
+      border-color: #A7F3D0 !important;
+    }
+    html:not(.dark) #posWalletBadge,
+    html:not(.dark) #posTimestampBadge {
+      background-color: #F1F5F9 !important;
+      border-color: #CBD5E1 !important;
+      color: #334155 !important;
     }
 
     #qrCodeContainer svg {
@@ -696,7 +823,7 @@
               <span class="text-sm">Resumen</span>
             </button>
 
-            <button onclick="goToMovimientos()" id="nav-btn-movimientos"
+            <button onclick="switchTab('movements')" id="nav-btn-movements"
               class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1133,42 +1260,42 @@
 
         <!-- Banner de alerta automática cuando una caja deja de comunicarse (> 5 min) -->
         <div id="devicesOfflineBanner"
-          class="hidden p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-sm">
+          class="hidden p-4 sm:p-5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-sm">
           <div class="flex items-start sm:items-center gap-3.5">
-            <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
             <div>
-              <div class="text-sm font-semibold text-rose-400" id="devicesOfflineBannerTitle">Caja Desconectada</div>
-              <p class="text-xs text-white/90 mt-0.5" id="devicesOfflineBannerBody">El celular de tu caja lleva más de 5
+              <div class="text-sm font-bold text-rose-700 dark:text-rose-400" id="devicesOfflineBannerTitle">Caja Desconectada</div>
+              <p class="text-xs text-rose-950 dark:text-white/90 font-medium mt-0.5" id="devicesOfflineBannerBody">El celular de tu caja lleva más de 5
                 minutos sin comunicación. Verifica que tenga conexión a internet y la app TransferYA abierta.</p>
             </div>
           </div>
           <button onclick="switchTab('devices')"
-            class="px-4 py-2.5 rounded-xl bg-ty-surface border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 font-semibold text-xs shrink-0 transition-all self-start sm:self-center shadow-sm">
+            class="px-4 py-2.5 rounded-xl bg-white dark:bg-ty-surface border border-rose-300 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/10 text-rose-700 dark:text-rose-400 font-bold text-xs shrink-0 transition-all self-start sm:self-center shadow-sm">
             Revisar Conexión
           </button>
         </div>
 
         <!-- Banner informativo si la caja está offline pero Cloud Email está activo -->
         <div id="cloudRedundancyActiveBanner"
-          class="hidden p-4 sm:p-5 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-sm">
+          class="hidden p-4 sm:p-5 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-sm">
           <div class="flex items-start sm:items-center gap-3.5">
-            <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <div class="text-sm font-semibold text-sky-400">Respaldo por Correo Electrónico Activo</div>
-              <p class="text-xs text-white/90 mt-0.5">Aunque el celular del mostrador esté apagado o sin señal, tus comprobantes de Nequi siguen confirmándose al instante por correo.</p>
+              <div class="text-sm font-bold text-sky-800 dark:text-sky-400">Respaldo por Correo Electrónico Activo</div>
+              <p class="text-xs text-sky-950 dark:text-white/90 font-medium mt-0.5">Aunque el celular del mostrador esté apagado o sin señal, tus comprobantes de Nequi siguen confirmándose al instante por correo.</p>
             </div>
           </div>
-          <span class="text-xs text-sky-400 font-semibold bg-sky-500/15 px-3 py-1.5 rounded-full border border-sky-500/30 shrink-0 self-start sm:self-center">Respaldo Activo</span>
+          <span class="text-xs text-sky-800 dark:text-sky-400 font-bold bg-sky-100 dark:bg-sky-500/15 px-3 py-1.5 rounded-full border border-sky-300 dark:border-sky-500/30 shrink-0 self-start sm:self-center">Respaldo Activo</span>
         </div>
 
         <!-- ============================================================ -->
@@ -1193,23 +1320,23 @@
           </div>
 
           <!-- Estado de tus Cajas (Diagnóstico Amigable) -->
-          <div id="boxesHealthCard" class="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all">
+          <div id="boxesHealthCard" class="p-4 sm:p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all">
             <div class="flex items-start sm:items-center gap-3">
-              <div id="boxesHealthIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <div id="boxesHealthIcon" class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div>
-                <div class="text-sm sm:text-base font-bold text-white flex items-center gap-2" id="boxesHealthTitle">
+                <div class="text-sm sm:text-base font-bold text-emerald-900 dark:text-white flex items-center gap-2" id="boxesHealthTitle">
                   1 caja conectada
                 </div>
-                <p class="text-xs text-white/80 mt-0.5" id="boxesHealthSub">
+                <p class="text-xs text-emerald-800 dark:text-white/80 font-medium mt-0.5" id="boxesHealthSub">
                   Todas tus cajas están recibiendo comprobantes en tiempo real.
                 </p>
               </div>
             </div>
-            <button onclick="switchTab('devices')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors self-start sm:self-center">
+            <button onclick="switchTab('devices')" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors self-start sm:self-center">
               <span>Ver estado de dispositivos</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -1226,7 +1353,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <!-- KPI 1: Pagos confirmados hoy -->
-              <div onclick="setPeriodFilter('today')"
+              <div onclick="setPeriodFilter('today'); switchTab('movements');"
                 class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
                 <div class="flex items-center justify-between text-xs text-ty-muted font-medium">
                   <span>Pagos confirmados hoy</span>
@@ -1245,7 +1372,7 @@
               </div>
 
               <!-- KPI 2: Esta semana -->
-              <div onclick="setPeriodFilter('week')"
+              <div onclick="setPeriodFilter('week'); switchTab('movements');"
                 class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
                 <div class="flex items-center justify-between text-xs text-ty-muted font-medium">
                   <span>Esta semana</span>
@@ -1264,7 +1391,7 @@
               </div>
 
               <!-- KPI 3: Nequi -->
-              <div onclick="setWalletFilter('NEQUI')"
+              <div onclick="setWalletFilter('NEQUI'); switchTab('movements');"
                 class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-nequi/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="text-white flex items-center gap-1.5">
@@ -1285,7 +1412,7 @@
               </div>
 
               <!-- KPI 4: Daviplata -->
-              <div onclick="setWalletFilter('DAVIPLATA')"
+              <div onclick="setWalletFilter('DAVIPLATA'); switchTab('movements');"
                 class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-daviplata/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="text-white flex items-center gap-1.5">
@@ -1451,39 +1578,109 @@
             </div>
           </div>
 
+          <!-- Widget Resumen: Últimos Pagos Confirmados en Caja (En Vivo) -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden shadow-sm">
+            <div class="p-4 sm:px-6 py-4 border-b border-ty-border flex items-center justify-between bg-slate-50 dark:bg-ty-surface/40">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
+                  ⚡
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white">Últimos Pagos Confirmados en Caja</h3>
+                  <p class="text-xs text-ty-muted">Actividad en tiempo real de tus billeteras Nequi y DaviPlata</p>
+                </div>
+              </div>
+              <button onclick="switchTab('movements')"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-all shadow-sm">
+                <span>Ver todos los movimientos</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Lista compacta de los últimos 5 pagos -->
+            <div id="dashboardRecentTxList" class="divide-y divide-slate-100 dark:divide-ty-border"></div>
+
+            <!-- Footer con acceso a auditoría -->
+            <div class="p-4 bg-slate-50 dark:bg-ty-surface/30 border-t border-slate-200 dark:border-ty-border flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span id="dashboardRecentSummaryCount" class="text-xs text-slate-600 dark:text-ty-muted font-mono">Calculando pagos de hoy...</span>
+              <button onclick="switchTab('movements')"
+                class="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span>Auditar Todos los Movimientos y Filtros →</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB: MOVIMIENTOS Y AUDITORÍA DE VENTAS -->
+        <!-- ============================================================ -->
+        <section id="tab-movements" class="hidden space-y-6">
+          <!-- Cabecera Ejecutiva de Movimientos -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 bg-ty-surface-low border border-ty-border rounded-2xl shadow-sm">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Auditoría en Tiempo Real</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">Movimientos y Transacciones</h2>
+              <p class="text-xs sm:text-sm text-ty-muted mt-1 max-w-xl">
+                Consulta, filtra y audita todos los comprobantes bancarios confirmados por Nequi y DaviPlata con búsqueda en tiempo real.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button onclick="exportFilteredExcel()"
+                class="px-3.5 py-2.5 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-slate-800 dark:text-white transition-all flex items-center justify-center gap-2 shadow-sm"
+                title="Descargar movimientos filtrados en formato Excel (.xlsx)">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Exportar Excel</span>
+              </button>
+              <button onclick="triggerVisualSimulation()"
+                class="px-3.5 py-2.5 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm"
+                title="Probar sonido y aviso de cobro en mostrador">
+                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                </svg>
+                <span>Test Sonido/POS</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Filter Bar + Formatted Ledger Table -->
-          <div id="transactionsSection" class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col scroll-mt-24">
-            <div class="p-4 border-b border-ty-border space-y-3 bg-ty-surface/50">
+          <div id="transactionsSection" class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden flex flex-col shadow-sm">
+            <div class="p-4 border-b border-slate-200 dark:border-ty-border space-y-3 bg-slate-50 dark:bg-ty-surface/50">
               <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtro de período">
                   <button onclick="setPeriodFilter('today')" id="filter-period-today"
                     class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-ty-emerald text-black transition-all">Hoy</button>
                   <button onclick="setPeriodFilter('week')" id="filter-period-week"
-                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Esta
+                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all">Esta
                     Semana</button>
                   <button onclick="setPeriodFilter('month')" id="filter-period-month"
-                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Este
+                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all">Este
                     Mes</button>
                   <button onclick="setPeriodFilter('all')" id="filter-period-all"
-                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Todo</button>
+                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all">Todo</button>
                   <button onclick="setPeriodFilter('custom')" id="filter-period-custom"
-                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-ty-surface border border-ty-border text-ty-muted hover:text-white transition-all">Por
+                    class="period-pill px-3 py-1.5 rounded-lg text-xs font-mono bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all">Por
                     Fechas</button>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
-                  <div class="flex items-center gap-1 bg-ty-surface-low p-1 rounded-lg border border-ty-border"
+                  <div class="flex items-center gap-1 bg-slate-100 dark:bg-ty-surface-low p-1 rounded-lg border border-slate-200 dark:border-ty-border"
                     role="group" aria-label="Filtro de billetera">
                     <button onclick="setWalletFilter('ALL')" id="filter-wallet-ALL"
-                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all">Todas</button>
+                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono font-bold bg-slate-800 dark:bg-ty-surface-highest text-white transition-all">Todas</button>
                     <button onclick="setWalletFilter('NEQUI')" id="filter-wallet-NEQUI"
-                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-nequi transition-all">Nequi</button>
+                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-slate-600 dark:text-ty-muted hover:text-ty-nequi transition-all">Nequi</button>
                     <button onclick="setWalletFilter('DAVIPLATA')" id="filter-wallet-DAVIPLATA"
-                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-ty-muted hover:text-ty-daviplata transition-all">Daviplata</button>
+                      class="wallet-pill px-2.5 py-1 rounded text-xs font-mono text-slate-600 dark:text-ty-muted hover:text-ty-daviplata transition-all">Daviplata</button>
                   </div>
 
                   <button onclick="toggleAuditMode()" id="auditModeBtn"
-                    class="px-2.5 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+                    class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border text-xs font-mono text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all">
                     Solo Válidos
                   </button>
                 </div>
@@ -1491,27 +1688,27 @@
 
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div id="customDateRangeRow" class="hidden flex flex-wrap items-center gap-2 text-xs font-mono">
-                  <label class="text-ty-muted">Desde:</label>
+                  <label class="text-slate-600 dark:text-ty-muted">Desde:</label>
                   <input type="date" id="dateFromInput" onchange="applyFiltersAndRender()"
-                    class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
-                  <label class="text-ty-muted">Hasta:</label>
+                    class="bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-slate-900 dark:text-white focus:border-ty-emerald focus:ring-0" />
+                  <label class="text-slate-600 dark:text-ty-muted">Hasta:</label>
                   <input type="date" id="dateToInput" onchange="applyFiltersAndRender()"
-                    class="bg-ty-surface border border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:border-ty-emerald focus:ring-0" />
+                    class="bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border rounded-lg px-2.5 py-1 text-xs font-mono text-slate-900 dark:text-white focus:border-ty-emerald focus:ring-0" />
                 </div>
 
                 <div class="relative flex-1 max-w-md">
-                  <svg class="w-4 h-4 text-ty-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+                  <svg class="w-4 h-4 text-slate-400 dark:text-ty-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input type="text" id="searchQueryInput" oninput="applyFiltersAndRender()"
                     placeholder="Buscar por nombre del cliente, monto o caja..."
-                    class="w-full bg-ty-surface border border-ty-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
+                    class="w-full bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
                 </div>
 
                 <button onclick="triggerVisualSimulation()"
-                  class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-ty-muted hover:text-ty-emerald transition-all flex items-center justify-center gap-1.5">
+                  class="px-3 py-1.5 rounded-lg bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-ty-emerald text-xs font-mono text-slate-700 dark:text-ty-muted hover:text-emerald-600 dark:hover:text-ty-emerald transition-all flex items-center justify-center gap-1.5">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -1525,21 +1722,21 @@
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr
-                    class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
-                    <th class="py-3 px-4 font-semibold">Cliente / Billetera / Caja</th>
-                    <th class="py-3 px-4 font-semibold hidden lg:table-cell">Referencia Bancaria</th>
-                    <th class="py-3 px-4 font-semibold">Estado</th>
-                    <th class="py-3 px-4 font-semibold text-right">Monto (COP)</th>
+                    class="bg-slate-100 dark:bg-ty-surface border-b border-slate-200 dark:border-ty-border text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-ty-muted font-bold">
+                    <th class="py-3 px-4 font-bold">Cliente / Billetera / Caja</th>
+                    <th class="py-3 px-4 font-bold hidden lg:table-cell">Referencia Bancaria</th>
+                    <th class="py-3 px-4 font-bold">Estado</th>
+                    <th class="py-3 px-4 font-bold text-right">Monto (COP)</th>
                     <th class="py-3 px-3 text-right w-10"></th>
                   </tr>
                 </thead>
-                <tbody id="ledgerTableBody" class="divide-y divide-ty-border text-sm"></tbody>
-                <tfoot class="bg-ty-surface border-t-2 border-ty-border-strong font-mono">
+                <tbody id="ledgerTableBody" class="divide-y divide-slate-100 dark:divide-ty-border text-sm"></tbody>
+                <tfoot class="bg-slate-50 dark:bg-ty-surface border-t-2 border-slate-200 dark:border-ty-border-strong font-mono">
                   <tr>
-                    <td colspan="2" class="py-3.5 px-4 text-xs text-ty-muted" id="tableFooterCount">Mostrando 0
+                    <td colspan="2" class="py-3.5 px-4 text-xs text-slate-600 dark:text-ty-muted font-medium" id="tableFooterCount">Mostrando 0
                       movimientos</td>
-                    <td colspan="2" class="py-3.5 px-4 text-xs text-right uppercase tracking-wider text-ty-muted">Total
-                      Verificado Filtrado: <span class="text-base font-extrabold text-ty-emerald tabular-nums ml-2"
+                    <td colspan="2" class="py-3.5 px-4 text-xs text-right uppercase tracking-wider text-slate-600 dark:text-ty-muted font-medium">Total
+                      Verificado Filtrado: <span class="text-base font-extrabold text-emerald-600 dark:text-ty-emerald tabular-nums ml-2"
                         id="tableFooterTotal">$ 0 COP</span></td>
                     <td></td>
                   </tr>
@@ -1547,20 +1744,20 @@
               </table>
             </div>
 
-            <div id="mobileLedgerList" class="md:hidden divide-y divide-ty-border"></div>
+            <div id="mobileLedgerList" class="md:hidden divide-y divide-slate-100 dark:divide-ty-border"></div>
 
             <div id="feedEmptyState"
               class="hidden p-10 text-center text-ty-muted flex flex-col items-center justify-center gap-3">
               <div
-                class="w-12 h-12 rounded-full bg-ty-surface border border-ty-border flex items-center justify-center text-ty-muted">
+                class="w-12 h-12 rounded-full bg-white dark:bg-ty-surface border border-slate-200 dark:border-ty-border flex items-center justify-center text-slate-400 dark:text-ty-muted">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <div>
-                <p class="font-bold text-white">No hay transferencias registradas para este filtro</p>
-                <p class="text-xs mt-1 max-w-sm mx-auto">Envía una transferencia real por Nequi o Daviplata, o cambia el
+                <p class="font-bold text-slate-900 dark:text-white">No hay transferencias registradas para este filtro</p>
+                <p class="text-xs text-slate-600 dark:text-ty-muted mt-1 max-w-sm mx-auto">Envía una transferencia real por Nequi o Daviplata, o cambia el
                   período / caja arriba.</p>
               </div>
             </div>
@@ -1587,9 +1784,9 @@
             </div>
             <div class="flex flex-wrap items-center gap-2.5 shrink-0">
               <button onclick="exportDailyClosingExcel()"
-                class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-white transition-all flex items-center justify-center gap-2"
+                class="px-3.5 py-2.5 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-slate-800 dark:text-white transition-all flex items-center justify-center gap-2 shadow-sm"
                 title="Descargar consolidado diario en formato Excel (.xlsx)">
-                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -1608,9 +1805,9 @@
 
           <!-- Tabla de Historial Diario (Estilo Extracto) -->
           <div class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden shadow-sm">
-            <div class="p-4 sm:px-6 py-4 border-b border-ty-border flex items-center justify-between bg-ty-surface/40">
+            <div class="p-4 sm:px-6 py-4 border-b border-slate-200 dark:border-ty-border flex items-center justify-between bg-slate-50 dark:bg-ty-surface/40">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
                   📅
                 </div>
                 <div>
@@ -1625,7 +1822,7 @@
             <div class="hidden md:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="bg-ty-surface/60 border-b border-ty-border text-[11px] font-semibold uppercase tracking-wider text-ty-muted">
+                  <tr class="bg-slate-100 dark:bg-ty-surface/60 border-b border-slate-200 dark:border-ty-border text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-ty-muted">
                     <th class="py-3 px-4 sm:px-6">Fecha (Colombia)</th>
                     <th class="py-3 px-4 text-right">Nequi</th>
                     <th class="py-3 px-4 text-right">DaviPlata</th>
@@ -1685,17 +1882,17 @@
                 <span>🔔</span>
                 <span>Probar Cobro ($ 25.000)</span>
               </button>
-              <button onclick="togglePosFullscreen()"
-                class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-muted text-xs font-medium text-ty-text hover:text-white transition-all flex items-center gap-1.5"
+              <button id="btnPosFullscreen" onclick="togglePosFullscreen()"
+                class="px-3.5 py-2 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:border-slate-400 dark:hover:border-ty-muted text-xs font-semibold text-slate-800 dark:text-ty-text hover:text-black dark:hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
                 title="Pantalla completa para tablet en mostrador">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-slate-700 dark:text-ty-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
                 <span id="posFullscreenBtnText" class="hidden sm:inline">Pantalla Completa</span>
               </button>
               <button onclick="switchTab('dashboard')"
-                class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:bg-ty-surface-high text-xs font-medium text-ty-muted hover:text-white transition-all">
+                class="px-3.5 py-2 rounded-xl bg-white dark:bg-ty-surface border border-slate-300 dark:border-ty-border hover:bg-slate-100 dark:hover:bg-ty-surface-high text-xs font-semibold text-slate-700 dark:text-ty-muted hover:text-black dark:hover:text-white transition-all shadow-sm">
                 <span>Volver a Resumen</span>
               </button>
             </div>
@@ -1714,11 +1911,11 @@
                 <span id="posAlertStatus">PANTALLA MOSTRADOR • ESPERANDO PAGOS</span>
               </span>
               <span id="posWalletBadge"
-                class="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase bg-ty-surface text-ty-muted border border-ty-border">
+                class="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase bg-slate-100 dark:bg-ty-surface text-slate-700 dark:text-ty-muted border border-slate-200 dark:border-ty-border">
                 NEQUI Y DAVIPLATA
               </span>
               <span id="posTimestampBadge"
-                class="px-3 py-1.5 rounded-full text-xs font-medium text-ty-muted bg-ty-surface border border-ty-border">
+                class="px-3 py-1.5 rounded-full text-xs font-medium text-slate-600 dark:text-ty-muted bg-slate-100 dark:bg-ty-surface border border-slate-200 dark:border-ty-border">
                 Mostrador en línea
               </span>
             </div>
@@ -2244,18 +2441,27 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav aria-label="Navegación Móvil"
-      class="lg:hidden fixed bottom-0 left-0 w-full bg-ty-surface-low border-t border-ty-border px-2 py-2 flex justify-around items-center z-40 shadow-xl backdrop-blur-lg">
+      class="lg:hidden fixed bottom-0 left-0 w-full bg-ty-surface-low border-t border-ty-border px-1.5 py-2 flex justify-around items-center z-40 shadow-xl backdrop-blur-lg">
       <button onclick="switchTab('dashboard')" id="mob-nav-dashboard"
-        class="flex flex-col items-center gap-1 text-ty-emerald min-w-[52px]">
+        class="flex flex-col items-center gap-1 text-ty-emerald min-w-[46px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
-        <span class="text-[10px] font-mono font-bold">Caja</span>
+        <span class="text-[10px] font-mono font-bold">Resumen</span>
+      </button>
+
+      <button onclick="switchTab('movements')" id="mob-nav-movements"
+        class="flex flex-col items-center gap-1 text-ty-muted min-w-[46px]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        <span class="text-[10px] font-mono">Movs</span>
       </button>
 
       <button onclick="switchTab('history')" id="mob-nav-history"
-        class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        class="flex flex-col items-center gap-1 text-ty-muted min-w-[46px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -2264,7 +2470,7 @@
       </button>
 
       <button onclick="switchTab('pos')" id="mob-nav-pos"
-        class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        class="flex flex-col items-center gap-1 text-ty-muted min-w-[46px]">
         <div
           class="w-9 h-9 rounded-xl bg-ty-emerald text-black flex items-center justify-center -mt-3 shadow-[0_0_15px_rgba(0,210,106,0.4)]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2276,7 +2482,7 @@
       </button>
 
       <button onclick="switchTab('devices')" id="mob-nav-devices"
-        class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        class="flex flex-col items-center gap-1 text-ty-muted min-w-[46px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -2285,7 +2491,7 @@
       </button>
 
       <button onclick="switchTab('cashiers')" id="mob-nav-cashiers"
-        class="flex flex-col items-center gap-1 text-ty-muted min-w-[52px]">
+        class="flex flex-col items-center gap-1 text-ty-muted min-w-[46px]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -4494,6 +4700,7 @@
 
     function recomputeAllViews(highlightId = null) {
       updateMultiPeriodKpis();
+      renderRecentDashboardWidget();
       applyFiltersAndRender(highlightId);
       renderDailyClosingTable();
       updatePosView();
@@ -4759,7 +4966,7 @@
       document.getElementById("dateFromInput").value = dayKey;
       document.getElementById("dateToInput").value = dayKey;
       setPeriodFilter("custom");
-      switchTab("dashboard");
+      switchTab("movements");
     }
 
     function applyFiltersAndRender(highlightId = null) {
@@ -4982,6 +5189,76 @@
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeTransactionDrawer();
     });
+
+    function renderRecentDashboardWidget() {
+      const container = document.getElementById("dashboardRecentTxList");
+      const summaryCountEl = document.getElementById("dashboardRecentSummaryCount");
+      if (!container) return;
+
+      const validTx = (allTransactions || []).filter(isCountableMoney);
+      const todayKey = getPeriodBounds().todayKey;
+      const todayCount = validTx.filter((t) => getColombiaDateKey(getTxTimestamp(t)) === todayKey).length;
+
+      if (summaryCountEl) {
+        summaryCountEl.textContent = `${todayCount} ${todayCount === 1 ? "pago confirmado hoy" : "pagos confirmados hoy"} • Mostrando los más recientes`;
+      }
+
+      if (validTx.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-ty-muted flex flex-col items-center justify-center gap-2">
+            <span class="text-2xl">⏳</span>
+            <p class="text-xs font-semibold text-slate-800 dark:text-white">Esperando primeros pagos confirmados de hoy...</p>
+            <p class="text-[11px] text-slate-600 dark:text-ty-muted">Cuando tus clientes paguen por Nequi o DaviPlata aparecerán aquí al instante.</p>
+          </div>`;
+        return;
+      }
+
+      const latest5 = [...validTx].sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a)).slice(0, 5);
+
+      container.innerHTML = latest5.map((tx) => {
+        const wallet = detectWallet(tx);
+        const isNequi = wallet === "NEQUI";
+        const badgeBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const amtStr = `$ ${Number(tx.amount || 0).toLocaleString("es-CO")} COP`;
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
+        const timeStr = getColombiaDateTimeLabel(getTxTimestamp(tx));
+        const sender = tx.sender_name || (isNequi ? "Cliente Nequi" : "Cliente DaviPlata");
+        const ref = tx.payment_reference ? `Ref: ${tx.payment_reference}` : "";
+
+        return `
+          <div onclick="openTransactionDrawer('${escapeHtml(tx.id)}')"
+            class="p-3.5 sm:px-6 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-ty-surface/60 transition-colors cursor-pointer group">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${badgeBg}">
+                ${isNequi ? "N" : "D"}
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-500 transition-colors">${escapeHtml(sender)}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full ${badgeBg}">${wallet}</span>
+                </div>
+                <div class="text-[11px] text-slate-500 dark:text-ty-muted flex items-center gap-1.5 mt-0.5 truncate">
+                  <span>${timeStr}</span>
+                  <span>•</span>
+                  <span>${escapeHtml(boxLabel)}</span>
+                  ${ref ? `<span>•</span><span class="font-mono text-[10px]">${escapeHtml(ref)}</span>` : ""}
+                </div>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                + ${amtStr}
+              </div>
+              <span class="text-[10px] text-slate-500 dark:text-ty-muted font-medium flex items-center justify-end gap-1 mt-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Confirmado
+              </span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
 
     function renderLedgerRows(highlightId = null) {
       const tbody = document.getElementById("ledgerTableBody");
@@ -7184,13 +7461,9 @@
     }
 
     function goToMovimientos() {
-      switchTab("dashboard");
-      const section = document.getElementById("transactionsSection");
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-        const searchInput = document.getElementById("searchQueryInput");
-        if (searchInput) searchInput.focus();
-      }
+      switchTab("movements");
+      const searchInput = document.getElementById("searchQueryInput");
+      if (searchInput) searchInput.focus();
     }
 
     function renderAdminNavVisibility() {
@@ -7217,10 +7490,10 @@
         tabId = "dashboard";
       }
 
-      ["dashboard", "history", "pos", "devices", "cashiers", "admin"].forEach((t) => {
+      ["dashboard", "movements", "history", "pos", "devices", "cashiers", "admin"].forEach((t) => {
         const el = document.getElementById("tab-" + t);
-        const deskBtn = document.getElementById("nav-btn-" + t);
-        const mobBtn = document.getElementById("mob-nav-" + t);
+        const deskBtn = document.getElementById("nav-btn-" + t) || (t === "movements" ? document.getElementById("nav-btn-movimientos") : null);
+        const mobBtn = document.getElementById("mob-nav-" + t) || (t === "movements" ? document.getElementById("mob-nav-movimientos") : null);
         if (t === tabId) {
           el?.classList.remove("hidden");
           if (t === "admin") {
