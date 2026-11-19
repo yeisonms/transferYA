@@ -8,6 +8,7 @@
     "dev:vercel": "vercel dev --listen 3000 --yes",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "build:css": "tailwindcss -i ./src/styles/tailwind.input.css -o ./public/css/app.css --minify",
     "build": "npm run build:css && tsc"
   },

@@ -240,9 +240,10 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.subscriptionStatus).toBe('TRIAL');
-    expect(summary.effectiveSubscriptionStatus).toBe('TRIAL');
-    expect(summary.remainingDays).toBe(7);
+    expect(summary).not.toBeNull();
+    expect(summary!.subscriptionStatus).toBe('TRIAL');
+    expect(summary!.effectiveSubscriptionStatus).toBe('TRIAL');
+    expect(summary!.remainingDays).toBe(7);
     expect(message).toContain('7 días');
 
     const updated = await repo.getMerchantById('m1');
@@ -273,9 +274,10 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.subscriptionStatus).toBe('ACTIVE');
-    expect(summary.remainingDays).toBe(40); // 10 días restantes + 30 nuevos días
-    expect(summary.subscriptionEndsAt).toBe(currentEndsAtMs + 30 * 86_400_000);
+    expect(summary).not.toBeNull();
+    expect(summary!.subscriptionStatus).toBe('ACTIVE');
+    expect(summary!.remainingDays).toBe(40); // 10 días restantes + 30 nuevos días
+    expect(summary!.subscriptionEndsAt).toBe(currentEndsAtMs + 30 * 86_400_000);
   });
 
   it('ejecuta EXTEND_30_DAYS sobre cuenta vencida fijando 30 días a partir de hoy', async () => {
@@ -299,10 +301,11 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.subscriptionStatus).toBe('ACTIVE');
-    expect(summary.effectiveSubscriptionStatus).toBe('ACTIVE');
-    expect(summary.remainingDays).toBe(30);
-    expect(summary.subscriptionEndsAt).toBe(baseTime + 30 * 86_400_000);
+    expect(summary).not.toBeNull();
+    expect(summary!.subscriptionStatus).toBe('ACTIVE');
+    expect(summary!.effectiveSubscriptionStatus).toBe('ACTIVE');
+    expect(summary!.remainingDays).toBe(30);
+    expect(summary!.subscriptionEndsAt).toBe(baseTime + 30 * 86_400_000);
   });
 
   it('ejecuta PAUSE activando el estado SUSPENDED sin alterar la fecha de corte', async () => {
@@ -326,9 +329,10 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.subscriptionStatus).toBe('SUSPENDED');
-    expect(summary.effectiveSubscriptionStatus).toBe('SUSPENDED');
-    expect(summary.subscriptionEndsAtIso).toBe(currentEndsAtIso); // No pierde su fecha
+    expect(summary).not.toBeNull();
+    expect(summary!.subscriptionStatus).toBe('SUSPENDED');
+    expect(summary!.effectiveSubscriptionStatus).toBe('SUSPENDED');
+    expect(summary!.subscriptionEndsAtIso).toBe(currentEndsAtIso); // No pierde su fecha
   });
 
   it('ejecuta RESUME reactivando como ACTIVE si no ha vencido, o PAST_DUE si expiró', async () => {
@@ -359,14 +363,14 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       { merchantId: 'm1', action: 'RESUME' },
       baseTime,
     );
-    expect(res1.summary.effectiveSubscriptionStatus).toBe('ACTIVE');
+    expect(res1.summary?.effectiveSubscriptionStatus).toBe('ACTIVE');
 
     const res2 = await applySubscriptionAction(
       repo,
       { merchantId: 'm2', action: 'RESUME' },
       baseTime,
     );
-    expect(res2.summary.effectiveSubscriptionStatus).toBe('PAST_DUE');
+    expect(res2.summary?.effectiveSubscriptionStatus).toBe('PAST_DUE');
   });
 
   it('ejecuta UPDATE_BILLING_PHONE actualizando solo el teléfono sin alterar fechas', async () => {
@@ -395,8 +399,9 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.billingPhone).toBe('+3113654315');
-    expect(summary.subscriptionEndsAtIso).toBe(currentEndsAtIso);
+    expect(summary).not.toBeNull();
+    expect(summary!.billingPhone).toBe('+3113654315');
+    expect(summary!.subscriptionEndsAtIso).toBe(currentEndsAtIso);
     expect(message).toContain('Teléfono de cobro actualizado');
   });
 
