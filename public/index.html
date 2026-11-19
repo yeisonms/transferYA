@@ -991,143 +991,280 @@
         <!-- ============================================================ -->
         <!-- TAB 1: RESUMEN Y CAJA -->
         <!-- ============================================================ -->
-        <section id="tab-dashboard" class="space-y-5">
-          <!-- KPIs -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div onclick="setPeriodFilter('today')"
-              class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-emerald/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Recibido Hoy</span>
-                <span
-                  class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25"
-                  id="kpiTodayDate">Hoy</span>
+        <section id="tab-dashboard" class="space-y-6">
+          <!-- Cabecera Humanizada de Bienvenida -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-ty-muted" id="dashboardGreeting">Buenos días 👋</span>
               </div>
-              <div class="my-2.5">
-                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums"
-                  id="kpiTodayTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
-              </div>
-              <div
-                class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-                <span id="kpiTodayCount">0 pagos reales</span>
-                <span class="text-ty-emerald" id="kpiTodayBreakdown">Nequi $0 / Davi $0</span>
-              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-0.5">Resumen de tu negocio</h1>
+              <p class="text-xs sm:text-sm text-ty-muted mt-1" id="dashboardLongDate">Jueves, 19 de noviembre de 2026</p>
             </div>
-
-            <div onclick="setPeriodFilter('week')"
-              class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Esta Semana</span>
-                <span
-                  class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-cyan border border-ty-border">Lun
-                  - Hoy</span>
-              </div>
-              <div class="my-2.5">
-                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums"
-                  id="kpiWeekTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
-              </div>
-              <div
-                class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-                <span id="kpiWeekCount">0 pagos reales</span>
-                <span class="text-ty-cyan" id="kpiWeekBreakdown">Nequi $0 / Davi $0</span>
-              </div>
-            </div>
-
-            <div onclick="setPeriodFilter('month')"
-              class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-cyan/60 rounded-xl p-4 flex flex-col justify-between transition-all">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Este Mes</span>
-                <span
-                  class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-high text-ty-muted border border-ty-border"
-                  id="kpiMonthLabel">Mes Actual</span>
-              </div>
-              <div class="my-2.5">
-                <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums"
-                  id="kpiMonthTotal">$ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span></div>
-              </div>
-              <div
-                class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-                <span id="kpiMonthCount">0 pagos reales</span>
-                <span class="text-white/80" id="kpiMonthBreakdown">Nequi $0 / Davi $0</span>
-              </div>
-            </div>
-
-            <div class="bg-ty-surface-low border border-ty-border rounded-xl p-4 flex flex-col justify-between">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono uppercase tracking-wider text-ty-muted">Balance Billeteras</span>
-                <span class="text-[11px] font-mono text-ty-emerald" id="statLatencyAvg">-- ms</span>
-              </div>
-              <div class="my-2.5">
-                <div class="w-full h-2.5 rounded bg-ty-surface-highest overflow-hidden flex mb-2.5">
-                  <div id="statNequiBar" class="h-full bg-ty-nequi transition-all duration-300" style="width: 50%">
-                  </div>
-                  <div id="statDaviBar" class="h-full bg-ty-daviplata transition-all duration-300" style="width: 50%">
-                  </div>
-                </div>
-                <div class="flex items-center justify-between text-xs font-mono">
-                  <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-ty-nequi"></span><span
-                      class="text-white" id="statNequiSum">Nequi: $ 0</span></div>
-                  <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-ty-daviplata"></span><span
-                      class="text-white" id="statDaviSum">Davi: $ 0</span></div>
-                </div>
-              </div>
-              <div
-                class="pt-2 border-t border-ty-border flex items-center justify-between text-xs text-ty-muted font-mono">
-                <span id="statSplitRatio">0% / 0%</span>
-                <span class="text-ty-cyan">Solo Ingresos Válidos</span>
-              </div>
+            <div class="flex items-center gap-2 self-start sm:self-center">
+              <span id="systemHealthBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Sistema operativo</span>
+              </span>
             </div>
           </div>
 
-          <!-- Reconciliation Banner -->
-          <div
-            class="bg-ty-surface-low border border-ty-emerald/30 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <!-- Estado de tus Cajas (Diagnóstico Amigable) -->
+          <div id="boxesHealthCard" class="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all">
             <div class="flex items-start sm:items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-lg bg-ty-emerald/15 border border-ty-emerald/30 flex items-center justify-center text-ty-emerald shrink-0">
+              <div id="boxesHealthIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div>
-                <div class="text-xs font-mono uppercase tracking-wider text-ty-emerald" id="arqueoFilterBadge">ARQUEO
-                  FILTRADO: HOY • TODAS LAS CAJAS</div>
-                <div class="text-sm sm:text-base text-white font-semibold mt-0.5">
-                  Debería haber en tu cuenta: <span id="arqueoExactTotal"
-                    class="text-ty-emerald font-extrabold tabular-nums text-lg ml-1">$ 0 COP</span>
-                  <span id="arqueoTxSummary" class="text-xs font-mono text-ty-muted ml-2">(0 transferencias
-                    válidas)</span>
+                <div class="text-sm sm:text-base font-bold text-white flex items-center gap-2" id="boxesHealthTitle">
+                  1 caja conectada
+                </div>
+                <p class="text-xs text-white/80 mt-0.5" id="boxesHealthSub">
+                  Todas tus cajas están recibiendo comprobantes en tiempo real.
+                </p>
+              </div>
+            </div>
+            <button onclick="switchTab('devices')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors self-start sm:self-center">
+              <span>Ver estado de dispositivos</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Resumen de Ventas (4 Tarjetas Humanizadas) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-ty-muted">Resumen de ventas</h2>
+              <span class="text-[11px] text-ty-muted font-mono" id="kpiTodayDate">Hoy</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <!-- KPI 1: Pagos confirmados hoy -->
+              <div onclick="setPeriodFilter('today')"
+                class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
+                <div class="flex items-center justify-between text-xs text-ty-muted font-medium">
+                  <span>Pagos confirmados hoy</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                </div>
+                <div class="my-3">
+                  <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiTodayTotal">
+                    $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
+                  </div>
+                </div>
+                <div class="pt-2.5 border-t border-ty-border/70 flex items-center justify-between text-xs text-ty-muted">
+                  <span id="kpiTodayCount">0 transacciones</span>
+                  <span class="text-emerald-400 font-mono text-[11px] hidden" id="kpiTodayBreakdown">Nequi $0 / Davi $0</span>
+                  <span class="text-[11px] text-emerald-400 font-medium group-hover:underline">Ver hoy →</span>
+                </div>
+              </div>
+
+              <!-- KPI 2: Esta semana -->
+              <div onclick="setPeriodFilter('week')"
+                class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
+                <div class="flex items-center justify-between text-xs text-ty-muted font-medium">
+                  <span>Esta semana</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-white/5 text-ty-muted">Lun - Hoy</span>
+                </div>
+                <div class="my-3">
+                  <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiWeekTotal">
+                    $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
+                  </div>
+                </div>
+                <div class="pt-2.5 border-t border-ty-border/70 flex items-center justify-between text-xs text-ty-muted">
+                  <span id="kpiWeekCount">0 transacciones</span>
+                  <span class="text-emerald-400 font-mono text-[11px] hidden" id="kpiWeekBreakdown">Nequi $0 / Davi $0</span>
+                  <span class="text-[11px] text-emerald-400 font-medium group-hover:underline">Ver semana →</span>
+                </div>
+              </div>
+
+              <!-- KPI 3: Nequi -->
+              <div onclick="setWalletFilter('NEQUI')"
+                class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-nequi/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
+                <div class="flex items-center justify-between text-xs font-medium">
+                  <span class="text-white flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-ty-nequi"></span>
+                    <span>Nequi</span>
+                  </span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-ty-nequi/15 text-pink-300 font-mono">Billetera</span>
+                </div>
+                <div class="my-3">
+                  <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiNequiTotal">
+                    $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
+                  </div>
+                </div>
+                <div class="pt-2.5 border-t border-ty-border/70 flex items-center justify-between text-xs text-ty-muted">
+                  <span id="kpiNequiCount">0 pagos confirmados</span>
+                  <span class="text-[11px] text-pink-400 font-medium group-hover:underline">Filtrar →</span>
+                </div>
+              </div>
+
+              <!-- KPI 4: Daviplata -->
+              <div onclick="setWalletFilter('DAVIPLATA')"
+                class="cursor-pointer bg-ty-surface-low border border-ty-border hover:border-ty-daviplata/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all group shadow-sm">
+                <div class="flex items-center justify-between text-xs font-medium">
+                  <span class="text-white flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-ty-daviplata"></span>
+                    <span>Daviplata</span>
+                  </span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-ty-daviplata/15 text-red-300 font-mono">Billetera</span>
+                </div>
+                <div class="my-3">
+                  <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums" id="kpiDaviTotal">
+                    $ 0 <span class="text-xs text-ty-muted font-normal font-sans">COP</span>
+                  </div>
+                </div>
+                <div class="pt-2.5 border-t border-ty-border/70 flex items-center justify-between text-xs text-ty-muted">
+                  <span id="kpiDaviCount">0 pagos confirmados</span>
+                  <span class="text-[11px] text-red-400 font-medium group-hover:underline">Filtrar →</span>
                 </div>
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="openTurnClosingModal()"
-                class="px-4 py-2 rounded-xl bg-ty-emerald text-black font-extrabold text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.35)] transition-all flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Hacer Cierre de Turno</span>
-              </button>
-              <button onclick="exportFilteredExcel()"
-                class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5"
-                title="Descargar movimientos filtrados en Excel (.xlsx)">
-                <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Exportar Excel</span>
-              </button>
-              <button onclick="openResetModal()"
-                class="px-3 py-2 rounded-xl bg-ty-rose/10 border border-ty-rose/30 hover:bg-ty-rose/20 text-xs font-mono text-ty-rose font-semibold transition-all flex items-center gap-1.5"
-                title="Eliminar registros de prueba">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span>Limpiar Pruebas</span>
-              </button>
+            <!-- Compatibilidad retroactiva oculta para elementos que scripts previos pudiesen consultar -->
+            <div class="hidden">
+              <span id="kpiMonthLabel"></span>
+              <span id="kpiMonthTotal"></span>
+              <span id="kpiMonthCount"></span>
+              <span id="kpiMonthBreakdown"></span>
+            </div>
+          </div>
+
+          <!-- Bloque Operativo: Conciliación + Canales de Notificación -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Columna 1 y 2: Conciliación y Arqueo Rápido -->
+            <div class="lg:col-span-2 bg-ty-surface-low border border-ty-border rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-4">
+              <div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-xs font-bold uppercase tracking-wider text-ty-muted">Total en cuenta (Arqueo)</h3>
+                      <p class="text-[11px] font-mono text-emerald-400" id="arqueoFilterBadge">ARQUEO FILTRADO: HOY • TODAS LAS CAJAS</p>
+                    </div>
+                  </div>
+                  <div class="text-[11px] font-mono text-ty-muted" id="statLatencyAvg">-- ms</div>
+                </div>
+
+                <div class="mt-3.5 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                  <div>
+                    <span class="text-xs text-ty-muted">Debería haber en tu cuenta:</span>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight tabular-nums mt-0.5" id="arqueoExactTotal">
+                      $ 0 COP
+                    </div>
+                  </div>
+                  <div class="text-xs text-ty-muted font-mono" id="arqueoTxSummary">
+                    (0 transferencias válidas)
+                  </div>
+                </div>
+
+                <!-- Distribución gráfica Nequi vs Daviplata -->
+                <div class="mt-4 pt-3 border-t border-ty-border/70">
+                  <div class="flex items-center justify-between text-xs mb-1.5 font-medium">
+                    <span class="text-white text-[11px]" id="statSplitRatio">Distribución de ingresos</span>
+                    <span class="text-ty-muted text-[11px]">Solo pagos válidos</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden flex">
+                    <div id="statNequiBar" class="h-full bg-ty-nequi transition-all duration-300" style="width: 50%"></div>
+                    <div id="statDaviBar" class="h-full bg-ty-daviplata transition-all duration-300" style="width: 50%"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-xs mt-2 font-mono text-[11px]">
+                    <span class="text-white flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-ty-nequi"></span>
+                      <span id="statNequiSum">Nequi: $ 0</span>
+                    </span>
+                    <span class="text-white flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-ty-daviplata"></span>
+                      <span id="statDaviSum">Davi: $ 0</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones de Acción de Turno -->
+              <div class="flex flex-wrap items-center gap-2 pt-2">
+                <button onclick="openTurnClosingModal()"
+                  class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Hacer Cierre de Turno</span>
+                </button>
+                <button onclick="exportFilteredExcel()"
+                  class="px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs text-white transition-all flex items-center gap-1.5"
+                  title="Descargar movimientos filtrados en Excel (.xlsx)">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Exportar Excel</span>
+                </button>
+                <button onclick="openResetModal()"
+                  class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-xs text-rose-400 font-medium transition-all flex items-center gap-1.5"
+                  title="Eliminar registros de prueba">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Limpiar Pruebas</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Columna 3: Canales de Notificación -->
+            <div class="bg-ty-surface-low border border-ty-border rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-4">
+              <div>
+                <div class="flex items-center justify-between pb-3 border-b border-ty-border/70">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-ty-muted">Notificaciones</h3>
+                  </div>
+                  <span id="notifOverallBadge" class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    Operativas
+                  </span>
+                </div>
+
+                <div class="divide-y divide-ty-border/60 mt-2">
+                  <!-- Canal WhatsApp -->
+                  <div class="py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        WA
+                      </div>
+                      <div>
+                        <div class="text-xs font-semibold text-white">WhatsApp Cajeros</div>
+                        <p class="text-[11px] text-ty-muted">Aviso instantáneo a celular de turno</p>
+                      </div>
+                    </div>
+                    <span id="notifStatusWhatsApp" class="text-xs font-bold text-emerald-400">Conectado</span>
+                  </div>
+
+                  <!-- Canal Respaldo por Correo -->
+                  <div class="py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        ✉️
+                      </div>
+                      <div>
+                        <div class="text-xs font-semibold text-white">Respaldo por correo</div>
+                        <p class="text-[11px] text-ty-muted">Reenvío automático Gmail</p>
+                      </div>
+                    </div>
+                    <span id="notifStatusEmail" class="text-xs font-bold text-emerald-400">Activo</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-ty-border/70 flex items-center justify-between text-xs">
+                <span class="text-ty-muted text-[11px]">Canales redundantes</span>
+                <button onclick="switchTab('cashiers')" class="text-emerald-400 hover:text-emerald-300 font-medium text-[11px] transition-colors">
+                  Gestionar cajeros →
+                </button>
+              </div>
             </div>
           </div>
 
@@ -4157,12 +4294,49 @@
       return { todayKey, weekStartKey: mondayUtc.toISOString().slice(0, 10), monthPrefix: todayKey.slice(0, 7) };
     }
 
+    function getColombiaGreeting() {
+      try {
+        const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Bogota", hour: "numeric", hour12: false }).format(new Date()));
+        if (hour >= 5 && hour < 12) return "Buenos días 👋";
+        if (hour >= 12 && hour < 19) return "Buenas tardes 👋";
+        return "Buenas noches 👋";
+      } catch (e) {
+        return "Buenos días 👋";
+      }
+    }
+
+    function getColombiaLongDate() {
+      try {
+        const d = new Date();
+        const formatted = new Intl.DateTimeFormat("es-CO", {
+          timeZone: "America/Bogota",
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }).format(d);
+        return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      } catch (e) {
+        return new Date().toLocaleDateString("es-CO");
+      }
+    }
+
     function initDateDefaults() {
       const { todayKey } = getPeriodBounds();
-      document.getElementById("dateFromInput").value = todayKey;
-      document.getElementById("dateToInput").value = todayKey;
-      document.getElementById("kpiTodayDate").textContent = todayKey;
-      document.getElementById("kpiMonthLabel").textContent = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", month: "short", year: "numeric" }).format(new Date());
+      const dateFrom = document.getElementById("dateFromInput");
+      const dateTo = document.getElementById("dateToInput");
+      if (dateFrom) dateFrom.value = todayKey;
+      if (dateTo) dateTo.value = todayKey;
+      const kpiDate = document.getElementById("kpiTodayDate");
+      if (kpiDate) kpiDate.textContent = todayKey;
+      const monthLbl = document.getElementById("kpiMonthLabel");
+      if (monthLbl) monthLbl.textContent = new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", month: "short", year: "numeric" }).format(new Date());
+
+      const greetingEl = document.getElementById("dashboardGreeting");
+      if (greetingEl) greetingEl.textContent = getColombiaGreeting();
+
+      const dateEl = document.getElementById("dashboardLongDate");
+      if (dateEl) dateEl.textContent = getColombiaLongDate();
     }
 
     function getTxTimestamp(tx) {
@@ -4206,7 +4380,7 @@
     function updateMultiPeriodKpis() {
       const { todayKey, weekStartKey, monthPrefix } = getPeriodBounds();
       const stats = {
-        today: { total: 0, nequi: 0, davi: 0, count: 0 },
+        today: { total: 0, nequi: 0, davi: 0, count: 0, nequiCount: 0, daviCount: 0 },
         week: { total: 0, nequi: 0, davi: 0, count: 0 },
         month: { total: 0, nequi: 0, davi: 0, count: 0 }
       };
@@ -4216,26 +4390,91 @@
         const amt = Number(tx.amount);
         const dayKey = getColombiaDateKey(getTxTimestamp(tx));
         const wallet = detectWallet(tx);
-        const add = (b) => { b.total += amt; b.count++; if (wallet === "NEQUI") b.nequi += amt; else b.davi += amt; };
+        const add = (b) => {
+          b.total += amt;
+          b.count++;
+          if (wallet === "NEQUI") {
+            b.nequi += amt;
+            if (b.nequiCount !== undefined) b.nequiCount++;
+          } else {
+            b.davi += amt;
+            if (b.daviCount !== undefined) b.daviCount++;
+          }
+        };
         if (dayKey === todayKey) add(stats.today);
         if (dayKey >= weekStartKey && dayKey <= todayKey) add(stats.week);
         if (dayKey.startsWith(monthPrefix)) add(stats.month);
       }
 
       const fmt = (n) => Number(n).toLocaleString("es-CO");
-      document.getElementById("kpiTodayTotal").innerHTML = `$ ${fmt(stats.today.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
-      document.getElementById("kpiTodayCount").textContent = `${stats.today.count} ${stats.today.count === 1 ? "pago real" : "pagos reales"}`;
-      document.getElementById("kpiTodayBreakdown").textContent = `Nequi $${fmt(stats.today.nequi)} / Davi $${fmt(stats.today.davi)}`;
 
-      document.getElementById("kpiWeekTotal").innerHTML = `$ ${fmt(stats.week.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
-      document.getElementById("kpiWeekCount").textContent = `${stats.week.count} ${stats.week.count === 1 ? "pago real" : "pagos reales"}`;
-      document.getElementById("kpiWeekBreakdown").textContent = `Nequi $${fmt(stats.week.nequi)} / Davi $${fmt(stats.week.davi)}`;
+      // KPI 1: Hoy
+      const kpiTodayTotalEl = document.getElementById("kpiTodayTotal");
+      if (kpiTodayTotalEl) {
+        kpiTodayTotalEl.innerHTML = `$ ${fmt(stats.today.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      }
+      const kpiTodayCountEl = document.getElementById("kpiTodayCount");
+      if (kpiTodayCountEl) {
+        kpiTodayCountEl.textContent = `${stats.today.count} ${stats.today.count === 1 ? "transacción" : "transacciones"}`;
+      }
+      const kpiTodayBreakdownEl = document.getElementById("kpiTodayBreakdown");
+      if (kpiTodayBreakdownEl) {
+        kpiTodayBreakdownEl.textContent = `Nequi $${fmt(stats.today.nequi)} / Davi $${fmt(stats.today.davi)}`;
+      }
 
-      document.getElementById("kpiMonthTotal").innerHTML = `$ ${fmt(stats.month.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
-      document.getElementById("kpiMonthCount").textContent = `${stats.month.count} ${stats.month.count === 1 ? "pago real" : "pagos reales"}`;
-      document.getElementById("kpiMonthBreakdown").textContent = `Nequi $${fmt(stats.month.nequi)} / Davi $${fmt(stats.month.davi)}`;
+      // KPI 2: Esta semana
+      const kpiWeekTotalEl = document.getElementById("kpiWeekTotal");
+      if (kpiWeekTotalEl) {
+        kpiWeekTotalEl.innerHTML = `$ ${fmt(stats.week.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      }
+      const kpiWeekCountEl = document.getElementById("kpiWeekCount");
+      if (kpiWeekCountEl) {
+        kpiWeekCountEl.textContent = `${stats.week.count} ${stats.week.count === 1 ? "transacción" : "transacciones"}`;
+      }
+      const kpiWeekBreakdownEl = document.getElementById("kpiWeekBreakdown");
+      if (kpiWeekBreakdownEl) {
+        kpiWeekBreakdownEl.textContent = `Nequi $${fmt(stats.week.nequi)} / Davi $${fmt(stats.week.davi)}`;
+      }
 
-      document.getElementById("posTurnSummary").textContent = `Hoy: $ ${fmt(stats.today.total)} COP (${stats.today.count} pagos)`;
+      // KPI 3: Nequi
+      const kpiNequiTotalEl = document.getElementById("kpiNequiTotal");
+      if (kpiNequiTotalEl) {
+        kpiNequiTotalEl.innerHTML = `$ ${fmt(stats.today.nequi)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      }
+      const kpiNequiCountEl = document.getElementById("kpiNequiCount");
+      if (kpiNequiCountEl) {
+        kpiNequiCountEl.textContent = `${stats.today.nequiCount} ${stats.today.nequiCount === 1 ? "pago confirmado" : "pagos confirmados"}`;
+      }
+
+      // KPI 4: Daviplata
+      const kpiDaviTotalEl = document.getElementById("kpiDaviTotal");
+      if (kpiDaviTotalEl) {
+        daviTotalEl = kpiDaviTotalEl;
+        daviTotalEl.innerHTML = `$ ${fmt(stats.today.davi)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      }
+      const kpiDaviCountEl = document.getElementById("kpiDaviCount");
+      if (kpiDaviCountEl) {
+        kpiDaviCountEl.textContent = `${stats.today.daviCount} ${stats.today.daviCount === 1 ? "pago confirmado" : "pagos confirmados"}`;
+      }
+
+      // Compatibilidad con mes y POS
+      const kpiMonthTotalEl = document.getElementById("kpiMonthTotal");
+      if (kpiMonthTotalEl) {
+        kpiMonthTotalEl.innerHTML = `$ ${fmt(stats.month.total)} <span class="text-xs text-ty-muted font-normal font-sans">COP</span>`;
+      }
+      const kpiMonthCountEl = document.getElementById("kpiMonthCount");
+      if (kpiMonthCountEl) {
+        kpiMonthCountEl.textContent = `${stats.month.count} ${stats.month.count === 1 ? "pago real" : "pagos reales"}`;
+      }
+      const kpiMonthBreakdownEl = document.getElementById("kpiMonthBreakdown");
+      if (kpiMonthBreakdownEl) {
+        kpiMonthBreakdownEl.textContent = `Nequi $${fmt(stats.month.nequi)} / Davi $${fmt(stats.month.davi)}`;
+      }
+
+      const posTurnSummaryEl = document.getElementById("posTurnSummary");
+      if (posTurnSummaryEl) {
+        posTurnSummaryEl.textContent = `Hoy: $ ${fmt(stats.today.total)} COP (${stats.today.count} pagos)`;
+      }
     }
 
     function setPeriodFilter(period) {
@@ -5352,6 +5591,89 @@
         }
       }
 
+      // Actualizar tarjeta amigable de diagnóstico de cajas en el Dashboard
+      const boxesCard = document.getElementById("boxesHealthCard");
+      const boxesTitle = document.getElementById("boxesHealthTitle");
+      const boxesSub = document.getElementById("boxesHealthSub");
+      const boxesIcon = document.getElementById("boxesHealthIcon");
+      const sysBadge = document.getElementById("systemHealthBadge");
+
+      if (boxesTitle && boxesSub) {
+        if (activeCount === 0) {
+          boxesTitle.textContent = "Sin cajas vinculadas aún";
+          boxesSub.textContent = "Vincula tu primer celular de caja para recibir comprobantes en tiempo real.";
+          if (boxesCard) boxesCard.className = "p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all";
+          if (boxesIcon) {
+            boxesIcon.className = "w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0";
+            boxesIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+          }
+          if (sysBadge) {
+            sysBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/25";
+            sysBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Vincular caja</span>`;
+          }
+        } else if (currentOfflineIds.size > 0) {
+          boxesTitle.textContent = `${onlineCount} ${onlineCount === 1 ? 'caja conectada' : 'cajas conectadas'}`;
+          boxesSub.textContent = `${currentOfflineIds.size} ${currentOfflineIds.size === 1 ? 'caja necesita' : 'cajas necesitan'} revisar su conexión (${offlineNames.join(", ")}).`;
+          if (boxesCard) boxesCard.className = "p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all";
+          if (boxesIcon) {
+            boxesIcon.className = "w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0";
+            boxesIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+          }
+          if (sysBadge) {
+            sysBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/25";
+            sysBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Revisar conexión</span>`;
+          }
+        } else {
+          boxesTitle.textContent = `${onlineCount} ${onlineCount === 1 ? 'caja conectada' : 'cajas conectadas'}`;
+          boxesSub.textContent = "Todas tus cajas están recibiendo comprobantes en tiempo real.";
+          if (boxesCard) boxesCard.className = "p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all";
+          if (boxesIcon) {
+            boxesIcon.className = "w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0";
+            boxesIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
+          }
+          if (sysBadge) {
+            sysBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
+            sysBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Sistema operativo</span>`;
+          }
+        }
+      }
+
+      // Actualizar canales de notificación en Dashboard
+      const notifWhatsApp = document.getElementById("notifStatusWhatsApp");
+      const notifEmail = document.getElementById("notifStatusEmail");
+      const notifOverall = document.getElementById("notifOverallBadge");
+
+      const activeCashiersCount = cashierRecords ? cashierRecords.filter((c) => c.is_active).length : 0;
+      if (notifWhatsApp) {
+        if (activeCashiersCount > 0) {
+          notifWhatsApp.textContent = "Conectado";
+          notifWhatsApp.className = "text-xs font-bold text-emerald-400";
+        } else {
+          notifWhatsApp.textContent = "Sin cajeros activos";
+          notifWhatsApp.className = "text-xs font-medium text-ty-muted";
+        }
+      }
+
+      if (notifEmail) {
+        if (isCloudConfigured) {
+          notifEmail.textContent = "Activo";
+          notifEmail.className = "text-xs font-bold text-emerald-400";
+        } else {
+          notifEmail.textContent = "No configurado";
+          notifEmail.className = "text-xs font-medium text-ty-muted";
+        }
+      }
+
+      if (notifOverall) {
+        if (activeCashiersCount > 0 || isCloudConfigured) {
+          notifOverall.textContent = "Operativas";
+          notifOverall.className = "text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+        } else {
+          notifOverall.textContent = "Pendientes";
+          notifOverall.className = "text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30";
+        }
+      }
+
       renderDevicesGrid(nowMs);
     }
 
@@ -5911,6 +6233,18 @@
     }
 
     function renderCashiersList() {
+      const activeCashiersCount = cashierRecords ? cashierRecords.filter((c) => c.is_active).length : 0;
+      const notifWhatsApp = document.getElementById("notifStatusWhatsApp");
+      if (notifWhatsApp) {
+        if (activeCashiersCount > 0) {
+          notifWhatsApp.textContent = "Conectado";
+          notifWhatsApp.className = "text-xs font-bold text-emerald-400";
+        } else {
+          notifWhatsApp.textContent = "Sin cajeros activos";
+          notifWhatsApp.className = "text-xs font-medium text-ty-muted";
+        }
+      }
+
       const list = document.getElementById("cashiersList");
       if (!cashierRecords.length) {
         list.innerHTML = `<div class="p-6 text-center text-xs font-mono text-ty-muted">No hay cajeros registrados aún en ${escapeHtml(currentMerchant.name)}.</div>`;
