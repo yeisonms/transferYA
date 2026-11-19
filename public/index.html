@@ -1151,24 +1151,22 @@
                 <thead>
                   <tr
                     class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
-                    <th class="py-3 px-4 font-semibold">Fecha / Hora (COT)</th>
-                    <th class="py-3 px-4 font-semibold">Billetera</th>
-                    <th class="py-3 px-4 font-semibold">Pagador / Remitente</th>
-                    <th class="py-3 px-4 font-semibold">Caja / Ref</th>
-                    <th class="py-3 px-4 font-semibold">Estado &amp; WhatsApp</th>
-                    <th class="py-3 px-4 font-semibold text-right">Latencia</th>
-                    <th class="py-3 px-4 font-semibold text-right">Valor (COP)</th>
+                    <th class="py-3 px-4 font-semibold">Cliente / Billetera / Caja</th>
+                    <th class="py-3 px-4 font-semibold hidden lg:table-cell">Referencia Bancaria</th>
+                    <th class="py-3 px-4 font-semibold">Estado</th>
+                    <th class="py-3 px-4 font-semibold text-right">Monto (COP)</th>
+                    <th class="py-3 px-3 text-right w-10"></th>
                   </tr>
                 </thead>
                 <tbody id="ledgerTableBody" class="divide-y divide-ty-border text-sm"></tbody>
                 <tfoot class="bg-ty-surface border-t-2 border-ty-border-strong font-mono">
                   <tr>
-                    <td colspan="4" class="py-3.5 px-4 text-xs text-ty-muted" id="tableFooterCount">Mostrando 0
+                    <td colspan="2" class="py-3.5 px-4 text-xs text-ty-muted" id="tableFooterCount">Mostrando 0
                       movimientos</td>
                     <td colspan="2" class="py-3.5 px-4 text-xs text-right uppercase tracking-wider text-ty-muted">Total
-                      Verificado Filtrado:</td>
-                    <td class="py-3.5 px-4 text-right text-base font-extrabold text-ty-emerald tabular-nums"
-                      id="tableFooterTotal">$ 0 COP</td>
+                      Verificado Filtrado: <span class="text-base font-extrabold text-ty-emerald tabular-nums ml-2"
+                        id="tableFooterTotal">$ 0 COP</span></td>
+                    <td></td>
                   </tr>
                 </tfoot>
               </table>
@@ -2899,6 +2897,131 @@
   </div>
 
   <!-- ================================================================== -->
+  <!-- DRAWER LATERAL: DETALLE DE TRANSACCIÓN Y AUDITORÍA (SLIDE-OVER) -->
+  <!-- ================================================================== -->
+  <div id="txDetailDrawer" class="hidden fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <!-- Backdrop oscuro con blur sutil -->
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" onclick="closeTransactionDrawer()"></div>
+
+    <div class="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
+      <div class="w-screen max-w-md sm:max-w-lg bg-[#0F1420] text-white border-l border-ty-border flex flex-col shadow-2xl relative">
+        <!-- Drawer Header -->
+        <div class="p-5 border-b border-ty-border flex items-center justify-between bg-ty-surface/40">
+          <div class="flex items-center gap-3">
+            <div id="txDrawerWalletIcon" class="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 bg-[#DA0081]/20 text-[#E10098] border border-[#DA0081]/40">
+              N
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white leading-tight">Detalle de Pago</h3>
+              <p class="text-xs text-ty-muted">Comprobante y trazabilidad en tiempo real</p>
+            </div>
+          </div>
+          <button onclick="closeTransactionDrawer()" class="p-2 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-colors" title="Cerrar panel">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Drawer Body (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-5">
+          <!-- Hero Monto -->
+          <div class="p-5 rounded-2xl bg-ty-surface border border-ty-border text-center space-y-2">
+            <div class="text-xs font-mono uppercase tracking-wider text-ty-muted">Monto Recibido</div>
+            <div id="txDrawerAmount" class="text-3xl sm:text-4xl font-extrabold text-ty-emerald tabular-nums">+$ 0 COP</div>
+            <div class="flex items-center justify-center gap-2 pt-1">
+              <span id="txDrawerStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-ty-emerald"></span>
+                <span>Verificado</span>
+              </span>
+            </div>
+            <p id="txDrawerTimestamp" class="text-xs text-ty-muted pt-1">-</p>
+          </div>
+
+          <!-- Bloque 1: Resumen Comercial -->
+          <div class="rounded-xl bg-ty-surface border border-ty-border p-4 space-y-3">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-ty-muted flex items-center gap-2">
+              <svg class="w-4 h-4 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              Datos de la Operación
+            </h4>
+            <div class="divide-y divide-ty-border text-xs">
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <span class="text-ty-muted shrink-0">Cliente / Remitente:</span>
+                <span id="txDrawerSender" class="font-bold text-white text-right truncate">-</span>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <span class="text-ty-muted shrink-0">Billetera Origen:</span>
+                <span id="txDrawerWallet" class="font-semibold text-white text-right">-</span>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <span class="text-ty-muted shrink-0">Caja Receptora:</span>
+                <span id="txDrawerDevice" class="font-semibold text-ty-cyan text-right truncate">-</span>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <span class="text-ty-muted shrink-0">Canal de Entrada:</span>
+                <span id="txDrawerChannel" class="font-medium text-white text-right">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque 2: Trazabilidad Técnica y Auditoría -->
+          <div class="rounded-xl bg-ty-surface border border-ty-border p-4 space-y-3">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-ty-muted flex items-center gap-2">
+              <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              Auditoría y Seguridad
+            </h4>
+            <div class="divide-y divide-ty-border text-xs">
+              <div class="py-2.5 flex items-center justify-between gap-2">
+                <span class="text-ty-muted shrink-0">Referencia Bancaria:</span>
+                <div class="flex items-center gap-1.5">
+                  <span id="txDrawerReference" class="font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-ty-border">-</span>
+                  <button id="txDrawerCopyRefBtn" onclick="copyTxReference()" class="p-1 rounded hover:bg-ty-surface-high text-ty-muted hover:text-white transition-colors" title="Copiar referencia">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-2">
+                <span class="text-ty-muted shrink-0">Alerta WhatsApp Cajero:</span>
+                <span id="txDrawerWhatsAppStatus" class="text-right font-medium text-white">-</span>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-2">
+                <span class="text-ty-muted shrink-0">Tiempo de Verificación:</span>
+                <span id="txDrawerLatency" class="font-mono text-ty-cyan text-right">-</span>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-2">
+                <span class="text-ty-muted shrink-0">ID de Sistema:</span>
+                <span id="txDrawerId" class="font-mono text-[10px] text-ty-muted truncate max-w-[180px]">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque 3: Mensaje Original del Banco -->
+          <div class="rounded-xl bg-ty-surface border border-ty-border p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono uppercase tracking-wider text-ty-muted">Comprobante Original Capturado</h4>
+              <span class="text-[10px] text-ty-muted font-mono">Inmutable</span>
+            </div>
+            <div id="txDrawerRawBody" class="p-3 rounded-lg bg-black/40 border border-ty-border text-xs text-slate-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
+              -
+            </div>
+          </div>
+        </div>
+
+        <!-- Drawer Footer (Acciones) -->
+        <div class="p-4 border-t border-ty-border bg-ty-surface/40 flex flex-col gap-2">
+          <button id="txDrawerShareWhatsAppBtn" onclick="shareTxViaWhatsApp()" class="w-full py-2.5 px-4 rounded-xl bg-ty-emerald text-black font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-400 transition-all shadow-md">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.824z" /></svg>
+            <span>Compartir Comprobante por WhatsApp</span>
+          </button>
+          <button onclick="closeTransactionDrawer()" class="w-full py-2 px-4 rounded-xl bg-ty-surface border border-ty-border text-ty-muted hover:text-white font-medium text-xs transition-colors">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <!-- CONTENEDOR OCULTO PARA IMPRESIÓN / GENERACIÓN DE PDF -->
   <!-- ================================================================== -->
   <div id="printableClosingReceipt" class="hidden">
@@ -4170,13 +4293,160 @@
     }
 
     function getStatusBadgeHtml(tx) {
-      if (tx.status === "PROCESSED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Válido • WA OK</span>`;
-      if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-amber/15 text-ty-amber border border-ty-amber/30">Dinero OK • WA Falló</span>`;
-      if (tx.status === "IGNORED_SUSPENDED_ACCOUNT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-rose/15 text-ty-rose border border-ty-rose/30">Plan Vencido</span>`;
-      if (tx.status === "DUPLICATE_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado</span>`;
-      if (tx.status === "IGNORED_NON_PAYMENT") return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-muted border border-ty-border">Ignorado</span>`;
-      return `<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-ty-surface-highest text-ty-cyan border border-ty-border">${escapeHtml(tx.status || "PROCESSING")}</span>`;
+      if (tx.status === "PROCESSED") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30"><span class="w-1.5 h-1.5 rounded-full bg-ty-emerald"></span>✓ Confirmado</span>`;
+      }
+      if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-ty-amber/15 text-ty-amber border border-ty-amber/30"><span class="w-1.5 h-1.5 rounded-full bg-ty-amber"></span>Dinero OK • WA Pendiente</span>`;
+      }
+      if (tx.status === "IGNORED_SUSPENDED_ACCOUNT") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-ty-rose/15 text-ty-rose border border-ty-rose/30">Plan Vencido</span>`;
+      }
+      if (tx.status === "DUPLICATE_PAYMENT") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado</span>`;
+      }
+      if (tx.status === "IGNORED_NON_PAYMENT") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-muted border border-ty-border">No transaccional</span>`;
+      }
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-cyan border border-ty-border">${escapeHtml(tx.status || "Procesando")}</span>`;
     }
+
+    let currentDrawerTx = null;
+
+    function openTransactionDrawer(txId) {
+      const tx = (allTransactions || []).find((t) => t.id === txId) || (filteredTransactions || []).find((t) => t.id === txId);
+      if (!tx) return;
+      currentDrawerTx = tx;
+
+      const wallet = detectWallet(tx);
+      const isNequi = wallet === "NEQUI";
+      const countable = isCountableMoney(tx);
+      const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+      const amtFormatted = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
+
+      // Wallet icon & badge
+      const walletIconEl = document.getElementById("txDrawerWalletIcon");
+      if (walletIconEl) {
+        walletIconEl.className = `w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 ${isNequi ? "bg-[#DA0081]/20 text-[#E10098] border border-[#DA0081]/40" : "bg-[#ED1C24]/20 text-[#ED1C24] border border-[#ED1C24]/40"}`;
+        walletIconEl.textContent = isNequi ? "N" : "D";
+      }
+
+      // Amounts and status
+      const amtEl = document.getElementById("txDrawerAmount");
+      if (amtEl) amtEl.textContent = amtFormatted;
+
+      const statusEl = document.getElementById("txDrawerStatusBadge");
+      if (statusEl) statusEl.innerHTML = getStatusBadgeHtml(tx);
+
+      const timeEl = document.getElementById("txDrawerTimestamp");
+      if (timeEl) timeEl.textContent = getColombiaDateTimeLabel(getTxTimestamp(tx)) + " (Hora de Colombia)";
+
+      // Commercial info
+      const senderEl = document.getElementById("txDrawerSender");
+      if (senderEl) senderEl.textContent = tx.sender_name || tx.raw_title || "Transferencia Recibida";
+
+      const walletEl = document.getElementById("txDrawerWallet");
+      if (walletEl) {
+        walletEl.innerHTML = isNequi 
+          ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30">🟣 Nequi</span>`
+          : `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30">🔴 Daviplata</span>`;
+      }
+
+      const deviceEl = document.getElementById("txDrawerDevice");
+      if (deviceEl) deviceEl.textContent = isCloud ? "Caja Cloud (Respaldo por Correo)" : getDeviceLabel(tx.device_id);
+
+      const channelEl = document.getElementById("txDrawerChannel");
+      if (channelEl) {
+        channelEl.innerHTML = isCloud
+          ? `<span class="text-ty-cyan font-medium inline-flex items-center gap-1">✉️ Canal B: Respaldo Gmail Instantáneo</span>`
+          : `<span class="text-ty-emerald font-medium inline-flex items-center gap-1">⚡ Canal A: Celular Centinela (APK)</span>`;
+      }
+
+      // Audit and security
+      const refEl = document.getElementById("txDrawerReference");
+      if (refEl) refEl.textContent = tx.payment_reference || "No reportada";
+
+      const copyRefBtn = document.getElementById("txDrawerCopyRefBtn");
+      if (copyRefBtn) copyRefBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>`;
+
+      const waEl = document.getElementById("txDrawerWhatsAppStatus");
+      if (waEl) {
+        if (tx.status === "PROCESSED") {
+          waEl.innerHTML = `<span class="text-ty-emerald font-medium inline-flex items-center gap-1">✓ Entregado a WhatsApp cajeros</span>`;
+        } else if (tx.status === "DISPATCH_FAILED" || tx.status === "ROUTING_FAILED") {
+          waEl.innerHTML = `<span class="text-ty-amber font-medium inline-flex items-center gap-1">⚠️ WhatsApp pendiente de reintento</span>`;
+        } else {
+          waEl.innerHTML = `<span class="text-ty-muted">Sin notificación enviada</span>`;
+        }
+      }
+
+      const latEl = document.getElementById("txDrawerLatency");
+      if (latEl) latEl.textContent = tx.latency_ms > 0 ? `${(tx.latency_ms / 1000).toFixed(1)} segundos` : "Instantáneo (< 1 s)";
+
+      const idEl = document.getElementById("txDrawerId");
+      if (idEl) idEl.textContent = tx.id;
+
+      // Raw snippet
+      const rawEl = document.getElementById("txDrawerRawBody");
+      if (rawEl) rawEl.textContent = tx.raw_body || tx.raw_title || getCleanNotificationSnippet(tx) || "Sin comprobante adicional";
+
+      const drawer = document.getElementById("txDetailDrawer");
+      if (drawer) drawer.classList.remove("hidden");
+    }
+
+    function closeTransactionDrawer() {
+      const drawer = document.getElementById("txDetailDrawer");
+      if (drawer) drawer.classList.add("hidden");
+      currentDrawerTx = null;
+    }
+
+    function copyTxReference() {
+      if (!currentDrawerTx || !currentDrawerTx.payment_reference) {
+        showToast("Esta transacción no incluye referencia bancaria");
+        return;
+      }
+      navigator.clipboard.writeText(currentDrawerTx.payment_reference).then(() => {
+        const copyRefBtn = document.getElementById("txDrawerCopyRefBtn");
+        if (copyRefBtn) {
+          copyRefBtn.innerHTML = `<span class="text-[11px] text-ty-emerald font-bold">¡Copiada!</span>`;
+          setTimeout(() => {
+            copyRefBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>`;
+          }, 2000);
+        }
+        showToast("Referencia bancaria copiada al portapapeles");
+      }).catch(() => {
+        showToast("No se pudo copiar automáticamente");
+      });
+    }
+
+    function shareTxViaWhatsApp() {
+      if (!currentDrawerTx) return;
+      const tx = currentDrawerTx;
+      const wallet = detectWallet(tx);
+      const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+      const box = isCloud ? "Respaldo Gmail" : getDeviceLabel(tx.device_id);
+      const amt = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "No especificado";
+      const ref = tx.payment_reference || "Sin referencia";
+      const time = getColombiaDateTimeLabel(getTxTimestamp(tx));
+      const sender = tx.sender_name || tx.raw_title || "Cliente";
+
+      const text = `*COMPROBANTE TRANSFERYA VERIFICADO* ⚡\n\n` +
+        `💰 *Monto Recibido:* ${amt}\n` +
+        `👤 *Remitente:* ${sender}\n` +
+        `📱 *Billetera:* ${wallet}\n` +
+        `🏪 *Caja:* ${box}\n` +
+        `⏰ *Fecha y Hora:* ${time}\n` +
+        `🔢 *Referencia:* ${ref}\n` +
+        `✅ *Estado:* Pago confirmado y conciliado en TransferYA\n\n` +
+        `_Verificación instantánea de pagos para comercios en Colombia._`;
+
+      const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
+      window.open(url, "_blank");
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeTransactionDrawer();
+    });
 
     function renderLedgerRows(highlightId = null) {
       const tbody = document.getElementById("ledgerTableBody");
@@ -4193,54 +4463,92 @@
 
       tbody.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
-        const walletPill = wallet === "NEQUI"
-          ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-nequi-bg text-ty-nequi border border-ty-nequi/40">NEQUI</span>`
-          : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-daviplata-bg text-ty-daviplata border border-ty-daviplata/40">DAVIPLATA</span>`;
+        const isNequi = wallet === "NEQUI";
+        const avatarBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const avatarLetter = isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
         const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
         const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
-        const boxLabel = isCloud
-          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 inline-flex items-center gap-1" title="Procesado vía Reenvío Gmail">✉️ Gmail</span>`
-          : `<span>⚡ ${escapeHtml(getDeviceLabel(tx.device_id))}</span>`;
-        const boxInfo = tx.payment_reference ? `${boxLabel} <span class="text-ty-muted">• ${escapeHtml(tx.payment_reference)}</span>` : boxLabel;
+        const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
+        const timeLabel = getColombiaDateTimeLabel(getTxTimestamp(tx));
 
         return `
-          <tr class="hover:bg-ty-surface/70 transition-colors ${anim}">
-            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${getColombiaDateTimeLabel(getTxTimestamp(tx))}</td>
-            <td class="py-3 px-4 whitespace-nowrap">${walletPill}</td>
-            <td class="py-3 px-4">
-              <div class="font-bold text-white text-sm">${escapeHtml(tx.sender_name || tx.raw_title || "Notificación")}</div>
-              <div class="text-[11px] text-ty-muted truncate max-w-xs" title="${escapeHtml(getCleanNotificationSnippet(tx))}">${escapeHtml(getCleanNotificationSnippet(tx))}</div>
+          <tr onclick="openTransactionDrawer('${escapeHtml(tx.id)}')" 
+              class="cursor-pointer hover:bg-ty-surface/80 transition-colors group ${anim}"
+              title="Haz clic para ver el detalle y comprobante completo">
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full ${avatarBg} flex items-center justify-center font-bold text-xs shrink-0">
+                  ${avatarLetter}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-bold text-white text-sm group-hover:text-ty-emerald transition-colors truncate">
+                    ${escapeHtml(tx.sender_name || tx.raw_title || "Transferencia")}
+                  </div>
+                  <div class="text-[11px] text-ty-muted truncate">
+                    ${escapeHtml(wallet)} • ${escapeHtml(boxLabel)} • ${timeLabel}
+                  </div>
+                </div>
+              </div>
             </td>
-            <td class="py-3 px-4 font-mono text-xs text-ty-muted whitespace-nowrap">${boxInfo}</td>
-            <td class="py-3 px-4 whitespace-nowrap">${getStatusBadgeHtml(tx)}</td>
-            <td class="py-3 px-4 font-mono text-xs text-ty-cyan text-right whitespace-nowrap">${tx.latency_ms > 0 ? `${tx.latency_ms} ms` : "--"}</td>
-            <td class="py-3 px-4 text-right tabular-nums text-sm whitespace-nowrap ${countable ? "text-white font-extrabold" : "text-ty-muted line-through"}">${amtText}</td>
+            <td class="py-3.5 px-4 font-mono text-xs text-ty-muted whitespace-nowrap hidden lg:table-cell">
+              ${tx.payment_reference ? `<span class="bg-black/30 border border-ty-border px-2 py-0.5 rounded text-[11px] text-slate-300 font-bold">${escapeHtml(tx.payment_reference)}</span>` : `<span class="text-ty-muted/60">—</span>`}
+            </td>
+            <td class="py-3.5 px-4 whitespace-nowrap">
+              ${getStatusBadgeHtml(tx)}
+            </td>
+            <td class="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
+              <span class="text-base font-extrabold ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">
+                ${amtText}
+              </span>
+              <span class="text-[10px] text-ty-muted block font-mono">COP</span>
+            </td>
+            <td class="py-3.5 px-3 text-right whitespace-nowrap text-ty-muted group-hover:text-white transition-colors">
+              <svg class="w-4 h-4 inline-block group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </td>
           </tr>
         `;
       }).join("");
 
       mobileList.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
-        const wClass = wallet === "NEQUI" ? "bg-ty-nequi-bg text-ty-nequi border-ty-nequi/40" : "bg-ty-daviplata-bg text-ty-daviplata border-ty-daviplata/40";
+        const isNequi = wallet === "NEQUI";
+        const avatarBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const avatarLetter = isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
         const amtText = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
+        const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
+        const timeLabel = getColombiaDateTimeLabel(getTxTimestamp(tx));
+
         return `
-          <div class="p-4 flex flex-col gap-2 ${highlightId && tx.id === highlightId ? "animate-payment-in" : ""}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${wClass}">${wallet}</span>
-                <div class="flex flex-col">
-                  <span class="font-bold text-white text-sm">${escapeHtml(tx.sender_name || tx.raw_title || "Notificación")}</span>
-                  <span class="text-[11px] text-ty-muted truncate max-w-[200px]">${escapeHtml(getCleanNotificationSnippet(tx))}</span>
+          <div onclick="openTransactionDrawer('${escapeHtml(tx.id)}')" 
+               class="p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-ty-surface/60 transition-colors ${anim}">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-full ${avatarBg} flex items-center justify-center font-bold text-xs shrink-0">
+                ${avatarLetter}
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-white text-sm truncate">
+                  ${escapeHtml(tx.sender_name || tx.raw_title || "Transferencia")}
+                </div>
+                <div class="text-[11px] text-ty-muted truncate">
+                  ${escapeHtml(wallet)} • ${escapeHtml(boxLabel)} • ${timeLabel}
+                </div>
+                <div class="mt-1">
+                  ${getStatusBadgeHtml(tx)}
                 </div>
               </div>
-              <span class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">${amtText}</span>
             </div>
-            <div class="flex items-center justify-between text-xs font-mono text-ty-muted">
-              <span>${tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" ? "✉️ Gmail" : getDeviceLabel(tx.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(tx))}</span>
-              ${getStatusBadgeHtml(tx)}
+            <div class="text-right shrink-0">
+              <div class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">
+                ${amtText}
+              </div>
+              <span class="text-[10px] text-ty-muted font-mono block">COP</span>
             </div>
           </div>
         `;
