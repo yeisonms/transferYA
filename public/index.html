@@ -1387,52 +1387,76 @@
         <!-- ============================================================ -->
         <!-- TAB 2: HISTORIAL DE CIERRES POR DÍA -->
         <!-- ============================================================ -->
+        <!-- ============================================================ -->
+        <!-- TAB 2: CIERRES DE CAJA Y CONCILIACIÓN -->
+        <!-- ============================================================ -->
         <section id="tab-history" class="hidden space-y-6">
-          <div
-            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
+          <!-- Cabecera de Cierres de Caja -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 bg-ty-surface-low border border-ty-border rounded-2xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Historial y Cierres de Caja</h2>
-              <p class="text-xs text-ty-muted">Consolidado exacto de dinero que entró cada día según la caja
-                seleccionada</p>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Control Financiero</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">Cierres de Caja y Conciliación</h2>
+              <p class="text-xs sm:text-sm text-ty-muted mt-1 max-w-xl">
+                Consolidado diario de dinero real recibido por Nequi y DaviPlata. Genera tu cierre de turno para cuadrar caja al instante.
+              </p>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="openTurnClosingModal()"
-                class="px-4 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Cierre de Turno en 1 Clic</span>
-              </button>
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
               <button onclick="exportDailyClosingExcel()"
-                class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5"
+                class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs font-semibold text-white transition-all flex items-center justify-center gap-2"
                 title="Descargar consolidado diario en formato Excel (.xlsx)">
-                <svg class="w-4 h-4 text-ty-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>Descargar Cierres Excel</span>
+                <span>Exportar Excel</span>
+              </button>
+              <button onclick="openTurnClosingModal()"
+                class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>+ Hacer Cierre de Turno</span>
               </button>
             </div>
           </div>
 
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden">
-            <div class="overflow-x-auto">
+          <!-- Tabla de Historial Diario (Estilo Extracto) -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden shadow-sm">
+            <div class="p-4 sm:px-6 py-4 border-b border-ty-border flex items-center justify-between bg-ty-surface/40">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                  📅
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white">Historial de Días Liquidados</h3>
+                  <p class="text-xs text-ty-muted">Haz clic en "Ver Movimientos" para auditar cada pago del día seleccionado.</p>
+                </div>
+              </div>
+              <span id="dailyClosingSummaryBadge" class="text-xs text-ty-muted font-mono hidden sm:inline">Calculando días...</span>
+            </div>
+
+            <!-- Tabla de escritorio -->
+            <div class="hidden md:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr
-                    class="bg-ty-surface border-b border-ty-border text-[11px] font-mono uppercase tracking-wider text-ty-muted">
-                    <th class="py-3 px-4">Fecha (Colombia)</th>
-                    <th class="py-3 px-4 text-right">Nequi (# / COP)</th>
-                    <th class="py-3 px-4 text-right">Daviplata (# / COP)</th>
-                    <th class="py-3 px-4 text-right">Total Pagos</th>
-                    <th class="py-3 px-4 text-right">Total Recibido Día</th>
-                    <th class="py-3 px-4 text-right">Detalle</th>
+                  <tr class="bg-ty-surface/60 border-b border-ty-border text-[11px] font-semibold uppercase tracking-wider text-ty-muted">
+                    <th class="py-3 px-4 sm:px-6">Fecha (Colombia)</th>
+                    <th class="py-3 px-4 text-right">Nequi</th>
+                    <th class="py-3 px-4 text-right">DaviPlata</th>
+                    <th class="py-3 px-4 text-right">Transacciones</th>
+                    <th class="py-3 px-4 text-right">Total Liquidado Día</th>
+                    <th class="py-3 px-4 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody id="dailyClosingBody" class="divide-y divide-ty-border text-sm"></tbody>
+                <tbody id="dailyClosingBody" class="divide-y divide-ty-border/70 text-sm"></tbody>
               </table>
             </div>
+
+            <!-- Lista para móviles -->
+            <div id="dailyClosingMobileList" class="md:hidden divide-y divide-ty-border/70"></div>
           </div>
         </section>
 
@@ -2422,13 +2446,12 @@
 
       <!-- Grand Total Hero Card -->
       <div
-        class="p-5 rounded-2xl bg-gradient-to-br from-ty-emerald/20 via-ty-surface-low to-ty-surface border border-ty-emerald/40 text-center space-y-1 shadow-[0_0_25px_rgba(0,210,106,0.15)]">
-        <span class="text-[11px] font-mono uppercase tracking-wider text-ty-emerald font-bold">💰 Gran
-          Total Verificado en Turno</span>
-        <div class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight tabular-nums" id="turnTotalHero">
-          $ 0 <span class="text-xl sm:text-2xl text-ty-emerald font-normal font-sans">COP</span>
+        class="p-5 sm:p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1 shadow-sm">
+        <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Total Verificado en Turno</span>
+        <div class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight tabular-nums mt-1" id="turnTotalHero">
+          $ 0 <span class="text-xl sm:text-2xl text-emerald-400 font-normal font-sans">COP</span>
         </div>
-        <div class="text-xs font-mono text-ty-muted pt-1 flex items-center justify-center gap-2"
+        <div class="text-xs text-ty-muted pt-1 flex items-center justify-center gap-2"
           id="turnTotalCountHero">
           <span>0 pagos verificados</span> • <span>Promedio: $ 0 COP</span>
         </div>
@@ -2437,51 +2460,47 @@
       <!-- Wallet Breakdown Cards (Nequi vs DaviPlata) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <!-- Nequi Card -->
-        <div class="p-4 rounded-xl bg-[#260026]/70 border border-[#E01E5A]/40 flex flex-col justify-between space-y-2">
+        <div class="p-4 sm:p-5 rounded-2xl bg-ty-surface border border-ty-border hover:border-ty-nequi/40 flex flex-col justify-between space-y-2 transition-all">
           <div class="flex items-center justify-between">
             <span
-              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-[#330033] border border-[#E01E5A]/50 text-[#FF4B81]">
-              <span class="w-2 h-2 rounded-full bg-[#E01E5A]"></span>
-              🟣 Nequi
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-ty-nequi/15 text-pink-300 border border-ty-nequi/30">
+              <span class="w-2 h-2 rounded-full bg-ty-nequi"></span>
+              <span>Nequi</span>
             </span>
-            <span class="text-xs font-mono text-[#FF80AB] font-semibold" id="turnNequiCount">0
-              pagos</span>
+            <span class="text-xs text-pink-300 font-semibold" id="turnNequiCount">0 pagos</span>
           </div>
           <div>
-            <div class="text-2xl font-bold font-mono text-white tabular-nums" id="turnNequiSum">$ 0 COP
-            </div>
-            <div class="text-[11px] text-ty-muted mt-0.5">Recibido en cuenta Nequi</div>
+            <div class="text-2xl font-extrabold text-white tabular-nums tracking-tight" id="turnNequiSum">$ 0 COP</div>
+            <div class="text-xs text-ty-muted mt-0.5">Recibido en cuenta Nequi</div>
           </div>
         </div>
 
         <!-- DaviPlata Card -->
-        <div class="p-4 rounded-xl bg-[#260505]/70 border border-[#ED1C24]/40 flex flex-col justify-between space-y-2">
+        <div class="p-4 sm:p-5 rounded-2xl bg-ty-surface border border-ty-border hover:border-ty-daviplata/40 flex flex-col justify-between space-y-2 transition-all">
           <div class="flex items-center justify-between">
             <span
-              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-[#330B0B] border border-[#ED1C24]/50 text-[#FF5A5F]">
-              <span class="w-2 h-2 rounded-full bg-[#ED1C24]"></span>
-              🔴 DaviPlata
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-ty-daviplata/15 text-red-300 border border-ty-daviplata/30">
+              <span class="w-2 h-2 rounded-full bg-ty-daviplata"></span>
+              <span>DaviPlata</span>
             </span>
-            <span class="text-xs font-mono text-[#FFA4A6] font-semibold" id="turnDaviCount">0
-              pagos</span>
+            <span class="text-xs text-red-300 font-semibold" id="turnDaviCount">0 pagos</span>
           </div>
           <div>
-            <div class="text-2xl font-bold font-mono text-white tabular-nums" id="turnDaviSum">$ 0 COP
-            </div>
-            <div class="text-[11px] text-ty-muted mt-0.5">Recibido en cuenta DaviPlata</div>
+            <div class="text-2xl font-extrabold text-white tabular-nums tracking-tight" id="turnDaviSum">$ 0 COP</div>
+            <div class="text-xs text-ty-muted mt-0.5">Recibido en cuenta DaviPlata</div>
           </div>
         </div>
       </div>
 
       <!-- Key Turn Metrics -->
-      <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-ty-surface border border-ty-border text-xs font-mono">
+      <div class="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-ty-surface border border-ty-border text-xs">
         <div>
-          <span class="text-ty-muted block text-[10px] uppercase">Primer Pago del Turno:</span>
-          <span class="text-white font-semibold" id="turnFirstPayment">Sin pagos</span>
+          <span class="text-ty-muted block text-[11px]">Primer Pago del Turno:</span>
+          <span class="text-white font-semibold font-mono mt-0.5 block" id="turnFirstPayment">Sin pagos</span>
         </div>
         <div>
-          <span class="text-ty-muted block text-[10px] uppercase">Último Pago del Turno:</span>
-          <span class="text-white font-semibold" id="turnLastPayment">Sin pagos</span>
+          <span class="text-ty-muted block text-[11px]">Último Pago del Turno:</span>
+          <span class="text-white font-semibold font-mono mt-0.5 block" id="turnLastPayment">Sin pagos</span>
         </div>
       </div>
 
@@ -4852,6 +4871,8 @@
     // =========================================================================
     function renderDailyClosingTable() {
       const tbody = document.getElementById("dailyClosingBody");
+      const mobList = document.getElementById("dailyClosingMobileList");
+      const summaryBadge = document.getElementById("dailyClosingSummaryBadge");
       const byDay = new Map();
 
       for (const tx of getScopedTransactions()) {
@@ -4866,22 +4887,95 @@
       }
 
       const rows = Array.from(byDay.values()).sort((a, b) => b.dayKey.localeCompare(a.dayKey));
+
+      if (summaryBadge) {
+        summaryBadge.textContent = `${rows.length} ${rows.length === 1 ? 'día registrado' : 'días registrados'}`;
+      }
+
       if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs font-mono text-ty-muted">No hay cierres diarios registrados aún.</td></tr>`;
+        const emptyMsg = `
+          <div class="p-8 text-center text-ty-muted space-y-2">
+            <div class="w-10 h-10 rounded-full bg-ty-surface flex items-center justify-center mx-auto text-ty-muted">📅</div>
+            <p class="font-bold text-white text-sm">No hay cierres diarios registrados aún</p>
+            <p class="text-xs">Los cierres se generarán automáticamente a medida que recibas transferencias.</p>
+          </div>
+        `;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs font-mono text-ty-muted">${emptyMsg}</td></tr>`;
+        if (mobList) mobList.innerHTML = emptyMsg;
         return;
       }
 
       const fmt = (n) => Number(n).toLocaleString("es-CO");
-      tbody.innerHTML = rows.map((r) => `
-        <tr class="hover:bg-ty-surface/70 transition-colors">
-          <td class="py-3.5 px-4"><div class="font-bold text-white text-sm">${getColombiaFriendlyDay(r.dayKey)}</div><div class="text-[11px] font-mono text-ty-muted">${r.dayKey}</div></td>
-          <td class="py-3.5 px-4 text-right font-mono text-xs"><span class="text-ty-nequi font-bold">$ ${fmt(r.nequiSum)}</span> <span class="text-ty-muted">(${r.nequiCount})</span></td>
-          <td class="py-3.5 px-4 text-right font-mono text-xs"><span class="text-ty-daviplata font-bold">$ ${fmt(r.daviSum)}</span> <span class="text-ty-muted">(${r.daviCount})</span></td>
-          <td class="py-3.5 px-4 text-right font-mono text-xs text-white">${r.totalCount} pagos</td>
-          <td class="py-3.5 px-4 text-right tabular-nums text-base font-extrabold text-ty-emerald">$ ${fmt(r.totalSum)} COP</td>
-          <td class="py-3.5 px-4 text-right"><button onclick="jumpToDayFilter('${r.dayKey}')" class="px-2.5 py-1 rounded bg-ty-surface-high border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan">Ver Movimientos</button></td>
-        </tr>
-      `).join("");
+
+      // Render escritorio
+      if (tbody) {
+        tbody.innerHTML = rows.map((r) => `
+          <tr class="hover:bg-ty-surface/50 transition-colors">
+            <td class="py-4 px-4 sm:px-6">
+              <div class="font-bold text-white text-sm">${getColombiaFriendlyDay(r.dayKey)}</div>
+              <div class="text-xs text-ty-muted font-mono mt-0.5">${r.dayKey}</div>
+            </td>
+            <td class="py-4 px-4 text-right">
+              <div class="inline-flex flex-col items-end">
+                <span class="text-xs font-bold text-pink-300">$ ${fmt(r.nequiSum)}</span>
+                <span class="text-[11px] text-ty-muted font-medium">${r.nequiCount} ${r.nequiCount === 1 ? 'pago' : 'pagos'}</span>
+              </div>
+            </td>
+            <td class="py-4 px-4 text-right">
+              <div class="inline-flex flex-col items-end">
+                <span class="text-xs font-bold text-red-300">$ ${fmt(r.daviSum)}</span>
+                <span class="text-[11px] text-ty-muted font-medium">${r.daviCount} ${r.daviCount === 1 ? 'pago' : 'pagos'}</span>
+              </div>
+            </td>
+            <td class="py-4 px-4 text-right text-xs font-medium text-white">
+              ${r.totalCount} ${r.totalCount === 1 ? 'pago' : 'pagos'}
+            </td>
+            <td class="py-4 px-4 text-right tabular-nums text-base font-extrabold text-emerald-400">
+              $ ${fmt(r.totalSum)} <span class="text-xs font-normal text-ty-muted">COP</span>
+            </td>
+            <td class="py-4 px-4 text-right">
+              <button onclick="jumpToDayFilter('${r.dayKey}')" class="px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-all inline-flex items-center gap-1">
+                <span>Ver Movimientos</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      // Render móvil
+      if (mobList) {
+        mobList.innerHTML = rows.map((r) => `
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-bold text-white text-sm">${getColombiaFriendlyDay(r.dayKey)}</div>
+                <div class="text-[11px] text-ty-muted font-mono">${r.dayKey}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-base font-extrabold text-emerald-400 tabular-nums">$ ${fmt(r.totalSum)} COP</div>
+                <div class="text-[11px] text-ty-muted">${r.totalCount} ${r.totalCount === 1 ? 'pago' : 'pagos'}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+              <div class="p-2 rounded-xl bg-ty-surface border border-ty-border flex items-center justify-between">
+                <span class="text-ty-muted">Nequi:</span>
+                <span class="font-bold text-pink-300">$ ${fmt(r.nequiSum)}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-ty-surface border border-ty-border flex items-center justify-between">
+                <span class="text-ty-muted">DaviPlata:</span>
+                <span class="font-bold text-red-300">$ ${fmt(r.daviSum)}</span>
+              </div>
+            </div>
+
+            <button onclick="jumpToDayFilter('${r.dayKey}')" class="w-full py-2 rounded-xl bg-ty-surface border border-ty-border text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5 transition-colors">
+              <span>Auditar pagos de este día</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        `).join("");
+      }
     }
 
     function downloadExcelFile(filename, sheetName, headers, rows, colWidths = []) {
