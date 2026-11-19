@@ -3335,17 +3335,24 @@
     function formatAuthErrorMessage(error) {
       const raw = String(error?.message || error || "");
       const status = Number(error?.status || 0);
-      if (status === 429 || /rate\s*limit|too\s*many\s*requests|over_email_send_rate_limit|for security purposes/i.test(raw)) {
-        return "Límite temporal de correos de Supabase (HTTP 429). En Supabase Dashboard -> Authentication -> Providers -> Email desactiva 'Confirm email' (o crea/confirma tu usuario en Authentication -> Users con 'Auto Confirm User') y luego entra por 'Iniciar Sesión'.";
+
+      if (/for security purposes|60 seconds|once every/i.test(raw)) {
+        return "Por seguridad, debes esperar 60 segundos entre cada solicitud. Por favor espera un momento y vuelve a presionar el botón.";
+      }
+      if (status === 429 || /rate\s*limit|too\s*many\s*requests|over_email_send_rate_limit/i.test(raw)) {
+        return "Demasiadas solicitudes en poco tiempo. Por favor espera 2 minutos y vuelve a intentarlo.";
       }
       if (/user already registered|already been registered/i.test(raw)) {
         return "Este correo ya está registrado. Cambia a la pestaña 'Iniciar Sesión' para entrar con tu contraseña.";
       }
       if (/email not confirmed/i.test(raw)) {
-        return "Tu cuenta existe pero falta confirmar el correo. Revisa tu bandeja o activa 'Auto Confirm User' en Supabase -> Authentication -> Users.";
+        return "Tu cuenta existe pero falta confirmar el correo. Revisa tu bandeja de entrada o spam.";
       }
       if (/invalid login credentials/i.test(raw)) {
         return "Correo o contraseña incorrectos.";
+      }
+      if (/user not found/i.test(raw)) {
+        return "No encontramos ninguna cuenta registrada con este correo.";
       }
       return raw || "No se pudo completar la autenticación.";
     }
