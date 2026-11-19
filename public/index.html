@@ -1507,23 +1507,52 @@
                     <p class="text-[11px] text-ty-muted">Al agregar tu dirección en Gmail, Google nos enviará el código y aparecerá aquí automáticamente en 3 segundos.</p>
                   </div>
 
-                  <!-- Estado: Código recibido con éxito -->
-                  <div id="cloudCodeSuccessBox" class="hidden p-3.5 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 flex items-center justify-between gap-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
-                    <div class="min-w-0 flex-1">
-                      <div class="text-[10px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1">
-                        <span>✓</span> ¡Código de Google Detectado!
+                  <!-- Estado: Código o Enlace recibido con éxito -->
+                  <div id="cloudCodeSuccessBox" class="hidden p-4 rounded-xl bg-ty-emerald/10 border border-ty-emerald/40 space-y-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="text-[11px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1.5" id="cloudGoogleStatusTitle">
+                        <span>✓</span> <span>¡Verificación de Google Detectada!</span>
                       </div>
-                      <div id="cloudGoogleCodeValue" class="text-2xl font-mono font-extrabold text-white tracking-widest mt-0.5 select-all truncate">--- --- ---</div>
-                      <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted mt-0.5">Recibido hace un momento</div>
+                      <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted">Recibido hace un momento</div>
                     </div>
-                    <div class="flex flex-col gap-1.5 shrink-0">
-                      <button type="button" onclick="copyGoogleCode()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all flex items-center gap-1 shadow-sm">
-                        <span>Copiar Código</span>
+
+                    <!-- Fila condicional si hay código numérico -->
+                    <div id="cloudGoogleCodeRow" class="hidden flex items-center justify-between gap-2 bg-black/40 p-2.5 rounded-lg border border-ty-border">
+                      <div class="min-w-0">
+                        <span class="text-[10px] font-mono text-ty-muted uppercase block">Código numérico:</span>
+                        <span id="cloudGoogleCodeValue" class="text-xl sm:text-2xl font-mono font-extrabold text-white tracking-widest select-all">--- --- ---</span>
+                      </div>
+                      <button type="button" onclick="copyGoogleVerificationCodeOnly()" id="btnCopyOnlyCode"
+                        class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all shrink-0">
+                        Copiar Código
                       </button>
-                      <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-[10px] font-mono text-ty-cyan hover:underline text-center">
-                        Confirmar en Gmail ↗
-                      </a>
                     </div>
+
+                    <!-- Botones de Acción Principales -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1" id="cloudGoogleActionButtons">
+                      <!-- Botón de Confirmación Directa en Gmail (Grande y Destacado) -->
+                      <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer"
+                        class="flex-1 px-4 py-2.5 rounded-lg bg-ty-cyan text-black font-extrabold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(6,182,212,0.35)] transition-all flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        <span>Confirmar en Gmail (1 Clic) ↗</span>
+                      </a>
+
+                      <!-- Botón de Copiar Enlace -->
+                      <button type="button" onclick="copyGoogleVerificationLink()" id="btnCopyGoogleLink"
+                        class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan font-bold transition-all flex items-center justify-center gap-1.5 shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        <span>Copiar Enlace</span>
+                      </button>
+                    </div>
+
+                    <!-- Mensaje explicativo amistoso -->
+                    <p class="text-[11px] text-ty-muted leading-tight" id="cloudGoogleHelperText">
+                      💡 Haz clic en <strong>Confirmar en Gmail</strong> para aceptar el reenvío de una vez en Google.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -2652,20 +2681,27 @@
         <div class="p-4 rounded-xl bg-ty-surface border border-ty-border space-y-2">
           <div class="flex items-center gap-2.5">
             <span class="w-6 h-6 rounded-lg bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30 font-mono font-bold flex items-center justify-center shrink-0">2</span>
-            <h4 class="font-bold text-white text-sm">Copia el Código de Confirmación de Google</h4>
+            <h4 class="font-bold text-white text-sm">Confirma el Reenvío de Google</h4>
           </div>
           <p class="text-ty-muted leading-relaxed pl-8">
-            Google enviará inmediatamente un correo de verificación. Nuestro servidor lo captura automáticamente y te mostrará el código aquí en menos de 5 segundos:
+            Google enviará inmediatamente un correo de verificación. Nuestro servidor lo captura automáticamente y te mostrará el enlace de confirmación o el código aquí en menos de 5 segundos:
           </p>
           <div class="pl-8 pt-1">
-            <div id="modalGuideCodeBox" class="p-3 rounded-lg bg-black/40 border border-ty-border flex items-center justify-between gap-3 max-w-lg">
-              <div>
-                <span class="text-[10px] font-mono text-ty-muted uppercase block">Código detectado en vivo:</span>
-                <span id="modalGuideCodeValue" class="text-lg font-mono font-extrabold text-ty-emerald tracking-wider">Esperando a que lo solicites...</span>
+            <div id="modalGuideCodeBox" class="p-3.5 rounded-lg bg-black/40 border border-ty-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 max-w-lg">
+              <div class="min-w-0">
+                <span class="text-[10px] font-mono text-ty-muted uppercase block">Verificación detectada en vivo:</span>
+                <span id="modalGuideCodeValue" class="text-base sm:text-lg font-mono font-extrabold text-ty-emerald tracking-wider block mt-0.5">Esperando a que lo solicites...</span>
               </div>
-              <button type="button" onclick="copyGoogleCode()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all">
-                Copiar Código
-              </button>
+              <div class="flex items-center gap-2 shrink-0">
+                <a id="modalGuideConfirmLink" href="#" target="_blank" rel="noopener noreferrer"
+                  class="hidden px-3.5 py-2 rounded-lg bg-ty-cyan text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all flex items-center gap-1 shadow-sm">
+                  <span>Confirmar en Gmail ↗</span>
+                </a>
+                <button type="button" onclick="copyGoogleVerificationUniversal()" id="modalGuideCopyBtn"
+                  class="px-3.5 py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1">
+                  <span>Copiar</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -5203,6 +5239,7 @@
     // =========================================================================
     let cloudPollingInterval = null;
     let lastKnownGoogleCode = null;
+    let lastKnownGoogleUrl = null;
 
     function openGmailGuideModal() {
       const modal = document.getElementById("gmailGuideModal");
@@ -5266,39 +5303,84 @@
           }
         }
 
-        // Google Verification Code display
+        // Visualización de Código / Enlace de Verificación de Google
         const pendingBox = document.getElementById("cloudCodePendingBox");
         const successBox = document.getElementById("cloudCodeSuccessBox");
+        const titleEl = document.getElementById("cloudGoogleStatusTitle");
+        const codeRow = document.getElementById("cloudGoogleCodeRow");
         const codeValEl = document.getElementById("cloudGoogleCodeValue");
         const codeTimeEl = document.getElementById("cloudGoogleCodeTime");
         const confirmLink = document.getElementById("cloudGoogleConfirmLink");
+        const copyLinkBtn = document.getElementById("btnCopyGoogleLink");
+        const helperText = document.getElementById("cloudGoogleHelperText");
         const modalGuideCodeVal = document.getElementById("modalGuideCodeValue");
+        const modalConfirmLink = document.getElementById("modalGuideConfirmLink");
 
         if (data.googleVerification && (data.googleVerification.code || data.googleVerification.url)) {
           const rawCode = String(data.googleVerification.code || '').trim();
-          lastKnownGoogleCode = rawCode;
-          const formattedCode = rawCode.length === 9
-            ? `${rawCode.slice(0, 3)} ${rawCode.slice(3, 6)} ${rawCode.slice(6, 9)}`
-            : (rawCode || 'Confirmar con Enlace');
+          const rawUrl = String(data.googleVerification.url || '').trim();
+          lastKnownGoogleCode = rawCode || null;
+          lastKnownGoogleUrl = rawUrl || null;
 
           if (pendingBox) pendingBox.classList.add("hidden");
           if (successBox) successBox.classList.remove("hidden");
-          if (codeValEl) codeValEl.textContent = formattedCode;
-          if (modalGuideCodeVal) modalGuideCodeVal.textContent = formattedCode;
+
+          // Enlace directo de Google
+          if (rawUrl) {
+            if (confirmLink) {
+              confirmLink.href = rawUrl;
+              confirmLink.classList.remove("hidden");
+            }
+            if (copyLinkBtn) {
+              copyLinkBtn.classList.remove("hidden");
+            }
+            if (modalConfirmLink) {
+              modalConfirmLink.href = rawUrl;
+              modalConfirmLink.classList.remove("hidden");
+            }
+          } else {
+            if (confirmLink) confirmLink.classList.add("hidden");
+            if (copyLinkBtn) copyLinkBtn.classList.add("hidden");
+            if (modalConfirmLink) modalConfirmLink.classList.add("hidden");
+          }
+
+          // Si hay código numérico
+          if (rawCode && rawCode.length >= 6) {
+            const formattedCode = rawCode.length === 9
+              ? `${rawCode.slice(0, 3)} ${rawCode.slice(3, 6)} ${rawCode.slice(6, 9)}`
+              : rawCode;
+            if (codeValEl) codeValEl.textContent = formattedCode;
+            if (codeRow) codeRow.classList.remove("hidden");
+            if (modalGuideCodeVal) modalGuideCodeVal.textContent = formattedCode;
+            if (titleEl) titleEl.innerHTML = `<span>✓</span> <span>¡Código de Google Detectado!</span>`;
+            if (helperText) {
+              helperText.innerHTML = rawUrl
+                ? `💡 Haz clic en <strong>Confirmar en Gmail</strong> o copia el código numérico para pegarlo en Gmail.`
+                : `💡 Copia el código numérico y pégalo en la casilla de confirmación de tu Gmail.`;
+            }
+          } else {
+            // Caso habitual: Enlace de confirmación directo sin código numérico
+            if (codeRow) codeRow.classList.add("hidden");
+            if (modalGuideCodeVal) modalGuideCodeVal.textContent = "Enlace listo para confirmar";
+            if (titleEl) titleEl.innerHTML = `<span>✓</span> <span>¡Enlace de Confirmación Detectado!</span>`;
+            if (helperText) {
+              helperText.innerHTML = `💡 Haz clic en <strong>Confirmar en Gmail</strong> para aceptar el reenvío de una vez en Google.`;
+            }
+          }
 
           if (codeTimeEl && data.googleVerification.receivedAt) {
             const diffSec = Math.max(0, Math.round((Date.now() - data.googleVerification.receivedAt) / 1000));
             codeTimeEl.textContent = diffSec < 60 ? `Recibido hace ${diffSec} segundos` : `Recibido a las ${new Date(data.googleVerification.receivedAt).toLocaleTimeString('es-CO')}`;
           }
-          if (confirmLink && data.googleVerification.url) {
-            confirmLink.href = data.googleVerification.url;
-            confirmLink.classList.remove("hidden");
-          }
           stopCloudPolling();
         } else {
+          lastKnownGoogleCode = null;
+          lastKnownGoogleUrl = null;
           if (pendingBox) pendingBox.classList.remove("hidden");
           if (successBox) successBox.classList.add("hidden");
+          if (codeRow) codeRow.classList.add("hidden");
           if (modalGuideCodeVal) modalGuideCodeVal.textContent = "Esperando a que lo solicites...";
+          if (modalConfirmLink) modalConfirmLink.classList.add("hidden");
         }
 
         if (showToastFeedback) {
@@ -5337,20 +5419,43 @@
       });
     }
 
-    function copyGoogleCode() {
-      if (!lastKnownGoogleCode) {
-        const el = document.getElementById("cloudGoogleCodeValue");
-        if (el) lastKnownGoogleCode = el.textContent.replace(/\s+/g, '');
+    function copyGoogleVerificationLink() {
+      if (!lastKnownGoogleUrl) {
+        showToast("No hay enlace de confirmación disponible aún", true);
+        return;
       }
+      navigator.clipboard.writeText(lastKnownGoogleUrl).then(() => {
+        showToast("¡Enlace de confirmación copiado al portapapeles!");
+      }).catch(() => {
+        showToast("Enlace copiado");
+      });
+    }
+
+    function copyGoogleVerificationCodeOnly() {
       if (!lastKnownGoogleCode) {
-        showToast("Aún no ha llegado ningún código de Google", true);
+        showToast("No hay código numérico disponible", true);
         return;
       }
       navigator.clipboard.writeText(lastKnownGoogleCode).then(() => {
-        showToast("¡Código de Google copiado al portapapeles!");
+        showToast("¡Código copiado al portapapeles: " + lastKnownGoogleCode + "!");
       }).catch(() => {
         showToast("Código: " + lastKnownGoogleCode);
       });
+    }
+
+    function copyGoogleVerificationUniversal() {
+      if (lastKnownGoogleCode && lastKnownGoogleCode.length >= 6) {
+        copyGoogleVerificationCodeOnly();
+      } else if (lastKnownGoogleUrl) {
+        copyGoogleVerificationLink();
+      } else {
+        showToast("Esperando confirmación de Google...", true);
+      }
+    }
+
+    // Alias retrocompatible
+    function copyGoogleCode() {
+      copyGoogleVerificationUniversal();
     }
 
     function startCountdown(durationSeconds) {
