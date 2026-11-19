@@ -108,7 +108,7 @@ export async function applySubscriptionAction(
   repo: IAdminSubscriptionsRepository,
   payload: AdminSubscriptionActionPayload,
   nowMs: number = Date.now(),
-): Promise<{ summary: AdminMerchantSummary; message: string }> {
+): Promise<{ summary: AdminMerchantSummary | null; message: string; deleted?: boolean }> {
   if (!payload.merchantId) {
     throw new Error('merchantId es obligatorio.');
   }
@@ -116,6 +116,17 @@ export async function applySubscriptionAction(
   const merchant = await repo.getMerchantById(payload.merchantId);
   if (!merchant) {
     throw new Error(`Comercio con ID ${payload.merchantId} no encontrado.`);
+  }
+
+  if (payload.action === 'DELETE_MERCHANT') {
+    if (typeof repo.deleteMerchant === 'function') {
+      await repo.deleteMerchant(payload.merchantId);
+    }
+    return {
+      summary: null,
+      deleted: true,
+      message: `Comercio "${merchant.name}" eliminado definitivamente del sistema.`,
+    };
   }
 
   const updates: Parameters<IAdminSubscriptionsRepository['updateMerchantSubscription']>[1] = {

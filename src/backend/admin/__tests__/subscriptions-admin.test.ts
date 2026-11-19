@@ -50,6 +50,14 @@ class InMemoryAdminRepository implements IAdminSubscriptionsRepository {
     this.merchants[idx] = updated;
     return { ...updated };
   }
+
+  async deleteMerchant(merchantId: string): Promise<boolean> {
+    const idx = this.merchants.findIndex((m) => m.id === merchantId);
+    if (idx !== -1) {
+      this.merchants.splice(idx, 1);
+    }
+    return true;
+  }
 }
 
 describe('Ticket 20 — Super-Admin Authentication & Authorization', () => {
@@ -414,9 +422,37 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       baseTime,
     );
 
-    expect(summary.billingPhone).toBe('+3113654315');
+    expect(summary?.billingPhone).toBe('+3113654315');
     const updated = await repo.getMerchantById('m1');
     expect(updated?.billing_phone).toBe('+3113654315');
+  });
+
+  it('permite eliminar un comercio definitivamente con DELETE_MERCHANT', async () => {
+    const repo = new InMemoryAdminRepository();
+    repo.merchants = [
+      {
+        id: 'm-ghost',
+        name: 'Comercio Fantasma',
+        owner_id: 'o-ghost',
+        status: 'ACTIVE',
+        created_at: new Date(baseTime).toISOString(),
+      },
+    ];
+
+    const result = await applySubscriptionAction(
+      repo,
+      {
+        merchantId: 'm-ghost',
+        action: 'DELETE_MERCHANT',
+      },
+      baseTime,
+    );
+
+    expect(result.deleted).toBe(true);
+    expect(result.summary).toBeNull();
+    expect(result.message).toContain('Comercio "Comercio Fantasma" eliminado definitivamente');
+    const exists = await repo.getMerchantById('m-ghost');
+    expect(exists).toBeNull();
   });
 });
 

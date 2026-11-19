@@ -5,7 +5,8 @@ export type AdminSubscriptionAction =
   | 'EXTEND_30_DAYS'
   | 'PAUSE'
   | 'RESUME'
-  | 'UPDATE_BILLING_PHONE';
+  | 'UPDATE_BILLING_PHONE'
+  | 'DELETE_MERCHANT';
 
 export interface AdminSubscriptionActionPayload {
   merchantId: string;
@@ -67,4 +68,5 @@ export interface IAdminSubscriptionsRepository {
       updated_at?: string;
     },
   ): Promise<AdminMerchantRow | null>;
+  deleteMerchant?(merchantId: string): Promise<boolean>;
 }

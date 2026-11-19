@@ -4113,6 +4113,21 @@
 
     async function insertMerchantForCurrentUser(storeName) {
       const cleanName = String(storeName || "").trim();
+
+      // Protección contra duplicados: si el usuario ya tiene un comercio asignado, reutilizarlo
+      try {
+        const { data: existing } = await supabaseClient
+          .from("merchants")
+          .select("*")
+          .eq("owner_id", currentUser.id)
+          .limit(1);
+        if (existing && existing.length > 0) {
+          return { data: existing[0], errorMessage: null };
+        }
+      } catch (checkErr) {
+        console.warn("No se pudo verificar comercios existentes:", checkErr);
+      }
+
       const { data, error } = await supabaseClient
         .from("merchants")
         .insert({
@@ -7833,6 +7848,11 @@
                 Trial
               </button>
               ${pauseResumeBtn}
+              ${currentMerchant && currentMerchant.id === m.id ? '' : `
+                <button onclick="executeAdminAction('${m.id}', 'DELETE_MERCHANT', { name: '${escapeHtml(m.name)}' })" class="px-2 py-1.5 rounded-lg bg-ty-rose/15 border border-ty-rose/30 hover:bg-ty-rose hover:text-white text-ty-rose text-xs font-mono transition-all" title="Eliminar comercio definitivamente">
+                  <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              `}
             </div>
           </div>
         `;
@@ -7862,6 +7882,7 @@
         ACTIVATE_TRIAL: "¿Confirmas activar 7 días de Trial a este comercio?",
         PAUSE: "⚠️ ¿Confirmas pausar este comercio? Sus cajeros dejarán de recibir confirmaciones de cobro de inmediato.",
         RESUME: "¿Confirmas reanudar este comercio?",
+        DELETE_MERCHANT: `⚠️ ¿ESTÁS SEGURO de eliminar definitivamente el comercio "${extraPayload.name || merchantId}"?\n\nEsta acción eliminará todas sus cajas vinculadas y es IRREVERSIBLE.`,
       };
 
       if (actionLabels[action] && !confirm(actionLabels[action])) {
@@ -7885,6 +7906,14 @@
         const data = await res.json();
         if (!res.ok) {
           showToast(data.message || `Error en acción (${res.status})`, true);
+          return;
+        }
+
+        if (data.deleted) {
+          adminMerchants = adminMerchants.filter((m) => m.id !== merchantId);
+          updateAdminMetrics();
+          renderAdminMerchantsList();
+          showToast(data.message || "Comercio eliminado definitivamente.");
           return;
         }
 

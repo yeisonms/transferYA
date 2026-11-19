@@ -88,13 +88,15 @@ export default async function handler(
       return;
     }
 
-    const { summary, message } = await applySubscriptionAction(repo, payload);
+    const { summary, message, deleted } = await applySubscriptionAction(repo, payload);
 
     res.statusCode = 200;
     res.end(
       JSON.stringify({
         success: true,
         merchant: summary,
+        deleted: Boolean(deleted),
+        merchantId: payload.merchantId,
         message,
       }),
     );

@@ -1001,6 +1001,25 @@ export class SupabaseRepository
     return updated[0] as AdminMerchantRow;
   }
 
+  async deleteMerchant(merchantId: string): Promise<boolean> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}`,
+      {
+        method: 'DELETE',
+        headers: this.headers,
+      },
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        `Error eliminando comercio ${merchantId} (${res.status}): ${errText}`,
+      );
+    }
+
+    return true;
+  }
+
   // -------------------------------------------------------------
   // IBillingInvoicesRepository (Ticket 22)
   // -------------------------------------------------------------
