@@ -4654,7 +4654,7 @@
         return;
       }
 
-      allTransactions = notifData || [];
+      allTransactions = (notifData || []).sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
       recomputeAllViews();
     }
 
@@ -4776,6 +4776,8 @@
         }
       }
 
+      allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
+
       if (newlyCounted) {
         if (filterState.deviceId === "ALL" || filterState.deviceId === newlyCounted.device_id) {
           playChime();
@@ -4808,6 +4810,7 @@
 
       if (idx !== -1) allTransactions[idx] = tx;
       else allTransactions.unshift(tx);
+      allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
 
       if (isLiveEvent && !wasCountableBefore && isCountableMoney(tx)) {
         if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
@@ -5115,6 +5118,8 @@
         }
         return true;
       });
+
+      filteredTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
 
       let validSum = 0, validCount = 0, nequiSum = 0, daviSum = 0, latencySum = 0, latencyCount = 0;
       for (const tx of filteredTransactions) {
