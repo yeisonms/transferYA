@@ -149,6 +149,104 @@
       color: #10B981 !important;
     }
 
+    /* ========================================================================= */
+    /* SIDEBAR DESKTOP (ASIDE): DARK MIDNIGHT PERMANENTE Y CONSISTENTE           */
+    /* ========================================================================= */
+    aside {
+      background-color: #0B101C !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #F8FAFC !important;
+    }
+
+    /* Tarjeta de Rol (Administrador / Cajero) */
+    aside .bg-ty-surface,
+    aside [class*="bg-ty-surface"] {
+      background-color: #111726 !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    aside #sidebarRoleTitle {
+      color: #FFFFFF !important;
+      font-weight: 700 !important;
+    }
+    aside #sidebarRoleSubtitle {
+      color: #94A3B8 !important;
+    }
+    aside #sidebarRoleToggleBtn {
+      background-color: #182032 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #38BDF8 !important;
+    }
+    aside #sidebarRoleToggleBtn:hover {
+      background-color: #222B40 !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Títulos de Categoría en Sidebar (PRINCIPAL, MI NEGOCIO, CONFIGURACIÓN) */
+    aside nav span.uppercase {
+      color: #94A3B8 !important;
+    }
+    aside .text-ty-muted {
+      color: #94A3B8 !important;
+    }
+
+    /* Botones Inactivos del Sidebar */
+    aside .nav-item {
+      color: #94A3B8 !important;
+      background-color: transparent !important;
+      border-left: 2px solid transparent !important;
+    }
+    aside .nav-item svg {
+      stroke: #94A3B8 !important;
+    }
+    aside .nav-item:hover {
+      color: #FFFFFF !important;
+      background-color: #111726 !important;
+    }
+    aside .nav-item:hover svg {
+      stroke: #FFFFFF !important;
+    }
+
+    /* Botón SELECCIONADO / ACTIVO en Sidebar (Resaltado Esmeralda Elegante, NUNCA fondo blanco) */
+    aside .nav-item.bg-ty-surface-high {
+      background-color: #182032 !important;
+      color: #19C37D !important;
+      border-left: 2px solid #19C37D !important;
+      font-weight: 600 !important;
+    }
+    aside .nav-item.bg-ty-surface-high svg {
+      stroke: #19C37D !important;
+    }
+    aside .nav-item.bg-ty-surface-high span {
+      color: #19C37D !important;
+    }
+
+    /* Super-Admin botón activo */
+    aside #nav-btn-admin.bg-ty-surface-high {
+      background-color: #182032 !important;
+      color: #FFB020 !important;
+      border-left: 2px solid #FFB020 !important;
+    }
+    aside #nav-btn-admin.bg-ty-surface-high svg {
+      stroke: #FFB020 !important;
+    }
+    aside #nav-btn-admin.bg-ty-surface-high span {
+      color: #FFB020 !important;
+    }
+
+    /* Textos y Enlaces inferiores del Sidebar */
+    aside .text-white {
+      color: #FFFFFF !important;
+    }
+    aside [class*="text-white"] {
+      color: #FFFFFF !important;
+    }
+    aside .border-ty-border {
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    aside #sidebarUserEmail {
+      color: #FFFFFF !important;
+    }
+
     /* Reglas Globales para Tema Claro (Opción A — Light Premium) */
     html:not(.dark) header {
       background-color: #FFFFFF !important;
@@ -176,22 +274,30 @@
       box-shadow: 0 1px 3px 0 rgba(16, 28, 45, 0.04), 0 1px 2px -1px rgba(16, 28, 45, 0.02) !important;
     }
     html:not(.dark) main .bg-ty-surface,
-    html:not(.dark) .bg-ty-surface {
+    html:not(.dark) header .bg-ty-surface,
+    html:not(.dark) #txDetailDrawer .bg-ty-surface,
+    html:not(.dark) [id$="Modal"] .bg-ty-surface {
       background-color: #F8FAFC !important;
       border-color: #E2E8F0 !important;
     }
     html:not(.dark) main .bg-ty-surface-high,
-    html:not(.dark) .bg-ty-surface-high {
+    html:not(.dark) header .bg-ty-surface-high,
+    html:not(.dark) #txDetailDrawer .bg-ty-surface-high,
+    html:not(.dark) [id$="Modal"] .bg-ty-surface-high {
       background-color: #F1F5F9 !important;
       border-color: #CBD5E1 !important;
     }
     html:not(.dark) main [class*="bg-ty-surface/"],
-    html:not(.dark) [class*="bg-ty-surface/"] {
+    html:not(.dark) header [class*="bg-ty-surface/"],
+    html:not(.dark) #txDetailDrawer [class*="bg-ty-surface/"],
+    html:not(.dark) [id$="Modal"] [class*="bg-ty-surface/"] {
       background-color: #F8FAFC !important;
       border-color: #E2E8F0 !important;
     }
     html:not(.dark) main .bg-ty-surface-highest,
-    html:not(.dark) .bg-ty-surface-highest {
+    html:not(.dark) header .bg-ty-surface-highest,
+    html:not(.dark) #txDetailDrawer .bg-ty-surface-highest,
+    html:not(.dark) [id$="Modal"] .bg-ty-surface-highest {
       background-color: #E2E8F0 !important;
       color: #0F172A !important;
     }
@@ -199,20 +305,28 @@
       color: #101C2D !important;
     }
     html:not(.dark) main [class*="text-white/"],
-    html:not(.dark) [class*="text-white/"] {
+    html:not(.dark) header [class*="text-white/"],
+    html:not(.dark) #txDetailDrawer [class*="text-white/"],
+    html:not(.dark) [id$="Modal"] [class*="text-white/"] {
       color: #334155 !important;
     }
-    html:not(.dark) .text-ty-text,
     html:not(.dark) main .text-ty-text,
-    html:not(.dark) header .text-ty-text {
+    html:not(.dark) header .text-ty-text,
+    html:not(.dark) #txDetailDrawer .text-ty-text,
+    html:not(.dark) [id$="Modal"] .text-ty-text {
       color: #101C2D !important;
     }
     html:not(.dark) main .text-ty-muted,
-    html:not(.dark) .text-ty-muted {
+    html:not(.dark) header .text-ty-muted,
+    html:not(.dark) #txDetailDrawer .text-ty-muted,
+    html:not(.dark) [id$="Modal"] .text-ty-muted,
+    html:not(.dark) nav[aria-label="Navegación Móvil"] .text-ty-muted {
       color: #64748B !important;
     }
     html:not(.dark) main .border-ty-border,
-    html:not(.dark) .border-ty-border {
+    html:not(.dark) header .border-ty-border,
+    html:not(.dark) #txDetailDrawer .border-ty-border,
+    html:not(.dark) [id$="Modal"] .border-ty-border {
       border-color: #E2E8F0 !important;
     }
     html:not(.dark) main input,
@@ -223,6 +337,15 @@
     }
     html:not(.dark) main input::placeholder {
       color: #94A3B8 !important;
+    }
+
+    /* Navegación móvil en Light Mode */
+    html:not(.dark) nav[aria-label="Navegación Móvil"] {
+      background-color: #FFFFFF !important;
+      border-top-color: #E2E8F0 !important;
+    }
+    html:not(.dark) nav[aria-label="Navegación Móvil"] .text-ty-emerald {
+      color: #059669 !important;
     }
 
     /* Botones primarios esmeralda en Light Mode */
