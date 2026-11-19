@@ -486,88 +486,143 @@
     <!-- Desktop Sidebar Navigation -->
     <aside
       class="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-ty-surface-low border-r border-ty-border flex-col justify-between p-4 z-40">
-      <div class="flex flex-col gap-6">
-        <div class="flex items-center gap-3 px-2 pt-2">
-          <div class="w-10 h-10 rounded-xl bg-white/5 border border-ty-border p-1.5 shadow-[0_0_15px_rgba(25,195,125,0.25)] shrink-0 flex items-center justify-center">
-            <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
-          </div>
-          <div>
-            <span class="text-xl font-black tracking-tight text-white block leading-tight">transfer<span
-                class="text-ty-green">YA</span></span>
-            <span class="text-[9px] font-mono uppercase tracking-wider text-ty-muted">Verificación al Instante</span>
+      <div class="flex flex-col gap-4 overflow-y-auto">
+        <!-- Logo & Header -->
+        <div class="flex items-center justify-between px-2 pt-1 pb-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-ty-emerald/15 border border-ty-emerald/30 p-1.5 shadow-[0_0_15px_rgba(25,195,125,0.2)] shrink-0 flex items-center justify-center">
+              <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
+            </div>
+            <div>
+              <span class="text-xl font-black tracking-tight text-white block leading-tight">transfer<span
+                  class="text-ty-emerald">YA</span></span>
+              <span class="text-[10px] text-ty-muted font-medium block">Panel de administración</span>
+            </div>
           </div>
         </div>
 
-        <nav class="flex flex-col gap-1.5" id="desktopNav">
-          <button onclick="switchTab('dashboard')" id="nav-btn-dashboard"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span class="text-sm">Resumen y Ventas</span>
-          </button>
-
-          <button onclick="switchTab('history')" id="nav-btn-history"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span class="text-sm">Cierres de Caja</span>
-          </button>
-
-          <button onclick="switchTab('pos')" id="nav-btn-pos"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            <span class="text-sm">Pantalla de Cobro (POS)</span>
-          </button>
-
-          <button onclick="switchTab('devices')" id="nav-btn-devices"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            <span class="text-sm">Celulares de Caja</span>
-          </button>
-
-          <button onclick="switchTab('cashiers')" id="nav-btn-cashiers"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span class="text-sm">Cajeros WhatsApp</span>
-          </button>
-
-          <!-- ENLACE STICKERS DE CAJA / MOSTRADOR -->
-          <a href="/sticker.html" target="_blank"
-            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left group">
-            <div class="flex items-center gap-3">
-              <span class="text-base group-hover:scale-110 transition-transform">🏷️</span>
-              <span class="text-sm font-medium">Stickers de Caja</span>
+        <!-- Role Badge Switcher -->
+        <div class="px-2.5 py-2 rounded-xl bg-ty-surface border border-ty-border flex items-center justify-between shadow-xs">
+          <div class="flex items-center gap-2">
+            <span id="sidebarRoleIcon" class="text-sm">👑</span>
+            <div class="flex flex-col">
+              <span id="sidebarRoleTitle" class="text-xs font-bold text-white">Administrador</span>
+              <span id="sidebarRoleSubtitle" class="text-[9px] text-ty-muted">Control total</span>
             </div>
-            <span
-              class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-green/20 text-ty-green border border-ty-green/30">Imprimir</span>
-          </a>
+          </div>
+          <button id="sidebarRoleToggleBtn" onclick="toggleUIRole()" 
+                  class="text-[10px] px-2 py-0.5 rounded bg-ty-surface-high border border-ty-border text-ty-cyan hover:text-white transition-colors"
+                  title="Cambiar vista entre Administrador y Cajero de mostrador">
+            Modo Cajero
+          </button>
+        </div>
 
-          <!-- SUPER-ADMIN BOTÓN (SOLO VISIBLE PARA MURSAT) -->
-          <button onclick="switchTab('admin')" id="nav-btn-admin"
-            class="hidden nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left border border-ty-amber/20 mt-1">
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-ty-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Navigation Links Grouped -->
+        <nav class="flex flex-col gap-4" id="desktopNav">
+
+          <!-- GRUPO 1: PRINCIPAL -->
+          <div class="flex flex-col gap-1" id="navGroupPrincipal">
+            <span class="px-3 text-[10px] font-semibold text-ty-muted uppercase tracking-wider">Principal</span>
+
+            <button onclick="switchTab('dashboard')" id="nav-btn-dashboard"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl bg-ty-surface-high text-ty-emerald font-semibold border-l-2 border-ty-emerald transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
-              <span class="text-sm font-semibold text-ty-amber">Suscripciones</span>
-            </div>
-            <span
-              class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-amber/20 text-ty-amber border border-ty-amber/30">Admin</span>
-          </button>
+              <span class="text-sm">Resumen</span>
+            </button>
+
+            <button onclick="goToMovimientos()" id="nav-btn-movimientos"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span class="text-sm">Movimientos</span>
+            </button>
+
+            <button onclick="switchTab('history')" id="nav-btn-history"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="text-sm">Cierres de caja</span>
+            </button>
+          </div>
+
+          <!-- GRUPO 2: MI NEGOCIO -->
+          <div class="flex flex-col gap-1" id="navGroupBusiness">
+            <span class="px-3 text-[10px] font-semibold text-ty-muted uppercase tracking-wider">Mi Negocio</span>
+
+            <button onclick="switchTab('devices')" id="nav-btn-devices"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm">Mis cajas &amp; Teléfonos</span>
+            </button>
+
+            <button onclick="switchTab('cashiers')" id="nav-btn-cashiers"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span class="text-sm">Notificaciones WhatsApp</span>
+            </button>
+
+            <button onclick="switchTab('pos')" id="nav-btn-pos"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm">Pantalla de cobro (POS)</span>
+            </button>
+          </div>
+
+          <!-- GRUPO 3: CONFIGURACIÓN -->
+          <div class="flex flex-col gap-1" id="navGroupSettings">
+            <span class="px-3 text-[10px] font-semibold text-ty-muted uppercase tracking-wider">Configuración</span>
+
+            <a href="/sticker.html" target="_blank"
+              class="nav-item flex items-center justify-between px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left group">
+              <div class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-ty-muted group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                <span class="text-sm">Stickers de caja</span>
+              </div>
+              <span
+                class="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Imprimir</span>
+            </a>
+
+            <button onclick="openGmailGuide()"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-sm">Ayuda &amp; Guía</span>
+            </button>
+
+            <!-- SUPER-ADMIN (SOLO MURSAT) -->
+            <button onclick="switchTab('admin')" id="nav-btn-admin"
+              class="hidden nav-item flex items-center justify-between px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left border border-ty-amber/20 mt-1">
+              <div class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-ty-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span class="text-sm font-semibold text-ty-amber">Suscripciones</span>
+              </div>
+              <span
+                class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-amber/20 text-ty-amber border border-ty-amber/30">Admin</span>
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -1077,7 +1132,7 @@
           </div>
 
           <!-- Filter Bar + Formatted Ledger Table -->
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col">
+          <div id="transactionsSection" class="bg-ty-surface-low border border-ty-border rounded-xl overflow-hidden flex flex-col scroll-mt-24">
             <div class="p-4 border-b border-ty-border space-y-3 bg-ty-surface/50">
               <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtro de período">
@@ -6339,6 +6394,58 @@
       return false;
     }
 
+    let currentUIRole = localStorage.getItem("ty_ui_role") || "ADMIN";
+
+    function applyUIRole() {
+      const roleTitle = document.getElementById("sidebarRoleTitle");
+      const roleSubtitle = document.getElementById("sidebarRoleSubtitle");
+      const roleIcon = document.getElementById("sidebarRoleIcon");
+      const roleBtn = document.getElementById("sidebarRoleToggleBtn");
+      const groupBusiness = document.getElementById("navGroupBusiness");
+      const groupSettings = document.getElementById("navGroupSettings");
+      const navHistory = document.getElementById("nav-btn-history");
+
+      if (currentUIRole === "CASHIER") {
+        if (roleTitle) roleTitle.textContent = "Cajero";
+        if (roleSubtitle) roleSubtitle.textContent = "Mostrador activo";
+        if (roleIcon) roleIcon.textContent = "🛒";
+        if (roleBtn) roleBtn.textContent = "Vista Admin";
+        if (groupBusiness) groupBusiness.classList.add("hidden");
+        if (groupSettings) groupSettings.classList.add("hidden");
+        if (navHistory) navHistory.classList.add("hidden");
+      } else {
+        if (roleTitle) roleTitle.textContent = "Administrador";
+        if (roleSubtitle) roleSubtitle.textContent = "Control total";
+        if (roleIcon) roleIcon.textContent = "👑";
+        if (roleBtn) roleBtn.textContent = "Modo Cajero";
+        if (groupBusiness) groupBusiness.classList.remove("hidden");
+        if (groupSettings) groupSettings.classList.remove("hidden");
+        if (navHistory) navHistory.classList.remove("hidden");
+      }
+    }
+
+    function toggleUIRole() {
+      currentUIRole = currentUIRole === "ADMIN" ? "CASHIER" : "ADMIN";
+      localStorage.setItem("ty_ui_role", currentUIRole);
+      applyUIRole();
+      showToast(currentUIRole === "CASHIER" ? "Modo Cajero Mostrador activado" : "Vista de Administrador activada");
+      if (currentUIRole === "CASHIER") {
+        switchTab("pos");
+      } else {
+        switchTab("dashboard");
+      }
+    }
+
+    function goToMovimientos() {
+      switchTab("dashboard");
+      const section = document.getElementById("transactionsSection");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        const searchInput = document.getElementById("searchQueryInput");
+        if (searchInput) searchInput.focus();
+      }
+    }
+
     function renderAdminNavVisibility() {
       const isAdm = isSuperAdmin();
       const deskBtn = document.getElementById("nav-btn-admin");
@@ -6354,6 +6461,7 @@
           switchTab("dashboard");
         }
       }
+      applyUIRole();
     }
 
     function switchTab(tabId) {
