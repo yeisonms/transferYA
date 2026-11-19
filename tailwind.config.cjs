@@ -34,7 +34,7 @@ module.exports = {
         "ty-muted": "#94A3B8"
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "sans-serif"],
+        sans: ["Inter", "Plus Jakarta Sans", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"]
       }
     }
