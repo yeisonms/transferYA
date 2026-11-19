@@ -1,149 +1,148 @@
 ---
-name: TransferYA Cockpit System
+name: TransferYA SaaS Fintech Design System
 colors:
-  surface: '#090D16'
-  surface-dim: '#060910'
-  surface-bright: '#1E293B'
-  surface-container-lowest: '#04060B'
-  surface-container-low: '#0B101C'
-  surface-container: '#111726'
-  surface-container-high: '#182032'
-  surface-container-highest: '#222B40'
-  on-surface: '#F8FAFC'
-  on-surface-variant: '#94A3B8'
-  inverse-surface: '#F8FAFC'
-  inverse-on-surface: '#0F172A'
-  outline: '#1E293B'
-  outline-variant: '#2A364F'
-  primary: '#00D26A'
-  on-primary: '#041E0F'
-  primary-container: '#00D26A'
-  on-primary-container: '#003B1A'
-  secondary: '#38BDF8'
-  on-secondary: '#082F49'
-  secondary-container: '#0284C7'
-  on-secondary-container: '#E0F2FE'
-  tertiary: '#F43F5E'
-  on-tertiary: '#4C0519'
-  tertiary-container: '#BE123C'
-  on-tertiary-container: '#FFE4E6'
-  background: '#090D16'
-  on-background: '#F8FAFC'
+  surface: '#FFFFFF'
+  surface-dim: '#F5F7FA'
+  surface-bright: '#FFFFFF'
+  surface-container-lowest: '#FFFFFF'
+  surface-container-low: '#F8FAFC'
+  surface-container: '#F1F5F9'
+  surface-container-high: '#E2E8F0'
+  surface-container-highest: '#CBD5E1'
+  on-surface: '#101C2D'
+  on-surface-variant: '#64748B'
+  inverse-surface: '#101C2D'
+  inverse-on-surface: '#F8FAFC'
+  outline: '#E2E8F0'
+  outline-variant: '#CBD5E1'
+  primary: '#13B981'
+  on-primary: '#FFFFFF'
+  primary-container: '#E8F7F0'
+  on-primary-container: '#065F46'
+  secondary: '#101C2D'
+  on-secondary: '#FFFFFF'
+  secondary-container: '#E2E8F0'
+  on-secondary-container: '#101C2D'
+  tertiary: '#64748B'
+  on-tertiary: '#FFFFFF'
+  tertiary-container: '#F1F5F9'
+  on-tertiary-container: '#334155'
+  background: '#F5F7FA'
+  on-background: '#101C2D'
+  nequi-badge-bg: '#FDF2F8'
+  nequi-badge-text: '#9D174D'
+  nequi-badge-border: '#FBCFE8'
+  daviplata-badge-bg: '#FEF2F2'
+  daviplata-badge-text: '#B91C1C'
+  daviplata-badge-border: '#FECACA'
 typography:
   display-lg:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 36px
+    fontFamily: Inter
+    fontSize: 32px
     fontWeight: '700'
-    lineHeight: 44px
+    lineHeight: 40px
     letterSpacing: '-0.02em'
   display-lg-mobile:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 28px
-    fontWeight: '700'
-    lineHeight: 34px
-  headline-lg:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Inter
     fontSize: 24px
-    fontWeight: '600'
+    fontWeight: '700'
     lineHeight: 32px
-  headline-md:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 20px
+  headline-lg:
+    fontFamily: Inter
+    fontSize: 22px
     fontWeight: '600'
-    lineHeight: 26px
+    lineHeight: 28px
+  headline-md:
+    fontFamily: Inter
+    fontSize: 18px
+    fontWeight: '600'
+    lineHeight: 24px
   title-lg:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: '600'
     lineHeight: 22px
   body-lg:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Inter
     fontSize: 15px
     fontWeight: '400'
     lineHeight: 22px
   body-md:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 13px
+    fontFamily: Inter
+    fontSize: 14px
     fontWeight: '400'
-    lineHeight: 18px
+    lineHeight: 20px
   body-sm:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Inter
     fontSize: 12px
     fontWeight: '400'
     lineHeight: 16px
   label-caps:
-    fontFamily: JetBrains Mono
+    fontFamily: Inter
     fontSize: 11px
     fontWeight: '600'
     lineHeight: 14px
-    letterSpacing: '0.08em'
+    letterSpacing: '0.05em'
+  mono-number:
+    fontFamily: JetBrains Mono
+    fontSize: 13px
+    fontWeight: '500'
 spacing:
   unit: 8px
   gutter: 16px
   margin: 24px
   margin-mobile: 16px
 rounded:
-  sm: 4px
+  sm: 6px
   DEFAULT: 8px
   md: 12px
   lg: 16px
   full: 9999px
 ---
 
-# Design System: TransferYA Merchant Cockpit & POS PWA
+# Design System: TransferYA SaaS Fintech (Rediseño Light Premium)
 
-## 1. Visual Theme & Atmosphere
-TransferYA is a high-velocity, mission-critical financial cockpit for retail store owners and cashiers in Colombia. The atmosphere is dense (Density 8/10), high-contrast, tactical, and uncompromisingly fast.
-- Deep, low-fatigue slate obsidian (`#090D16`) serves as the core substrate.
-- Crisp 1px structural outlines (`rgba(255, 255, 255, 0.08)`) frame telemetry cards without heavy muddy gradients.
-- Electric Emerald (`#00D26A`) acts as the definitive affirmative pulse: incoming verified money, active Sentinel health, and instant cashier confirmation.
-- High-visibility Cashier POS Mode provides instant glanceability from 3 meters away behind a sales counter.
+## 1. Atmósfera y Filosofía Visual
+TransferYA es una plataforma SaaS de verificación de pagos en tiempo real para comercios y puntos de venta en Colombia.
+Su personalidad visual proyecta:
+- **Claridad Financiera y Confianza**: Espacios limpios, blancos cálidos (`#F5F7FA`), tarjetas en blanco puro (`#FFFFFF`) con bordes suaves (`#E2E8F0`) y sombras sutiles (`shadow-sm`).
+- **Verde Esmeralda Fintech (`#13B981`)**: El color de la certeza y el dinero recibido. Se utiliza en estados de éxito, montos confirmados y botones de acción principal.
+- **Azul Medianoche Corporativo (`#101C2D`)**: Tipografía principal, títulos y botones de soporte. Da seriedad y elegancia empresarial.
+- **Cero Estética de Hacker o Terminal**: Sin métricas de latencia de red en milisegundos, sin fondos negros con bordes fluorescentes, sin fuentes monoespaciadas obligatorias en todo el sitio.
 
-## 2. Color Palette & Roles
-- **Substrate Slate** (`#090D16`): Root application canvas and dark mode background.
-- **Surface Elevation 1** (`#0B101C`): Sidebar navigation, header bars, and secondary panels.
-- **Surface Elevation 2** (`#111726`): Transaction cards, stat modules, table containers.
-- **Surface Elevation 3 / Hover** (`#182032`): Active rows, modal sheets, and dropdowns.
-- **Electric Emerald Accent** (`#00D26A`): Verified payment success, live connected heartbeat, primary CTA buttons.
-- **Nequi Purple Signature** (`#E10098` / `#200020` fill): Wallet chip indicator for Nequi transfers.
-- **Daviplata Red Signature** (`#ED1C24` / `#2A0808` fill): Wallet chip indicator for Daviplata transfers.
-- **Cyan Telemetry** (`#38BDF8`): Sub-second latency badges (`210 ms`), device sync state.
-- **Warning Amber** (`#F59E0B`): Battery optimization warning or pending reconnect.
-- **Text Primary** (`#F8FAFC`): Bold financial totals, sender names, headings.
-- **Text Secondary** (`#94A3B8`): Timestamps, references, metadata captions.
-- **Structural Border** (`#1E293B` / `rgba(255, 255, 255, 0.08)`): Grid and card dividers.
+## 2. Paleta de Colores
+- **Lienzo Principal (Canvas)**: `#F5F7FA` (Gris cálido tenue).
+- **Superficies y Tarjetas**: `#FFFFFF` con borde `1px solid #E2E8F0` y esquinas `rounded-xl`.
+- **Verde Esmeralda Principal**: `#13B981` (Acción principal, dinero confirmado, estados activos).
+- **Verde Suave (Pills y Badges)**: `#E8F7F0` con texto `#065F46` (Para pastillas de estado "Sistema operativo", "Conectado", "En línea").
+- **Azul Medianoche (Marca y Títulos)**: `#101C2D`.
+- **Gris Pizarra Secundario**: `#64748B` (Subtítulos, fechas, metadatos amigables).
+- **Gris Borde Sutil**: `#E2E8F0` / `#CBD5E1`.
+- **Identificador Nequi**: Badge sutil `#FDF2F8`, borde `#FBCFE8`, texto `#9D174D` (No se usa como color decorativo de fondo).
+- **Identificador Daviplata**: Badge sutil `#FEF2F2`, borde `#FECACA`, texto `#B91C1C`.
+- **Alertas y Errores**: `#EF4444` (Rojo controlado).
+- **Advertencias y Pendientes**: `#F59E0B` (Ámbar cálido).
 
-## 3. Typography Rules
-- **Display & Headings**: `Plus Jakarta Sans` with tightened tracking (`-0.02em`).
-- **Body & Captions**: `Plus Jakarta Sans` for clean Spanish readability across retail stores.
-- **Financial Numbers & Identifiers**: `JetBrains Mono` or `Plus Jakarta Sans` with tabular figures (`font-variant-numeric: tabular-nums`). All COP values, phone numbers, and latencies use mono alignment.
-- **Banned**: Inter, generic serif fonts (Times, Georgia), comic fonts, overly rounded novelty fonts.
+## 3. Tipografía
+- **Fuente Principal**: `Inter` para toda la jerarquía de lectura (títulos, subtítulos, botones, textos descriptivos).
+- **Fuente Monospace (`JetBrains Mono`)**: Exclusivamente para números de referencia bancaria, comprobantes o códigos de autenticación cuando sea estrictamente necesario.
 
-## 4. Component Stylings
-- **Transaction Cards & Rows**: High-density horizontal rows with wallet badge (Nequi/Daviplata), sender name in bold, exact amount formatted as `$ 150.000 COP`, timestamp, latency pill (`230ms`), and WhatsApp delivery status.
-- **Metric Tiles**: Large bold COP figure with 24h delta, total transactions count, and active Sentinel health badge.
-- **Live Payment Modal / POS Alert**: Full-screen or floating banner that triggers on new transfer, flashes an emerald edge glow, displays `$ AMOUNT` and sender name in giant 48px typography, and plays an affirmative audio chime.
-- **QR Pairing Modal**: Clean, high-contrast modal displaying an SVG QR code for the Android Sentinel camera, with live countdown expiration and "1-Click Copiar Enlace" fallback.
-- **Buttons**:
-  - Primary: `#00D26A` background with `#041E0F` text, bold font, subtle emerald glow on hover (`box-shadow: 0 0 16px rgba(0, 210, 106, 0.3)`), active scale 0.98.
-  - Secondary: Transparent with `1px solid rgba(255, 255, 255, 0.12)`, text `#F8FAFC`, hover border `#38BDF8`.
-  - Cashier Mode Toggle: Prominent tactile pill button to switch into full-screen high-contrast POS counter view.
+## 4. Estructura de Navegación Lateral (Sidebar)
+La navegación se organiza en 3 bloques enfocados en las tareas cotidianas del comerciante:
+1. **PRINCIPAL**:
+   - Resumen (Dashboard general del negocio)
+   - Movimientos (Historial de pagos y transferencias)
+   - Cierres de caja (Arqueo y balances diarios)
+2. **MI NEGOCIO**:
+   - Mis cajas (Puntos de venta)
+   - Dispositivos (Celulares de caja y estado)
+   - Notificaciones WhatsApp (Cajeros vinculados)
+3. **CONFIGURACIÓN**:
+   - Configuración (Ajustes de cuenta)
+   - Mi plan (Suscripción y días restantes)
+   - Ayuda (Soporte y preguntas frecuentes)
+   - Stickers de caja (Botón de impresión de códigos QR de mostrador)
 
-## 5. Layout Principles & Responsive Architecture
-- **Desktop (1024px+)**: Sidebar navigation (Dashboard, Transacciones, Modo Caja POS, Dispositivos Centinela, Cajeros WhatsApp, Ajustes), top telemetry bar with live WebSocket ping, 3-column metric cards, split feed with Live Payments on left and Device Status / WhatsApp logs on right.
-- **Mobile & Tablet PWA (< 1024px)**: Single-column responsive layout, persistent bottom navigation bar (Resumen, En Vivo, Modo Caja, Ajustes), touch-friendly minimum 48px tap targets.
-- **POS Mode**: Dedicated zero-distraction view for counter tablets or cashier smartphones. Giant display of the latest transaction with color flash and big audio indicator.
-
-## 6. Motion & Audio
-- **Realtime Incoming Payment Animation**: Slide-in from top with green border pulse (`@keyframes payment-in`).
-- **Sound Alert**: Native Web Audio API dual-tone synthesized chime (`880 Hz -> 1760 Hz` pleasant cash-register / bell tone) on verified transaction.
-- **Live Sync Beacon**: Pulsing green dot indicator next to "Centinela En Línea" verifying WebSocket connection.
-
-## 7. Anti-Patterns (Banned)
-- No emojis anywhere in the interface (use clean Lucide SVG icons).
-- No generic purple AI gradients.
-- No pure black (`#000000`).
-- No generic placeholder names ("John Doe" -> use realistic Colombian names like "Karoll Sierra", "Carlos Mendoza", "María Gómez").
-- No fake round statistics.
-- No light mode default (retail counters need high contrast dark mode to reduce glare and battery drain).
-
+## 5. Principios de Interacción y Pantalla de Movimientos
+- **Lista Limpia Transaccional**: La tabla principal muestra únicamente el remitente, la hora, la billetera y el valor en verde destacado (`+$120.000 COP`).
+- **Drawer / Modal de Detalle**: Toda la información técnica pesada (payload crudo, referencia bancaria de 9 dígitos, estado de entrega WhatsApp, acuse de recibo) se abre en un panel lateral al hacer clic en la fila, manteniendo la vista principal 100% limpia.
