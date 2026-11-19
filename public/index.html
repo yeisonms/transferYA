@@ -1591,63 +1591,66 @@
         <!-- TAB 4: CELULARES, CAJAS Y RUTA CLOUD -->
         <!-- ============================================================ -->
         <section id="tab-devices" class="hidden space-y-6">
-          <div
-            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-ty-surface-low border border-ty-border rounded-xl">
+          <!-- Cabecera de Mis Cajas y Dispositivos -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 bg-ty-surface-low border border-ty-border rounded-2xl">
             <div>
-              <h2 class="text-lg font-bold text-white">Celulares, Cajas y Reenvío Gmail</h2>
-              <p class="text-xs text-ty-muted">Administra los teléfonos de tu negocio y la conexión con Gmail para recibir alertas de Nequi sin depender de hardware</p>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Puntos de cobro</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">Mis Cajas y Dispositivos</h2>
+              <p class="text-xs sm:text-sm text-ty-muted mt-1 max-w-xl">
+                Administra los celulares de cobro de tu mostrador y el respaldo automático por correo para asegurar que ningún pago se pase por alto.
+              </p>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
               <button onclick="toggleQuickStartGuide(true); switchTab('dashboard');"
-                class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-ty-muted hover:text-white font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                title="Ver guía de 3 pasos para conectar">
-                <span>💡</span>
-                <span>Guía en 3 Pasos</span>
+                class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-ty-muted hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-2"
+                title="Ver guía paso a paso para conectar">
+                <span>💡 Guía rápida</span>
               </button>
               <a href="/downloads/transferya-sentinel-v0.3.3-beta.apk" download="transferya-sentinel-v0.3.3-beta.apk"
-                class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-sky-400 font-semibold text-xs transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                <span>Descargar App Centinela (APK)</span>
+                <span>Descargar App (Android)</span>
               </a>
               <button onclick="openPairingModal()"
-                class="px-4 py-2.5 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
+                class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-                <span>Conectar Nuevo Celular (QR)</span>
+                <span>+ Conectar Nueva Caja</span>
               </button>
             </div>
           </div>
 
           <!-- ============================================================ -->
-          <!-- TARJETA: ARQUITECTURA HÍBRIDA - RUTA CLOUD (RESPALDO GMAIL) -->
+          <!-- TARJETA: RESPALDO AUTOMÁTICO POR CORREO (GMAIL) -->
           <!-- ============================================================ -->
-          <div class="bg-ty-surface-low border border-ty-border rounded-xl p-5 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ty-border/60 pb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-ty-cyan/15 border border-ty-cyan/40 text-ty-cyan flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+          <div class="bg-ty-surface-low border border-ty-border rounded-2xl p-5 sm:p-6 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ty-border/70 pb-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
                   <div class="flex flex-wrap items-center gap-2">
-                    <h3 class="text-base font-bold text-white">Canal B: Respaldo Gmail (Reenvío Automático)</h3>
-                    <span id="cloudStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-surface-high text-ty-muted border border-ty-border">Consultando...</span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-emerald/10 text-ty-emerald border border-ty-emerald/25">Redundancia Activa</span>
+                    <h3 class="text-base sm:text-lg font-bold text-white">Respaldo Automático por Correo (Gmail)</h3>
+                    <span id="cloudStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-ty-surface text-ty-muted border border-ty-border">Consultando...</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">Respaldo Activo</span>
                   </div>
-                  <p class="text-xs text-ty-muted mt-0.5">Recibe comprobantes de Nequi aunque tu celular de caja esté apagado, sin internet o de viaje.</p>
+                  <p class="text-xs text-ty-muted mt-1">Recibe comprobantes de Nequi aunque el celular de tu caja esté apagado, sin batería o sin internet.</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="openGmailGuideModal()" class="px-3.5 py-2 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:border-ty-cyan text-xs font-mono text-ty-cyan font-bold transition-all flex items-center gap-1.5 shadow-sm">
+              <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                <button type="button" onclick="openGmailGuideModal()" class="px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-xs text-sky-400 font-semibold transition-all flex items-center gap-1.5 shadow-sm">
                   <span>📖 Guía en 3 Pasos</span>
                 </button>
-                <button type="button" onclick="loadMerchantCloudStatus(true)" id="btnCheckCloudCode" class="px-3 py-2 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 text-ty-emerald animate-spin hidden" id="cloudCheckSpinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" onclick="loadMerchantCloudStatus(true)" id="btnCheckCloudCode" class="px-3 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs text-white transition-all flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-emerald-400 animate-spin hidden" id="cloudCheckSpinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   <span>Sincronizar</span>
@@ -1655,20 +1658,20 @@
               </div>
             </div>
 
-            <!-- Contenido: Correo + Caja de Código de Verificación en Vivo -->
+            <!-- Contenido: Correo + Caja de Verificación en Vivo -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <!-- Columna Izquierda: Dirección de Reenvío Exclusiva -->
-              <div class="w-full min-w-0 bg-ty-surface p-4 sm:p-5 rounded-xl border border-ty-border flex flex-col justify-between gap-3">
+              <div class="w-full min-w-0 bg-ty-surface/80 p-4 sm:p-5 rounded-2xl border border-ty-border/70 flex flex-col justify-between gap-3">
                 <div class="space-y-2.5">
                   <div class="flex items-center justify-between gap-2">
-                    <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider truncate">Tu Dirección de Reenvío Exclusiva</label>
-                    <span class="text-[10px] font-mono text-ty-emerald font-bold shrink-0">Zero-Hardware</span>
+                    <label class="text-xs font-semibold text-ty-muted uppercase tracking-wider truncate">1. Tu Dirección de Reenvío</label>
+                    <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25 shrink-0">Sin Aplicación</span>
                   </div>
                   <div class="flex items-center gap-2 w-full min-w-0">
                     <input type="text" id="cloudInboundEmailInput" readonly value="Cargando correo..."
-                      class="flex-1 min-w-0 w-full px-3 py-2 rounded-lg bg-black/40 border border-ty-border font-mono text-xs text-white selection:bg-ty-emerald selection:text-black focus:outline-none truncate" />
+                      class="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-ty-border font-mono text-xs text-white selection:bg-emerald-500 selection:text-black focus:outline-none truncate" />
                     <button type="button" onclick="copyInboundEmail()" id="btnCopyInboundEmail"
-                      class="px-3 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,210,106,0.2)]">
+                      class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase transition-all shrink-0 flex items-center gap-1.5 shadow-sm">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                       </svg>
@@ -1676,44 +1679,44 @@
                     </button>
                   </div>
                 </div>
-                <p class="text-[11px] text-ty-muted leading-relaxed">
-                  Agrega esta dirección en la sección <em>Reenvío</em> de tu Gmail. Nequi te enviará los comprobantes a tu Gmail, y tu Gmail nos lanzará una copia en milisegundos.
+                <p class="text-xs text-ty-muted leading-relaxed">
+                  Copia esta dirección y agrégala en la opción <strong>Reenvío</strong> de tu Gmail. Cuando Nequi te mande un comprobante, Gmail nos enviará una copia en tiempo real.
                 </p>
               </div>
 
-              <!-- Columna Derecha: Código de Confirmación de Google en Vivo -->
-              <div class="w-full min-w-0 bg-ty-surface p-4 sm:p-5 rounded-xl border border-ty-border flex flex-col justify-between gap-3" id="cloudVerificationContainer">
+              <!-- Columna Derecha: Confirmación de Google en Vivo -->
+              <div class="w-full min-w-0 bg-ty-surface/80 p-4 sm:p-5 rounded-2xl border border-ty-border/70 flex flex-col justify-between gap-3" id="cloudVerificationContainer">
                 <div class="space-y-2.5">
                   <div class="flex items-center justify-between gap-2">
-                    <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider truncate">Código de Confirmación de Google</label>
-                    <span id="cloudPollingPill" class="text-[10px] font-mono text-ty-muted flex items-center gap-1.5 shrink-0">
-                      <span class="w-2 h-2 rounded-full bg-ty-emerald animate-pulse"></span> Escuchando en vivo
+                    <label class="text-xs font-semibold text-ty-muted uppercase tracking-wider truncate">2. Confirmación de Google</label>
+                    <span id="cloudPollingPill" class="text-[10px] font-medium text-ty-muted flex items-center gap-1.5 shrink-0">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Escuchando en vivo
                     </span>
                   </div>
 
-                  <!-- Estado: Esperando código -->
-                  <div id="cloudCodePendingBox" class="p-3.5 rounded-lg bg-black/30 border border-dashed border-ty-border text-center space-y-1">
-                    <p class="text-xs text-white/90 font-medium">Esperando código de confirmación de Gmail...</p>
-                    <p class="text-[11px] text-ty-muted">Al agregar tu dirección en Gmail, Google nos enviará el código y aparecerá aquí automáticamente en 3 segundos.</p>
+                  <!-- Estado: Esperando confirmación -->
+                  <div id="cloudCodePendingBox" class="p-4 rounded-xl bg-black/25 border border-dashed border-ty-border text-center space-y-1">
+                    <p class="text-xs text-white/90 font-medium">Esperando correo de confirmación de Google...</p>
+                    <p class="text-[11px] text-ty-muted">Al ingresar tu dirección en Gmail, Google nos enviará el enlace de verificación y se habilitará el botón de confirmación automática.</p>
                   </div>
 
-                  <!-- Estado: Código o Enlace recibido con éxito -->
-                  <div id="cloudCodeSuccessBox" class="hidden p-4 rounded-xl bg-ty-emerald/10 border border-ty-emerald/40 space-y-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
+                  <!-- Estado: Enlace o Código recibido con éxito -->
+                  <div id="cloudCodeSuccessBox" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
                     <div class="flex items-center justify-between gap-2">
-                      <div class="text-[11px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1.5" id="cloudGoogleStatusTitle">
+                      <div class="text-xs text-emerald-400 font-bold flex items-center gap-1.5" id="cloudGoogleStatusTitle">
                         <span>✓</span> <span>¡Verificación de Google Detectada!</span>
                       </div>
-                      <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted">Recibido hace un momento</div>
+                      <div id="cloudGoogleCodeTime" class="text-[10px] text-ty-muted">Recibido hace un momento</div>
                     </div>
 
                     <!-- Fila condicional si hay código numérico -->
-                    <div id="cloudGoogleCodeRow" class="hidden flex items-center justify-between gap-2 bg-black/40 p-2.5 rounded-lg border border-ty-border">
+                    <div id="cloudGoogleCodeRow" class="hidden flex items-center justify-between gap-2 bg-black/40 p-2.5 rounded-xl border border-ty-border">
                       <div class="min-w-0">
-                        <span class="text-[10px] font-mono text-ty-muted uppercase block">Código numérico:</span>
+                        <span class="text-[10px] text-ty-muted uppercase block font-medium">Código numérico:</span>
                         <span id="cloudGoogleCodeValue" class="text-xl sm:text-2xl font-mono font-extrabold text-white tracking-widest select-all">--- --- ---</span>
                       </div>
                       <button type="button" onclick="copyGoogleVerificationCodeOnly()" id="btnCopyOnlyCode"
-                        class="px-3 py-1.5 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-emerald text-xs font-mono text-white transition-all shrink-0">
+                        class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border hover:border-emerald-500/50 text-xs text-white transition-all shrink-0">
                         Copiar Código
                       </button>
                     </div>
@@ -1722,7 +1725,7 @@
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1" id="cloudGoogleActionButtons">
                       <!-- Botón de Confirmación Directa en Gmail (Grande y Destacado) -->
                       <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer"
-                        class="flex-1 px-4 py-2.5 rounded-lg bg-ty-cyan text-black font-extrabold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(6,182,212,0.35)] transition-all flex items-center justify-center gap-2">
+                        class="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
@@ -1731,7 +1734,7 @@
 
                       <!-- Botón de Copiar Enlace -->
                       <button type="button" onclick="copyGoogleVerificationLink()" id="btnCopyGoogleLink"
-                        class="px-3.5 py-2.5 rounded-lg bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan font-bold transition-all flex items-center justify-center gap-1.5 shrink-0">
+                        class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-xs text-sky-400 font-bold transition-all flex items-center justify-center gap-1.5 shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                         </svg>
@@ -1750,11 +1753,9 @@
           </div>
 
           <!-- Banner de Confianza y Garantía de Privacidad (Habeas Data) -->
-          <div
-            class="p-4 rounded-xl bg-ty-surface border border-ty-emerald/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-            <div class="flex items-start gap-3">
-              <div
-                class="w-9 h-9 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 text-ty-emerald flex items-center justify-center shrink-0 mt-0.5">
+          <div class="p-4 sm:p-5 rounded-2xl bg-ty-surface-low border border-ty-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+            <div class="flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -1762,19 +1763,16 @@
               </div>
               <div class="text-xs">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-bold text-white text-sm">Garantía de Seguridad Bancaria &amp; Habeas Data</span>
-                  <span
-                    class="px-2 py-0.5 rounded text-[10px] font-mono bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Ley
-                    1581 de 2012</span>
+                  <span class="font-bold text-white text-sm">Garantía de Seguridad &amp; Privacidad Bancaria</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">Habeas Data • Ley 1581</span>
                 </div>
                 <p class="text-ty-muted text-xs mt-1 leading-relaxed max-w-2xl">
-                  <strong>TransferYA Centinela únicamente lee las alertas de pago emitidas por Nequi y
-                    DaviPlata.</strong> Jamás tiene acceso a tus claves, saldos de cuenta ni conversaciones personales.
+                  TransferYA únicamente procesa las notificaciones oficiales de transferencias de Nequi y DaviPlata. Jamás tiene acceso a tus claves, saldos de cuenta ni información personal.
                 </p>
               </div>
             </div>
             <button type="button" onclick="openSecurityPrivacyModal()"
-              class="px-3.5 py-2 rounded-lg bg-ty-surface-high border border-ty-border hover:border-ty-cyan text-ty-cyan font-mono text-xs font-bold shrink-0 transition-all flex items-center gap-1.5">
+              class="px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-sky-400 text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5">
               <span>Ver Garantía y Permisos</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -5682,50 +5680,67 @@
       const cards = merchantDevices.map((d) => {
         const health = getDeviceConnectionHealth(d, nowMs);
         const exactPing = d.last_heartbeat_at ? getColombiaDateTimeLabel(d.last_heartbeat_at) : "Sin registros aún";
-        return `
-          <div class="bg-ty-surface-low border ${health.cardBorderClass} rounded-xl p-5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${health.dotClass}"></span>
-                  <span class="font-bold text-white text-base">${escapeHtml(d.id.startsWith("cloud_email_") ? "Respaldo Gmail" : (d.label || d.id))}</span>
-                </div>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${health.badgeClass}">${escapeHtml(health.badgeLabel)}</span>
-              </div>
-              <p class="text-xs font-mono text-ty-muted mb-4">${escapeHtml(d.id)}</p>
+        const isCloud = d.id.startsWith("cloud_email_");
+        const deviceName = isCloud ? "Respaldo Gmail" : (d.label || d.id);
+        const deviceType = isCloud ? "Ruta Cloud (Reenvío automático)" : "Celular de mostrador";
 
-              <div class="space-y-2 text-xs font-mono">
-                <div class="flex justify-between py-1 border-b border-ty-border/40">
-                  <span class="text-ty-muted">Comercio</span>
-                  <span class="text-white">${escapeHtml(currentMerchant.name)}</span>
+        return `
+          <div class="bg-ty-surface-low border ${health.cardBorderClass} rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all hover:border-ty-border-strong shadow-sm">
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl ${isCloud ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/15 text-emerald-400'} flex items-center justify-center shrink-0">
+                    ${isCloud
+                      ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
+                      : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-base">${escapeHtml(deviceName)}</h3>
+                    <p class="text-xs text-ty-muted">${escapeHtml(deviceType)}</p>
+                  </div>
                 </div>
-                <div class="flex justify-between py-1 border-b border-ty-border/40">
-                  <span class="text-ty-muted">Conexión</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${health.badgeClass} flex items-center gap-1.5 shrink-0">
+                  <span class="w-1.5 h-1.5 rounded-full ${health.dotClass}"></span>
+                  <span>${escapeHtml(health.badgeLabel)}</span>
+                </span>
+              </div>
+
+              <div class="space-y-2.5 text-xs pt-1">
+                <div class="flex justify-between py-1.5 border-b border-ty-border/50">
+                  <span class="text-ty-muted">Comercio</span>
+                  <span class="text-white font-medium">${escapeHtml(currentMerchant.name)}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-ty-border/50">
+                  <span class="text-ty-muted">Estado de conexión</span>
                   <span class="${health.pingColorClass} font-semibold">${escapeHtml(health.relativeText)}</span>
                 </div>
-                <div class="flex justify-between py-1">
+                <div class="flex justify-between py-1.5 border-b border-ty-border/50">
                   <span class="text-ty-muted">Última sincronización</span>
-                  <span class="text-ty-cyan">${escapeHtml(exactPing)}</span>
+                  <span class="text-ty-muted font-mono">${escapeHtml(exactPing)}</span>
+                </div>
+                <div class="flex justify-between py-1 items-center">
+                  <span class="text-ty-muted">Identificador</span>
+                  <span class="text-[10px] font-mono text-ty-muted/80 bg-ty-surface px-2 py-0.5 rounded border border-ty-border truncate max-w-[200px]" title="${escapeHtml(d.id)}">${escapeHtml(d.id)}</span>
                 </div>
               </div>
             </div>
 
-            <div class="mt-4 pt-3 border-t border-ty-border flex flex-wrap items-center justify-between gap-2">
+            <div class="mt-5 pt-3.5 border-t border-ty-border/70 flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-1.5">
-                <button onclick="renameDevice('${escapeHtml(d.id)}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-muted hover:text-white">
+                <button onclick="renameDevice('${escapeHtml(d.id)}', '${escapeHtml(d.label || d.id)}')" class="px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-border-strong text-xs font-medium text-white transition-all">
                   Renombrar
                 </button>
-                <button onclick="toggleDeviceRevocation('${escapeHtml(d.id)}', '${d.status === "ACTIVE" ? "REVOKED" : "ACTIVE"}', '${escapeHtml(d.label || d.id)}')" class="px-2.5 py-1 rounded border text-xs font-mono transition-all ${d.status === "ACTIVE" ? "bg-ty-amber/10 border-ty-amber/30 text-ty-amber hover:bg-ty-amber/20" : "bg-ty-emerald/10 border-ty-emerald/30 text-ty-emerald hover:bg-ty-emerald/20"}">
+                <button onclick="toggleDeviceRevocation('${escapeHtml(d.id)}', '${d.status === "ACTIVE" ? "REVOKED" : "ACTIVE"}', '${escapeHtml(d.label || d.id)}')" class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${d.status === "ACTIVE" ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20" : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"}">
                   ${d.status === "ACTIVE" ? "Pausar" : "Activar"}
                 </button>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="openResetModal('${escapeHtml(d.id)}')" class="px-2.5 py-1 rounded bg-ty-rose/10 border border-ty-rose/30 text-xs font-mono text-ty-rose hover:bg-ty-rose/20">
-                  Eliminar
-                </button>
                 ${d.id.startsWith("cloud_email_")
-                  ? `<button onclick="openGmailGuideModal()" class="px-2.5 py-1 rounded bg-ty-cyan/15 border border-ty-cyan/40 text-xs font-mono font-bold text-ty-cyan hover:bg-ty-cyan/25">Guía Gmail</button>`
-                  : `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-2.5 py-1 rounded bg-ty-emerald/15 border border-ty-emerald/40 text-xs font-mono font-bold text-ty-emerald hover:bg-ty-emerald/25">Ver QR</button>`}
+                  ? `<button onclick="openGmailGuideModal()" class="px-3 py-1.5 rounded-xl bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 hover:bg-sky-500/25 transition-all">Guía Gmail</button>`
+                  : `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/25 transition-all">Ver QR</button>`}
+                <button onclick="openResetModal('${escapeHtml(d.id)}')" class="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs text-rose-400 hover:bg-rose-500/20 transition-all" title="Eliminar caja">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -5734,12 +5749,12 @@
 
       const phoneCount = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_")).length;
       const addSlot = `
-        <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-ty-emerald/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[190px]">
-          <div class="w-12 h-12 rounded-full bg-ty-surface group-hover:bg-ty-emerald/10 text-ty-muted group-hover:text-ty-emerald flex items-center justify-center transition-colors mb-3">
+        <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-emerald-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[210px] bg-ty-surface-low/30 hover:bg-ty-surface-low">
+          <div class="w-12 h-12 rounded-2xl bg-ty-surface group-hover:bg-emerald-500/10 text-ty-muted group-hover:text-emerald-400 flex items-center justify-center transition-colors mb-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </div>
-          <h3 class="text-sm font-bold text-white group-hover:text-ty-emerald transition-colors">Agregar Celular #${phoneCount + 1}</h3>
-          <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para conectar otro celular de caja a ${escapeHtml(currentMerchant.name)}.</p>
+          <h3 class="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">Conectar Celular de Caja #${phoneCount + 1}</h3>
+          <p class="text-xs text-ty-muted mt-1 max-w-xs">Genera un código QR para vincular otro smartphone a ${escapeHtml(currentMerchant.name)}.</p>
         </div>
       `;
 
