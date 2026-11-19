@@ -1466,23 +1466,25 @@
             </div>
 
             <!-- Contenido: Correo + Caja de Código de Verificación en Vivo -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <!-- Columna Izquierda: Dirección de Reenvío Exclusiva -->
-              <div class="lg:col-span-6 bg-ty-surface p-4 rounded-xl border border-ty-border space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider">Tu Dirección de Reenvío Exclusiva</label>
-                  <span class="text-[10px] font-mono text-ty-emerald font-bold">Zero-Hardware</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input type="text" id="cloudInboundEmailInput" readonly value="Cargando correo..."
-                    class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-ty-border font-mono text-xs text-white selection:bg-ty-emerald selection:text-black focus:outline-none" />
-                  <button type="button" onclick="copyInboundEmail()" id="btnCopyInboundEmail"
-                    class="px-3 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,210,106,0.2)]">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    <span>Copiar</span>
-                  </button>
+              <div class="w-full min-w-0 bg-ty-surface p-4 sm:p-5 rounded-xl border border-ty-border flex flex-col justify-between gap-3">
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider truncate">Tu Dirección de Reenvío Exclusiva</label>
+                    <span class="text-[10px] font-mono text-ty-emerald font-bold shrink-0">Zero-Hardware</span>
+                  </div>
+                  <div class="flex items-center gap-2 w-full min-w-0">
+                    <input type="text" id="cloudInboundEmailInput" readonly value="Cargando correo..."
+                      class="flex-1 min-w-0 w-full px-3 py-2 rounded-lg bg-black/40 border border-ty-border font-mono text-xs text-white selection:bg-ty-emerald selection:text-black focus:outline-none truncate" />
+                    <button type="button" onclick="copyInboundEmail()" id="btnCopyInboundEmail"
+                      class="px-3 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,210,106,0.2)]">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      <span>Copiar</span>
+                    </button>
+                  </div>
                 </div>
                 <p class="text-[11px] text-ty-muted leading-relaxed">
                   Agrega esta dirección en la sección <em>Reenvío</em> de tu Gmail. Nequi te enviará los comprobantes a tu Gmail, y tu Gmail nos lanzará una copia en milisegundos.
@@ -1490,36 +1492,38 @@
               </div>
 
               <!-- Columna Derecha: Código de Confirmación de Google en Vivo -->
-              <div class="lg:col-span-6 bg-ty-surface p-4 rounded-xl border border-ty-border space-y-2.5" id="cloudVerificationContainer">
-                <div class="flex items-center justify-between">
-                  <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider">Código de Confirmación de Google</label>
-                  <span id="cloudPollingPill" class="text-[10px] font-mono text-ty-muted flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-ty-emerald animate-pulse"></span> Escuchando en vivo
-                  </span>
-                </div>
-
-                <!-- Estado: Esperando código -->
-                <div id="cloudCodePendingBox" class="p-3.5 rounded-lg bg-black/30 border border-dashed border-ty-border text-center space-y-1">
-                  <p class="text-xs text-white/90 font-medium">Esperando código de confirmación de Gmail...</p>
-                  <p class="text-[11px] text-ty-muted">Al agregar tu dirección en Gmail, Google nos enviará el código y aparecerá aquí automáticamente en 3 segundos.</p>
-                </div>
-
-                <!-- Estado: Código recibido con éxito -->
-                <div id="cloudCodeSuccessBox" class="hidden p-3.5 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 flex items-center justify-between gap-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
-                  <div>
-                    <div class="text-[10px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1">
-                      <span>✓</span> ¡Código de Google Detectado!
-                    </div>
-                    <div id="cloudGoogleCodeValue" class="text-2xl font-mono font-extrabold text-white tracking-widest mt-0.5 select-all">--- --- ---</div>
-                    <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted mt-0.5">Recibido hace un momento</div>
+              <div class="w-full min-w-0 bg-ty-surface p-4 sm:p-5 rounded-xl border border-ty-border flex flex-col justify-between gap-3" id="cloudVerificationContainer">
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <label class="text-xs font-mono font-semibold text-ty-muted uppercase tracking-wider truncate">Código de Confirmación de Google</label>
+                    <span id="cloudPollingPill" class="text-[10px] font-mono text-ty-muted flex items-center gap-1.5 shrink-0">
+                      <span class="w-2 h-2 rounded-full bg-ty-emerald animate-pulse"></span> Escuchando en vivo
+                    </span>
                   </div>
-                  <div class="flex flex-col gap-1.5 shrink-0">
-                    <button type="button" onclick="copyGoogleCode()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all flex items-center gap-1 shadow-sm">
-                      <span>Copiar Código</span>
-                    </button>
-                    <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-[10px] font-mono text-ty-cyan hover:underline text-center">
-                      Confirmar en Gmail ↗
-                    </a>
+
+                  <!-- Estado: Esperando código -->
+                  <div id="cloudCodePendingBox" class="p-3.5 rounded-lg bg-black/30 border border-dashed border-ty-border text-center space-y-1">
+                    <p class="text-xs text-white/90 font-medium">Esperando código de confirmación de Gmail...</p>
+                    <p class="text-[11px] text-ty-muted">Al agregar tu dirección en Gmail, Google nos enviará el código y aparecerá aquí automáticamente en 3 segundos.</p>
+                  </div>
+
+                  <!-- Estado: Código recibido con éxito -->
+                  <div id="cloudCodeSuccessBox" class="hidden p-3.5 rounded-lg bg-ty-emerald/10 border border-ty-emerald/40 flex items-center justify-between gap-3 shadow-[0_0_15px_rgba(0,210,106,0.15)]">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[10px] font-mono uppercase text-ty-emerald font-bold flex items-center gap-1">
+                        <span>✓</span> ¡Código de Google Detectado!
+                      </div>
+                      <div id="cloudGoogleCodeValue" class="text-2xl font-mono font-extrabold text-white tracking-widest mt-0.5 select-all truncate">--- --- ---</div>
+                      <div id="cloudGoogleCodeTime" class="text-[10px] font-mono text-ty-muted mt-0.5">Recibido hace un momento</div>
+                    </div>
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                      <button type="button" onclick="copyGoogleCode()" class="px-3.5 py-2 rounded-lg bg-ty-emerald text-black font-bold font-mono text-xs uppercase hover:brightness-110 transition-all flex items-center gap-1 shadow-sm">
+                        <span>Copiar Código</span>
+                      </button>
+                      <a id="cloudGoogleConfirmLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-[10px] font-mono text-ty-cyan hover:underline text-center">
+                        Confirmar en Gmail ↗
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
