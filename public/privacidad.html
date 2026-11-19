@@ -123,7 +123,7 @@
   <!-- ========================================================================= -->
   <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-40 bg-white/90 dark:bg-[#101C2D]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
+  <header class="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#101C2D]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Logotipo Oficial -->
@@ -180,7 +180,7 @@
   <!-- ========================================================================= -->
   <!-- HERO HEADER / TÍTULO DE LA POLÍTICA -->
   <!-- ========================================================================= -->
-  <section class="bg-white dark:bg-[#101C2D] border-b border-gray-200 dark:border-gray-800 py-10 sm:py-14 transition-colors">
+  <section class="w-full bg-white dark:bg-[#101C2D] border-b border-gray-200 dark:border-gray-800 py-10 sm:py-14 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="max-w-3xl">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#13B981]/15 text-[#0D825B] dark:text-[#13B981] text-xs font-semibold uppercase tracking-wider mb-4">
@@ -215,7 +215,7 @@
   <!-- ========================================================================= -->
   <!-- RESUMEN EJECUTIVO DESTACADO (CARDS DE CONFIANZA RÁPIDA) -->
   <!-- ========================================================================= -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 z-10 relative">
+  <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 z-10 relative">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       
       <!-- Card 1: Lo que sí lee -->
@@ -269,12 +269,12 @@
   <!-- ========================================================================= -->
   <!-- CUERPO PRINCIPAL CON ÍNDICE LATERAL -->
   <!-- ========================================================================= -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex-grow">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex-grow">
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start w-full">
       
       <!-- SIDEBAR ÍNDICE NAVEGABLE (Desktop) -->
-      <aside class="hidden lg:block lg:col-span-4" id="tocSidebar">
-        <div class="sticky top-24 card-surface p-5 rounded-2xl max-h-[calc(100vh-8rem)] overflow-y-auto space-y-3">
+      <aside class="hidden lg:block w-72 shrink-0 sticky top-24" id="tocSidebar">
+        <div class="card-surface p-5 rounded-2xl max-h-[calc(100vh-8rem)] overflow-y-auto space-y-3 shadow-sm">
           <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
             Índice de la Política
           </p>
@@ -298,7 +298,7 @@
       </aside>
 
       <!-- ARTÍCULO LEGAL COMPLETO -->
-      <article class="lg:col-span-8 space-y-10 leading-relaxed text-sm sm:text-base text-gray-700 dark:text-gray-300">
+      <article class="flex-1 min-w-0 w-full space-y-10 leading-relaxed text-sm sm:text-base text-gray-700 dark:text-gray-300">
 
         <!-- =================================================================== -->
         <!-- SECCIÓN 1: IDENTIFICACIÓN DEL RESPONSABLE -->
