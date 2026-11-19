@@ -3357,6 +3357,14 @@
       box.classList.remove("hidden");
     }
 
+    function getAuthRedirectUrl() {
+      const origin = (typeof window !== "undefined" && window.location.origin) ? window.location.origin : "";
+      if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+        return origin;
+      }
+      return "https://www.transferya.app";
+    }
+
     async function handleAuthSubmit(e) {
       e.preventDefault();
       clearAuthFeedback();
@@ -3385,7 +3393,7 @@
             email,
             password,
             options: {
-              emailRedirectTo: window.location.origin,
+              emailRedirectTo: getAuthRedirectUrl(),
               data: { store_name: storeName }
             }
           });
@@ -3427,7 +3435,7 @@
       try {
         const { error } = await supabaseClient.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: window.location.origin }
+          options: { emailRedirectTo: getAuthRedirectUrl() }
         });
         if (error) {
           showAuthFeedback(formatAuthErrorMessage(error), true);
@@ -3496,7 +3504,7 @@
 
       try {
         const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin
+          redirectTo: getAuthRedirectUrl()
         });
 
         if (error) {
