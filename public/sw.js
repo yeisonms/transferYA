@@ -1,8 +1,9 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v29';
+const CACHE_NAME = 'transferya-cache-v30';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/landing.html',
   '/admin.html',
   '/terminos.html',
   '/privacidad.html',
@@ -17,6 +18,14 @@ const STATIC_ASSETS = [
   '/icons/logo-sound-check.svg',
   '/icons/logo-transferya-horizontal.svg',
   '/icons/logo-wordmark.png',
+  '/icons/brand-nequi-icon.png',
+  '/icons/brand-daviplata-horizontal.png',
+  '/icons/brand-breb-icon.png',
+  '/icons/brand-bancolombia-icon.png',
+  '/icons/bank-nequi.svg',
+  '/icons/bank-daviplata.svg',
+  '/icons/bank-breb.svg',
+  '/icons/bank-bancolombia.svg',
   '/images/og-share.jpg',
   '/images/og-square.jpg',
   '/images/sticker-diecut-badge.jpg',
