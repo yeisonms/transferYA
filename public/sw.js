@@ -4,6 +4,8 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/admin.html',
+  '/terminos.html',
+  '/privacidad.html',
   '/css/app.css',
   '/manifest.json',
   '/icons/icon.svg',
