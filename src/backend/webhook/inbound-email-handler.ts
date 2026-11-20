@@ -307,10 +307,17 @@ export async function handleInboundEmail(
       // Guardar notificación capturada en base de datos (con texto limpio legible sin etiquetas HTML y datos de pago)
       const cleanBody = (text || stripHtml(html)).trim();
       const paymentData = parseResult.payment;
+      const isBancolombia = paymentData.wallet === 'BANCOLOMBIA';
       const storedRecord: StoredNotificationRecord = {
         deviceId: cloudDeviceId,
-        walletPackage: 'com.nequi.inbound.email',
-        rawTitle: subject || 'Transferencia Nequi recibida por Correo',
+        walletPackage: isBancolombia
+          ? 'com.bancolombia.inbound.email'
+          : 'com.nequi.inbound.email',
+        rawTitle:
+          subject ||
+          (isBancolombia
+            ? 'Transferencia Bancolombia recibida por Correo'
+            : 'Transferencia Nequi recibida por Correo'),
         rawText: cleanBody || subject || '',
         capturedAt: receivedAt,
         dispatchedAt: now,

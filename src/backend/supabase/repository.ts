@@ -451,6 +451,7 @@ export class SupabaseRepository
             /bre-b/i.test(row.raw_title || '') ||
             /bre-b/i.test(params.rawTitle || '') ||
             row.wallet_package === 'com.nequi.inbound.email' ||
+            row.wallet_package === 'com.bancolombia.inbound.email' ||
             row.sender_name === 'Transferencia Bre-B' ||
             params.senderName === 'Transferencia Bre-B';
 

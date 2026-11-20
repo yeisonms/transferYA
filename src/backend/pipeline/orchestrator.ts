@@ -3,7 +3,7 @@ import {
   generatePaymentFingerprint,
 } from '../../domain/idempotency/fingerprint.js';
 import { parseBankingNotification } from '../../domain/parser/engine.js';
-import { parseNequiEmailReceipt } from '../../domain/parser/email-parser.js';
+import { parseNequiEmailReceipt, parseBancolombiaEmailReceipt } from '../../domain/parser/email-parser.js';
 import type {
   ParsedPaymentReceipt,
   ParseResult,
@@ -155,6 +155,12 @@ export class PaymentProcessingPipeline {
     const parseResult =
       notification.walletPackage === 'com.nequi.inbound.email'
         ? parseNequiEmailReceipt({
+            from: '',
+            subject: notification.rawTitle,
+            text: notification.rawText,
+          })
+        : notification.walletPackage === 'com.bancolombia.inbound.email'
+        ? parseBancolombiaEmailReceipt({
             from: '',
             subject: notification.rawTitle,
             text: notification.rawText,
