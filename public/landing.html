@@ -492,64 +492,130 @@
           <!-- Columna Derecha: Mockup Interactivo del Sticker y Demo en Video -->
           <div class="lg:col-span-5 space-y-6">
             
-            <!-- Sticker Preview Card -->
+            <!-- Sticker Preview Card Oficial -->
             <div class="p-6 rounded-3xl bg-[#F7F5EF] border-2 border-dashed border-[#0E1B2B]/20 shadow-sm relative group hover:border-[#19C37D] transition-all">
-              <span class="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-[10px] uppercase tracking-wider">
-                Sticker de Mostrador (1:1)
+              <span class="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-[10px] uppercase tracking-wider shadow-sm">
+                Insignia Oficial Antifraude (1:1)
               </span>
 
-              <div class="bg-white rounded-2xl p-4 sm:p-5 border-2 border-[#0E1B2B] shadow-md flex items-center justify-between gap-3 text-left">
-                <div class="flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-xl bg-white border border-black/15 p-1.5 shrink-0 flex items-center justify-center">
-                    <svg class="w-full h-full text-[#19C37D]" viewBox="0 0 64 64" fill="none">
-                      <path d="M10 34 L23 47 L44 18" stroke="#19C37D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M48 24 C51 27.5 51 34.5 48 38" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
-                      <path d="M55 18 C60 24 60 38 55 44" stroke="#19C37D" stroke-width="4.5" stroke-linecap="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <span class="text-sm sm:text-base font-extrabold text-[#0E1B2B] block leading-tight">Aquí verificamos tus pagos</span>
-                    <span class="text-[11px] text-[#0E1B2B]/70 block font-medium">Validación por audio y WhatsApp</span>
-                  </div>
+              <!-- Mockup HD del Troquelado Oficial -->
+              <div class="bg-gradient-to-b from-[#0E1B2B] to-[#040911] rounded-2xl p-4 sm:p-5 border-2 border-[#19C37D]/30 shadow-xl text-center relative overflow-hidden group">
+                <div class="relative w-full max-w-[340px] aspect-[1024/682] mx-auto drop-shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]">
+                  <img src="/images/sticker-diecut-badge.jpg" alt="Insignia Oficial TransferYA" class="w-full h-full object-contain pointer-events-none rounded-xl" />
                 </div>
-                <div class="text-right shrink-0">
-                  <span class="text-xs font-mono font-bold block">transfer<span class="text-[#19C37D]">YA</span></span>
+                
+                <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-left text-white/80">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#19C37D] shrink-0"></span>
+                    <span class="text-xs font-bold text-white">Diseño Troquelado 3D Neón</span>
+                  </div>
+                  <span class="text-[10px] font-mono text-[#19C37D] uppercase font-bold tracking-wider">PDF Listo para Imprimir</span>
                 </div>
               </div>
 
-              <div class="mt-4 flex items-center justify-between text-xs text-[#0E1B2B]/70 font-medium">
-                <span>Tamaño recomendado: 12 x 4 cm</span>
+              <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#0E1B2B]/70 font-medium">
+                <span>Personalizable con el nombre de tu local</span>
                 <a href="/sticker.html" target="_blank" class="text-[#0B7A4B] font-bold hover:underline inline-flex items-center gap-1">
-                  Ver plantilla completa →
+                  Generar mis stickers gratis →
                 </a>
               </div>
             </div>
 
-            <!-- Contenedor / Demostrador de Video 30s TikTok/Reels -->
-            <div class="p-5 rounded-3xl bg-[#0E1B2B] text-white shadow-xl space-y-3">
-              <div class="flex items-center justify-between">
+            <!-- Contenedor / Simulador Interactivo de Mostrador Real -->
+            <div class="p-5 sm:p-6 rounded-3xl bg-[#0E1B2B] text-white shadow-2xl border border-white/10 space-y-4 relative overflow-hidden" id="demoSoundCard">
+              <!-- Glow ambiental de fondo -->
+              <div class="absolute -top-16 -right-16 w-36 h-36 bg-[#19C37D]/15 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div class="flex items-center justify-between relative z-10">
                 <span class="text-xs font-mono uppercase tracking-wider text-[#19C37D] font-bold flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full bg-[#19C37D] animate-ping"></span>
                   Demostración en Mostrador Real
                 </span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white/80">35 seg</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white/80 flex items-center gap-1">
+                  <span>🔊</span> Audio en Vivo
+                </span>
               </div>
               
-              <!-- Video Player Mockup -->
-              <div class="relative aspect-video rounded-2xl bg-gradient-to-tr from-black/80 to-[#19C37D]/20 border border-white/10 overflow-hidden flex flex-col items-center justify-center p-6 text-center group cursor-pointer">
-                <div class="w-14 h-14 rounded-full bg-[#19C37D] text-[#0E1B2B] flex items-center justify-center pl-1 shadow-lg group-hover:scale-110 transition-transform">
-                  <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+              <!-- Pantalla Interactiva de Simulación de Cobro -->
+              <div class="relative rounded-2xl bg-gradient-to-b from-[#132238] to-[#0A131F] border border-white/15 p-5 text-center overflow-hidden transition-all shadow-inner">
+                
+                <!-- Estado Visual: Botón Play y Animación -->
+                <div id="demoVisualState" class="space-y-3">
+                  <!-- Botón Play Principal Gigante -->
+                  <div class="flex items-center justify-center">
+                    <button type="button" onclick="playLivePosDemo()" id="demoPlayBtn"
+                      class="relative w-16 h-16 rounded-full bg-[#19C37D] text-[#0E1B2B] flex items-center justify-center shadow-lg shadow-[#19C37D]/30 hover:scale-105 active:scale-95 transition-all group cursor-pointer focus:outline-none"
+                      title="Haz clic para escuchar el sonido de confirmación">
+                      <svg id="demoPlayIcon" class="w-7 h-7 fill-current ml-1" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                      <!-- Ondas expansivas animadas cuando suena -->
+                      <span id="demoRippleRing" class="hidden absolute inset-0 rounded-full border-2 border-[#19C37D] animate-ping pointer-events-none"></span>
+                    </button>
+                  </div>
+
+                  <!-- Textos del Estado -->
+                  <div class="space-y-1">
+                    <span id="demoTitleText" class="text-sm font-extrabold text-white block">
+                      Haz clic para escuchar cómo canta tu caja
+                    </span>
+                    <p id="demoSubtitleText" class="text-xs text-[#19C37D] font-mono font-bold">
+                      «¡Recibiste veinticinco mil pesos por Nequi!»
+                    </p>
+                  </div>
+
+                  <!-- Ecualizador Animado de Audio (se activa al reproducir) -->
+                  <div id="demoAudioWave" class="hidden flex items-center justify-center gap-1 h-5 pt-1">
+                    <span class="w-1 bg-[#19C37D] rounded-full animate-bounce [animation-delay:0ms] h-3"></span>
+                    <span class="w-1 bg-[#19C37D] rounded-full animate-bounce [animation-delay:150ms] h-5"></span>
+                    <span class="w-1 bg-[#19C37D] rounded-full animate-bounce [animation-delay:300ms] h-4"></span>
+                    <span class="w-1 bg-[#19C37D] rounded-full animate-bounce [animation-delay:450ms] h-5"></span>
+                    <span class="w-1 bg-[#19C37D] rounded-full animate-bounce [animation-delay:200ms] h-2"></span>
+                  </div>
+
+                  <!-- Alerta simulada tipo WhatsApp de confirmación -->
+                  <div id="demoAlertBanner" class="p-2.5 rounded-xl bg-black/40 border border-white/10 text-left flex items-center justify-between gap-2.5 transition-all">
+                    <div class="flex items-center gap-2">
+                      <div id="demoWalletDot" class="w-2.5 h-2.5 rounded-full bg-[#E00070] shrink-0"></div>
+                      <div>
+                        <span id="demoWalletName" class="text-[11px] font-bold text-white block leading-tight">Nequi: Pago de $25.000 COP</span>
+                        <span id="demoSenderName" class="text-[9px] text-white/60 block font-mono">De Carlos Mendoza • Hace 1 seg</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-[#19C37D]/20 text-[#19C37D] font-mono text-[9px] font-bold uppercase shrink-0">
+                      ✓ Confirmado
+                    </span>
+                  </div>
                 </div>
-                <div class="mt-3 space-y-0.5">
-                  <span class="text-xs font-bold text-white block">Escucha cómo canta el pago</span>
-                  <span class="text-[10px] text-white/70 block">«¡Recibiste veinticinco mil pesos por Nequi!»</span>
+
+              </div>
+
+              <!-- Selector rápido para probar las distintas billeteras -->
+              <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-white/60 block text-left">
+                  Toca un banco para probar la alerta sonora:
+                </span>
+                <div class="grid grid-cols-3 gap-2">
+                  <button type="button" onclick="selectDemoWallet('NEQUI')" id="btnDemoNequi"
+                    class="py-1.5 px-2 rounded-xl bg-[#E00070]/20 border border-[#E00070]/50 text-white font-bold text-xs hover:bg-[#E00070]/30 transition-all flex items-center justify-center gap-1 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-[#E00070]"></span>
+                    <span>Nequi</span>
+                  </button>
+                  <button type="button" onclick="selectDemoWallet('DAVIPLATA')" id="btnDemoDaviplata"
+                    class="py-1.5 px-2 rounded-xl bg-white/5 border border-white/15 text-white/80 font-bold text-xs hover:bg-[#ED1C27]/20 hover:border-[#ED1C27]/40 transition-all flex items-center justify-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-[#ED1C27]"></span>
+                    <span>DaviPlata</span>
+                  </button>
+                  <button type="button" onclick="selectDemoWallet('BANCOLOMBIA')" id="btnDemoBancolombia"
+                    class="py-1.5 px-2 rounded-xl bg-white/5 border border-white/15 text-white/80 font-bold text-xs hover:bg-[#FDDA24]/20 hover:border-[#FDDA24]/40 transition-all flex items-center justify-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-[#FDDA24]"></span>
+                    <span>Bancolombia</span>
+                  </button>
                 </div>
               </div>
 
-              <p class="text-[11px] text-white/60 text-center">
-                Grabado en hamburguesería en hora pico: cero llamadas al dueño, cero dudas.
+              <p class="text-[11px] text-white/60 text-center pt-1">
+                Grabado en hora pico: el celular anuncia en altavoz y manda el comprobante al WhatsApp del negocio al instante.
               </p>
             </div>
 
@@ -1068,6 +1134,174 @@
         setTimeout(() => {
           if (btn) btn.textContent = "Toca aquí para oír cómo canta";
         }, 2000);
+      }
+    }
+
+    // ==========================================
+    // SIMULADOR DE AUDIO EN MOSTRADOR REAL
+    // ==========================================
+    let currentDemoWallet = 'NEQUI';
+    const demoWalletData = {
+      NEQUI: {
+        name: 'Nequi',
+        amountFormatted: '$25.000 COP',
+        amountSpoken: 'veinticinco mil pesos por Nequi',
+        sender: 'Carlos Mendoza',
+        color: '#E00070',
+        dotColor: 'bg-[#E00070]',
+        btnId: 'btnDemoNequi',
+      },
+      DAVIPLATA: {
+        name: 'DaviPlata',
+        amountFormatted: '$50.000 COP',
+        amountSpoken: 'cincuenta mil pesos por DaviPlata',
+        sender: 'Laura Restrepo',
+        color: '#ED1C27',
+        dotColor: 'bg-[#ED1C27]',
+        btnId: 'btnDemoDaviplata',
+      },
+      BANCOLOMBIA: {
+        name: 'Bancolombia',
+        amountFormatted: '$120.000 COP',
+        amountSpoken: 'ciento veinte mil pesos por Bancolombia',
+        sender: 'Yeison Murcia',
+        color: '#FDDA24',
+        dotColor: 'bg-[#FDDA24]',
+        btnId: 'btnDemoBancolombia',
+      },
+    };
+
+    function selectDemoWallet(walletKey, autoplay = true) {
+      currentDemoWallet = walletKey;
+      const data = demoWalletData[walletKey];
+      if (!data) return;
+
+      // Actualizar botones de bancos
+      ['NEQUI', 'DAVIPLATA', 'BANCOLOMBIA'].forEach(k => {
+        const btn = document.getElementById(demoWalletData[k].btnId);
+        if (!btn) return;
+        if (k === walletKey) {
+          btn.className = `py-1.5 px-2 rounded-xl bg-white/20 border border-white/50 text-white font-bold text-xs transition-all flex items-center justify-center gap-1 shadow-sm ring-1 ring-white/30`;
+        } else {
+          btn.className = `py-1.5 px-2 rounded-xl bg-white/5 border border-white/15 text-white/70 font-bold text-xs hover:bg-white/10 transition-all flex items-center justify-center gap-1`;
+        }
+      });
+
+      // Actualizar tarjeta de alerta
+      const walletNameEl = document.getElementById('demoWalletName');
+      const senderNameEl = document.getElementById('demoSenderName');
+      const walletDotEl = document.getElementById('demoWalletDot');
+      const subtitleEl = document.getElementById('demoSubtitleText');
+
+      if (walletNameEl) walletNameEl.textContent = `${data.name}: Pago de ${data.amountFormatted}`;
+      if (senderNameEl) senderNameEl.textContent = `De ${data.sender} • Hace 1 seg`;
+      if (walletDotEl) {
+        walletDotEl.className = `w-2.5 h-2.5 rounded-full shrink-0 ${data.dotColor}`;
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = `«¡Recibiste ${data.amountSpoken}!»`;
+      }
+
+      if (autoplay) {
+        playLivePosDemo();
+      }
+    }
+
+    function playLivePosDemo() {
+      const data = demoWalletData[currentDemoWallet] || demoWalletData.NEQUI;
+      const titleEl = document.getElementById('demoTitleText');
+      const ripple = document.getElementById('demoRippleRing');
+      const audioWave = document.getElementById('demoAudioWave');
+
+      if (titleEl) titleEl.textContent = `Cantando transferencia de ${data.name}...`;
+      if (ripple) ripple.classList.remove('hidden');
+      if (audioWave) audioWave.classList.remove('hidden');
+
+      // 1. Chime armónico de caja registradora con Web Audio API
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          if (ctx.state === 'suspended') ctx.resume();
+          const now = ctx.currentTime;
+
+          // Nota 1 (Chime agudo brillante)
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(880, now);
+          osc1.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+          gain1.gain.setValueAtTime(0.35, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.35);
+
+          // Nota 2 armónica
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(1320, now + 0.08);
+          osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.22);
+          gain2.gain.setValueAtTime(0.25, now + 0.08);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.08);
+          osc2.stop(now + 0.5);
+        }
+      } catch (e) {
+        console.warn('Web Audio no disponible:', e);
+      }
+
+      // 2. Síntesis de Voz en español nativo
+      if ('speechSynthesis' in window) {
+        try {
+          if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+          window.speechSynthesis.cancel();
+
+          const phrase = `¡Recibiste ${data.amountSpoken}!`;
+          const utter = new SpeechSynthesisUtterance(phrase);
+          utter.lang = 'es-CO';
+          utter.rate = 1.0;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+
+          const voices = window.speechSynthesis.getVoices();
+          if (voices && voices.length > 0) {
+            const esVoice = voices.find(v => v.lang.startsWith('es-CO')) ||
+              voices.find(v => v.lang.startsWith('es-419')) ||
+              voices.find(v => v.lang.startsWith('es'));
+            if (esVoice) utter.voice = esVoice;
+          }
+
+          utter.onend = () => {
+            if (titleEl) titleEl.textContent = '¡Pago anunciado! (Toca para repetir o cambia de banco)';
+            if (ripple) ripple.classList.add('hidden');
+            if (audioWave) audioWave.classList.add('hidden');
+          };
+          utter.onerror = () => {
+            if (titleEl) titleEl.textContent = '¡Pago confirmado! (Toca para repetir)';
+            if (ripple) ripple.classList.add('hidden');
+            if (audioWave) audioWave.classList.add('hidden');
+          };
+
+          // Pequeño retardo para que el chime suene primero y luego la voz
+          setTimeout(() => {
+            window.speechSynthesis.speak(utter);
+          }, 250);
+        } catch (err) {
+          if (titleEl) titleEl.textContent = '¡Pago verificado en mostrador!';
+          if (ripple) ripple.classList.add('hidden');
+          if (audioWave) audioWave.classList.add('hidden');
+        }
+      } else {
+        setTimeout(() => {
+          if (titleEl) titleEl.textContent = '¡Pago verificado en mostrador!';
+          if (ripple) ripple.classList.add('hidden');
+          if (audioWave) audioWave.classList.add('hidden');
+        }, 1200);
       }
     }
   </script>
