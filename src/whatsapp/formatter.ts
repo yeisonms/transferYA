@@ -83,6 +83,9 @@ export function formatWalletDisplayName(wallet: SupportedWallet): string {
   if (wallet === 'DAVIPLATA') {
     return 'Daviplata';
   }
+  if (wallet === 'BANCOLOMBIA') {
+    return 'Bancolombia';
+  }
   return wallet;
 }
 
@@ -99,6 +102,9 @@ export function formatWalletBadge(wallet: SupportedWallet): {
   }
   if (wallet === 'DAVIPLATA') {
     return { emoji: '🔴', name: 'DaviPlata', combined: '🔴 DaviPlata' };
+  }
+  if (wallet === 'BANCOLOMBIA') {
+    return { emoji: '🟡', name: 'Bancolombia', combined: '🟡 Bancolombia' };
   }
   return { emoji: '⚡', name: wallet, combined: `⚡ ${wallet}` };
 }

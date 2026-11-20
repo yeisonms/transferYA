@@ -5109,11 +5109,15 @@
     }
 
     function detectWallet(tx) {
-      const pkg = (tx.wallet_package || "").toLowerCase();
-      const title = (tx.raw_title || "").toLowerCase();
-      const text = (tx.raw_text || "").toLowerCase();
-      if (pkg.includes("nequi") || title.includes("nequi") || text.startsWith("nequi") || title.includes("bre-b") || text.includes("recibiste plata por bre-b")) return "NEQUI";
+      if (tx?.wallet === "BANCOLOMBIA") return "BANCOLOMBIA";
+      if (tx?.wallet === "DAVIPLATA") return "DAVIPLATA";
+      if (tx?.wallet === "NEQUI") return "NEQUI";
+      const pkg = (tx?.wallet_package || "").toLowerCase();
+      const title = (tx?.raw_title || "").toLowerCase();
+      const text = (tx?.raw_text || "").toLowerCase();
+      if (pkg.includes("bancolombia") || title.includes("bancolombia") || text.includes("bancolombia")) return "BANCOLOMBIA";
       if (pkg.includes("daviplata") || title.includes("daviplata") || text.includes("daviplata")) return "DAVIPLATA";
+      if (pkg.includes("nequi") || title.includes("nequi") || text.startsWith("nequi") || title.includes("bre-b") || text.includes("recibiste plata por bre-b")) return "NEQUI";
       return "NEQUI";
     }
 
@@ -5380,15 +5384,20 @@
 
       const wallet = detectWallet(tx);
       const isNequi = wallet === "NEQUI";
+      const isBancolombia = wallet === "BANCOLOMBIA";
       const countable = isCountableMoney(tx);
-      const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+      const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
       const amtFormatted = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
 
       // Wallet icon & badge
       const walletIconEl = document.getElementById("txDrawerWalletIcon");
       if (walletIconEl) {
-        walletIconEl.className = `w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 ${isNequi ? "bg-[#DA0081]/20 text-[#E10098] border border-[#DA0081]/40" : "bg-[#ED1C24]/20 text-[#ED1C24] border border-[#ED1C24]/40"}`;
-        walletIconEl.textContent = isNequi ? "N" : "D";
+        walletIconEl.className = isBancolombia
+          ? "w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 bg-[#FDDA24]/20 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/40"
+          : isNequi
+          ? "w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 bg-[#DA0081]/20 text-[#E10098] border border-[#DA0081]/40"
+          : "w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0 bg-[#ED1C24]/20 text-[#ED1C24] border border-[#ED1C24]/40";
+        walletIconEl.textContent = isBancolombia ? "B" : isNequi ? "N" : "D";
       }
 
       // Amounts and status
@@ -5407,7 +5416,9 @@
 
       const walletEl = document.getElementById("txDrawerWallet");
       if (walletEl) {
-        walletEl.innerHTML = isNequi 
+        walletEl.innerHTML = isBancolombia
+          ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30">🟡 Bancolombia</span>`
+          : isNequi 
           ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30">🟣 Nequi</span>`
           : `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30">🔴 Daviplata</span>`;
       }
@@ -5538,13 +5549,18 @@
 
       container.innerHTML = latest5.map((tx) => {
         const wallet = detectWallet(tx);
+        const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
-        const badgeBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const badgeBg = isBancolombia
+          ? "bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30"
+          : isNequi
+          ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30"
+          : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
         const amtStr = `$ ${Number(tx.amount || 0).toLocaleString("es-CO")} COP`;
-        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
         const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const timeStr = getColombiaDateTimeLabel(getTxTimestamp(tx));
-        const sender = tx.sender_name || (isNequi ? "Cliente Nequi" : "Cliente DaviPlata");
+        const sender = tx.sender_name || (isBancolombia ? "Cliente Bancolombia" : isNequi ? "Cliente Nequi" : "Cliente DaviPlata");
         const ref = tx.payment_reference ? `Ref: ${tx.payment_reference}` : "";
 
         return `
@@ -5552,7 +5568,7 @@
             class="p-3.5 sm:px-6 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-ty-surface/60 transition-colors cursor-pointer group">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${badgeBg}">
-                ${isNequi ? "N" : "D"}
+                ${isBancolombia ? "B" : isNequi ? "N" : "D"}
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
@@ -5596,12 +5612,17 @@
 
       tbody.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
+        const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
-        const avatarBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
-        const avatarLetter = isNequi ? "N" : "D";
+        const avatarBg = isBancolombia
+          ? "bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30"
+          : isNequi
+          ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30"
+          : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const avatarLetter = isBancolombia ? "B" : isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
         const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
-        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
         const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
         const timeLabel = getColombiaDateTimeLabel(getTxTimestamp(tx));
@@ -5648,12 +5669,17 @@
 
       mobileList.innerHTML = filteredTransactions.map((tx) => {
         const wallet = detectWallet(tx);
+        const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
-        const avatarBg = isNequi ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30" : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
-        const avatarLetter = isNequi ? "N" : "D";
+        const avatarBg = isBancolombia
+          ? "bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30"
+          : isNequi
+          ? "bg-[#DA0081]/15 text-[#E10098] border border-[#DA0081]/30"
+          : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
+        const avatarLetter = isBancolombia ? "B" : isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
         const amtText = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
-        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email";
+        const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
         const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
         const timeLabel = getColombiaDateTimeLabel(getTxTimestamp(tx));
@@ -6276,6 +6302,7 @@
         if (latencyChip) latencyChip.textContent = "⚡ Mostrador en espera de pagos";
       } else {
         const wallet = detectWallet(latest);
+        const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
         if (heroAmount) {
           heroAmount.innerHTML = `$ ${Number(latest.amount).toLocaleString("es-CO")} <span class="text-2xl sm:text-4xl text-emerald-400 font-medium">COP</span>`;
@@ -6283,12 +6310,18 @@
           void heroAmount.offsetWidth;
           heroAmount.classList.add("pos-amount-pop");
         }
-        if (heroSender) heroSender.textContent = latest.sender_name || (isNequi ? "Cliente Nequi" : "Cliente DaviPlata");
+        if (heroSender) heroSender.textContent = latest.sender_name || (isBancolombia ? "Cliente Bancolombia" : isNequi ? "Cliente Nequi" : "Cliente DaviPlata");
         if (walletBadge) {
-          walletBadge.textContent = isNequi ? "🟣 PAGO NEQUI" : "🔴 PAGO DAVIPLATA";
-          walletBadge.className = isNequi
-            ? "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-[#200020] text-fuchsia-300 border border-fuchsia-500/40 shadow-sm"
-            : "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-[#280505] text-rose-300 border border-rose-500/40 shadow-sm";
+          if (isBancolombia) {
+            walletBadge.textContent = "🟡 PAGO BANCOLOMBIA";
+            walletBadge.className = "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-[#2B230E] text-amber-300 border border-amber-500/40 shadow-sm";
+          } else if (isNequi) {
+            walletBadge.textContent = "🟣 PAGO NEQUI";
+            walletBadge.className = "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-[#200020] text-fuchsia-300 border border-fuchsia-500/40 shadow-sm";
+          } else {
+            walletBadge.textContent = "🔴 PAGO DAVIPLATA";
+            walletBadge.className = "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-[#280505] text-rose-300 border border-rose-500/40 shadow-sm";
+          }
         }
         if (alertStatus) alertStatus.textContent = "✅ ¡PAGO VERIFICADO Y RECIBIDO EN VIVO!";
         if (statusBadge) {
@@ -7608,7 +7641,7 @@
 
       try {
         const rawWallet = detectWallet(tx);
-        const walletName = rawWallet === "DAVIPLATA" ? "DaviPlata" : "Nequi";
+        const walletName = rawWallet === "DAVIPLATA" ? "DaviPlata" : rawWallet === "BANCOLOMBIA" ? "Bancolombia" : "Nequi";
         const amountNum = Math.round(Number(tx && tx.amount) || 0);
 
         let amountWords = "";

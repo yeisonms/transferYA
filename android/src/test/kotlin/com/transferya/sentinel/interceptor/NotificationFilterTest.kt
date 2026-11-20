@@ -77,6 +77,20 @@ class NotificationFilterTest {
             )
         )
 
+        // SMS oficial Bancolombia desde 890001 o con titulo Bancolombia (caso real)
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "890001",
+                rawText = "Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 20/11/26 a las 10:39. Con llaves es de una y gratis. Dudas al 018000912345."
+            )
+        )
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "Bancolombia",
+                rawText = "Bancolombia: recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00"
+            )
+        )
+
         // SMS de Nequi sin titulo 890806 pero con texto de Nequi
         assertTrue(
             NotificationFilter.isBankingSms(
@@ -125,6 +139,20 @@ class NotificationFilterTest {
             NotificationFilter.resolveBankingPackageForSms(
                 "85888",
                 "DaviPlata le informa que recibio $50.000"
+            )
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            "com.bancolombia.personas",
+            NotificationFilter.resolveBankingPackageForSms(
+                "890001",
+                "Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00"
+            )
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            "com.bancolombia.personas",
+            NotificationFilter.resolveBankingPackageForSms(
+                "Mensajes",
+                "Bancolombia: recibiste $50.000 en tu cuenta"
             )
         )
     }

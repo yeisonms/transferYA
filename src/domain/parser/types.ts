@@ -1,7 +1,7 @@
 /**
- * Billeteras digitales soportadas en Colombia.
+ * Billeteras y entidades financieras soportadas en Colombia.
  */
-export type SupportedWallet = 'NEQUI' | 'DAVIPLATA';
+export type SupportedWallet = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
 /**
  * Entidad de dominio que representa un pago P2P confirmado extraído de una notificación.

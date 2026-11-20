@@ -6,9 +6,11 @@ export type SupportedWalletPackage =
   | 'com.davivienda.daviplata'
   | 'com.daviplata.appfintech'
   | 'com.davivienda.daviplataapp'
+  | 'com.bancolombia.personas'
+  | 'com.bancolombia.mimovil'
   | (string & {});
 
-export type SupportedWallet = 'NEQUI' | 'DAVIPLATA';
+export type SupportedWallet = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
 /**
  * Payload completo de la Notificación Capturada enviada desde el Dispositivo Centinela.

@@ -215,7 +215,88 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
     });
   });
 
-  describe('4. Rechazo Estricto de Falsos Positivos (Anti-Fraude y Publicidad)', () => {
+  describe('4. Extracción Exitosa en Bancolombia', () => {
+    it('debe parsear SMS oficial de Bancolombia con Llaves/Bre-B (caso real del usuario)', () => {
+      const rawText =
+        'Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 20/11/26 a las 10:39. Con llaves es de una y gratis. Dudas al 018000912345.';
+      const res = parseBankingNotification(rawText, 'Bancolombia', 'com.bancolombia.personas');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(15);
+        expect(res.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+        expect(res.payment.reference).toBe('*5871');
+        expect(res.payment.rawText).toBe(rawText);
+      }
+    });
+
+    it('debe parsear SMS de Bancolombia con monto estándar en miles ($50.000)', () => {
+      const rawText =
+        'Bancolombia: JEFFERSON, recibiste una transferencia de MARIA CAMILA LOPEZ por $50.000 en tu cuenta *5871 el 20/11/26 a las 10:45.';
+      const res = parseBankingNotification(rawText, 'Bancolombia');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(50000);
+        expect(res.payment.senderName).toBe('Maria Camila Lopez');
+        expect(res.payment.reference).toBe('*5871');
+      }
+    });
+
+    it('debe parsear transferencia tradicional: Bancolombia le informa que recibio una transferencia por $120.000 de PEDRO PEREZ', () => {
+      const rawText =
+        'Bancolombia le informa que recibio una transferencia por $120.000 de PEDRO PEREZ en su cuenta *3456.';
+      const res = parseBankingNotification(rawText, 'Bancolombia');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(120000);
+        expect(res.payment.senderName).toBe('Pedro Perez');
+      }
+    });
+
+    it('debe parsear abono por Transfiya a cuenta Bancolombia', () => {
+      const rawText =
+        'Bancolombia: Te transfirieron $35.000 por Transfiya de ANDRES FELIPE GOMEZ en tu cuenta *5871.';
+      const res = parseBankingNotification(rawText, 'Bancolombia');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(35000);
+        expect(res.payment.senderName).toBe('Andres Felipe Gomez');
+      }
+    });
+
+    it('debe parsear abonos en Bancolombia A la mano', () => {
+      const rawText = 'Bancolombia A la mano: recibiste $80.000 de LAURA RESTREPO.';
+      const res = parseBankingNotification(rawText, 'A la mano', 'com.bancolombia.mimovil');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(80000);
+        expect(res.payment.senderName).toBe('Laura Restrepo');
+      }
+    });
+
+    it('debe parsear pagos QR de Bancolombia', () => {
+      const rawText = 'Bancolombia: recibiste un pago de CARLOS MENDOZA por $42.500 en tu cuenta *5871.';
+      const res = parseBankingNotification(rawText, 'Bancolombia');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(42500);
+        expect(res.payment.senderName).toBe('Carlos Mendoza');
+      }
+    });
+  });
+
+  describe('5. Rechazo Estricto de Falsos Positivos (Anti-Fraude y Publicidad)', () => {
     it('debe rechazar notificaciones promocionales de Nequi y Daviplata', () => {
       const promo1 = '¡Pide tu tarjeta Nequi hoy y disfruta de descuentos!';
       const promo2 = 'Conoce el nuevo crédito salvavidas que DaviPlata tiene para ti.';
@@ -309,6 +390,27 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
 
       expect(resSaliente.success).toBe(false);
       expect(resPromo.success).toBe(false);
+    });
+
+    it('debe rechazar transacciones no monetarias y salidas de dinero en Bancolombia', () => {
+      const compra =
+        'Bancolombia: Compra por $45.000 con tu tarjeta *1234 en EXITO CALLE 80 el 20/11/26.';
+      const retiro =
+        'Bancolombia: Retiro por $100.000 en cajero 1234 el 20/11/26.';
+      const clave =
+        'Bancolombia: Tu clave dinamica es 849201. Valida por 5 minutos.';
+      const avisoLlaves =
+        '¡Esto te interesa! Información de tus llaves Bancolombia: JEFFERSON Genial. Ya puedes recibir dinero con tu llave.';
+
+      const resCompra = parseBankingNotification(compra, 'Bancolombia');
+      const resRetiro = parseBankingNotification(retiro, 'Bancolombia');
+      const resClave = parseBankingNotification(clave, 'Bancolombia');
+      const resAviso = parseBankingNotification(avisoLlaves, 'Bancolombia');
+
+      expect(resCompra.success).toBe(false);
+      expect(resRetiro.success).toBe(false);
+      expect(resClave.success).toBe(false);
+      expect(resAviso.success).toBe(false);
     });
   });
 });

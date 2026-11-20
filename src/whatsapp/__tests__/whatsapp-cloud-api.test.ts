@@ -40,6 +40,13 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
     it('formatWalletDisplayName debe retornar el nombre amigable de la billetera', () => {
       expect(formatWalletDisplayName('NEQUI')).toBe('Nequi');
       expect(formatWalletDisplayName('DAVIPLATA')).toBe('Daviplata');
+      expect(formatWalletDisplayName('BANCOLOMBIA')).toBe('Bancolombia');
+    });
+
+    it('formatWalletBadge debe retornar el badge con emoji oficial de la billetera', () => {
+      expect(formatWalletBadge('NEQUI')).toEqual({ emoji: '🟣', name: 'Nequi', combined: '🟣 Nequi' });
+      expect(formatWalletBadge('DAVIPLATA')).toEqual({ emoji: '🔴', name: 'DaviPlata', combined: '🔴 DaviPlata' });
+      expect(formatWalletBadge('BANCOLOMBIA')).toEqual({ emoji: '🟡', name: 'Bancolombia', combined: '🟡 Bancolombia' });
     });
 
     it('formatRecipientForMeta debe eliminar el prefijo más (+) y espacios', () => {

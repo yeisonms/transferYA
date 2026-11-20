@@ -40,12 +40,17 @@ object NotificationFilter {
     fun isBankingSms(rawTitle: String, rawText: String): Boolean {
         val title = rawTitle.trim()
         val text = rawText.trim()
+        val lowerTitle = title.lowercase()
         val lowerText = text.lowercase()
 
         // Códigos cortos bancarios oficiales en Colombia:
         // 890806 = Nequi / Bancolombia
+        // 890001 = Bancolombia Alertas
         // 85888  = DaviPlata
-        val isBankingSender = title.contains("890806") || title.contains("85888")
+        val isBankingSender = title.contains("890806") ||
+                title.contains("890001") ||
+                title.contains("85888") ||
+                lowerTitle.contains("bancolombia")
 
         // Mensaje transaccional de Nequi Negocios / Bre-B
         val isNequiTransaction = lowerText.startsWith("nequi:") ||
@@ -58,7 +63,13 @@ object NotificationFilter {
                 lowerText.startsWith("daviplata le informa") ||
                 (lowerText.contains("daviplata") && lowerText.contains("recibi"))
 
-        return isBankingSender || isNequiTransaction || isDaviPlataTransaction
+        // Mensaje transaccional de Bancolombia SMS
+        val isBancolombiaTransaction = lowerText.startsWith("bancolombia:") ||
+                lowerText.contains("recibiste una transferencia de") ||
+                lowerText.contains("a la mano:") ||
+                (lowerText.contains("bancolombia") && (lowerText.contains("recibi") || lowerText.contains("transfirieron")))
+
+        return isBankingSender || isNequiTransaction || isDaviPlataTransaction || isBancolombiaTransaction
     }
 
     /**
@@ -66,10 +77,13 @@ object NotificationFilter {
      */
     fun resolveBankingPackageForSms(rawTitle: String, rawText: String): String {
         val title = rawTitle.trim()
+        val lowerTitle = title.lowercase()
         val lowerText = rawText.trim().lowercase()
 
         return if (title.contains("85888") || lowerText.contains("daviplata")) {
             "com.davivienda.daviplata"
+        } else if (title.contains("890001") || lowerTitle.contains("bancolombia") || lowerText.startsWith("bancolombia:") || lowerText.contains("a la mano")) {
+            "com.bancolombia.personas"
         } else {
             "com.nequi.MobileApp"
         }

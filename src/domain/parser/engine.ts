@@ -44,11 +44,11 @@ const NEGATIVE_PATTERNS = [
   // Promociones y publicidad
   /\b(pide tu tarjeta|disfruta de descuentos|cr[eé]dito salvavidas|conoce el nuevo cr[eé]dito|desbloqueaste|bolsillos interesantes|haz crecer tu plata|aplican tyc)\b/i,
   // Retiros de efectivo
-  /\b(retiro exitoso|sacaste\s+\$|retiro en cajero|en cajero bancolombia)\b/i,
-  // Pagos salientes / débitos
-  /\b(enviaste plata|pagaste\s+\$|enviaste\s+\$|compraste\s+\$|transferiste\s+\$|env[ií]o de plata(?:\s+exitoso|\s+por\s+[\$\d.,]+\s+fue\s+exitoso)|el env[ií]o de plata por|detalle del env[ií]o)\b/i,
+  /\b(retiro exitoso|sacaste\s+\$|retiro en cajero|en cajero bancolombia|retiro por\s+\$)\b/i,
+  // Pagos salientes / débitos / compras
+  /\b(enviaste plata|pagaste\s+\$|enviaste\s+\$|compraste\s+\$|compra\s+por\s+\$|transferiste\s+\$|env[ií]o de plata(?:\s+exitoso|\s+por\s+[\$\d.,]+\s+fue\s+exitoso)|el env[ií]o de plata por|detalle del env[ií]o)\b/i,
   // Avisos de seguridad y claves dinámicas
-  /\b(clave din[aá]mica|nuevo inicio de sesi[oó]n|detectamos un nuevo)\b/i,
+  /\b(clave din[aá]mica|nuevo inicio de sesi[oó]n|detectamos un nuevo|informaci[oó]n de tus llaves)\b/i,
 ];
 
 interface RegexRule {
@@ -179,10 +179,59 @@ const PARSING_RULES: RegexRule[] = [
     amountGroup: 1,
     defaultSender: 'DaviPlata',
   },
+
+  // --- REGLAS BANCOLOMBIA ---
+  // Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 20/11/26 a las 10:39.
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia:?\s*(?:[A-ZÁÉÍÓÚÑa-záéíóúñ\s]+?,\s*)?)?recibiste una transferencia de\s+(.+?)\s+por\s+([\$\d.,]+)(?:\s+en tu cuenta\s+(\*\d+))?(?:\s+conectada a la llave\s+(@?[a-zA-Z0-9._-]+))?/i,
+    amountGroup: 2,
+    senderGroup: 1,
+    referenceGroup: 3,
+  },
+  // Bancolombia: recibiste una transferencia por $50.000 de PEDRO PEREZ en tu cuenta *5871.
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia:?\s*(?:le informa que\s*)?)?recibi(?:ste|[oó])\s+(?:una\s+)?transferencia\s+por\s+([\$\d.,]+)\s+de\s+(.+?)(?:\s+en (?:su|tu) cuenta(?:\s+(\*\d+))?|\.|$|\s*\(.*?\))/i,
+    amountGroup: 1,
+    senderGroup: 2,
+    referenceGroup: 3,
+  },
+  // Bancolombia: Te transfirieron $30.000 por Transfiya de CARLOS PEREZ en tu cuenta *5871.
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia:?\s*)?Te transfirieron\s+([\$\d.,]+)\s+(?:por Transfiya|a trav[eé]s de Transfiya)?\s*de\s+(.+?)(?:\s+en tu cuenta(?:\s+(\*\d+))?|\.|$|\s*\(.*?\))/i,
+    amountGroup: 1,
+    senderGroup: 2,
+    referenceGroup: 3,
+  },
+  // Bancolombia: Recibiste un pago de PEDRO PEREZ por $45.000 en tu cuenta *5871.
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia:?\s*)?recibiste un pago de\s+(.+?)\s+por\s+([\$\d.,]+)(?:\s+en tu cuenta(?:\s+(\*\d+))?|\.|$)/i,
+    amountGroup: 2,
+    senderGroup: 1,
+    referenceGroup: 3,
+  },
+  // Bancolombia A la mano: recibiste $50.000 de PEDRO PEREZ.
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia\s+)?A la mano:?\s*recibi(?:ste|[oó])\s+([\$\d.,]+)\s+de\s+(.+?)(?:\.|$|\s*\(.*?\))/i,
+    amountGroup: 1,
+    senderGroup: 2,
+  },
+  // Fallback Bancolombia sin remitente explícito: "Bancolombia: recibiste una transferencia por $50.000 en tu cuenta *5871"
+  {
+    wallet: 'BANCOLOMBIA',
+    pattern: /(?:Bancolombia:?\s*)?recibiste una transferencia\s+(?:por\s+)?([\$\d.,]+)(?:\s+en tu cuenta(?:\s+(\*\d+))?|\.|$)/i,
+    amountGroup: 1,
+    defaultSender: 'Transferencia Bancolombia',
+    referenceGroup: 2,
+  },
 ];
 
 /**
- * Motor determinista de parsing para notificaciones bancarias de Nequi y Daviplata.
+ * Motor determinista de parsing para notificaciones bancarias de Nequi, Daviplata y Bancolombia.
  */
 export function parseBankingNotification(
   rawText: string,
@@ -212,10 +261,18 @@ export function parseBankingNotification(
     (walletPackage && /daviplata/i.test(walletPackage))
   ) {
     expectedWallet = 'DAVIPLATA';
+  } else if (
+    walletPackage === 'com.bancolombia.personas' ||
+    walletPackage === 'com.bancolombia.mimovil' ||
+    (walletPackage && /bancolombia/i.test(walletPackage))
+  ) {
+    expectedWallet = 'BANCOLOMBIA';
   } else if (/nequi/i.test(rawTitle) || /nequi/i.test(rawText)) {
     expectedWallet = 'NEQUI';
   } else if (/daviplata/i.test(rawTitle) || /daviplata/i.test(rawText)) {
     expectedWallet = 'DAVIPLATA';
+  } else if (/bancolombia/i.test(rawTitle) || /bancolombia/i.test(rawText)) {
+    expectedWallet = 'BANCOLOMBIA';
   }
 
   // 3. Evaluar reglas de extracción

@@ -243,6 +243,112 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
   };
 }
 
+// Patrones de descarte para correos de Bancolombia que no son abonos entrantes
+const BANCOLOMBIA_EMAIL_NEGATIVE_PATTERNS = [
+  /\b(clave din[aá]mica|nuevo inicio de sesi[oó]n|c[oó]digo de seguridad|cambio de clave|restablecer tu clave)\b/i,
+  /\b(compra por\s+\$|compraste\s+\$|pagaste\s+\$|transferiste\s+\$|retiro por\s+\$|retiro en cajero)\b/i,
+  /\b(informaci[oó]n de tus llaves|conoce las nuevas tarifas|disfruta de descuentos)\b/i,
+];
+
+/**
+ * Parsea un comprobante de transferencia entrante emitido por Bancolombia por correo electrónico.
+ */
+export function parseBancolombiaEmailReceipt(email: InboundEmailInput): ParseResult {
+  const subject = email.subject || '';
+  const bodyText = (email.text || stripHtml(email.html || '')).trim();
+  const combined = `${subject}\n${bodyText}`;
+
+  // 1. Filtrar alertas de seguridad, claves dinámicas y transacciones salientes
+  for (const neg of BANCOLOMBIA_EMAIL_NEGATIVE_PATTERNS) {
+    if (neg.test(combined)) {
+      return {
+        success: false,
+        error: 'NOT_A_PAYMENT',
+        reason: 'El correo corresponde a seguridad, clave dinámica o transacción saliente',
+      };
+    }
+  }
+
+  // 2. Extraer Monto
+  let rawAmount = '';
+  const amountPatterns = [
+    /recibiste una transferencia de\s+.*?\s+por\s+([\$\d.,\s]+?)(?:\s+en tu cuenta|\.|$|\s+el)/i,
+    /recibiste una transferencia\s+por\s+([\$\d.,\s]+?)(?:\s+de\s+|\s+en tu cuenta|\.|$)/i,
+    /recibiste un pago de\s+.*?\s+por\s+([\$\d.,\s]+?)(?:\s+en tu cuenta|\.|$)/i,
+    /Te transfirieron\s+([\$\d.,\s]+?)(?:\s+por Transfiya|\s+a trav[eé]s de Transfiya|\s+de\s+|\s+a tu cuenta|\.|$)/i,
+    /Valor[:\s]*([\$\d.,\s]+)/i,
+    /Monto[:\s]*([\$\d.,\s]+)/i,
+    /(?:recibiste|te enviaron)\s+([\$\d.,\s]+)/i,
+  ];
+
+  for (const pat of amountPatterns) {
+    const m = combined.match(pat);
+    if (m && m[1]) {
+      rawAmount = m[1];
+      break;
+    }
+  }
+
+  const amount = cleanCopAmount(rawAmount);
+  if (amount <= 0) {
+    return {
+      success: false,
+      error: 'NOT_A_PAYMENT',
+      reason: 'No se pudo identificar un monto válido en el correo de Bancolombia',
+    };
+  }
+
+  // 3. Extraer Remitente
+  let rawSender = '';
+  const senderPatterns = [
+    /recibiste una transferencia de\s+([a-zA-ZÁÉÍÓÚÑáéíóúñ\s]+?)\s+por\s+[\$\d.,\s]+/i,
+    /recibiste una transferencia por\s+[\$\d.,\s]+\s+de\s+([a-zA-ZÁÉÍÓÚÑáéíóúñ\s]+?)(?:\s+en tu cuenta|\.|$|\s+el)/i,
+    /recibiste un pago de\s+([a-zA-ZÁÉÍÓÚÑáéíóúñ\s]+?)\s+por\s+[\$\d.,\s]+/i,
+    /Te transfirieron\s+[\$\d.,\s]+(?:\s+por Transfiya|\s+a trav[eé]s de Transfiya)?\s+de\s+([a-zA-ZÁÉÍÓÚÑáéíóúñ\s]+?)(?:\s+en tu cuenta|\.|$|\s+el)/i,
+    /(?:^|\n)\s*De[:\s]+([^\n\r]+)/i,
+  ];
+
+  for (const pat of senderPatterns) {
+    const m = combined.match(pat);
+    if (m && m[1]) {
+      const candidate = m[1].replace(/[.;,]+$/, '').trim();
+      if (
+        candidate &&
+        !/^(?:cuenta|banco|fecha|referencia)$/i.test(candidate) &&
+        !/cuenta|banco|fecha|referencia/i.test(candidate)
+      ) {
+        rawSender = candidate;
+        break;
+      }
+    }
+  }
+
+  let senderName = rawSender ? normalizeSenderName(rawSender) : '';
+  if (!senderName) {
+    senderName = 'Transferencia Bancolombia';
+  }
+
+  // 4. Extraer Referencia o Cuenta (*5871)
+  let reference: string | null = null;
+  const refMatch = combined.match(
+    /(?:en tu cuenta\s+(\*\d+)|conectada a la llave\s+(@?[a-zA-Z0-9._-]+)|(?:N[uú]mero\s+de\s+referencia|Referencia|Nro\.?\s*de\s+transacci[oó]n|\bRef\b)[:\s#]*([a-zA-Z0-9*]{4,}))/i,
+  );
+  if (refMatch) {
+    reference = (refMatch[1] || refMatch[2] || refMatch[3] || '').trim();
+  }
+
+  return {
+    success: true,
+    payment: {
+      wallet: 'BANCOLOMBIA',
+      amount,
+      senderName,
+      reference,
+      rawText: combined,
+    },
+  };
+}
+
 /**
  * Enrutador principal de Inbound Email para la Ruta Cloud de TransferYA.
  */
@@ -259,19 +365,47 @@ export function parseInboundEmail(
     };
   }
 
-  // 2. Evaluar si es comprobante de pago de Nequi
-  const paymentResult = parseNequiEmailReceipt(email);
-  if (paymentResult.success) {
+  const from = (email.from || '').toLowerCase();
+  const subject = email.subject || '';
+  const bodyText = email.text || email.html || '';
+  const combined = `${from}\n${subject}\n${bodyText}`;
+
+  // 2. Evaluar si proviene de o menciona Bancolombia
+  const isBancolombia =
+    /bancolombia/i.test(from) ||
+    /notificacionesbancolombia/i.test(from) ||
+    /bancolombia/i.test(subject) ||
+    /bancolombia:/i.test(bodyText);
+
+  if (isBancolombia) {
+    const bancolombiaResult = parseBancolombiaEmailReceipt(email);
+    if (bancolombiaResult.success) {
+      return {
+        success: true,
+        type: 'PAYMENT',
+        payment: bancolombiaResult.payment,
+      };
+    }
+    return {
+      success: false,
+      error: 'NOT_A_PAYMENT',
+      reason: bancolombiaResult.reason,
+    };
+  }
+
+  // 3. Evaluar si es comprobante de pago de Nequi
+  const nequiResult = parseNequiEmailReceipt(email);
+  if (nequiResult.success) {
     return {
       success: true,
       type: 'PAYMENT',
-      payment: paymentResult.payment,
+      payment: nequiResult.payment,
     };
   }
 
   return {
     success: false,
     error: 'NOT_A_PAYMENT',
-    reason: paymentResult.reason,
+    reason: nequiResult.reason,
   };
 }

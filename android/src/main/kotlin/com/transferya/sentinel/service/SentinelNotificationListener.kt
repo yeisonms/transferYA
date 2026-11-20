@@ -38,14 +38,16 @@ class SentinelNotificationListener : NotificationListenerService() {
             "com.daviplata.appfintech",
             "com.davivienda.daviplata",
             "com.davivienda.daviplataapp",
-            "com.davivienda.bancamovil"
+            "com.davivienda.bancamovil",
+            "com.bancolombia.personas",
+            "com.bancolombia.mimovil"
         )
 
         fun isSupportedPackage(packageName: String?): Boolean {
             if (packageName.isNullOrBlank()) return false
             if (SUPPORTED_PACKAGES.contains(packageName)) return true
             val lower = packageName.lowercase()
-            if (lower.contains("daviplata") || lower.contains("nequi")) return true
+            if (lower.contains("daviplata") || lower.contains("nequi") || lower.contains("bancolombia")) return true
             return NotificationFilter.isSmsPackage(packageName)
         }
 

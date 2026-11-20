@@ -252,5 +252,36 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
         expect(result.payment.wallet).toBe('NEQUI');
       }
     });
+
+    it('debe clasificar correctamente un comprobante de pago de Bancolombia (caso real del usuario)', () => {
+      const email: InboundEmailInput = {
+        from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',
+        subject: 'Todo salió bien con tus movimientos',
+        text: 'Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 20/11/26 a las 10:39. Con llaves es de una y gratis. Dudas al 018000912345.',
+      };
+
+      const result = parseInboundEmail(email);
+      expect(result.success).toBe(true);
+      if (result.success && result.type === 'PAYMENT') {
+        expect(result.payment.wallet).toBe('BANCOLOMBIA');
+        expect(result.payment.amount).toBe(15);
+        expect(result.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+        expect(result.payment.reference).toBe('*5871');
+      }
+    });
+
+    it('debe rechazar correos informativos o de seguridad de Bancolombia', () => {
+      const email: InboundEmailInput = {
+        from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',
+        subject: '¡Esto te interesa! Información de tus llaves Bancolombia: JEFFERSON Genial. Ya',
+        text: 'Bancolombia: JEFFERSON, tu llave ha sido configurada con éxito.',
+      };
+
+      const result = parseInboundEmail(email);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('NOT_A_PAYMENT');
+      }
+    });
   });
 });
