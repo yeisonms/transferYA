@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -90,12 +91,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var enrollmentManager: DeviceEnrollmentManager
     private lateinit var sqliteDao: AndroidSqliteNotificationDao
 
-    private lateinit var statusView: TextView
-    private lateinit var diagnosticView: TextView
-    private lateinit var enrollButton: Button
-    private lateinit var manualEnrollButton: Button
-    private lateinit var simulateButton: Button
+    // Header views
+    private lateinit var headerBadgeView: TextView
 
+    // Card 1: Estado de conexión
+    private lateinit var heroTitleView: TextView
+    private lateinit var heroSubtitleView: TextView
+    private lateinit var boxIdView: TextView
+    private lateinit var merchantIdView: TextView
+
+    // Bento 2 columnas: Métricas
+    private lateinit var paymentsCountView: TextView
+    private lateinit var businessConnectionView: TextView
+    private lateinit var businessConnectionSubtitleView: TextView
+
+    // Card 3: Estado del sistema
+    private lateinit var notifStatusBadge: TextView
+    private lateinit var listenerStatusBadge: TextView
+    private lateinit var batteryStatusBadge: TextView
+
+    // Acciones y botones
+    private lateinit var simulateButton: Button
+    private lateinit var enrollButton: Button
+    private lateinit var openWebBtn: Button
+    private lateinit var manualEnrollButton: Button
+    private lateinit var restrictedSettingsBtn: Button
+
+    // Contenedores
     private lateinit var operationalContainer: LinearLayout
     private lateinit var commercialLockContainer: LinearLayout
     private lateinit var lockTitleView: TextView
@@ -163,6 +185,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        window.statusBarColor = Color.parseColor("#0B1220")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        }
+
         setupView()
         updateUI()
         handleIncomingDeepLink(intent)
@@ -189,64 +217,155 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
+    private fun dpToPx(dp: Float): Int {
+        return (dp * resources.displayMetrics.density).toInt()
+    }
+
+    private fun createRoundedDrawable(
+        bgColor: Int,
+        cornerRadiusDp: Float = 14f,
+        strokeColor: Int = Color.TRANSPARENT,
+        strokeWidthDp: Float = 0f
+    ): GradientDrawable {
+        val density = resources.displayMetrics.density
+        return GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = cornerRadiusDp * density
+            setColor(bgColor)
+            if (strokeWidthDp > 0f && strokeColor != Color.TRANSPARENT) {
+                setStroke((strokeWidthDp * density).toInt(), strokeColor)
+            }
+        }
+    }
+
     private fun setupView() {
         val scrollWrapper = ScrollView(this).apply {
             isFillViewport = true
-            setBackgroundColor(Color.parseColor("#090D16"))
+            setBackgroundColor(Color.parseColor("#0B1220"))
         }
 
         val rootLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
-            gravity = Gravity.CENTER_HORIZONTAL
-            setBackgroundColor(Color.parseColor("#090D16"))
+            val hPad = dpToPx(18f)
+            val vPad = dpToPx(20f)
+            setPadding(hPad, vPad, hPad, vPad)
+            setBackgroundColor(Color.parseColor("#0B1220"))
+        }
+
+        // =====================================================================
+        // CABECERA FINTECH: Icono, Título y Badge "En línea"
+        // =====================================================================
+        val headerLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(18f)
+            }
+        }
+
+        val iconContainer = FrameLayout(this).apply {
+            val size = dpToPx(42f)
+            layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                marginEnd = dpToPx(12f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(7f)
+            setPadding(pad, pad, pad, pad)
         }
 
         val logoView = ImageView(this).apply {
             setImageResource(com.transferya.sentinel.R.drawable.transferya_centinela_master)
-            layoutParams = LinearLayout.LayoutParams(160, 160).apply {
-                bottomMargin = 16
-            }
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            scaleType = ImageView.ScaleType.FIT_CENTER
         }
-        rootLayout.addView(logoView)
+        iconContainer.addView(logoView)
+        headerLayout.addView(iconContainer)
 
-        val titleView = TextView(this).apply {
-            text = "TransferYA Centinela"
-            textSize = 26f
+        val headerTextLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        }
+
+        val appNameView = TextView(this).apply {
+            text = "TransferYA"
+            textSize = 18f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
         }
-        rootLayout.addView(titleView)
+        headerTextLayout.addView(appNameView)
 
-        val subtitleView = TextView(this).apply {
-            text = "RECEPTOR EN SEGUNDO PLANO • NEQUI Y DAVIPLATA"
+        val appTagView = TextView(this).apply {
+            text = "CENTINELA · PANEL DE CONTROL"
             textSize = 10f
-            setTextColor(Color.parseColor("#00E5FF"))
             setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(0, 4, 0, 24)
+            setTextColor(Color.parseColor("#94A3B8"))
         }
-        rootLayout.addView(subtitleView)
+        headerTextLayout.addView(appTagView)
+        headerLayout.addView(headerTextLayout)
+
+        headerBadgeView = TextView(this).apply {
+            text = "● En línea"
+            textSize = 11f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+            val hPad = dpToPx(10f)
+            val vPad = dpToPx(4f)
+            setPadding(hPad, vPad, hPad, vPad)
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0E2A27"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#20D6BA"),
+                strokeWidthDp = 1f
+            )
+        }
+        headerLayout.addView(headerBadgeView)
+        rootLayout.addView(headerLayout)
 
         // =====================================================================
-        // CONTENEDOR 1: PANTALLA ROJA DE BLOQUEO COMERCIAL (Ticket 21 / QR Nequi)
+        // CONTENEDOR 1: PANTALLA DE BLOQUEO COMERCIAL (Ticket 21 / QR Nequi)
         // =====================================================================
         commercialLockContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(32, 32, 32, 32)
-            setBackgroundColor(Color.parseColor("#1C0A0A"))
+            val pad = dpToPx(20f)
+            setPadding(pad, pad, pad, pad)
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#180B0F"),
+                cornerRadiusDp = 16f,
+                strokeColor = Color.parseColor("#451A24"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(20f)
+            }
             visibility = View.GONE
         }
 
         lockTitleView = TextView(this).apply {
             text = "⚠️ SERVICIO SUSPENDIDO — PLAN VENCIDO"
-            textSize = 18f
+            textSize = 17f
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.parseColor("#EF4444"))
             gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 16)
+            setPadding(0, 0, 0, dpToPx(14f))
         }
         commercialLockContainer.addView(lockTitleView)
 
@@ -256,37 +375,46 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#E2E8F0"))
             gravity = Gravity.CENTER
             setLineSpacing(4f, 1.15f)
-            setPadding(0, 0, 0, 20)
+            setPadding(0, 0, 0, dpToPx(16f))
         }
         commercialLockContainer.addView(lockMessageView)
 
         lockAmountView = TextView(this).apply {
             text = "VALOR PLAN PRO: $ 50.000 COP"
-            textSize = 15f
+            textSize = 14f
             setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
             setTextColor(Color.parseColor("#F59E0B"))
             gravity = Gravity.CENTER
-            setPadding(20, 12, 20, 12)
-            setBackgroundColor(Color.parseColor("#2D1515"))
+            val hP = dpToPx(20f)
+            val vP = dpToPx(10f)
+            setPadding(hP, vP, hP, vP)
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#2D1515"),
+                cornerRadiusDp = 8f
+            )
         }
         commercialLockContainer.addView(lockAmountView)
 
-        val qrSpace = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 24) }
+        val qrSpace = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, dpToPx(18f)) }
         commercialLockContainer.addView(qrSpace)
 
         val density = resources.displayMetrics.density
-        val qrSizePx = (240 * density).toInt()
+        val qrSizePx = (220 * density).toInt()
 
         lockQrImageView = ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(qrSizePx, qrSizePx).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
             }
-            setBackgroundColor(Color.WHITE)
-            setPadding(16, 16, 16, 16)
+            val p = dpToPx(14f)
+            setPadding(p, p, p, p)
+            background = createRoundedDrawable(
+                bgColor = Color.WHITE,
+                cornerRadiusDp = 12f
+            )
         }
         commercialLockContainer.addView(lockQrImageView)
 
-        val spaceQrBottom = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
+        val spaceQrBottom = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, dpToPx(14f)) }
         commercialLockContainer.addView(spaceQrBottom)
 
         val nequiDetailsView = TextView(this).apply {
@@ -295,15 +423,25 @@ class MainActivity : AppCompatActivity() {
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
-            setPadding(0, 4, 0, 24)
+            setPadding(0, 0, 0, dpToPx(18f))
         }
         commercialLockContainer.addView(nequiDetailsView)
 
         recheckButton = Button(this).apply {
             text = "🔄 Ya pagué, verificar estado"
-            setBackgroundColor(Color.parseColor("#00D26A"))
-            setTextColor(Color.parseColor("#090D16"))
+            textSize = 13f
             setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#0B1220"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#20D6BA"),
+                cornerRadiusDp = 12f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(48f)
+            ).apply {
+                bottomMargin = dpToPx(10f)
+            }
             setOnClickListener {
                 SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
                 Toast.makeText(this@MainActivity, "🔄 Consultando estado del servicio con el servidor...", Toast.LENGTH_SHORT).show()
@@ -324,13 +462,23 @@ class MainActivity : AppCompatActivity() {
         }
         commercialLockContainer.addView(recheckButton)
 
-        val spaceLock1 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
-        commercialLockContainer.addView(spaceLock1)
-
         val openNequiButton = Button(this).apply {
             text = "📲 Abrir Nequi en este celular"
-            setBackgroundColor(Color.parseColor("#1E293B"))
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
             setTextColor(Color.parseColor("#38BDF8"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(42f)
+            ).apply {
+                bottomMargin = dpToPx(8f)
+            }
             setOnClickListener {
                 try {
                     val launchIntent = packageManager.getLaunchIntentForPackage("com.nequi.MobileApp")
@@ -347,14 +495,20 @@ class MainActivity : AppCompatActivity() {
         }
         commercialLockContainer.addView(openNequiButton)
 
-        val spaceLock2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
-        commercialLockContainer.addView(spaceLock2)
-
         val copyNequiBtn = Button(this).apply {
             text = "📋 Copiar Número Nequi (3113654315)"
-            setBackgroundColor(Color.parseColor("#111827"))
+            textSize = 11f
             setTextColor(Color.parseColor("#94A3B8"))
-            textSize = 12f
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0E1726"),
+                cornerRadiusDp = 8f,
+                strokeColor = Color.parseColor("#1A2840"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(38f)
+            )
             setOnClickListener {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = android.content.ClipData.newPlainText("Nequi MurSat", "3113654315")
@@ -367,80 +521,326 @@ class MainActivity : AppCompatActivity() {
         rootLayout.addView(commercialLockContainer)
 
         // =====================================================================
-        // CONTENEDOR 2: OPERACIÓN NORMAL DEL CENTINELA
+        // CONTENEDOR 2: OPERACIÓN NORMAL DEL CENTINELA (FINTECH PREMIUM)
         // =====================================================================
         operationalContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
         }
 
-        statusView = TextView(this).apply {
-            textSize = 14f
-            setPadding(28, 24, 28, 24)
-            gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#121826"))
+        // -------------------------------------------------------------
+        // TARJETA 1: Estado de conexión (Hero Card)
+        // -------------------------------------------------------------
+        val connectionCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(14f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(18f)
+            setPadding(pad, pad, pad, pad)
         }
-        operationalContainer.addView(statusView)
 
-        val space0 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        operationalContainer.addView(space0)
+        val cardTag = TextView(this).apply {
+            text = "📡 Estado de conexión"
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+            setPadding(0, 0, 0, dpToPx(6f))
+        }
+        connectionCard.addView(cardTag)
 
-        diagnosticView = TextView(this).apply {
+        heroTitleView = TextView(this).apply {
+            text = "Caja conectada y activa"
+            textSize = 19f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+        }
+        connectionCard.addView(heroTitleView)
+
+        heroSubtitleView = TextView(this).apply {
+            text = "Escuchando pagos en tiempo real"
             textSize = 13f
-            setPadding(28, 20, 28, 20)
-            gravity = Gravity.START
-            setBackgroundColor(Color.parseColor("#172033"))
+            setTextColor(Color.parseColor("#94A3B8"))
+            setPadding(0, dpToPx(2f), 0, dpToPx(14f))
+        }
+        connectionCard.addView(heroSubtitleView)
+
+        val dividerConn = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(1f)
+            ).apply {
+                bottomMargin = dpToPx(12f)
+            }
+            setBackgroundColor(Color.parseColor("#1E314F"))
+        }
+        connectionCard.addView(dividerConn)
+
+        // Fila Caja
+        val cajaRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(8f)
+            }
+        }
+        val cajaLabel = TextView(this).apply {
+            text = "Caja"
+            textSize = 13f
+            setTextColor(Color.parseColor("#94A3B8"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        cajaRow.addView(cajaLabel)
+        boxIdView = TextView(this).apply {
+            text = "dev_caja_1"
+            textSize = 13f
+            setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+        }
+        cajaRow.addView(boxIdView)
+        connectionCard.addView(cajaRow)
+
+        // Fila Comercio
+        val comercioRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+        val comercioLabel = TextView(this).apply {
+            text = "Comercio"
+            textSize = 13f
+            setTextColor(Color.parseColor("#94A3B8"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        comercioRow.addView(comercioLabel)
+        merchantIdView = TextView(this).apply {
+            text = "bc8b5b58...9f61b1"
+            textSize = 13f
+            setTypeface(Typeface.MONOSPACE, Typeface.NORMAL)
+            setTextColor(Color.parseColor("#94A3B8"))
+        }
+        comercioRow.addView(merchantIdView)
+        connectionCard.addView(comercioRow)
+
+        operationalContainer.addView(connectionCard)
+
+        // -------------------------------------------------------------
+        // BENTO GRID (2 Columnas Métricas)
+        // -------------------------------------------------------------
+        val bentoRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(16f)
+            }
+        }
+
+        // Columna Izquierda: Pagos confirmados
+        val paymentsCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dpToPx(6f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(16f)
+            setPadding(pad, pad, pad, pad)
+        }
+        val checkIcon = TextView(this).apply {
+            text = "✓"
+            textSize = 16f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+        }
+        paymentsCard.addView(checkIcon)
+
+        paymentsCountView = TextView(this).apply {
+            text = "0"
+            textSize = 28f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            setPadding(0, dpToPx(2f), 0, dpToPx(2f))
+        }
+        paymentsCard.addView(paymentsCountView)
+
+        val paymentsLabel = TextView(this).apply {
+            text = "Pagos confirmados"
+            textSize = 12f
+            setTextColor(Color.parseColor("#94A3B8"))
+        }
+        paymentsCard.addView(paymentsLabel)
+        bentoRow.addView(paymentsCard)
+
+        // Columna Derecha: Conexión con negocio
+        val connectionMetricCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dpToPx(6f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(16f)
+            setPadding(pad, pad, pad, pad)
+        }
+        val wifiIcon = TextView(this).apply {
+            text = "📶"
+            textSize = 14f
+        }
+        connectionMetricCard.addView(wifiIcon)
+
+        businessConnectionView = TextView(this).apply {
+            text = "Conectado"
+            textSize = 17f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            setPadding(0, dpToPx(6f), 0, dpToPx(2f))
+        }
+        connectionMetricCard.addView(businessConnectionView)
+
+        businessConnectionSubtitleView = TextView(this).apply {
+            text = "Conexión con negocio"
+            textSize = 12f
+            setTextColor(Color.parseColor("#94A3B8"))
+        }
+        connectionMetricCard.addView(businessConnectionSubtitleView)
+        bentoRow.addView(connectionMetricCard)
+
+        operationalContainer.addView(bentoRow)
+
+        // -------------------------------------------------------------
+        // TARJETA 3: Estado del sistema
+        // -------------------------------------------------------------
+        val sysStatusHeader = TextView(this).apply {
+            text = "Estado del sistema"
+            textSize = 14f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            setPadding(dpToPx(4f), 0, 0, dpToPx(10f))
+        }
+        operationalContainer.addView(sysStatusHeader)
+
+        val sysStatusCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(18f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(16f)
+            setPadding(pad, pad, pad, pad)
+        }
+
+        // Fila 1: Notificaciones
+        val notifRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(6f), 0, dpToPx(10f))
+            isClickable = true
+            setOnClickListener {
+                SentinelNotificationListener.forceRebind(this@MainActivity)
+                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            }
+        }
+        val notifLabel = TextView(this).apply {
+            text = "🔔  Notificaciones"
+            textSize = 13f
+            setTextColor(Color.parseColor("#E2E8F0"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        notifRow.addView(notifLabel)
+        notifStatusBadge = TextView(this).apply {
+            text = "✓ Activo"
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+        }
+        notifRow.addView(notifStatusBadge)
+        sysStatusCard.addView(notifRow)
+
+        val dividerSys1 = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1f))
+            setBackgroundColor(Color.parseColor("#1E314F"))
+        }
+        sysStatusCard.addView(dividerSys1)
+
+        // Fila 2: Receptor de pagos
+        val listenerRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10f), 0, dpToPx(10f))
+            isClickable = true
             setOnClickListener {
                 SentinelNotificationListener.forceRebind(this@MainActivity)
                 SentinelNotificationListener.scanActiveNotifications()
                 if (enrollmentManager.getSentinelState() == SentinelState.ACTIVE_SENTINEL) {
                     SentinelForegroundService.triggerImmediateHeartbeat(this@MainActivity)
                 }
-                Toast.makeText(this@MainActivity, "🔄 Reconectando escucha y rescatando pagos pendientes...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "🔄 Reconectando escucha y rescatando pagos...", Toast.LENGTH_SHORT).show()
                 postDelayed({
                     SentinelNotificationListener.scanActiveNotifications()
                     updateUI()
                 }, 1800)
             }
         }
-        operationalContainer.addView(diagnosticView)
-
-        val space1 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 32) }
-        operationalContainer.addView(space1)
-
-        val permissionButton = Button(this).apply {
-            text = "🔔 Activar Permiso de Notificaciones"
-            setBackgroundColor(Color.parseColor("#1E293B"))
-            setTextColor(Color.WHITE)
-            setOnClickListener {
-                SentinelNotificationListener.forceRebind(this@MainActivity)
-                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-            }
+        val listenerLabel = TextView(this).apply {
+            text = "📱  Receptor de pagos"
+            textSize = 13f
+            setTextColor(Color.parseColor("#E2E8F0"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        operationalContainer.addView(permissionButton)
-
-        val spacePermHelp = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 10) }
-        operationalContainer.addView(spacePermHelp)
-
-        val unlockHelpButton = Button(this).apply {
-            text = "🔓 ¿Dice 'A la app se le negó el acceso'? Toca aquí"
-            setBackgroundColor(Color.parseColor("#334155"))
-            setTextColor(Color.parseColor("#38BDF8"))
+        listenerRow.addView(listenerLabel)
+        listenerStatusBadge = TextView(this).apply {
+            text = "✓ Escuchando"
             textSize = 12f
             setTypeface(null, Typeface.BOLD)
-            setOnClickListener {
-                showRestrictedSettingsGuide()
-            }
+            setTextColor(Color.parseColor("#20D6BA"))
         }
-        operationalContainer.addView(unlockHelpButton)
+        listenerRow.addView(listenerStatusBadge)
+        sysStatusCard.addView(listenerRow)
 
-        val space2 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        operationalContainer.addView(space2)
+        val dividerSys2 = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1f))
+            setBackgroundColor(Color.parseColor("#1E314F"))
+        }
+        sysStatusCard.addView(dividerSys2)
 
-        val batteryButton = Button(this).apply {
-            text = "🔋 Optimizar Batería (Sin Restricciones)"
-            setBackgroundColor(Color.parseColor("#334155"))
-            setTextColor(Color.WHITE)
+        // Fila 3: Optimización de batería
+        val batteryRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10f), 0, dpToPx(6f))
+            isClickable = true
             setOnClickListener {
                 try {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -452,45 +852,110 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        operationalContainer.addView(batteryButton)
-
-        val space2b = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        operationalContainer.addView(space2b)
-
-        simulateButton = Button(this).apply {
-            text = "🧪 Probar Notificación de Pago"
-            setBackgroundColor(Color.parseColor("#2563EB"))
-            setTextColor(Color.WHITE)
+        val batteryLabel = TextView(this).apply {
+            text = "🔋  Optimización de batería"
+            textSize = 13f
+            setTextColor(Color.parseColor("#E2E8F0"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        batteryRow.addView(batteryLabel)
+        batteryStatusBadge = TextView(this).apply {
+            text = "✓ Sin restricciones"
+            textSize = 12f
             setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+        }
+        batteryRow.addView(batteryStatusBadge)
+        sysStatusCard.addView(batteryRow)
+
+        operationalContainer.addView(sysStatusCard)
+
+        // -------------------------------------------------------------
+        // SECCIÓN: Acciones rápidas
+        // -------------------------------------------------------------
+        val actionsHeader = TextView(this).apply {
+            text = "Acciones rápidas"
+            textSize = 14f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            setPadding(dpToPx(4f), 0, 0, dpToPx(10f))
+        }
+        operationalContainer.addView(actionsHeader)
+
+        // Botón 1 (Principal): Probar notificación de pago
+        simulateButton = Button(this).apply {
+            text = "🧪 Probar notificación de pago"
+            textSize = 14f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#2463EB"),
+                cornerRadiusDp = 12f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(50f)
+            ).apply {
+                bottomMargin = dpToPx(10f)
+            }
             setOnClickListener {
                 simulateIncomingPayment()
             }
         }
         operationalContainer.addView(simulateButton)
 
-        val space3 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 16) }
-        operationalContainer.addView(space3)
-
+        // Botón 2 (Secundario): Cambiar o revincular código QR
         enrollButton = Button(this).apply {
-            text = "📷 Vincular con Código QR (Desde PC)"
-            setBackgroundColor(Color.parseColor("#00D26A"))
-            setTextColor(Color.parseColor("#090D16"))
+            text = "📷 Cambiar o revincular código QR"
+            textSize = 14f
             setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 12f,
+                strokeColor = Color.parseColor("#2B4066"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(50f)
+            ).apply {
+                bottomMargin = dpToPx(12f)
+            }
             setOnClickListener {
                 startQrEnrollmentFlow()
             }
         }
         operationalContainer.addView(enrollButton)
 
-        val space4 = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
-        operationalContainer.addView(space4)
+        // Acciones auxiliares de vinculación
+        val auxActionsLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(14f)
+            }
+        }
 
-        val openWebBtn = Button(this).apply {
+        openWebBtn = Button(this).apply {
             text = "🌐 Vincular desde este Celular (Abrir Web)"
-            setBackgroundColor(Color.parseColor("#1E293B"))
-            setTextColor(Color.parseColor("#38BDF8"))
             textSize = 12f
             setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#38BDF8"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0F1A2D"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#1A2B47"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(42f)
+            ).apply {
+                bottomMargin = dpToPx(8f)
+            }
             setOnClickListener {
                 try {
                     val serverUrl = credentialsStorage.getServerUrl().ifBlank { "https://www.transferya.app" }
@@ -501,69 +966,76 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        operationalContainer.addView(openWebBtn)
-
-        val space4b = View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 12) }
-        operationalContainer.addView(space4b)
+        auxActionsLayout.addView(openWebBtn)
 
         manualEnrollButton = Button(this).apply {
             text = "⌨️ Vincular con Código Manual (Pegar)"
-            setBackgroundColor(Color.parseColor("#111726"))
-            setTextColor(Color.parseColor("#94A3B8"))
             textSize = 12f
+            setTextColor(Color.parseColor("#94A3B8"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0C1422"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#16233B"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(40f)
+            ).apply {
+                bottomMargin = dpToPx(8f)
+            }
             setOnClickListener {
                 showManualEnrollmentDialog()
             }
         }
-        operationalContainer.addView(manualEnrollButton)
+        auxActionsLayout.addView(manualEnrollButton)
 
-        // Banner de Confianza, Privacidad y Habeas Data
-        val privacyContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(24, 20, 24, 20)
-            setBackgroundColor(Color.parseColor("#0F172A"))
-            val params = LinearLayout.LayoutParams(
+        restrictedSettingsBtn = Button(this).apply {
+            text = "🔓 ¿Dice 'A la app se le negó el acceso'? Toca aquí"
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#F59E0B"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#261D12"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#4D381E"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = 28
-                bottomMargin = 16
+                dpToPx(40f)
+            )
+            visibility = View.GONE
+            setOnClickListener {
+                showRestrictedSettingsGuide()
             }
-            layoutParams = params
         }
+        auxActionsLayout.addView(restrictedSettingsBtn)
+        operationalContainer.addView(auxActionsLayout)
 
-        val privacyBadgeTitle = TextView(this).apply {
-            text = "🛡️ GARANTÍA DE SEGURIDAD & HABEAS DATA"
-            textSize = 11f
-            setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
-            setTextColor(Color.parseColor("#00D26A"))
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 8)
-        }
-        privacyContainer.addView(privacyBadgeTitle)
-
-        val privacyBadgeText = TextView(this).apply {
-            text = "\"TransferYA Centinela únicamente lee las alertas de pago emitidas por Nequi y DaviPlata. Jamás tiene acceso a tus claves, saldos de cuenta ni conversaciones personales.\""
-            textSize = 11f
+        // Enlace de Seguridad y Privacidad
+        val securityPrivacyLink = TextView(this).apply {
+            text = "🛡️ Seguridad y privacidad de datos"
+            textSize = 12f
+            setTypeface(null, Typeface.BOLD)
             setTextColor(Color.parseColor("#94A3B8"))
             gravity = Gravity.CENTER
-            setLineSpacing(3f, 1.15f)
-            setPadding(0, 0, 0, 12)
-        }
-        privacyContainer.addView(privacyBadgeText)
-
-        val privacyDetailBtn = Button(this).apply {
-            text = "ℹ️ ¿Por qué Android pide permisos especiales?"
-            setBackgroundColor(Color.parseColor("#1E293B"))
-            setTextColor(Color.parseColor("#38BDF8"))
-            textSize = 11f
+            setPadding(0, dpToPx(8f), 0, dpToPx(6f))
+            isClickable = true
             setOnClickListener {
                 showSecurityExplanationDialog()
             }
         }
-        privacyContainer.addView(privacyDetailBtn)
+        operationalContainer.addView(securityPrivacyLink)
 
-        operationalContainer.addView(privacyContainer)
+        val footerNote = TextView(this).apply {
+            text = "TransferYA Centinela • Criptografía Hardware KeyStore"
+            textSize = 10f
+            setTextColor(Color.parseColor("#475569"))
+            gravity = Gravity.CENTER
+            setPadding(0, dpToPx(2f), 0, dpToPx(16f))
+        }
+        operationalContainer.addView(footerNote)
 
         rootLayout.addView(operationalContainer)
 
@@ -651,35 +1123,101 @@ class MainActivity : AppCompatActivity() {
             powerManager.isIgnoringBatteryOptimizations(packageName)
         } else true
 
+        val isListenerBound = SentinelNotificationListener.isConnected
+
         if (state == SentinelState.ACTIVE_SENTINEL) {
             val deviceId = credentialsStorage.getDeviceId() ?: "Desconocido"
             val merchantId = credentialsStorage.getMerchantId() ?: "Desconocido"
 
-            statusView.text = "🟢 CAJA CONECTADA Y ACTIVA\n\nCaja: $deviceId\nComercio: $merchantId\nEstado: Escuchando pagos en tiempo real"
-            statusView.setTextColor(Color.parseColor("#00D26A"))
-            enrollButton.text = "📷 Cambiar o Re-vincular Código QR"
+            headerBadgeView.text = "● En línea"
+            headerBadgeView.setTextColor(Color.parseColor("#20D6BA"))
+            headerBadgeView.background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0E2A27"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#20D6BA"),
+                strokeWidthDp = 1f
+            )
+
+            heroTitleView.text = "Caja conectada y activa"
+            heroSubtitleView.text = "Escuchando pagos en tiempo real"
+            heroSubtitleView.setTextColor(Color.parseColor("#94A3B8"))
+
+            boxIdView.text = deviceId
+            merchantIdView.text = if (merchantId.length > 18) {
+                "${merchantId.take(8)}...${merchantId.takeLast(6)}"
+            } else {
+                merchantId
+            }
+
+            enrollButton.text = "📷 Cambiar o revincular código QR"
             startSentinelService()
         } else {
-            statusView.text = "🟡 CAJA PENDIENTE DE VINCULAR\n\n¿Estás usando este mismo teléfono? Toca 'Vincular desde este Celular' para abrir el panel y conectar en 1 Clic.\n\n¿Tienes computador? Abre www.transferya.app y escanea el código QR."
-            statusView.setTextColor(Color.parseColor("#F59E0B"))
+            headerBadgeView.text = "● Pendiente"
+            headerBadgeView.setTextColor(Color.parseColor("#F59E0B"))
+            headerBadgeView.background = createRoundedDrawable(
+                bgColor = Color.parseColor("#281F0E"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#F59E0B"),
+                strokeWidthDp = 1f
+            )
+
+            heroTitleView.text = "Caja pendiente de vincular"
+            heroSubtitleView.text = "Apunta al código QR en transferya.app o vincula desde este celular"
+            heroSubtitleView.setTextColor(Color.parseColor("#F59E0B"))
+
+            boxIdView.text = "Sin asignar"
+            merchantIdView.text = "Sin asignar"
+
             enrollButton.text = "📷 Vincular con Código QR (Desde PC)"
         }
 
-        val isListenerBound = SentinelNotificationListener.isConnected
-        val listenerText = if (isListenerBound) "🟢 ACTIVO (Escuchando)" else "🔴 DESCONECTADO (Toca para Reconectar)"
-        val permText = if (isPermGranted) "✅ ACTIVO" else "⚠️ DESACTIVADO (Requiere activación en Ajustes)"
-        val batteryText = if (isIgnoringBattery) "✅ Sin Restricciones" else "⚠️ 'Sin Restricciones' Requerido"
-        val lastPingAt = credentialsStorage.getLastHeartbeatAt()
-        val heartbeatText = if (lastPingAt > 0L) {
-            val secAgo = ((System.currentTimeMillis() - lastPingAt) / 1000L).coerceAtLeast(0L)
-            if (secAgo < 60L) "✅ En línea (Hace ${secAgo}s)" else "✅ En línea (Hace ${secAgo / 60L} min)"
-        } else {
-            "⏳ Conectando..."
-        }
-        val lastErrorLine = if (!lastError.isNullOrBlank()) "\n• Último Error Red: ${lastError.take(120)}" else ""
+        // Métricas
+        paymentsCountView.text = dispatchedCount.toString()
 
-        diagnosticView.text = "Estado del Sistema:\n• Lectura de Notificaciones: $permText\n• Conexión con Negocio: $heartbeatText\n• Estado del Receptor: $listenerText\n• Batería del Teléfono: $batteryText\n• Pagos Registrados: $dispatchedCount confirmados$lastErrorLine"
-        diagnosticView.setTextColor(Color.parseColor(if (isPermGranted && isListenerBound && isIgnoringBattery && failedCount == 0 && pendingCount == 0) "#00D26A" else "#F59E0B"))
+        val lastPingAt = credentialsStorage.getLastHeartbeatAt()
+        if (lastPingAt > 0L) {
+            val secAgo = ((System.currentTimeMillis() - lastPingAt) / 1000L).coerceAtLeast(0L)
+            if (secAgo < 60L) {
+                businessConnectionView.text = "Conectado"
+                businessConnectionView.setTextColor(Color.parseColor("#20D6BA"))
+                businessConnectionSubtitleView.text = "Hace ${secAgo}s"
+            } else {
+                businessConnectionView.text = "En espera"
+                businessConnectionView.setTextColor(Color.parseColor("#F59E0B"))
+                businessConnectionSubtitleView.text = "Hace ${secAgo / 60L} min"
+            }
+        } else {
+            businessConnectionView.text = "Conectando..."
+            businessConnectionView.setTextColor(Color.parseColor("#94A3B8"))
+            businessConnectionSubtitleView.text = "Conexión con negocio"
+        }
+
+        // Estado del sistema
+        if (isPermGranted) {
+            notifStatusBadge.text = "✓ Activo"
+            notifStatusBadge.setTextColor(Color.parseColor("#20D6BA"))
+            restrictedSettingsBtn.visibility = View.GONE
+        } else {
+            notifStatusBadge.text = "⚠️ Inactivo"
+            notifStatusBadge.setTextColor(Color.parseColor("#EF4444"))
+            restrictedSettingsBtn.visibility = View.VISIBLE
+        }
+
+        if (isListenerBound) {
+            listenerStatusBadge.text = "✓ Escuchando"
+            listenerStatusBadge.setTextColor(Color.parseColor("#20D6BA"))
+        } else {
+            listenerStatusBadge.text = "🔴 Desconectado"
+            listenerStatusBadge.setTextColor(Color.parseColor("#EF4444"))
+        }
+
+        if (isIgnoringBattery) {
+            batteryStatusBadge.text = "✓ Sin restricciones"
+            batteryStatusBadge.setTextColor(Color.parseColor("#20D6BA"))
+        } else {
+            batteryStatusBadge.text = "⚠️ Requerido"
+            batteryStatusBadge.setTextColor(Color.parseColor("#F59E0B"))
+        }
     }
 
     private fun renderCommercialLock(subStatus: String) {
