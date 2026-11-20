@@ -89,14 +89,22 @@
     }
 
     @media print {
-      header, nav, #themeToggleBtn, #tocSidebar, footer, .no-print {
+
+      header,
+      nav,
+      #themeToggleBtn,
+      #tocSidebar,
+      footer,
+      .no-print {
         display: none !important;
       }
+
       body {
         background: #FFFFFF !important;
         color: #000000 !important;
         font-size: 11pt;
       }
+
       .card-surface {
         border: none !important;
         box-shadow: none !important;
@@ -123,13 +131,16 @@
   <!-- ========================================================================= -->
   <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#101C2D]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
+  <header
+    class="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#101C2D]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
+
       <!-- Logotipo Oficial -->
       <a href="/" class="flex items-center gap-3 group" title="Ir al panel de TransferYA">
-        <div class="w-10 h-10 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
-          <svg class="w-6 h-6 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <div
+          class="w-10 h-10 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
@@ -153,7 +164,10 @@
         <!-- Botón Volver al Panel -->
         <a href="/"
           class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#13B981] hover:bg-[#0D825B] text-white text-xs font-semibold shadow-sm transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+            </path>
+          </svg>
           <span>Ir al Panel</span>
         </a>
 
@@ -162,7 +176,9 @@
           class="p-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           title="Alternar entre modo claro y oscuro" aria-label="Alternar tema">
           <svg class="w-4 h-4 hidden dark:block text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+            <path fill-rule="evenodd"
+              d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+              clip-rule="evenodd"></path>
           </svg>
           <svg class="w-4 h-4 block dark:hidden text-gray-700" fill="currentColor" viewBox="0 0 20 20">
             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
@@ -175,9 +191,11 @@
   <!-- ========================================================================= -->
   <!-- HERO PRINCIPAL DEL DOCUMENTO LEGAL -->
   <!-- ========================================================================= -->
-  <section class="border-b border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white via-gray-50/50 to-white dark:from-[#101C2D] dark:via-[#0B111A] dark:to-[#101C2D] py-12 sm:py-16 transition-colors">
+  <section
+    class="border-b border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white via-gray-50/50 to-white dark:from-[#101C2D] dark:via-[#0B111A] dark:to-[#101C2D] py-12 sm:py-16 transition-colors">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#13B981]/15 text-[#13B981] border border-[#13B981]/30">
+      <div
+        class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#13B981]/15 text-[#13B981] border border-[#13B981]/30">
         <span class="w-2 h-2 rounded-full bg-[#13B981] animate-pulse"></span>
         <span>DOCUMENTO LEGAL VINCULANTE • REPÚBLICA DE COLOMBIA</span>
       </div>
@@ -185,9 +203,11 @@
         Términos y Condiciones del Servicio
       </h1>
       <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-        Condiciones de uso y licenciamiento de la plataforma web <strong>TransferYA</strong> y el aplicativo móvil para Android <strong>TransferYA Centinela</strong>, operados por <strong>MurSat Solutions</strong>.
+        Condiciones de uso y licenciamiento de la plataforma web <strong>TransferYA</strong> y el aplicativo móvil para
+        Android <strong>TransferYA Centinela</strong>, operados por <strong>MurSat Solutions</strong>.
       </p>
-      <div class="pt-2 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-gray-500 dark:text-gray-400">
+      <div
+        class="pt-2 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-gray-500 dark:text-gray-400">
         <span>Vigente desde: 19 de noviembre de 2026</span>
         <span>•</span>
         <span>Versión: 2.1 (Producción Oficial)</span>
@@ -209,35 +229,55 @@
       <aside id="tocSidebar" class="hidden lg:block lg:col-span-4 sticky top-24 space-y-4">
         <div class="card-surface p-5 rounded-2xl shadow-sm space-y-3">
           <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Contenido del Contrato</span>
+            <span
+              class="text-xs font-mono font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Contenido
+              del Contrato</span>
             <span class="text-[10px] font-mono text-[#13B981] font-semibold">14 Secciones</span>
           </div>
           <nav class="flex flex-col space-y-1 text-xs text-gray-600 dark:text-gray-300">
-            <a href="#sec-identificacion" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">1. Identificación y Aceptación</a>
-            <a href="#sec-naturaleza" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">2. Naturaleza del Servicio (No Intermediación)</a>
-            <a href="#sec-licencia" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">3. Licencia de Software y Centinela Android</a>
-            <a href="#sec-permisos" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">4. Permiso de Notificaciones en Android</a>
-            <a href="#sec-cloud-email" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">5. Respaldo Opcional en la Nube (Gmail)</a>
-            <a href="#sec-cuentas" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">6. Registro de Cuentas y Seguridad</a>
-            <a href="#sec-planes" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">7. Planes, Período de Prueba y Tarifas</a>
-            <a href="#sec-disponibilidad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">8. Nivel de Servicio (SLA) y Disponibilidad</a>
-            <a href="#sec-obligaciones" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">9. Obligaciones y Conducta del Usuario</a>
-            <a href="#sec-propiedad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">10. Propiedad Intelectual de MurSat</a>
-            <a href="#sec-responsabilidad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">11. Limitación de Responsabilidad</a>
-            <a href="#sec-datos" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">12. Privacidad y Habeas Data</a>
-            <a href="#sec-modificaciones" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">13. Modificaciones a los Términos</a>
-            <a href="#sec-jurisdiccion" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">14. Ley Aplicable y Canales de Contacto</a>
+            <a href="#sec-identificacion" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">1.
+              Identificación y Aceptación</a>
+            <a href="#sec-naturaleza" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">2. Naturaleza del
+              Servicio (No Intermediación)</a>
+            <a href="#sec-licencia" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">3. Licencia de
+              Software y Centinela Android</a>
+            <a href="#sec-permisos" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">4. Permiso de
+              Notificaciones en Android</a>
+            <a href="#sec-cloud-email" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">5. Respaldo
+              Opcional en la Nube (Gmail)</a>
+            <a href="#sec-cuentas" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">6. Registro de Cuentas
+              y Seguridad</a>
+            <a href="#sec-planes" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">7. Planes, Período de
+              Prueba y Tarifas</a>
+            <a href="#sec-disponibilidad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">8. Nivel de
+              Servicio (SLA) y Disponibilidad</a>
+            <a href="#sec-obligaciones" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">9. Obligaciones y
+              Conducta del Usuario</a>
+            <a href="#sec-propiedad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">10. Propiedad
+              Intelectual de MurSat</a>
+            <a href="#sec-responsabilidad" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">11. Limitación
+              de Responsabilidad</a>
+            <a href="#sec-datos" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">12. Privacidad y Habeas
+              Data</a>
+            <a href="#sec-modificaciones" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">13.
+              Modificaciones a los Términos</a>
+            <a href="#sec-jurisdiccion" class="toc-link py-1.5 hover:text-[#13B981] transition-colors">14. Ley Aplicable
+              y Canales de Contacto</a>
           </nav>
         </div>
 
         <!-- Resumen de Principio Central -->
         <div class="p-4 rounded-xl bg-[#13B981]/10 border border-[#13B981]/30 text-xs space-y-2">
           <div class="flex items-center gap-2 font-bold text-[#13B981]">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
             <span>Principio Fundamental</span>
           </div>
           <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
-            TransferYA es un software auditor de notificaciones. <strong>No es un banco, no capta dinero del público, no retiene fondos y no cobra comisiones porcentuales sobre tus ventas.</strong>
+            TransferYA es un software auditor de notificaciones. <strong>No es un banco, no capta dinero del público, no
+              retiene fondos y no cobra comisiones porcentuales sobre tus ventas.</strong>
           </p>
         </div>
       </aside>
@@ -252,7 +292,8 @@
         <!-- =================================================================== -->
         <section id="sec-identificacion" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-xs">1</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-xs">1</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Identificación de las Partes y Aceptación de los Términos
             </h2>
@@ -260,16 +301,27 @@
           <p>
             El presente contrato regula los términos y condiciones de uso entre:
           </p>
-          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-2">
+          <div
+            class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-2">
             <p>
-              <strong>El Prestador del Servicio:</strong> <strong>MurSat Solutions</strong>, empresa de desarrollo tecnológico y soluciones digitales domiciliada en Popayán, Departamento del Cauca, República de Colombia, titular exclusivo de los derechos patrimoniales y morales de autor sobre la marca, el software y la plataforma <strong>TransferYA</strong> y el aplicativo móvil para Android <strong>TransferYA Centinela</strong>.
+              <strong>El Prestador del Servicio:</strong> <strong>MurSat Solutions</strong>, empresa de desarrollo
+              tecnológico y soluciones digitales domiciliada en bogota, República de Colombia, titular exclusivo de los
+              derechos patrimoniales y morales de autor sobre la marca, el software y la plataforma
+              <strong>TransferYA</strong> y el aplicativo móvil para Android <strong>TransferYA Centinela</strong>.
             </p>
             <p>
-              <strong>El Usuario o Comercio:</strong> Toda persona natural, jurídica, establecimiento de comercio, empresa o representante comercial que descargue, instale, acceda o utilice la plataforma TransferYA y sus herramientas vinculadas.
+              <strong>El Usuario o Comercio:</strong> Toda persona natural, jurídica, establecimiento de comercio,
+              empresa o representante comercial que descargue, instale, acceda o utilice la plataforma TransferYA y sus
+              herramientas vinculadas.
             </p>
           </div>
           <p>
-            Al pulsar <em>"Crear Cuenta"</em>, <em>"Iniciar Sesión"</em>, instalar el archivo APK/aplicación móvil desde Google Play Store o acceder al panel de administración web, el Usuario declara haber leído, comprendido a cabalidad y aceptado expresamente someterse a estos Términos y Condiciones, así como a nuestra <a href="/privacidad" class="text-[#13B981] font-bold hover:underline">Política de Privacidad y Tratamiento de Datos Personales</a>. Si no está de acuerdo con cualquiera de estas cláusulas, deberá abstenerse de utilizar el servicio.
+            Al pulsar <em>"Crear Cuenta"</em>, <em>"Iniciar Sesión"</em>, instalar el archivo APK/aplicación móvil desde
+            Google Play Store o acceder al panel de administración web, el Usuario declara haber leído, comprendido a
+            cabalidad y aceptado expresamente someterse a estos Términos y Condiciones, así como a nuestra <a
+              href="/privacidad" class="text-[#13B981] font-bold hover:underline">Política de Privacidad y Tratamiento
+              de Datos Personales</a>. Si no está de acuerdo con cualquiera de estas cláusulas, deberá abstenerse de
+            utilizar el servicio.
           </p>
         </section>
 
@@ -278,23 +330,34 @@
         <!-- =================================================================== -->
         <section id="sec-naturaleza" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center font-bold text-xs">2</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center font-bold text-xs">2</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Naturaleza del Servicio: Software SaaS y No Intermediación Financiera
             </h2>
           </div>
           <p>
-            <strong>TransferYA</strong> es una solución de software como servicio (<em>Software-as-a-Service - SaaS</em>) desarrollada como herramienta tecnológica de auditoría visual y sonora en mostrador, orientada a la prevención de estafas por comprobantes de pago digitales falsos (comúnmente denominados "pantallazos adulterados").
+            <strong>TransferYA</strong> es una solución de software como servicio (<em>Software-as-a-Service -
+              SaaS</em>) desarrollada como herramienta tecnológica de auditoría visual y sonora en mostrador, orientada
+            a la prevención de estafas por comprobantes de pago digitales falsos (comúnmente denominados "pantallazos
+            adulterados").
           </p>
-          <div class="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 space-y-2.5 text-xs sm:text-sm">
+          <div
+            class="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 space-y-2.5 text-xs sm:text-sm">
             <p class="font-bold text-blue-600 dark:text-blue-400">
               Declaración Expresa de No Actividad Financiera:
             </p>
             <ul class="list-disc list-inside space-y-1.5 pl-1">
-              <li><strong>No somos una entidad vigilada por la Superfinanciera:</strong> MurSat Solutions no es un banco, compañía de financiamiento, pasarela de pagos, Sociedad Especializada en Depósitos y Pagos Electrónicos (SEDPE) ni billetera digital.</li>
-              <li><strong>Cero captación y custodia de recursos:</strong> TransferYA jamás recibe, retiene, congela, custodia ni administra dineros o depósitos pertenecientes al Usuario ni a sus clientes.</li>
-              <li><strong>El dinero viaja directamente a tu cuenta:</strong> Todas las transacciones monetarias suceden exclusivamente entre las entidades financieras y billeteras digitales autorizadas (tales como Nequi de Bancolombia, DaviPlata de Davivienda o el sistema Bre-B).</li>
-              <li><strong>Cero comisiones porcentuales:</strong> TransferYA cobra exclusivamente por el acceso a su software mediante suscripción periódica fija, sin restar comisiones por venta.</li>
+              <li><strong>No somos una entidad vigilada por la Superfinanciera:</strong> MurSat Solutions no es un
+                banco, compañía de financiamiento, pasarela de pagos, Sociedad Especializada en Depósitos y Pagos
+                Electrónicos (SEDPE) ni billetera digital.</li>
+              <li><strong>Cero captación y custodia de recursos:</strong> TransferYA jamás recibe, retiene, congela,
+                custodia ni administra dineros o depósitos pertenecientes al Usuario ni a sus clientes.</li>
+              <li><strong>El dinero viaja directamente a tu cuenta:</strong> Todas las transacciones monetarias suceden
+                exclusivamente entre las entidades financieras y billeteras digitales autorizadas (tales como Nequi de
+                Bancolombia, DaviPlata de Davivienda o el sistema Bre-B).</li>
+              <li><strong>Cero comisiones porcentuales:</strong> TransferYA cobra exclusivamente por el acceso a su
+                software mediante suscripción periódica fija, sin restar comisiones por venta.</li>
             </ul>
           </div>
         </section>
@@ -304,22 +367,30 @@
         <!-- =================================================================== -->
         <section id="sec-licencia" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">3</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">3</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Licencia de Uso y Aplicación Móvil TransferYA Centinela
             </h2>
           </div>
           <p>
-            MurSat Solutions otorga al Usuario una <strong>licencia limitada, revocable, no exclusiva, intransferible y no sublicenciable</strong> para utilizar el software TransferYA y la app para Android <strong>TransferYA Centinela</strong>, exclusivamente para la gestión y cobro en los establecimientos de comercio autorizados vinculados a su cuenta.
+            MurSat Solutions otorga al Usuario una <strong>licencia limitada, revocable, no exclusiva, intransferible y
+              no sublicenciable</strong> para utilizar el software TransferYA y la app para Android <strong>TransferYA
+              Centinela</strong>, exclusivamente para la gestión y cobro en los establecimientos de comercio autorizados
+            vinculados a su cuenta.
           </p>
           <p>
             Queda estrictamente prohibido a cualquier Usuario o tercero:
           </p>
           <ul class="list-disc list-inside space-y-1 pl-2 text-xs sm:text-sm">
-            <li>Descompilar, realizar ingeniería inversa, desensamblar o intentar derivar el código fuente de TransferYA o de TransferYA Centinela.</li>
-            <li>Modificar, clonar o crear obras derivadas de la plataforma o de sus protocolos criptográficos HMAC-SHA256.</li>
-            <li>Alquilar, revender, arrendar o comercializar el software a terceros sin la autorización previa y por escrito de MurSat Solutions.</li>
-            <li>Utilizar bots, scripts automatizados o mecanismos no autorizados para consultar o saturar la API central.</li>
+            <li>Descompilar, realizar ingeniería inversa, desensamblar o intentar derivar el código fuente de TransferYA
+              o de TransferYA Centinela.</li>
+            <li>Modificar, clonar o crear obras derivadas de la plataforma o de sus protocolos criptográficos
+              HMAC-SHA256.</li>
+            <li>Alquilar, revender, arrendar o comercializar el software a terceros sin la autorización previa y por
+              escrito de MurSat Solutions.</li>
+            <li>Utilizar bots, scripts automatizados o mecanismos no autorizados para consultar o saturar la API
+              central.</li>
           </ul>
         </section>
 
@@ -328,26 +399,35 @@
         <!-- =================================================================== -->
         <section id="sec-permisos" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold text-xs">4</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold text-xs">4</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Permiso Especial de Acceso a Notificaciones en Android
             </h2>
           </div>
           <p>
-            Para cumplir con su objetivo de confirmación instantánea en el mostrador, la aplicación <strong>TransferYA Centinela</strong> requiere que el usuario active expresamente el permiso del sistema operativo Android denominado <code>BIND_NOTIFICATION_LISTENER_SERVICE</code> (Servicio de Escucha de Notificaciones).
+            Para cumplir con su objetivo de confirmación instantánea en el mostrador, la aplicación <strong>TransferYA
+              Centinela</strong> requiere que el usuario active expresamente el permiso del sistema operativo Android
+            denominado <code>BIND_NOTIFICATION_LISTENER_SERVICE</code> (Servicio de Escucha de Notificaciones).
           </p>
-          <div class="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60 space-y-2 text-xs sm:text-sm">
+          <div
+            class="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60 space-y-2 text-xs sm:text-sm">
             <p class="font-bold text-emerald-600 dark:text-emerald-400">
               Garantía de Uso Estricto y Limitado:
             </p>
             <p>
-              • <strong>Filtro específico:</strong> La aplicación analiza de forma local únicamente las notificaciones generadas por paquetes financieros autorizados (e.g., <code>com.nequi.MobileApp</code>, <code>com.davivienda.daviplata</code>).
+              • <strong>Filtro específico:</strong> La aplicación analiza de forma local únicamente las notificaciones
+              generadas por paquetes financieros autorizados (e.g., <code>com.nequi.MobileApp</code>,
+              <code>com.davivienda.daviplata</code>).
             </p>
             <p>
-              • <strong>Cero lectura de chats personales:</strong> Centinela descarta de manera inmediata cualquier notificación de mensajería privada (WhatsApp personal, Telegram, Messenger), correos personales, llamadas o SMS ordinarios.
+              • <strong>Cero lectura de chats personales:</strong> Centinela descarta de manera inmediata cualquier
+              notificación de mensajería privada (WhatsApp personal, Telegram, Messenger), correos personales, llamadas
+              o SMS ordinarios.
             </p>
             <p>
-              • <strong>Cero acceso a claves bancarias:</strong> La app no tiene acceso a contraseñas, PINs, códigos OTP ni estados financieros globales.
+              • <strong>Cero acceso a claves bancarias:</strong> La app no tiene acceso a contraseñas, PINs, códigos OTP
+              ni estados financieros globales.
             </p>
           </div>
         </section>
@@ -357,21 +437,29 @@
         <!-- =================================================================== -->
         <section id="sec-cloud-email" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center font-bold text-xs">5</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center font-bold text-xs">5</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Respaldo Opcional en la Nube (Ruta Cloud vía Correo Gmail)
             </h2>
           </div>
           <p>
-            Como mecanismo de contingencia para comercios cuyo celular de mostrador se apague, sufra daños físicos o pierda conectividad a internet, TransferYA pone a disposición la funcionalidad de <strong>Respaldo en la Nube vía Correo</strong>.
+            Como mecanismo de contingencia para comercios cuyo celular de mostrador se apague, sufra daños físicos o
+            pierda conectividad a internet, TransferYA pone a disposición la funcionalidad de <strong>Respaldo en la
+              Nube vía Correo</strong>.
           </p>
           <p>
             Bajo esta modalidad:
           </p>
           <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs sm:text-sm">
-            <li>El Usuario crea un filtro en su cuenta de Gmail para reenviar exclusivamente los comprobantes emitidos por <code>notificaciones@nequi.com.co</code> hacia su dirección única asignada en TransferYA (formato <code>pago+UUID@transferya.app</code>).</li>
-            <li>Nuestros servidores analizan únicamente el cuerpo del comprobante transaccional recibido, extrayendo el monto, fecha y código de referencia bancaria para su validación en el panel del comercio.</li>
-            <li>Cualquier mensaje no transaccional o remitido por terceros no autorizados es descartado y destruido automáticamente para preservar la privacidad del titular.</li>
+            <li>El Usuario crea un filtro en su cuenta de Gmail para reenviar exclusivamente los comprobantes emitidos
+              por <code>notificaciones@nequi.com.co</code> hacia su dirección única asignada en TransferYA (formato
+              <code>pago+UUID@transferya.app</code>).
+            </li>
+            <li>Nuestros servidores analizan únicamente el cuerpo del comprobante transaccional recibido, extrayendo el
+              monto, fecha y código de referencia bancaria para su validación en el panel del comercio.</li>
+            <li>Cualquier mensaje no transaccional o remitido por terceros no autorizados es descartado y destruido
+              automáticamente para preservar la privacidad del titular.</li>
           </ul>
         </section>
 
@@ -380,19 +468,25 @@
         <!-- =================================================================== -->
         <section id="sec-cuentas" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">6</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">6</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Registro de Cuentas, Credenciales y Perfiles de Acceso
             </h2>
           </div>
           <p>
-            Para operar el sistema, el Usuario debe registrar una cuenta con un correo electrónico válido y una contraseña segura. El Usuario se compromete a:
+            Para operar el sistema, el Usuario debe registrar una cuenta con un correo electrónico válido y una
+            contraseña segura. El Usuario se compromete a:
           </p>
           <ol class="list-decimal list-inside space-y-1.5 pl-2 text-xs sm:text-sm">
-            <li>Suministrar información verídica, exacta y actualizada durante el registro y configuración del comercio.</li>
-            <li>Custodiar con estricta confidencialidad su clave de acceso. Toda acción efectuada desde la cuenta del comercio se presumirá realizada por su titular o personal autorizado.</li>
-            <li>Gestionar adecuadamente los roles dentro de la plataforma (Administrador vs Modo Cajero), evitando compartir privilegios administrativos con personal no calificado.</li>
-            <li>Notificar inmediatamente a MurSat Solutions en caso de advertir cualquier uso no autorizado, filtración de credenciales o vulneración de seguridad en su comercio.</li>
+            <li>Suministrar información verídica, exacta y actualizada durante el registro y configuración del comercio.
+            </li>
+            <li>Custodiar con estricta confidencialidad su clave de acceso. Toda acción efectuada desde la cuenta del
+              comercio se presumirá realizada por su titular o personal autorizado.</li>
+            <li>Gestionar adecuadamente los roles dentro de la plataforma (Administrador vs Modo Cajero), evitando
+              compartir privilegios administrativos con personal no calificado.</li>
+            <li>Notificar inmediatamente a MurSat Solutions en caso de advertir cualquier uso no autorizado, filtración
+              de credenciales o vulneración de seguridad en su comercio.</li>
           </ol>
         </section>
 
@@ -401,20 +495,29 @@
         <!-- =================================================================== -->
         <section id="sec-planes" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold text-xs">7</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold text-xs">7</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Planes de Suscripción, Período de Prueba (Trial) y Pagos
             </h2>
           </div>
           <div class="space-y-3">
             <p>
-              <strong>Período de Prueba Gratuito (Trial):</strong> Todo nuevo comercio registrado tiene derecho a un período de prueba de <strong>siete (7) días calendario</strong> con acceso completo a todas las funcionalidades de la plataforma, sin costo y sin necesidad de ingresar tarjetas de crédito por adelantado.
+              <strong>Período de Prueba Gratuito (Trial):</strong> Todo nuevo comercio registrado tiene derecho a un
+              período de prueba de <strong>siete (7) días calendario</strong> con acceso completo a todas las
+              funcionalidades de la plataforma, sin costo y sin necesidad de ingresar tarjetas de crédito por
+              adelantado.
             </p>
             <p>
-              <strong>Plan Pro (Suscripción Periódica):</strong> Finalizado el período de prueba, el comercio podrá optar por renovar su suscripción mensual. Las tarifas vigentes se informarán de manera transparente dentro del panel de administración.
+              <strong>Plan Pro (Suscripción Periódica):</strong> Finalizado el período de prueba, el comercio podrá
+              optar por renovar su suscripción mensual. Las tarifas vigentes se informarán de manera transparente dentro
+              del panel de administración.
             </p>
             <p>
-              <strong>Cancelación y Pausa Sin Cláusulas de Permanencia:</strong> El comercio es libre de pausar o no renovar su suscripción en cualquier momento. No existen penalidades, cobros retroactivos ni cláusulas abusivas de permanencia mínima. Al expirar la suscripción sin renovación, el acceso a la recepción de nuevas alertas se suspenderá hasta la reactivación correspondiente.
+              <strong>Cancelación y Pausa Sin Cláusulas de Permanencia:</strong> El comercio es libre de pausar o no
+              renovar su suscripción en cualquier momento. No existen penalidades, cobros retroactivos ni cláusulas
+              abusivas de permanencia mínima. Al expirar la suscripción sin renovación, el acceso a la recepción de
+              nuevas alertas se suspenderá hasta la reactivación correspondiente.
             </p>
           </div>
         </section>
@@ -424,18 +527,24 @@
         <!-- =================================================================== -->
         <section id="sec-disponibilidad" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">8</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">8</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Disponibilidad de la Plataforma y Nivel de Servicio (SLA)
             </h2>
           </div>
           <p>
-            MurSat Solutions emplea infraestructuras en la nube de alta resiliencia y seguridad con el objetivo de mantener una disponibilidad operativa superior al <strong>99.5%</strong>. No obstante, el Usuario reconoce y acepta que:
+            MurSat Solutions emplea infraestructuras en la nube de alta resiliencia y seguridad con el objetivo de
+            mantener una disponibilidad operativa superior al <strong>99.5%</strong>. No obstante, el Usuario reconoce y
+            acepta que:
           </p>
           <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs sm:text-sm">
-            <li>La inmediatez en el despacho de alertas depende de la conexión a internet (Wi-Fi o datos móviles) del teléfono Centinela y de la pantalla de mostrador del comercio.</li>
-            <li>Pueden presentarse interrupciones programadas por mantenimiento técnico, las cuales serán notificadas oportunamente.</li>
-            <li>No somos responsables por demoras o fallos imputables a las redes de telecomunicaciones de terceros ni a la infraestructura de servidores de Nequi, DaviPlata o Google.</li>
+            <li>La inmediatez en el despacho de alertas depende de la conexión a internet (Wi-Fi o datos móviles) del
+              teléfono Centinela y de la pantalla de mostrador del comercio.</li>
+            <li>Pueden presentarse interrupciones programadas por mantenimiento técnico, las cuales serán notificadas
+              oportunamente.</li>
+            <li>No somos responsables por demoras o fallos imputables a las redes de telecomunicaciones de terceros ni a
+              la infraestructura de servidores de Nequi, DaviPlata o Google.</li>
           </ul>
         </section>
 
@@ -444,7 +553,8 @@
         <!-- =================================================================== -->
         <section id="sec-obligaciones" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">9</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">9</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Obligaciones, Prohibiciones y Conducta del Usuario
             </h2>
@@ -453,13 +563,18 @@
             El Usuario se compromete expresamente a:
           </p>
           <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs sm:text-sm">
-            <li>Utilizar TransferYA exclusivamente para fines lícitos, de acuerdo con las leyes colombianas y del país donde opere su negocio.</li>
-            <li>No utilizar la plataforma para facilitar el lavado de activos, financiamiento del terrorismo, evasión fiscal o cualquier conducta sancionada penalmente.</li>
-            <li>No vulnerar, eludir o poner a prueba las medidas de seguridad, cortafuegos o tokens criptográficos de la plataforma.</li>
-            <li>Garantizar que el teléfono celular donde se instale el Centinela sea de uso legítimo del comercio y cuente con las autorizaciones debidas.</li>
+            <li>Utilizar TransferYA exclusivamente para fines lícitos, de acuerdo con las leyes colombianas y del país
+              donde opere su negocio.</li>
+            <li>No utilizar la plataforma para facilitar el lavado de activos, financiamiento del terrorismo, evasión
+              fiscal o cualquier conducta sancionada penalmente.</li>
+            <li>No vulnerar, eludir o poner a prueba las medidas de seguridad, cortafuegos o tokens criptográficos de la
+              plataforma.</li>
+            <li>Garantizar que el teléfono celular donde se instale el Centinela sea de uso legítimo del comercio y
+              cuente con las autorizaciones debidas.</li>
           </ul>
           <p class="text-xs text-rose-600 dark:text-rose-400 font-semibold pt-1">
-            MurSat Solutions se reserva el derecho de cancelar de manera inmediata e irrevocable la cuenta de cualquier usuario que incurra en prácticas fraudulentas o violaciones a esta cláusula.
+            MurSat Solutions se reserva el derecho de cancelar de manera inmediata e irrevocable la cuenta de cualquier
+            usuario que incurra en prácticas fraudulentas o violaciones a esta cláusula.
           </p>
         </section>
 
@@ -468,16 +583,23 @@
         <!-- =================================================================== -->
         <section id="sec-propiedad" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">10</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">10</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Propiedad Intelectual y Derechos de Autor
             </h2>
           </div>
           <p>
-            Todos los derechos de propiedad intelectual sobre TransferYA, incluyendo pero sin limitarse a: el código fuente y binario, la aplicación Android TransferYA Centinela, algoritmos de detección de fraude, logotipos, marcas comerciales ("TransferYA", "TransferYA Centinela"), diseños gráficos, interfaz de usuario (UI), arquitectura de base de datos y documentación técnica, pertenecen en su totalidad y de forma exclusiva a <strong>MurSat Solutions</strong>.
+            Todos los derechos de propiedad intelectual sobre TransferYA, incluyendo pero sin limitarse a: el código
+            fuente y binario, la aplicación Android TransferYA Centinela, algoritmos de detección de fraude, logotipos,
+            marcas comerciales ("TransferYA", "TransferYA Centinela"), diseños gráficos, interfaz de usuario (UI),
+            arquitectura de base de datos y documentación técnica, pertenecen en su totalidad y de forma exclusiva a
+            <strong>MurSat Solutions</strong>.
           </p>
           <p>
-            Las marcas "Nequi", "Bancolombia", "DaviPlata", "Davivienda", "Bre-B", "Android" y "Google Play" se citan únicamente con fines de interoperabilidad y compatibilidad técnica, perteneciendo a sus respectivos titulares registrales.
+            Las marcas "Nequi", "Bancolombia", "DaviPlata", "Davivienda", "Bre-B", "Android" y "Google Play" se citan
+            únicamente con fines de interoperabilidad y compatibilidad técnica, perteneciendo a sus respectivos
+            titulares registrales.
           </p>
         </section>
 
@@ -486,7 +608,8 @@
         <!-- =================================================================== -->
         <section id="sec-responsabilidad" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">11</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">11</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Limitación de Responsabilidad e Indemnidad
             </h2>
@@ -495,9 +618,13 @@
             TransferYA es una herramienta tecnológica de asistencia y soporte para el mostrador. En consecuencia:
           </p>
           <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs sm:text-sm">
-            <li>La decisión final de entregar mercancías, despachar productos o prestar servicios recae bajo la exclusiva responsabilidad comercial del Usuario y sus empleados de turno.</li>
-            <li>MurSat Solutions no asume responsabilidad alguna por caídas generales o fallos masivos en las plataformas de Nequi, DaviPlata o los sistemas de compensación bancaria colombianos.</li>
-            <li>En ningún caso la responsabilidad económica total de MurSat Solutions frente al Usuario por cualquier reclamación derivada del servicio excederá el monto efectivamente pagado por el Usuario en la última mensualidad de su suscripción.</li>
+            <li>La decisión final de entregar mercancías, despachar productos o prestar servicios recae bajo la
+              exclusiva responsabilidad comercial del Usuario y sus empleados de turno.</li>
+            <li>MurSat Solutions no asume responsabilidad alguna por caídas generales o fallos masivos en las
+              plataformas de Nequi, DaviPlata o los sistemas de compensación bancaria colombianos.</li>
+            <li>En ningún caso la responsabilidad económica total de MurSat Solutions frente al Usuario por cualquier
+              reclamación derivada del servicio excederá el monto efectivamente pagado por el Usuario en la última
+              mensualidad de su suscripción.</li>
           </ul>
         </section>
 
@@ -506,16 +633,22 @@
         <!-- =================================================================== -->
         <section id="sec-datos" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold text-xs">12</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold text-xs">12</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Tratamiento de Datos Personales y Habeas Data
             </h2>
           </div>
           <p>
-            El tratamiento de datos personales efectuado en TransferYA se rige estrictamente por la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013 de la República de Colombia.
+            El tratamiento de datos personales efectuado en TransferYA se rige estrictamente por la Ley Estatutaria 1581
+            de 2012 y el Decreto 1377 de 2013 de la República de Colombia.
           </p>
           <p>
-            Para conocer en detalle los tipos de datos tratados, las finalidades de procesamiento, las medidas de cifrado (TLS 1.3 / HMAC-SHA256) y el ejercicio de los derechos de Habeas Data (conocer, actualizar y rectificar información), te invitamos a consultar nuestra <a href="/privacidad" class="text-[#13B981] font-bold hover:underline">Política de Privacidad Integral</a>, la cual forma parte indivisible del presente contrato.
+            Para conocer en detalle los tipos de datos tratados, las finalidades de procesamiento, las medidas de
+            cifrado (TLS 1.3 / HMAC-SHA256) y el ejercicio de los derechos de Habeas Data (conocer, actualizar y
+            rectificar información), te invitamos a consultar nuestra <a href="/privacidad"
+              class="text-[#13B981] font-bold hover:underline">Política de Privacidad Integral</a>, la cual forma parte
+            indivisible del presente contrato.
           </p>
         </section>
 
@@ -524,16 +657,21 @@
         <!-- =================================================================== -->
         <section id="sec-modificaciones" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">13</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs">13</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Modificaciones y Actualizaciones a los Términos
             </h2>
           </div>
           <p>
-            MurSat Solutions podrá actualizar o modificar estos Términos y Condiciones en cualquier momento con el fin de reflejar mejoras técnicas, nuevas funciones o adecuaciones a cambios normativos.
+            MurSat Solutions podrá actualizar o modificar estos Términos y Condiciones en cualquier momento con el fin
+            de reflejar mejoras técnicas, nuevas funciones o adecuaciones a cambios normativos.
           </p>
           <p>
-            Toda modificación sustancial será informada con al menos cinco (5) días calendario de anticipación a través de un aviso destacado en el panel de administración web o mediante correo electrónico. El uso continuado del servicio con posterioridad a la fecha de entrada en vigencia constituirá aceptación expresa de los nuevos términos.
+            Toda modificación sustancial será informada con al menos cinco (5) días calendario de anticipación a través
+            de un aviso destacado en el panel de administración web o mediante correo electrónico. El uso continuado del
+            servicio con posterioridad a la fecha de entrada en vigencia constituirá aceptación expresa de los nuevos
+            términos.
           </p>
         </section>
 
@@ -542,24 +680,32 @@
         <!-- =================================================================== -->
         <section id="sec-jurisdiccion" class="card-surface p-6 sm:p-8 rounded-2xl scroll-mt-24 space-y-4">
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-xs">14</span>
+            <span
+              class="w-8 h-8 rounded-xl bg-[#13B981]/15 text-[#13B981] flex items-center justify-center font-bold text-xs">14</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#101C2D] dark:text-white">
               Ley Aplicable, Solución de Controversias y Canales de Contacto
             </h2>
           </div>
           <p>
-            Estos Términos y Condiciones se interpretan y rigen conforme a las leyes de la <strong>República de Colombia</strong>. Cualquier diferencia o controversia que surja en relación con este contrato que no pueda resolverse de mutuo acuerdo entre las partes será sometida a los jueces competentes de la ciudad de Popayán, Cauca.
+            Estos Términos y Condiciones se interpretan y rigen conforme a las leyes de la <strong>República de
+              Colombia</strong>. Cualquier diferencia o controversia que surja en relación con este contrato que no
+            pueda resolverse de mutuo acuerdo entre las partes será sometida a los jueces competentes de la ciudad de
+            bogota, Cundinamarca.
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
+            <div
+              class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
               <strong class="text-[#101C2D] dark:text-white block">Atención y Soporte Técnico:</strong>
               <p class="text-gray-600 dark:text-gray-300">MurSat Solutions</p>
-              <p class="text-gray-600 dark:text-gray-300">Popayán, Cauca, Colombia</p>
-              <p class="text-gray-500 text-xs">contacto@mursatsolutions.com</p>
+              <p class="text-gray-600 dark:text-gray-300">bogota, Cundinamrca, Colombia</p>
+              <p class="text-gray-500 text-xs">mursatsolutions@gmail.com</p>
             </div>
-            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
+            <div
+              class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 space-y-1">
               <strong class="text-[#101C2D] dark:text-white block">WhatsApp Oficial de Soporte:</strong>
-              <a href="https://wa.me/573113654315?text=Hola%2C%20tengo%20una%20consulta%20sobre%20los%20T%C3%A9rminos%20del%20Servicio%20de%20TransferYA" target="_blank" rel="noopener noreferrer" class="text-[#13B981] font-bold hover:underline">+57 311 365 4315</a>
+              <a href="https://wa.me/573113654315?text=Hola%2C%20tengo%20una%20consulta%20sobre%20los%20T%C3%A9rminos%20del%20Servicio%20de%20TransferYA"
+                target="_blank" rel="noopener noreferrer" class="text-[#13B981] font-bold hover:underline">+57 311 365
+                4315</a>
               <p class="text-gray-500 text-[11px] pt-1">Atención personalizada de lunes a sábado.</p>
             </div>
           </div>
@@ -572,7 +718,8 @@
   <!-- ========================================================================= -->
   <!-- FOOTER INFORMATIVO -->
   <!-- ========================================================================= -->
-  <footer class="bg-white dark:bg-[#101C2D] border-t border-gray-200 dark:border-gray-800 py-8 text-xs text-gray-500 dark:text-gray-400 transition-colors">
+  <footer
+    class="bg-white dark:bg-[#101C2D] border-t border-gray-200 dark:border-gray-800 py-8 text-xs text-gray-500 dark:text-gray-400 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2">
         <span class="font-bold text-[#101C2D] dark:text-white">TransferYA</span>
@@ -583,7 +730,8 @@
         <a href="/" class="hover:text-[#13B981] transition-colors">Inicio</a>
         <a href="/privacidad" class="hover:text-[#13B981] transition-colors">Política de Privacidad</a>
         <a href="/terminos" class="text-[#13B981] font-semibold">Términos del Servicio</a>
-        <a href="https://wa.me/573113654315" target="_blank" rel="noopener noreferrer" class="hover:text-[#13B981] transition-colors">Contacto</a>
+        <a href="https://wa.me/573113654315" target="_blank" rel="noopener noreferrer"
+          class="hover:text-[#13B981] transition-colors">Contacto</a>
       </div>
     </div>
   </footer>
@@ -623,4 +771,5 @@
   </script>
 
 </body>
+
 </html>
