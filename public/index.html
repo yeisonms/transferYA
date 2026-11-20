@@ -1013,13 +1013,13 @@
                 class="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">Imprimir</span>
             </a>
 
-            <button onclick="openGmailGuide()"
-              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onclick="openHelpCenterModal()" id="nav-btn-help"
+              class="nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-ty-muted hover:text-white hover:bg-ty-surface transition-all text-left group">
+              <svg class="w-4 h-4 text-ty-muted group-hover:text-ty-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="text-sm">Ayuda &amp; Guía</span>
+              <span class="text-sm">Ayuda &amp; Guías</span>
             </button>
 
             <!-- SUPER-ADMIN (SOLO MURSAT) -->
@@ -1068,12 +1068,12 @@
         </div>
 
         <div class="px-1 text-center">
-          <a href="/landing" target="_blank"
-            class="text-xs text-ty-muted hover:text-ty-text transition-colors inline-flex items-center gap-1 group"
-            title="Ver la página explicativa de TransferYA">
+          <button type="button" onclick="openHelpCenterModal()"
+            class="text-xs text-ty-muted hover:text-ty-text transition-colors inline-flex items-center gap-1 group cursor-pointer"
+            title="Abrir Centro de Ayuda y Guías de TransferYA">
             <span>Conoce cómo funciona</span>
-            <svg class="w-3 h-3 text-ty-muted group-hover:text-ty-text transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-          </a>
+            <svg class="w-3 h-3 text-ty-muted group-hover:text-ty-text transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </button>
         </div>
 
         <div class="pt-2 border-t border-ty-border/50 text-center">
@@ -3379,6 +3379,176 @@
   </div>
 
   <!-- ================================================================== -->
+  <!-- MODAL: CENTRO DE AYUDA Y GUÍAS (CÓMO FUNCIONA TRANSFERYA) -->
+  <!-- ================================================================== -->
+  <div id="helpCenterModal" onclick="if(event.target === this) closeHelpCenterModal()"
+    class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div
+      class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-2xl w-full p-5 sm:p-7 space-y-6 relative shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
+      <button onclick="closeHelpCenterModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1.5 rounded-lg bg-ty-surface border border-ty-border transition-colors"
+        title="Cerrar ventana">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Encabezado del Modal -->
+      <div class="flex items-start gap-3.5 border-b border-ty-border pb-4 pr-8">
+        <div
+          class="w-12 h-12 rounded-xl bg-ty-emerald/15 border border-ty-emerald/40 flex items-center justify-center text-ty-emerald shrink-0 shadow-[0_0_20px_rgba(25,195,125,0.25)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-lg font-bold text-white tracking-tight">Centro de Ayuda &amp; Guías</h3>
+            <span
+              class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30">TransferYA Soporte</span>
+          </div>
+          <p class="text-xs text-ty-muted mt-1 leading-relaxed">
+            Aprende cómo funciona el sistema, cómo conectar tus cajas en 3 pasos y cómo recibir respaldos de Nequi sin fallas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Cuadrícula / Tarjetas de Ayuda -->
+      <div class="space-y-4 text-xs">
+
+        <!-- Tarjeta 1: ¿Cómo Funciona TransferYA? (Landing / Protección Antifraude) -->
+        <div class="p-4 sm:p-5 rounded-xl bg-ty-surface border border-ty-border transition-all space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-ty-emerald/15 text-ty-emerald border border-ty-emerald/30 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">¿Cómo funciona TransferYA?</h4>
+                <span class="text-[10px] font-mono text-ty-emerald">PROTECCIÓN ANTIFRAUDE EN TIEMPO REAL</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-10">
+            TransferYA detecta pagos reales de <strong class="text-white">Nequi</strong>, <strong class="text-white">DaviPlata</strong> y <strong class="text-white">Bre-B</strong> en menos de 1 segundo. Canta el cobro en voz alta en tu mostrador y envía la confirmación al WhatsApp de tus cajeros para que <em>nunca más caigas en pantallazos falsos</em> ni tengas que prestar tu teléfono personal.
+          </p>
+          <div class="flex flex-wrap items-center gap-2 pl-10 pt-1">
+            <a href="/landing" target="_blank"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-ty-emerald text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-sm transition-all">
+              <span>Ver Explicación Completa</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            </a>
+            <button type="button" onclick="closeHelpCenterModal(); openSecurityPrivacyModal();"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ty-surface-high border border-ty-border text-xs text-ty-muted hover:text-white transition-all">
+              <span>Garantía de Seguridad y Privacidad</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Guía de Conexión de Cajas (Centinela Celular en 3 Pasos) -->
+        <div class="p-4 sm:p-5 rounded-xl bg-ty-surface border border-ty-border transition-all space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Conectar Celular de Caja (Centinela)</h4>
+                <span class="text-[10px] font-mono text-ty-cyan">GUÍA RÁPIDA EN 3 PASOS</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-10">
+            Descarga la app en el celular donde recibes el dinero, escanea el código QR de tu caja y autoriza el permiso de notificaciones. En 2 minutos tu negocio empezará a cantar cada venta automáticamente.
+          </p>
+          <div class="flex flex-wrap items-center gap-2 pl-10 pt-1">
+            <button type="button" onclick="closeHelpCenterModal(); switchTab('dashboard'); toggleQuickStartGuide(true);"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-ty-cyan/15 border border-ty-cyan/30 text-ty-cyan hover:bg-ty-cyan/25 font-semibold text-xs transition-all">
+              <span>💡 Ver Guía Ilustrada (3 Pasos)</span>
+            </button>
+            <button type="button" onclick="closeHelpCenterModal(); openPairingModal();"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ty-surface-high border border-ty-border text-xs text-white hover:border-ty-cyan/40 transition-all">
+              <span>Vincular Celular con QR</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3: Respaldo Nequi por Correo Gmail (Sin Celular) -->
+        <div class="p-4 sm:p-5 rounded-xl bg-ty-surface border border-ty-border transition-all space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Respaldo Automático Nequi por Correo</h4>
+                <span class="text-[10px] font-mono text-sky-400">FUNCIONALIDAD EN LA NUBE</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-10">
+            ¿Tu celular se apagó, se quedó sin carga o no tiene cobertura? Configura el filtro de reenvío en Gmail con tu dirección de correo exclusiva de TransferYA para confirmar comprobantes aún con el teléfono apagado.
+          </p>
+          <div class="flex flex-wrap items-center gap-2 pl-10 pt-1">
+            <button type="button" onclick="closeHelpCenterModal(); openGmailGuideModal();"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 hover:bg-sky-500/25 font-semibold text-xs transition-all">
+              <span>📖 Ver Guía de Respaldo Gmail</span>
+            </button>
+            <button type="button" onclick="closeHelpCenterModal(); switchTab('devices');"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ty-surface-high border border-ty-border text-xs text-white hover:border-sky-500/40 transition-all">
+              <span>Ir a Mis Cajas &amp; Correo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta 4: Soporte Técnico Directo (WhatsApp) -->
+        <div class="p-4 sm:p-5 rounded-xl bg-ty-surface border border-ty-border transition-all space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Soporte Técnico y Asesoría</h4>
+                <span class="text-[10px] font-mono text-emerald-400">ATENCIÓN PERSONALIZADA MURSAT</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-ty-muted leading-relaxed pl-10">
+            ¿Tienes dudas con tu cuenta, necesitas renovar tu plan o requieres asistencia técnica para tu local? Nuestro equipo de soporte está disponible directamente en WhatsApp.
+          </p>
+          <div class="pl-10 pt-1">
+            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions,%20necesito%20ayuda%20con%20mi%20cuenta%20de%20TransferYA" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 font-semibold text-xs transition-all">
+              <span>Chatear por WhatsApp (+57 311 365 4315)</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="border-t border-ty-border pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span class="text-[11px] font-mono text-ty-muted">TransferYA por MurSat Solutions • Hecho en Colombia</span>
+        <button onclick="closeHelpCenterModal()"
+          class="w-full sm:w-auto px-6 py-2 rounded-xl bg-ty-emerald text-black font-bold font-mono text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_15px_rgba(0,210,106,0.3)] transition-all">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <!-- MODAL: GUÍA DE CONFIGURACIÓN DE REENVÍO GMAIL (RUTA CLOUD) -->
   <!-- ================================================================== -->
   <div id="gmailGuideModal"
@@ -5330,7 +5500,10 @@
     }
 
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeTransactionDrawer();
+      if (e.key === "Escape") {
+        closeTransactionDrawer();
+        closeHelpCenterModal();
+      }
     });
 
     function renderRecentDashboardWidget() {
@@ -6670,6 +6843,25 @@
       if (!modal) return;
       modal.classList.add("hidden");
       document.body.classList.remove("overflow-hidden");
+    }
+
+    function openHelpCenterModal() {
+      const modal = document.getElementById("helpCenterModal");
+      if (!modal) return;
+      modal.classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+    }
+
+    function closeHelpCenterModal() {
+      const modal = document.getElementById("helpCenterModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // Alias por compatibilidad
+    function openGmailGuide() {
+      openHelpCenterModal();
     }
 
     // =========================================================================
