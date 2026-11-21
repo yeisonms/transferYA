@@ -58,10 +58,29 @@ export class BillingReconciliationService {
 
   /**
    * Determina si una notificación capturada proviene del nodo Centinela de Facturación de MurSat.
+   * Soporta identificador único, lista separada por comas (para permitir que convivan
+   * el Centinela celular y el correo Cloud Inbound de MurSat), o identificadores con prefijo mursat.
    */
   isBillingSentinel(deviceId: string): boolean {
-    if (!deviceId || !this.config.billingSentinelDeviceId) return false;
-    return deviceId.trim() === this.config.billingSentinelDeviceId.trim();
+    if (!deviceId) return false;
+    const target = deviceId.trim().toLowerCase();
+
+    if (this.config.billingSentinelDeviceId) {
+      const configuredSentinels = this.config.billingSentinelDeviceId
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      if (configuredSentinels.includes(target)) {
+        return true;
+      }
+    }
+
+    // Coincidencia por convención segura de MurSat Solutions
+    if (target.includes('mursat') || target.startsWith('cloud_email_mursat')) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

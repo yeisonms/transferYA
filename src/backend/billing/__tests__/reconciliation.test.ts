@@ -118,6 +118,25 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
       expect(service.isBillingSentinel(BILLING_SENTINEL_ID)).toBe(true);
       expect(service.isBillingSentinel('dev_other_random')).toBe(false);
     });
+
+    it('debe soportar lista de sentinelas separados por coma y dispositivos con prefijo o nombre mursat', () => {
+      const multiService = new BillingReconciliationService({
+        config: {
+          billingSentinelDeviceId: 'dev_caja_1, cloud_email_mursat_central, dev_auxiliar',
+          minPlanPriceCop: 7900,
+          defaultPlanDays: 30,
+        },
+        repository: mockRepo,
+        whatsappClient: mockWhatsApp,
+        nowProvider: () => FIXED_NOW,
+      });
+
+      expect(multiService.isBillingSentinel('dev_caja_1')).toBe(true);
+      expect(multiService.isBillingSentinel('cloud_email_mursat_central')).toBe(true);
+      expect(multiService.isBillingSentinel('dev_auxiliar')).toBe(true);
+      expect(multiService.isBillingSentinel('cloud_email_mursat')).toBe(true);
+      expect(multiService.isBillingSentinel('dev_desconocido')).toBe(false);
+    });
   });
 
   describe('2. Criterio de Monto Mínimo del Plan Pro', () => {
