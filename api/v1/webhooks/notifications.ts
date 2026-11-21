@@ -55,7 +55,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             config: {
               billingSentinelDeviceId:
                 process.env.BILLING_SENTINEL_DEVICE_ID || '',
-              minPlanPriceCop: Number(process.env.PLAN_PRO_PRICE_COP || 50000),
+              minPlanPriceCop: Number(process.env.MIN_PLAN_PRICE_COP || 7900),
               defaultPlanDays: 30,
             },
             repository,
@@ -68,6 +68,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             routingService,
             whatsappClient,
             billingReconciliationService,
+            usageRepository: repository,
           });
 
           const pipelineResult = await pipeline.processCapturedNotification(notificationId);

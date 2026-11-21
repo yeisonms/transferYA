@@ -439,7 +439,7 @@ export class PaymentProcessingPipeline {
       let isQuotaExceeded = false;
       let merchantUsage: MerchantUsageRecord | null = null;
 
-      if (this.deps.usageRepository) {
+      if (this.deps.usageRepository && typeof this.deps.usageRepository.getMerchantUsage === 'function') {
         try {
           merchantUsage = await this.deps.usageRepository.getMerchantUsage(routeResult.merchant.id);
           if (merchantUsage && merchantUsage.usedAlerts >= merchantUsage.quotaAlerts) {
@@ -504,7 +504,7 @@ export class PaymentProcessingPipeline {
         dispatches.push(dispatchItem);
 
         // Registro de auditoría financiera individual y descuento de cuota
-        if (sendResult.success && this.deps.usageRepository) {
+        if (sendResult.success && this.deps.usageRepository && typeof this.deps.usageRepository.recordWhatsAppDispatch === 'function') {
           try {
             await this.deps.usageRepository.recordWhatsAppDispatch({
               merchantId: routeResult.merchant.id,

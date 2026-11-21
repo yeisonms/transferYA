@@ -347,7 +347,7 @@ export async function handleInboundEmail(
       const billingReconciliationService = new BillingReconciliationService({
         config: {
           billingSentinelDeviceId: process.env.BILLING_SENTINEL_DEVICE_ID || '',
-          minPlanPriceCop: Number(process.env.PLAN_PRO_PRICE_COP || 50000),
+          minPlanPriceCop: Number(process.env.MIN_PLAN_PRICE_COP || 7900),
           defaultPlanDays: 30,
         },
         repository,
@@ -360,6 +360,7 @@ export async function handleInboundEmail(
         routingService,
         whatsappClient,
         billingReconciliationService,
+        usageRepository: repository,
         nowProvider: options.nowProvider,
       });
 
