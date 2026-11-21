@@ -78,9 +78,9 @@ flowchart LR
 3. En el formulario que se despliega:
    - En el campo **De (From)**, escribe exactamente:
      ```text
-     nequi.com
+     (nequi.com OR bancolombia.com)
      ```
-     *(Escribir únicamente `nequi.com` garantiza que capture tanto los pagos tradicionales de `escribenos@nequi.com` como los pagos Bre-B de `notificaciones@nequi.com.co`).*
+     *(Escribir `(nequi.com OR bancolombia.com)` garantiza que capture tanto los pagos de Nequi tradicionales, Nequi Bre-B, como los pagos por Código QR y transferencias de Bancolombia).*
    - Deja los demás campos en blanco.
 4. Haz clic en el botón **"Crear filtro"** (en la esquina inferior derecha de la ventana modal, junto al botón azul de búsqueda).
 5. En la siguiente lista de acciones, marca las siguientes casillas:
