@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v38';
+const CACHE_NAME = 'transferya-cache-v39';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -29,6 +29,8 @@ const STATIC_ASSETS = [
   '/images/og-share.jpg',
   '/images/og-square.jpg',
   '/images/sticker-diecut-badge.jpg',
+  '/images/qr-nequi-negocios-square.png',
+  '/images/qr-nequi-negocios.jpg',
   '/vendor/qrcode-generator.js',
   '/vendor/xlsx.full.min.js',
   'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
