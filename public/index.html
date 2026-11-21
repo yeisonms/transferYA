@@ -2761,6 +2761,47 @@
               </button>
             </div>
           </div>
+
+          <!-- Historial de Facturas y Auto-Renovaciones (Dogfooding - Fase 5) -->
+          <div class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden shadow-sm space-y-0">
+            <div class="p-5 sm:p-6 border-b border-ty-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h3 class="text-base font-bold text-white tracking-tight">Historial de Facturas y Auto-Renovaciones</h3>
+                </div>
+                <p class="text-xs text-ty-muted mt-0.5">
+                  Registro de pagos de planes y add-ons auto-conciliados por el nodo Centinela de MurSat Solutions.
+                </p>
+              </div>
+              <button onclick="openPaySubscriptionModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-ty-midnight font-semibold text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shrink-0 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Pagar / Renovar Plan</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-ty-surface border-b border-ty-border text-ty-muted font-mono uppercase text-[10px]">
+                  <tr>
+                    <th class="px-5 py-3">Fecha</th>
+                    <th class="px-5 py-3">Concepto</th>
+                    <th class="px-5 py-3">Referencia</th>
+                    <th class="px-5 py-3">Monto</th>
+                    <th class="px-5 py-3">Estado</th>
+                    <th class="px-5 py-3 text-right">Comprobante</th>
+                  </tr>
+                </thead>
+                <tbody id="invoicesListTableBody" class="divide-y divide-ty-border text-ty-muted">
+                  <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-ty-muted">
+                      No hay pagos registrados aún en este período.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- ============================================================ -->
@@ -3108,6 +3149,164 @@
         <button onclick="saveNewCashier()"
           class="px-5 py-2.5 rounded-xl bg-emerald-500 text-ty-midnight font-semibold text-xs hover:bg-emerald-400 transition-all shadow-sm">
           Guardar Cajero
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PAGAR SUSCRIPCIÓN O ADD-ON (DOGFOODING MURSAT - FASE 5) -->
+  <div id="paySubscriptionModal"
+    class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      class="bg-ty-surface-low border border-ty-border rounded-2xl max-w-lg w-full p-6 space-y-5 relative shadow-2xl overflow-y-auto max-h-[92vh]">
+      <button onclick="closePaySubscriptionModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1.5 rounded-lg bg-ty-surface hover:bg-ty-surface-high transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div>
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold mb-2">
+          <span>⚡ Auto-Renovación Directa · Dogfooding MurSat</span>
+        </div>
+        <h3 class="text-base sm:text-lg font-bold text-white tracking-tight">Pagar Suscripción o Add-on</h3>
+        <p class="text-xs text-ty-muted mt-1 leading-relaxed">
+          Sin pasarelas ni comisiones. Transfiere directo desde tu app Nequi o Bancolombia y nuestro sistema activará tu servicio en segundos.
+        </p>
+      </div>
+
+      <!-- Selector de Ítem a Pagar -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-ty-muted">Selecciona lo que deseas pagar:</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <!-- Opción 1: Plan Negocio (Destacado) -->
+          <label class="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_negocio" onchange="updatePayModalDetails()" checked class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+            <div class="flex-1">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>Plan Negocio</span>
+                <span class="text-emerald-400 font-mono" id="payOptPriceNegocio">$49.900</span>
+              </div>
+              <p class="text-[11px] text-ty-muted mt-0.5">2 cajeros · 3.500 alertas/mes</p>
+            </div>
+          </label>
+
+          <!-- Opción 2: Plan Emprendedor -->
+          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_emprendedor" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+            <div class="flex-1">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>Plan Emprendedor</span>
+                <span class="text-emerald-400 font-mono" id="payOptPriceEmprendedor">$29.900</span>
+              </div>
+              <p class="text-[11px] text-ty-muted mt-0.5">1 cajero · 1.500 alertas/mes</p>
+            </div>
+          </label>
+
+          <!-- Opción 3: Plan Pro Multi-Caja -->
+          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_pro" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+            <div class="flex-1">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>Pro Multi-Caja</span>
+                <span class="text-emerald-400 font-mono" id="payOptPricePro">$89.900</span>
+              </div>
+              <p class="text-[11px] text-ty-muted mt-0.5">4 cajeros · 7.500 alertas/mes</p>
+            </div>
+          </label>
+
+          <!-- Opción 4: Add-on 1.000 Alertas -->
+          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_alerts" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+            <div class="flex-1">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>+1,000 Alertas</span>
+                <span class="text-emerald-400 font-mono">$7.900</span>
+              </div>
+              <p class="text-[11px] text-ty-muted mt-0.5">Sin vencimiento mensual</p>
+            </div>
+          </label>
+
+          <!-- Opción 5: Add-on Cajero Extra -->
+          <label class="col-span-1 sm:col-span-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_cashier" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+            <div class="flex-1">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>+1 Cajero WhatsApp Extra</span>
+                <span class="text-emerald-400 font-mono">$12.900 / mes</span>
+              </div>
+              <p class="text-[11px] text-ty-muted mt-0.5">Incluye +1.200 alertas adicionales cada mes</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Selector Ciclo (Mensual / Anual) para Planes -->
+      <div id="payCycleSelectorContainer" class="flex items-center justify-between p-3 rounded-xl bg-ty-surface border border-ty-border">
+        <span class="text-xs font-semibold text-white">Ciclo de Facturación:</span>
+        <div class="flex items-center gap-1 bg-ty-surface-high p-1 rounded-lg text-xs">
+          <button type="button" id="payCycleMonthlyBtn" onclick="setPayModalBillingCycle('monthly')" class="px-2.5 py-1 rounded-md font-semibold bg-emerald-500 text-ty-midnight">Mensual</button>
+          <button type="button" id="payCycleAnnualBtn" onclick="setPayModalBillingCycle('annual')" class="px-2.5 py-1 rounded-md font-semibold text-ty-muted hover:text-white">Anual (2 meses gratis)</button>
+        </div>
+      </div>
+
+      <!-- Cuadro de Datos de Pago Directo -->
+      <div class="p-4 rounded-xl bg-gradient-to-b from-ty-surface to-ty-surface-low border border-ty-border space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-ty-border">
+          <div>
+            <span class="text-[11px] text-ty-muted block">Monto exacto a transferir:</span>
+            <span id="payModalExactAmount" class="text-2xl font-black text-white font-mono tracking-tight">$49.900 COP</span>
+          </div>
+          <button type="button" onclick="copyPayModalAmount()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high hover:bg-ty-surface-highest text-emerald-400 text-xs font-semibold border border-ty-border flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <span>Copiar Monto</span>
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <!-- Código QR Nequi -->
+          <div id="payModalQrContainer" class="w-32 h-32 bg-white p-2 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+            <!-- Renderizado dinámico con window.qrcode -->
+          </div>
+
+          <!-- Datos de Transferencia -->
+          <div class="flex-1 w-full space-y-2.5 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-lg bg-ty-surface border border-ty-border">
+              <div>
+                <span class="text-[10px] text-ty-muted block">Nequi / Llave MurSat:</span>
+                <span class="font-mono font-bold text-white text-sm" id="payModalNequiPhone">311 365 4315</span>
+              </div>
+              <button type="button" onclick="copyPayModalNequi()" class="p-1.5 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-semibold">
+                Copiar
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-ty-surface border border-ty-border">
+              <div>
+                <span class="text-[10px] text-ty-muted block">Referencia obligatoria en mensaje:</span>
+                <span class="font-mono font-bold text-ty-cyan text-sm" id="payModalReferenceCode">TYA-CARGANDO</span>
+              </div>
+              <button type="button" onclick="copyPayModalReference()" class="p-1.5 rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-xs font-semibold">
+                Copiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300 leading-relaxed">
+          <strong>⚡ ¿Cómo funciona la auto-activación?</strong>
+          Pega la referencia en el campo <em>«Mensaje»</em> o <em>«Descripción»</em> de tu app de Nequi o Bancolombia. El Centinela de MurSat Solutions captura el abono en tiempo real y renueva tu cuenta o abona las alertas automáticamente en &lt; 10 segundos.
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-2">
+        <button type="button" onclick="closePaySubscriptionModal()" class="px-4 py-2.5 rounded-xl bg-ty-surface border border-ty-border text-xs text-ty-muted hover:text-white">
+          Cerrar
+        </button>
+        <button type="button" onclick="openWhatsAppPaymentSupport()" class="px-4 py-2.5 rounded-xl bg-ty-surface border border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-400 font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+          <span>Asistencia por WhatsApp</span>
         </button>
       </div>
     </div>
@@ -4619,17 +4818,19 @@
 
       if (effectiveStatus === "ACTIVE") {
         badgeEl.textContent = daysLeft > 0 ? `${planName} · ${daysLeft} días restantes` : `${planName} Activo`;
-        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-500/10 border-emerald-500/25 text-emerald-400";
+        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-500/10 border-emerald-500/25 text-emerald-400 cursor-pointer hover:brightness-110";
       } else if (effectiveStatus === "TRIAL") {
         badgeEl.textContent = daysLeft > 0 ? `Prueba ${planName} · ${daysLeft} días restantes` : "Prueba Activa";
-        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-sky-500/10 border-sky-500/25 text-sky-400";
+        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-sky-500/10 border-sky-500/25 text-sky-400 cursor-pointer hover:brightness-110";
       } else if (effectiveStatus === "PAST_DUE") {
-        badgeEl.textContent = "Plan Vencido";
-        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-rose-500/10 border-rose-500/25 text-rose-400";
+        badgeEl.textContent = "Plan Vencido (Pagar)";
+        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-rose-500/10 border-rose-500/25 text-rose-400 cursor-pointer hover:brightness-110";
       } else {
-        badgeEl.textContent = "Servicio Pausado";
-        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-500/10 border-amber-500/25 text-amber-400";
+        badgeEl.textContent = "Servicio Pausado (Pagar)";
+        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-500/10 border-amber-500/25 text-amber-400 cursor-pointer hover:brightness-110";
       }
+      badgeEl.onclick = () => openPaySubscriptionModal();
+      badgeEl.title = "Toca para pagar o renovar suscripción";
       badgeEl.classList.remove("hidden");
     }
 
@@ -7609,6 +7810,7 @@
 
       const list = document.getElementById("cashiersList");
       updateCashiersQuotaUI();
+      loadMerchantInvoices();
       if (!cashierRecords.length) {
         list.innerHTML = `
           <div class="p-8 text-center">
@@ -7678,17 +7880,246 @@
     }
 
     function buyAlertsAddon() {
-      const merchantName = currentMerchant?.name || "mi negocio";
-      const merchantId = currentMerchant?.id || "";
-      const text = `Hola MurSat Solutions, deseo adquirir el Paquete de 1.000 Alertas WhatsApp Extra ($7.900 COP) para mi comercio ${merchantName} (${merchantId}).`;
-      window.open(`https://wa.me/573113654315?text=${encodeURIComponent(text)}`, "_blank");
+      openPaySubscriptionModal('addon_alerts');
     }
 
     function buyCashierAddon() {
+      openPaySubscriptionModal('addon_cashier');
+    }
+
+    let currentPayModalCycle = 'monthly';
+    let currentPayModalOption = 'plan_negocio';
+    let cachedMerchantInvoices = [];
+
+    function openPaySubscriptionModal(preselectedOption) {
+      if (preselectedOption) {
+        currentPayModalOption = preselectedOption;
+        const radio = document.querySelector(`input[name="payOption"][value="${preselectedOption}"]`);
+        if (radio) radio.checked = true;
+      }
+      updatePayModalDetails();
+      document.getElementById("paySubscriptionModal")?.classList.remove("hidden");
+    }
+
+    function closePaySubscriptionModal() {
+      document.getElementById("paySubscriptionModal")?.classList.add("hidden");
+    }
+
+    function setPayModalBillingCycle(cycle) {
+      currentPayModalCycle = cycle;
+      const mBtn = document.getElementById("payCycleMonthlyBtn");
+      const aBtn = document.getElementById("payCycleAnnualBtn");
+      if (cycle === 'annual') {
+        aBtn.className = "px-2.5 py-1 rounded-md font-semibold bg-emerald-500 text-ty-midnight";
+        mBtn.className = "px-2.5 py-1 rounded-md font-semibold text-ty-muted hover:text-white";
+      } else {
+        mBtn.className = "px-2.5 py-1 rounded-md font-semibold bg-emerald-500 text-ty-midnight";
+        aBtn.className = "px-2.5 py-1 rounded-md font-semibold text-ty-muted hover:text-white";
+      }
+      updatePayModalDetails();
+    }
+
+    function updatePayModalDetails() {
+      const selected = document.querySelector('input[name="payOption"]:checked')?.value || 'plan_negocio';
+      currentPayModalOption = selected;
+      const isPlan = selected.startsWith('plan_');
+      const cycleContainer = document.getElementById("payCycleSelectorContainer");
+      if (cycleContainer) {
+        cycleContainer.style.display = isPlan ? "flex" : "none";
+      }
+
+      let amount = 49900;
+      let label = "Plan Negocio (30 días)";
+
+      if (selected === 'addon_alerts') {
+        amount = 7900;
+        label = "Paquete 1.000 Alertas Extra";
+      } else if (selected === 'addon_cashier') {
+        amount = 12900;
+        label = "Add-on Cajero WhatsApp Extra (+1.200 alertas)";
+      } else if (selected === 'plan_emprendedor') {
+        if (currentPayModalCycle === 'annual') {
+          amount = 299000;
+          label = "Plan Emprendedor Anual (365 días - 2 meses gratis)";
+        } else {
+          amount = 29900;
+          label = "Plan Emprendedor Mensual (30 días)";
+        }
+      } else if (selected === 'plan_pro') {
+        if (currentPayModalCycle === 'annual') {
+          amount = 899000;
+          label = "Plan Pro Multi-Caja Anual (365 días - 2 meses gratis)";
+        } else {
+          amount = 89900;
+          label = "Plan Pro Multi-Caja Mensual (30 días)";
+        }
+      } else {
+        // plan_negocio
+        if (currentPayModalCycle === 'annual') {
+          amount = 499000;
+          label = "Plan Negocio Anual (365 días - 2 meses gratis)";
+        } else {
+          amount = 49900;
+          label = "Plan Negocio Mensual (30 días)";
+        }
+      }
+
+      const amountEl = document.getElementById("payModalExactAmount");
+      if (amountEl) {
+        amountEl.textContent = `$${amount.toLocaleString('es-CO')} COP`;
+        amountEl.dataset.rawAmount = String(amount);
+      }
+
+      // Referencia comercial única del comercio
+      const merchantId = currentMerchant?.id || "MURSAT";
+      const cleanShortId = merchantId.replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase();
+      const reference = `TYA-${cleanShortId}`;
+      const refEl = document.getElementById("payModalReferenceCode");
+      if (refEl) {
+        refEl.textContent = reference;
+        refEl.dataset.ref = reference;
+      }
+
+      // Renderizar QR con datos de Nequi
+      const qrContainer = document.getElementById("payModalQrContainer");
+      if (qrContainer && window.qrcode) {
+        try {
+          const qr = window.qrcode(0, "M");
+          qr.addData(`nequi://transfer?phone=3113654315&amount=${amount}&ref=${reference}`);
+          qr.make();
+          qrContainer.innerHTML = qr.createSvgTag({ scalable: true, margin: 1 });
+        } catch {
+          qrContainer.innerHTML = `<span class="text-[10px] text-ty-muted text-center font-mono">Nequi 311 365 4315</span>`;
+        }
+      }
+    }
+
+    function copyPayModalAmount() {
+      const amt = document.getElementById("payModalExactAmount")?.dataset.rawAmount || "49900";
+      navigator.clipboard?.writeText(amt);
+      showToast(`Monto copiado: $${Number(amt).toLocaleString('es-CO')}`);
+    }
+
+    function copyPayModalNequi() {
+      navigator.clipboard?.writeText("3113654315");
+      showToast("Número Nequi copiado: 311 365 4315");
+    }
+
+    function copyPayModalReference() {
+      const ref = document.getElementById("payModalReferenceCode")?.dataset.ref || "TYA-MURSAT";
+      navigator.clipboard?.writeText(ref);
+      showToast(`Referencia copiada: ${ref}`);
+    }
+
+    function openWhatsAppPaymentSupport() {
       const merchantName = currentMerchant?.name || "mi negocio";
       const merchantId = currentMerchant?.id || "";
-      const text = `Hola MurSat Solutions, deseo agregar un Cajero WhatsApp Extra ($12.900 COP/mes con +1.200 alertas) para mi comercio ${merchantName} (${merchantId}).`;
+      const amt = document.getElementById("payModalExactAmount")?.textContent || "";
+      const ref = document.getElementById("payModalReferenceCode")?.dataset.ref || "";
+      const text = `Hola MurSat Solutions, estoy realizando el pago de mi cuenta TransferYA (${merchantName} - ${merchantId}) por valor de ${amt} con referencia ${ref}.`;
       window.open(`https://wa.me/573113654315?text=${encodeURIComponent(text)}`, "_blank");
+    }
+
+    async function loadMerchantInvoices() {
+      if (!currentMerchant || !supabaseClient) return;
+      const tbody = document.getElementById("invoicesListTableBody");
+      if (!tbody) return;
+
+      try {
+        const { data: invoices, error } = await supabaseClient
+          .from("billing_invoices")
+          .select("*")
+          .eq("merchant_id", currentMerchant.id)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (error || !invoices || invoices.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-5 py-8 text-center text-ty-muted">
+                No hay facturas registradas en este período. Al realizar tu pago se auto-conciliará aquí en segundos.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        cachedMerchantInvoices = invoices;
+        tbody.innerHTML = invoices.map((inv) => {
+          const dateStr = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString('es-CO') : new Date(inv.created_at).toLocaleDateString('es-CO');
+          const isPaid = inv.status === 'PAID';
+          const badgeClass = isPaid
+            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            : (inv.status === 'PENDING' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-ty-surface text-ty-muted border-ty-border");
+          const statusLabel = isPaid ? "PAGADA (Auto-conciliada)" : inv.status;
+          const desc = inv.item_description || (inv.amount_cop === 7900 ? "Paquete 1.000 Alertas Extra" : (inv.amount_cop === 12900 ? "Add-on Cajero WhatsApp Extra" : "Renovación Plan"));
+
+          return `
+            <tr class="hover:bg-ty-surface/40 transition-colors">
+              <td class="px-5 py-3 font-mono text-ty-muted">${dateStr}</td>
+              <td class="px-5 py-3 font-semibold text-white">${escapeHtml(desc)}</td>
+              <td class="px-5 py-3 font-mono text-ty-cyan">${escapeHtml(inv.reference_code || '-')}</td>
+              <td class="px-5 py-3 font-mono font-bold text-white">$${Number(inv.amount_cop).toLocaleString('es-CO')}</td>
+              <td class="px-5 py-3">
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeClass}">
+                  ${statusLabel}
+                </span>
+              </td>
+              <td class="px-5 py-3 text-right">
+                <button type="button" onclick="printInvoiceReceipt('${inv.id}')" class="text-xs text-ty-cyan hover:underline font-semibold inline-flex items-center gap-1">
+                  <span>Recibo</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        console.warn("Error cargando facturas:", err);
+      }
+    }
+
+    function printInvoiceReceipt(invoiceId) {
+      const inv = cachedMerchantInvoices.find((i) => i.id === invoiceId);
+      if (!inv) return;
+      const printWin = window.open("", "_blank", "width=600,height=700");
+      if (!printWin) return;
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Recibo de Suscripción TransferYA - ${escapeHtml(inv.reference_code)}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px; color: #101c2d; }
+            .header { border-bottom: 2px solid #10b981; padding-bottom: 16px; margin-bottom: 24px; }
+            .title { font-size: 20px; font-weight: bold; color: #059669; }
+            .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+            .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+            .total { font-size: 18px; font-weight: bold; color: #101c2d; padding-top: 16px; display: flex; justify-content: space-between; }
+            .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">TransferYA · MurSat Solutions</div>
+            <div class="meta">Comprobante Oficial de Auto-Renovación Digital (Dogfooding)</div>
+          </div>
+          <div class="row"><span>Comercio:</span><strong>${escapeHtml(currentMerchant?.name || '')}</strong></div>
+          <div class="row"><span>Referencia de Pago:</span><strong>${escapeHtml(inv.reference_code)}</strong></div>
+          <div class="row"><span>Fecha de Conciliación:</span><span>${new Date(inv.paid_at || inv.created_at).toLocaleString('es-CO')}</span></div>
+          <div class="row"><span>Concepto:</span><span>${escapeHtml(inv.item_description || 'Suscripción TransferYA')}</span></div>
+          <div class="row"><span>Método:</span><span>Transferencia Bancaria Directa (Nequi / Bancolombia)</span></div>
+          <div class="row"><span>Estado:</span><strong style="color: #059669;">PAGADO Y ACREDITADO</strong></div>
+          <div class="total"><span>TOTAL PAGADO:</span><span>$${Number(inv.amount_cop).toLocaleString('es-CO')} COP</span></div>
+          <div class="footer">
+            TransferYA por MurSat Solutions · NIT 901.876.543 · Popayán / Colombia<br/>
+            Este documento constituye un comprobante digital de acreditación de servicio SaaS.
+          </div>
+          <script>window.print();<\/script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
     }
 
     function updateCashiersQuotaUI() {

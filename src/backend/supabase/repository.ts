@@ -1133,6 +1133,7 @@ export class SupabaseRepository
     merchantId: string,
     days: number = 30,
     nowMs: number = Date.now(),
+    planId?: string,
   ): Promise<{ previousEndsAt: string | null; newEndsAt: string; daysRemaining: number }> {
     const merchant = await this.getMerchantById(merchantId);
     if (!merchant) {
@@ -1152,13 +1153,19 @@ export class SupabaseRepository
     const endsAtMs = baseMs + days * 86_400_000;
     const iso = new Date(endsAtMs).toISOString();
 
-    await this.updateMerchantSubscription(merchantId, {
+    const updatePayload: Record<string, any> = {
       subscription_status: 'ACTIVE',
       subscription_ends_at: iso,
       subscription_expires_at: iso,
       status: 'ACTIVE',
       updated_at: new Date(nowMs).toISOString(),
-    });
+    };
+
+    if (planId) {
+      updatePayload.plan_id = planId;
+    }
+
+    await this.updateMerchantSubscription(merchantId, updatePayload);
 
     const daysRemaining = Math.max(1, Math.ceil((endsAtMs - nowMs) / 86_400_000));
 
@@ -1166,6 +1173,71 @@ export class SupabaseRepository
       previousEndsAt: currentEndsAtMs ? new Date(currentEndsAtMs).toISOString() : null,
       newEndsAt: iso,
       daysRemaining,
+    };
+  }
+
+  async applyAddonPurchase(
+    merchantId: string,
+    addonType: 'addon_alerts' | 'addon_cashier',
+    amountCop: number,
+    notificationId?: string,
+    nowMs: number = Date.now(),
+  ): Promise<{ extraAlerts: number; extraCashiers: number }> {
+    const merchant = await this.getMerchantById(merchantId);
+    if (!merchant) {
+      throw new Error(`Comercio con ID ${merchantId} no encontrado para aplicar add-on.`);
+    }
+
+    let extraAlertsDelta = 0;
+    let extraCashiersDelta = 0;
+
+    if (addonType === 'addon_alerts') {
+      extraAlertsDelta = 1000;
+    } else if (addonType === 'addon_cashier') {
+      extraCashiersDelta = 1;
+      extraAlertsDelta = 1200;
+    }
+
+    const currentExtraAlerts = (merchant as any).extra_alerts_quota || 0;
+    const currentExtraCashiers = (merchant as any).extra_cashiers_quota || 0;
+    const newExtraAlerts = currentExtraAlerts + extraAlertsDelta;
+    const newExtraCashiers = currentExtraCashiers + extraCashiersDelta;
+
+    const updatePayload: Record<string, any> = {
+      extra_alerts_quota: newExtraAlerts,
+      extra_cashiers_quota: newExtraCashiers,
+      updated_at: new Date(nowMs).toISOString(),
+    };
+
+    if ((merchant as any).whatsapp_quota_status === 'paused_100') {
+      updatePayload.whatsapp_quota_status = 'normal';
+      updatePayload.whatsapp_paused_at = null;
+    }
+
+    await this.updateMerchantSubscription(merchantId, updatePayload);
+
+    // Registro de auditoría opcional en merchant_addons si existe la tabla
+    try {
+      await fetch(`${this.baseUrl}/rest/v1/merchant_addons`, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify({
+          merchant_id: merchantId,
+          addon_type: addonType === 'addon_alerts' ? 'extra_alerts_1000' : 'extra_cashier_1',
+          price_cop: amountCop,
+          status: 'active',
+          extra_alerts: extraAlertsDelta,
+          extra_cashiers: extraCashiersDelta,
+          notification_id: notificationId || null,
+        }),
+      });
+    } catch {
+      // Ignorar si el endpoint REST no está activo
+    }
+
+    return {
+      extraAlerts: newExtraAlerts,
+      extraCashiers: newExtraCashiers,
     };
   }
 }

@@ -69,6 +69,53 @@ describe('Webhook de Meta WhatsApp Cloud API (src/whatsapp/webhook-handler)', ()
     expect(parsed.status).toBe('EVENT_RECEIVED');
   });
 
+  it('debe procesar eventos de actualización de entrega (delivered, read) vía onStatusUpdate', async () => {
+    const { req, res } = createMockReqRes('POST', '/api/v1/webhooks/whatsapp');
+    const statusUpdates: any[] = [];
+
+    const promise = handleMetaWebhook(req, res, {
+      onStatusUpdate: async (st) => {
+        statusUpdates.push(st);
+      },
+    });
+
+    const metaPayload = {
+      object: 'whatsapp_business_account',
+      entry: [
+        {
+          id: '123456789',
+          changes: [
+            {
+              value: {
+                messaging_product: 'whatsapp',
+                statuses: [
+                  {
+                    id: 'wamid.HBgLMjAyNjExMjAxM',
+                    status: 'delivered',
+                    timestamp: '1732140000',
+                    recipient_id: '573113654315',
+                  },
+                ],
+              },
+              field: 'messages',
+            },
+          ],
+        },
+      ],
+    };
+
+    req.emit('data', Buffer.from(JSON.stringify(metaPayload)));
+    req.emit('end');
+
+    await promise;
+
+    expect(res.statusCode).toBe(200);
+    expect(statusUpdates).toHaveLength(1);
+    expect(statusUpdates[0].wamid).toBe('wamid.HBgLMjAyNjExMjAxM');
+    expect(statusUpdates[0].status).toBe('delivered');
+    expect(statusUpdates[0].recipientId).toBe('573113654315');
+  });
+
   it('debe rechazar métodos no soportados con 405', async () => {
     const { req, res } = createMockReqRes('PUT', '/api/v1/webhooks/whatsapp');
 

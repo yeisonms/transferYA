@@ -208,7 +208,7 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
       // Verificaciones de persistencia y comunicación
       expect(mockRepo.findInvoiceByReference).toHaveBeenCalledWith('TYA-7B8K2M');
       expect(mockRepo.findMerchantById).toHaveBeenCalledWith(sampleMerchant.id);
-      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(sampleMerchant.id, 30, FIXED_NOW);
+      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(sampleMerchant.id, 30, FIXED_NOW, 'pro');
       expect(mockRepo.markInvoicePaid).toHaveBeenCalledWith(samplePendingInvoice.id, notification.id, FIXED_NOW);
       expect(mockWhatsApp.sendRenewalConfirmation).toHaveBeenCalledWith(
         '+573113654315',
@@ -304,7 +304,7 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
       expect(result.matchedPhone).toBe('+573113654315');
       expect(result.daysRemaining).toBe(35);
       expect(mockRepo.findMerchantByBillingPhone).toHaveBeenCalledWith('+573113654315');
-      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(sampleMerchant.id, 30, FIXED_NOW);
+      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(sampleMerchant.id, 30, FIXED_NOW, 'pro');
     });
 
     it('debe crear una nueva factura en estado PAID si el comercio no tenía factura pendiente previa', async () => {
@@ -448,6 +448,239 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
       expect(result.success).toBe(true);
       expect(result.whatsappSent).toBe(false);
       expect(mockRepo.extendMerchantSubscription).toHaveBeenCalled();
+    });
+  });
+
+  describe('6. Fase 5: Conciliación Inteligente Multi-Plan y Add-ons por Dogfooding', () => {
+    it('debe conciliar pago de $7.900 como Add-on de 1.000 Alertas WhatsApp', async () => {
+      const customService = new BillingReconciliationService({
+        config: {
+          billingSentinelDeviceId: BILLING_SENTINEL_ID,
+          minPlanPriceCop: 7_900,
+        },
+        repository: {
+          ...mockRepo,
+          applyAddonPurchase: vi.fn().mockResolvedValue({
+            extraAlerts: 1000,
+            extraCashiers: 0,
+          }),
+        },
+        whatsappClient: mockWhatsApp,
+        nowProvider: () => FIXED_NOW,
+      });
+
+      const notification: StoredNotificationRecord = {
+        id: 'notif-addon-alerts',
+        deviceId: BILLING_SENTINEL_ID,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Plata recibida. Te acaban de enviar $7.900 en Nequi. Ref: TYA-7B8K2M',
+        capturedAt: FIXED_NOW - 1000,
+        dispatchedAt: FIXED_NOW - 500,
+        receivedAt: FIXED_NOW,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+
+      const receipt: ParsedPaymentReceipt = {
+        wallet: 'NEQUI',
+        amount: 7_900,
+        senderName: 'Panadería La Central',
+        reference: 'TYA-7B8K2M',
+        rawText: notification.rawText,
+      };
+
+      vi.mocked(mockRepo.findInvoiceByReference).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        amount_cop: 7_900,
+        item_type: 'addon_alerts',
+      });
+      vi.mocked(mockRepo.findMerchantById).mockResolvedValueOnce(sampleMerchant);
+      vi.mocked(mockRepo.markInvoicePaid).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        status: 'PAID',
+      });
+
+      const result = await customService.reconcile(notification, receipt);
+
+      expect(result.success).toBe(true);
+      expect(result.itemType).toBe('addon_alerts');
+      expect(result.extraAlertsAdded).toBe(1000);
+      expect(mockRepo.extendMerchantSubscription).not.toHaveBeenCalled();
+    });
+
+    it('debe conciliar pago de $12.900 como Add-on de Cajero WhatsApp Extra', async () => {
+      const customService = new BillingReconciliationService({
+        config: {
+          billingSentinelDeviceId: BILLING_SENTINEL_ID,
+          minPlanPriceCop: 7_900,
+        },
+        repository: {
+          ...mockRepo,
+          applyAddonPurchase: vi.fn().mockResolvedValue({
+            extraAlerts: 1200,
+            extraCashiers: 1,
+          }),
+        },
+        whatsappClient: mockWhatsApp,
+        nowProvider: () => FIXED_NOW,
+      });
+
+      const notification: StoredNotificationRecord = {
+        id: 'notif-addon-cashier',
+        deviceId: BILLING_SENTINEL_ID,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Plata recibida. Te acaban de enviar $12.900 en Nequi de 3113654315',
+        capturedAt: FIXED_NOW - 1000,
+        dispatchedAt: FIXED_NOW - 500,
+        receivedAt: FIXED_NOW,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+
+      const receipt: ParsedPaymentReceipt = {
+        wallet: 'NEQUI',
+        amount: 12_900,
+        senderName: 'Panadería La Central',
+        reference: '',
+        rawText: notification.rawText,
+      };
+
+      vi.mocked(mockRepo.findMerchantByBillingPhone).mockResolvedValueOnce(sampleMerchant);
+      vi.mocked(mockRepo.getPendingInvoiceForMerchant).mockResolvedValueOnce(null);
+      vi.mocked(mockRepo.createInvoice).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        amount_cop: 12_900,
+        status: 'PAID',
+      });
+
+      const result = await customService.reconcile(notification, receipt);
+
+      expect(result.success).toBe(true);
+      expect(result.itemType).toBe('addon_cashier');
+      expect(result.extraCashiersAdded).toBe(1);
+      expect(result.extraAlertsAdded).toBe(1200);
+    });
+
+    it('debe conciliar pago de Plan Emprendedor ($29.900) asignando plan_id emprendedor y 30 días', async () => {
+      const customService = new BillingReconciliationService({
+        config: {
+          billingSentinelDeviceId: BILLING_SENTINEL_ID,
+          minPlanPriceCop: 7_900,
+        },
+        repository: mockRepo,
+        whatsappClient: mockWhatsApp,
+        nowProvider: () => FIXED_NOW,
+      });
+
+      const notification: StoredNotificationRecord = {
+        id: 'notif-plan-emprendedor',
+        deviceId: BILLING_SENTINEL_ID,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Plata recibida. Te acaban de enviar $29.900 en Nequi de 3113654315',
+        capturedAt: FIXED_NOW - 1000,
+        dispatchedAt: FIXED_NOW - 500,
+        receivedAt: FIXED_NOW,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+
+      const receipt: ParsedPaymentReceipt = {
+        wallet: 'NEQUI',
+        amount: 29_900,
+        senderName: 'Panadería La Central',
+        reference: '',
+        rawText: notification.rawText,
+      };
+
+      vi.mocked(mockRepo.findMerchantByBillingPhone).mockResolvedValueOnce(sampleMerchant);
+      vi.mocked(mockRepo.getPendingInvoiceForMerchant).mockResolvedValueOnce(null);
+      vi.mocked(mockRepo.extendMerchantSubscription).mockResolvedValueOnce({
+        previousEndsAt: null,
+        newEndsAt: '2026-12-15T12:00:00.000Z',
+        daysRemaining: 30,
+      });
+      vi.mocked(mockRepo.createInvoice).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        amount_cop: 29_900,
+        status: 'PAID',
+      });
+
+      const result = await customService.reconcile(notification, receipt);
+
+      expect(result.success).toBe(true);
+      expect(result.itemType).toBe('plan_subscription');
+      expect(result.planId).toBe('emprendedor');
+      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(
+        sampleMerchant.id,
+        30,
+        FIXED_NOW,
+        'emprendedor',
+      );
+    });
+
+    it('debe conciliar pago de Plan Negocio Anual ($499.000) asignando 365 días', async () => {
+      const customService = new BillingReconciliationService({
+        config: {
+          billingSentinelDeviceId: BILLING_SENTINEL_ID,
+          minPlanPriceCop: 7_900,
+        },
+        repository: mockRepo,
+        whatsappClient: mockWhatsApp,
+        nowProvider: () => FIXED_NOW,
+      });
+
+      const notification: StoredNotificationRecord = {
+        id: 'notif-plan-negocio-anual',
+        deviceId: BILLING_SENTINEL_ID,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Plata recibida. Te acaban de enviar $499.000 en Nequi de 3113654315',
+        capturedAt: FIXED_NOW - 1000,
+        dispatchedAt: FIXED_NOW - 500,
+        receivedAt: FIXED_NOW,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+
+      const receipt: ParsedPaymentReceipt = {
+        wallet: 'NEQUI',
+        amount: 499_000,
+        senderName: 'Panadería La Central',
+        reference: '',
+        rawText: notification.rawText,
+      };
+
+      vi.mocked(mockRepo.findMerchantByBillingPhone).mockResolvedValueOnce(sampleMerchant);
+      vi.mocked(mockRepo.getPendingInvoiceForMerchant).mockResolvedValueOnce(null);
+      vi.mocked(mockRepo.extendMerchantSubscription).mockResolvedValueOnce({
+        previousEndsAt: null,
+        newEndsAt: '2027-11-15T12:00:00.000Z',
+        daysRemaining: 365,
+      });
+      vi.mocked(mockRepo.createInvoice).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        amount_cop: 499_000,
+        status: 'PAID',
+      });
+
+      const result = await customService.reconcile(notification, receipt);
+
+      expect(result.success).toBe(true);
+      expect(result.itemType).toBe('plan_subscription');
+      expect(result.planId).toBe('negocio');
+      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(
+        sampleMerchant.id,
+        365,
+        FIXED_NOW,
+        'negocio',
+      );
     });
   });
 });

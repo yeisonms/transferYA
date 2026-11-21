@@ -1,6 +1,7 @@
 import type { Merchant } from '../../domain/routing/types.js';
 
 export type BillingInvoiceStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED';
+export type BillingItemType = 'plan_subscription' | 'addon_alerts' | 'addon_cashier';
 
 export interface BillingInvoiceRecord {
   id: string;
@@ -8,6 +9,8 @@ export interface BillingInvoiceRecord {
   amount_cop: number;
   reference_code: string;
   status: BillingInvoiceStatus;
+  item_type?: BillingItemType;
+  item_description?: string;
   notification_id: string | null;
   paid_at: string | null;
   expires_at: string;
@@ -20,6 +23,8 @@ export interface CreateBillingInvoiceInput {
   amountCop?: number;
   referenceCode?: string;
   status?: BillingInvoiceStatus;
+  itemType?: BillingItemType;
+  itemDescription?: string;
   notificationId?: string;
   paidAt?: string | null;
   expiresAt?: string;
@@ -29,7 +34,7 @@ export type ReconciliationStrategy = 'REFERENCE_CODE' | 'BILLING_PHONE';
 
 export interface BillingReconciliationConfig {
   billingSentinelDeviceId: string;
-  minPlanPriceCop?: number; // Default: 50_000 COP
+  minPlanPriceCop?: number; // Default: 7_900 COP
   defaultPlanDays?: number; // Default: 30 días
 }
 
@@ -44,6 +49,10 @@ export interface ReconciliationResult {
   matchedPhone?: string;
   amountCop?: number;
   minRequiredCop?: number;
+  itemType?: BillingItemType;
+  planId?: string;
+  extraAlertsAdded?: number;
+  extraCashiersAdded?: number;
   newEndsAtIso?: string;
   previousEndsAtIso?: string | null;
   daysRemaining?: number;
@@ -73,10 +82,21 @@ export interface IBillingInvoicesRepository {
     merchantId: string,
     days?: number,
     nowMs?: number,
+    planId?: string,
   ): Promise<{
     previousEndsAt: string | null;
     newEndsAt: string;
     daysRemaining: number;
+  }>;
+  applyAddonPurchase?(
+    merchantId: string,
+    addonType: 'addon_alerts' | 'addon_cashier',
+    amountCop: number,
+    notificationId?: string,
+    nowMs?: number,
+  ): Promise<{
+    extraAlerts: number;
+    extraCashiers: number;
   }>;
 }
 

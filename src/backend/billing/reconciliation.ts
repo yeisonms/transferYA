@@ -5,6 +5,7 @@ import type { IWhatsAppCloudApiClient } from '../../whatsapp/types.js';
 import type { StoredNotificationRecord } from '../webhook/types.js';
 import type {
   BillingInvoiceRecord,
+  BillingItemType,
   BillingReconciliationConfig,
   IBillingInvoicesRepository,
   ReconciliationResult,
@@ -24,11 +25,11 @@ export interface BillingReconciliationDependencies {
 }
 
 /**
- * Servicio de Auto-Renovación por Dogfooding (Ticket 22).
+ * Servicio de Auto-Renovación por Dogfooding (Ticket 22 / Fase 5).
  *
  * Utiliza el Dispositivo Centinela propio de MurSat Solutions para interceptar
- * pagos de suscripción entrantes al Nequi de la compañía, reconciliarlos
- * automáticamente contra un comercio cliente y renovar su Plan Pro (+30 Días).
+ * pagos entrantes al Nequi/Bancolombia de la compañía, reconciliarlos
+ * automáticamente contra un comercio cliente y renovar planes o acreditar add-ons.
  */
 export class BillingReconciliationService {
   private readonly config: BillingReconciliationConfig;
@@ -39,7 +40,7 @@ export class BillingReconciliationService {
   constructor(deps: BillingReconciliationDependencies) {
     this.config = {
       billingSentinelDeviceId: deps.config.billingSentinelDeviceId,
-      minPlanPriceCop: deps.config.minPlanPriceCop ?? 50_000,
+      minPlanPriceCop: deps.config.minPlanPriceCop ?? 7_900,
       defaultPlanDays: deps.config.defaultPlanDays ?? 30,
     };
     this.repository = deps.repository;
@@ -65,7 +66,7 @@ export class BillingReconciliationService {
 
   /**
    * Intenta conciliar un pago capturado contra los comercios clientes y ejecutar
-   * la renovación comercial de forma atómica.
+   * la renovación o acreditación de add-ons de forma atómica.
    */
   async reconcile(
     notification: StoredNotificationRecord,
@@ -84,7 +85,7 @@ export class BillingReconciliationService {
       };
     }
 
-    // 2. Criterio de Monto Mínimo: pagos inferiores al valor del plan registran auditoría y no renuevan
+    // 2. Criterio de Monto Mínimo: pagos inferiores al add-on más económico ($7.900) registran auditoría y no acreditan
     if (receipt.amount < this.minPlanPriceCop) {
       return {
         isBillingSentinel: true,
@@ -174,12 +175,64 @@ export class BillingReconciliationService {
       };
     }
 
-    // 6. Ejecución Atómica de Renovación Comercial (+30 Días Pro)
-    const renewalResult = await this.repository.extendMerchantSubscription(
-      matchedMerchant.id,
-      this.config.defaultPlanDays ?? 30,
-      now,
-    );
+    // 6. Clasificación del Item (Suscripción o Add-on) según monto y factura (Fase 5)
+    let itemType: BillingItemType = matchedInvoice?.item_type || 'plan_subscription';
+    let targetPlanId: string | undefined = undefined;
+    let daysToAdd = this.config.defaultPlanDays ?? 30;
+    let extraAlertsAdded = 0;
+    let extraCashiersAdded = 0;
+
+    const amt = receipt.amount;
+    if (itemType === 'addon_alerts' || amt === 7900) {
+      itemType = 'addon_alerts';
+      extraAlertsAdded = 1000;
+    } else if (itemType === 'addon_cashier' || amt === 12900) {
+      itemType = 'addon_cashier';
+      extraCashiersAdded = 1;
+      extraAlertsAdded = 1200;
+    } else {
+      itemType = 'plan_subscription';
+      if (amt === 299000 || amt === 499000 || amt === 899000) {
+        daysToAdd = 365;
+        if (amt === 299000) targetPlanId = 'emprendedor';
+        else if (amt === 499000) targetPlanId = 'negocio';
+        else targetPlanId = 'pro';
+      } else {
+        daysToAdd = 30;
+        if (amt === 29900) targetPlanId = 'emprendedor';
+        else if (amt === 49900) targetPlanId = 'negocio';
+        else if (amt === 89900 || amt === 50000) targetPlanId = 'pro';
+      }
+    }
+
+    let newEndsAtIso: string | undefined;
+    let previousEndsAtIso: string | null = null;
+    let daysRemaining: number | undefined;
+
+    if (itemType === 'addon_alerts' || itemType === 'addon_cashier') {
+      if (this.repository.applyAddonPurchase) {
+        const addonRes = await this.repository.applyAddonPurchase(
+          matchedMerchant.id,
+          itemType,
+          receipt.amount,
+          notification.id,
+          now,
+        );
+        extraAlertsAdded = addonRes.extraAlerts;
+        extraCashiersAdded = addonRes.extraCashiers;
+      }
+    } else {
+      // Renovación comercial del plan
+      const renewalResult = await this.repository.extendMerchantSubscription(
+        matchedMerchant.id,
+        daysToAdd,
+        now,
+        targetPlanId,
+      );
+      newEndsAtIso = renewalResult.newEndsAt;
+      previousEndsAtIso = renewalResult.previousEndsAt;
+      daysRemaining = renewalResult.daysRemaining;
+    }
 
     // 7. Ciclo de Vida de Factura (marcar como PAID o crear factura completada)
     let finalInvoice: BillingInvoiceRecord;
@@ -195,12 +248,19 @@ export class BillingReconciliationService {
         amountCop: receipt.amount,
         referenceCode: generateInvoiceReferenceCode(),
         status: 'PAID',
+        itemType,
+        itemDescription:
+          itemType === 'addon_alerts'
+            ? 'Paquete 1.000 Alertas WhatsApp Extra'
+            : itemType === 'addon_cashier'
+              ? 'Add-on Cajero WhatsApp Extra (+1.200 alertas)'
+              : `Renovación ${targetPlanId ? `Plan ${targetPlanId}` : 'Suscripción'} (${daysToAdd} días)`,
         notificationId: notification.id,
         paidAt: new Date(now).toISOString(),
       });
     }
 
-    // 8. Despacho de WhatsApp de Confirmación de Renovación al Dueño
+    // 8. Despacho de WhatsApp de Confirmación al Dueño
     let whatsappSent = false;
     let whatsappMessageId: string | undefined;
 
@@ -212,8 +272,8 @@ export class BillingReconciliationService {
           {
             amountCop: receipt.amount,
             storeName: matchedMerchant.name,
-            newEndsAtIso: renewalResult.newEndsAt,
-            daysRemaining: renewalResult.daysRemaining,
+            newEndsAtIso: newEndsAtIso || new Date(now + 30 * 86400000).toISOString(),
+            daysRemaining: daysRemaining ?? 30,
             referenceCode: finalInvoice.reference_code,
           },
         );
@@ -237,9 +297,13 @@ export class BillingReconciliationService {
       matchedReference: matchedReference ?? finalInvoice.reference_code,
       matchedPhone,
       amountCop: receipt.amount,
-      newEndsAtIso: renewalResult.newEndsAt,
-      previousEndsAtIso: renewalResult.previousEndsAt,
-      daysRemaining: renewalResult.daysRemaining,
+      itemType,
+      planId: targetPlanId,
+      extraAlertsAdded,
+      extraCashiersAdded,
+      newEndsAtIso,
+      previousEndsAtIso,
+      daysRemaining,
       whatsappSent,
       whatsappMessageId,
     };
