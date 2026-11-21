@@ -46,9 +46,11 @@ object NotificationFilter {
         // Códigos cortos bancarios oficiales en Colombia:
         // 890806 = Nequi / Bancolombia
         // 890001 = Bancolombia Alertas
+        // 85540  = Bancolombia Notificaciones
         // 85888  = DaviPlata
         val isBankingSender = title.contains("890806") ||
                 title.contains("890001") ||
+                title.contains("85540") ||
                 title.contains("85888") ||
                 lowerTitle.contains("bancolombia")
 
@@ -66,6 +68,7 @@ object NotificationFilter {
         // Mensaje transaccional de Bancolombia SMS
         val isBancolombiaTransaction = lowerText.startsWith("bancolombia:") ||
                 lowerText.contains("recibiste una transferencia de") ||
+                lowerText.contains("recibiste un pago de") ||
                 lowerText.contains("a la mano:") ||
                 (lowerText.contains("bancolombia") && (lowerText.contains("recibi") || lowerText.contains("transfirieron")))
 
@@ -82,7 +85,7 @@ object NotificationFilter {
 
         return if (title.contains("85888") || lowerText.contains("daviplata")) {
             "com.davivienda.daviplata"
-        } else if (title.contains("890001") || lowerTitle.contains("bancolombia") || lowerText.startsWith("bancolombia:") || lowerText.contains("a la mano")) {
+        } else if (title.contains("890001") || title.contains("85540") || lowerTitle.contains("bancolombia") || lowerText.startsWith("bancolombia:") || lowerText.contains("a la mano")) {
             "com.bancolombia.personas"
         } else {
             "com.nequi.MobileApp"

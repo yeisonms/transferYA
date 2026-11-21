@@ -20,7 +20,9 @@ class NotificationInterceptor(
         "com.daviplata.appfintech",
         "com.davivienda.daviplata",
         "com.davivienda.daviplataapp",
-        "com.davivienda.bancamovil"
+        "com.davivienda.bancamovil",
+        "com.bancolombia.personas",
+        "com.bancolombia.mimovil"
     )
 ) {
     companion object {
@@ -31,7 +33,7 @@ class NotificationInterceptor(
     private fun isPackageSupported(pkg: String): Boolean {
         if (supportedPackages.contains(pkg)) return true
         val lower = pkg.lowercase()
-        return lower.contains("daviplata") || lower.contains("nequi")
+        return lower.contains("daviplata") || lower.contains("nequi") || lower.contains("bancolombia")
     }
 
     /**

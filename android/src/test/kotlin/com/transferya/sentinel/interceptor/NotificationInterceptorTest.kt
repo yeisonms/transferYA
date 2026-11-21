@@ -142,6 +142,26 @@ class NotificationInterceptorTest {
     }
 
     @Test
+    fun `3_b debe procesar y persistir exitosamente notificaciones de Bancolombia`() {
+        val bancolombiaEvent = RawNotificationEvent(
+            packageName = "com.bancolombia.personas",
+            title = "85540",
+            text = "Bancolombia: MERCACREDITO, recibiste un pago de JEFFERSON TORO ALEGRIA por $10.00 en tu cuenta *5871 conectado a la llave 0079127304",
+            postTime = fixedNow
+        )
+
+        val result = interceptor.onNotificationReceived(bancolombiaEvent)
+
+        assertTrue(result is InterceptionResult.Accepted)
+        val accepted = result as InterceptionResult.Accepted
+        assertEquals("com.bancolombia.personas", accepted.walletPackage)
+
+        assertEquals(1, mockWakeLock.acquiredCalls.size)
+        assertEquals(1, mockWakeLock.releasedCalls.size)
+        assertEquals(1, dao.getCountByStatus(NotificationStatus.PENDING))
+    }
+
+    @Test
     fun `4 debe garantizar la liberacion del WakeLock en bloque finally si ocurre una excepcion`() {
         val failingDao = object : ICapturedNotificationDao {
             override fun insertPending(entity: CapturedNotificationEntity): Long = throw RuntimeException("Disco lleno / Error SQLite")

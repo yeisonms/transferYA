@@ -84,6 +84,13 @@ class NotificationFilterTest {
                 rawText = "Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 20/11/26 a las 10:39. Con llaves es de una y gratis. Dudas al 018000912345."
             )
         )
+        // SMS oficial Bancolombia QR desde 85540 para comercio MERCACREDITO (caso real)
+        assertTrue(
+            NotificationFilter.isBankingSms(
+                rawTitle = "85540",
+                rawText = "Bancolombia: MERCACREDITO, recibiste un pago de JEFFERSON TORO ALEGRIA por $10.00 en tu cuenta *5871 conectado a la llave 0079127304 el 21/11/2026 a las 13:02. Con codigo QR es facil y de una. Dudas al 018000912345."
+            )
+        )
         assertTrue(
             NotificationFilter.isBankingSms(
                 rawTitle = "Bancolombia",

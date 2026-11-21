@@ -270,6 +270,23 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
       }
     });
 
+    it('debe clasificar correctamente un pago QR de Bancolombia MERCACREDITO por $10.00', () => {
+      const email: InboundEmailInput = {
+        from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',
+        subject: 'Todo salió bien con tus movimientos',
+        text: 'Bancolombia: MERCACREDITO, recibiste un pago de JEFFERSON TORO ALEGRIA por $10.00 en tu cuenta *5871 conectado a la llave 0079127304 el 21/11/2026 a las 13:02. Con codigo QR es facil y de una. Dudas al 018000912345.',
+      };
+
+      const result = parseInboundEmail(email);
+      expect(result.success).toBe(true);
+      if (result.success && result.type === 'PAYMENT') {
+        expect(result.payment.wallet).toBe('BANCOLOMBIA');
+        expect(result.payment.amount).toBe(10);
+        expect(result.payment.senderName).toBe('Jefferson Toro Alegria');
+        expect(result.payment.reference).toBe('*5871');
+      }
+    });
+
     it('debe rechazar correos informativos o de seguridad de Bancolombia', () => {
       const email: InboundEmailInput = {
         from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',

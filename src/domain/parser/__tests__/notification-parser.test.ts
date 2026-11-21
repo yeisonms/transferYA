@@ -294,6 +294,30 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
         expect(res.payment.senderName).toBe('Carlos Mendoza');
       }
     });
+
+    it('debe parsear pagos QR reales de Bancolombia con nombre de comercio MERCACREDITO y remitente 85540', () => {
+      const text = 'Bancolombia: MERCACREDITO, recibiste un pago de JEFFERSON TORO ALEGRIA por $10.00 en tu cuenta *5871 conectado a la llave 0079127304 el 21/11/2026 a las 13:02. Con codigo QR es facil y de una. Dudas al 018000912345.';
+      const res = parseBankingNotification(text, '85540', 'com.google.android.apps.messaging');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(10);
+        expect(res.payment.senderName).toBe('Jefferson Toro Alegria');
+      }
+    });
+
+    it('debe parsear transferencias de llaves de Bancolombia con nombre de usuario JEFFERSON', () => {
+      const text = 'Bancolombia: JEFFERSON, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $15.00 en tu cuenta *5871 conectada a la llave @jefferson0769 el 21/11/26 a las 12:57. Con llaves es de una y gratis. Dudas al 018000912345.';
+      const res = parseBankingNotification(text, 'Bancolombia', 'com.google.android.apps.messaging');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('BANCOLOMBIA');
+        expect(res.payment.amount).toBe(15);
+        expect(res.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+      }
+    });
   });
 
   describe('5. Rechazo Estricto de Falsos Positivos (Anti-Fraude y Publicidad)', () => {
