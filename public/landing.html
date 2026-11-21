@@ -820,117 +820,484 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 9. PRECIOS (PLANTILLA CLARA EN CONSTRUCCIÓN) -->
+    <!-- 9. PRECIOS OFICIALES Y PLANES TRANSFERYA  -->
     <!-- ========================================== -->
     <section id="precios" class="py-16 sm:py-24 bg-white border-b border-[#0E1B2B]/10">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
         
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-bold text-xs tracking-wide mb-3">
-          TARIFAS TRANSPARENTES
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-extrabold text-xs tracking-wider uppercase mb-3.5">
+          PRECIOS TRANSPARENTES · SIN COMISIONES POR VENTA
         </div>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
-          Planes diseñados para tu negocio
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-[#0E1B2B] tracking-tight">
+          Deja de perder plata en comisiones o comprobantes falsos
         </h2>
-        <p class="mt-2 text-sm sm:text-base text-[#0E1B2B]/70">
-          0% de comisión. Tu dinero entra completo a tu banco. Cancela cuando quieras.
+        <p class="mt-3 text-sm sm:text-base text-[#0E1B2B]/75 max-w-2xl mx-auto leading-relaxed">
+          Tarifa fija mensual sin porcentajes escondidos. Tus cajeros confirman cada pago de Nequi o transferencia al instante por WhatsApp, incluso cuando tú no estás en el local.
         </p>
 
-        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+        <!-- Toggle Facturación Mensual / Anual -->
+        <div class="mt-8 flex flex-col items-center justify-center gap-3">
+          <div class="inline-flex items-center p-1.5 rounded-full bg-[#F7F5EF] border border-[#0E1B2B]/10 shadow-inner">
+            <button type="button" id="toggleMonthlyBtn" onclick="setLandingBillingCycle('monthly')"
+              class="px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all bg-[#0E1B2B] text-white shadow-sm">
+              Facturación Mensual
+            </button>
+            <button type="button" id="toggleAnnualBtn" onclick="setLandingBillingCycle('annual')"
+              class="px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all text-[#0E1B2B]/70 hover:text-[#0E1B2B] flex items-center gap-2">
+              <span>Facturación Anual</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#19C37D] text-[#0E1B2B] shadow-sm">
+                2 meses gratis
+              </span>
+            </button>
+          </div>
           
-          <!-- Plan Emprendedor -->
-          <div class="p-7 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-4">
-            <h3 class="text-lg font-bold text-[#0E1B2B]">Plan Negocio</h3>
-            <p class="text-xs text-[#0E1B2B]/70">Para tiendas, panaderías, cafeterías y locales comerciales.</p>
-            <div class="text-3xl font-extrabold text-[#19C37D]">$ 29.900 <span class="text-xs font-normal text-[#0E1B2B]/60">COP / mes</span></div>
-            <ul class="space-y-2 text-xs text-[#0E1B2B]/80 font-medium">
-              <li>✓ Verificación ilimitada Nequi y DaviPlata</li>
-              <li>✓ Pantalla POS con voz alta</li>
-              <li>✓ Notificaciones por WhatsApp a cajeros</li>
-              <li>✓ Cierre de turno y cuadre diario</li>
-              <li>✓ Sin contratos de permanencia</li>
-            </ul>
-            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20el%20Plan%20Negocio%20de%20TransferYA" target="_blank" rel="noopener noreferrer"
-              class="block w-full py-3 rounded-full bg-[#0E1B2B] text-white text-xs font-bold text-center hover:bg-black transition-all">
-              Probar 7 días gratis
-            </a>
+          <!-- Banner de Confianza -->
+          <div class="inline-flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-[#0B7A4B] bg-[#19C37D]/10 px-4 py-2 rounded-full border border-[#19C37D]/25 mt-2">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Prueba 7 días gratis sin tarjeta de crédito
+            </span>
+            <span class="hidden sm:inline text-[#0E1B2B]/30">•</span>
+            <span>Cancela cuando quieras</span>
+            <span class="hidden sm:inline text-[#0E1B2B]/30">•</span>
+            <span class="text-[#0E1B2B] font-bold">0% de comisión sobre tus ventas</span>
+          </div>
+        </div>
+
+        <!-- Grid de los 3 Planes -->
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 text-left items-stretch max-w-6xl mx-auto">
+          
+          <!-- PLAN 1: Emprendedor -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 flex flex-col justify-between hover:shadow-lg transition-all relative">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#0B7A4B] bg-[#19C37D]/15 px-3 py-1 rounded-full">
+                  Básico 1 Caja
+                </span>
+              </div>
+              <div>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-[#0E1B2B]">Emprendedor</h3>
+                <p class="text-xs text-[#0E1B2B]/70 mt-1 leading-relaxed">
+                  Ideal para tiendas de barrio, barberías, panaderías y negocios con 1 caja.
+                </p>
+              </div>
+
+              <!-- Precio -->
+              <div class="py-2 border-y border-[#0E1B2B]/10">
+                <div class="flex items-baseline gap-1">
+                  <span id="priceEmprendedor" class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B]">$29.900</span>
+                  <span class="text-xs text-[#0E1B2B]/60 font-medium">COP / mes</span>
+                </div>
+                <div id="subtextEmprendedor" class="text-[11px] text-[#0B7A4B] font-semibold mt-1 hidden">
+                  Facturado $299.000 COP al año · <span class="text-[#0E1B2B] font-bold">Ahorras $59.800</span>
+                </div>
+              </div>
+
+              <!-- Features -->
+              <ul class="space-y-2.5 text-xs text-[#0E1B2B]/85 font-medium pt-1">
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>1 cajero</strong> con alertas instantáneas por WhatsApp</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Hasta 1.500 alertas</strong> de pago al mes</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>1 sede / 1 celular</strong> conectado con App Centinela</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Validación automática en tiempo real contra comprobantes falsos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Panel web con historial diario y cuadre de caja</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Exportación de movimientos en Excel / CSV</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Soporte técnico por WhatsApp</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-6 mt-4">
+              <a id="ctaEmprendedor" href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20empezar%20mi%20prueba%20gratis%20de%207%20d%C3%ADas%20del%20Plan%20Emprendedor%20de%20TransferYA%20(Mensual%20%2429.900)"
+                target="_blank" rel="noopener noreferrer"
+                class="block w-full py-3.5 rounded-full bg-[#0E1B2B] text-white text-xs font-extrabold text-center hover:bg-black transition-all shadow-md">
+                Empezar 7 días gratis
+              </a>
+            </div>
           </div>
 
-          <!-- Plan Cadenas -->
-          <div class="p-7 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 space-y-4">
-            <h3 class="text-lg font-bold text-[#0E1B2B]">Cadenas & Franquicias</h3>
-            <p class="text-xs text-[#0E1B2B]/70">Para negocios con varias sucursales o múltiples cajas.</p>
-            <div class="text-3xl font-extrabold text-[#0E1B2B]">A Medida</div>
-            <ul class="space-y-2 text-xs text-[#0E1B2B]/80 font-medium">
-              <li>✓ Múltiples sedes y cajas ilimitadas</li>
-              <li>✓ WhatsApp dedicado para la empresa</li>
-              <li>✓ Reporte consolidado de todas las cajas</li>
-              <li>✓ Instalación y acompañamiento prioritario</li>
-            </ul>
-            <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20cotizar%20TransferYA%20para%20mis%20sucursales" target="_blank" rel="noopener noreferrer"
-              class="block w-full py-3 rounded-full border-2 border-[#0E1B2B] bg-white text-[#0E1B2B] text-xs font-bold text-center hover:bg-[#0E1B2B] hover:text-white transition-all">
-              Hablar con un asesor
-            </a>
+          <!-- PLAN 2: Negocio (RESALTADO ANCLA) -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-white border-2 border-[#19C37D] shadow-2xl flex flex-col justify-between relative transform lg:-translate-y-2">
+            <!-- Badge Más Popular -->
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#19C37D] text-[#0E1B2B] font-extrabold text-[11px] uppercase tracking-wider shadow-md">
+              ⭐ Más popular · Recomendado
+            </div>
+
+            <div class="space-y-4 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#0B7A4B] bg-[#19C37D]/20 px-3 py-1 rounded-full">
+                  Completo para Mostrador
+                </span>
+              </div>
+              <div>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-[#0E1B2B]">Negocio</h3>
+                <p class="text-xs text-[#0E1B2B]/70 mt-1 leading-relaxed">
+                  Diseñado para restaurantes, cafeterías, minimercados y comercios con alto flujo.
+                </p>
+              </div>
+
+              <!-- Precio -->
+              <div class="py-2 border-y border-[#19C37D]/25 bg-[#19C37D]/5 -mx-6 sm:-mx-8 px-6 sm:px-8">
+                <div class="flex items-baseline gap-1">
+                  <span id="priceNegocio" class="text-3xl sm:text-4xl font-extrabold text-[#19C37D]">$49.900</span>
+                  <span class="text-xs text-[#0E1B2B]/70 font-medium">COP / mes</span>
+                </div>
+                <div id="subtextNegocio" class="text-[11px] text-[#0B7A4B] font-semibold mt-1 hidden">
+                  Facturado $499.000 COP al año · <span class="text-[#0E1B2B] font-bold">Ahorras $99.800</span>
+                </div>
+              </div>
+
+              <!-- Features -->
+              <ul class="space-y-2.5 text-xs text-[#0E1B2B]/90 font-medium pt-1">
+                <li class="font-bold text-[#0B7A4B] text-[11px] uppercase tracking-wide">
+                  Incluye todo lo de Emprendedor, más:
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>2 cajeros</strong> con notificaciones instantáneas por WhatsApp</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Hasta 3.500 alertas</strong> de pago al mes</span>
+                </li>
+                <li class="flex items-start gap-2 text-[#0E1B2B] font-semibold">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Respaldo Cloud automático (Correo)</strong> si el celular se queda sin datos o sales de viaje</span>
+                </li>
+                <li class="flex items-start gap-2 text-[#0E1B2B] font-semibold">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Pantalla de Caja Web en vivo</strong> con alerta sonora (sin costo extra de WhatsApp)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Compatibilidad con <strong>iPhone</strong> mediante Atajos de iOS</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Reporte automático de cierre diario para el dueño</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Soporte prioritario y acompañamiento de configuración</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-6 mt-4">
+              <a id="ctaNegocio" href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20probar%20gratis%20el%20Plan%20Negocio%20de%20TransferYA%20(Mensual%20%2449.900)"
+                target="_blank" rel="noopener noreferrer"
+                class="block w-full py-4 rounded-full bg-[#19C37D] text-[#0E1B2B] text-sm font-extrabold text-center hover:brightness-105 transition-all shadow-lg shadow-[#19C37D]/30">
+                Probar Plan Negocio gratis ➜
+              </a>
+            </div>
           </div>
 
+          <!-- PLAN 3: Pro Multi-Caja -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-[#F7F5EF] border border-[#0E1B2B]/10 flex flex-col justify-between hover:shadow-lg transition-all relative">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#0E1B2B] bg-[#0E1B2B]/10 px-3 py-1 rounded-full">
+                  Multi-Sede / Cadenas
+                </span>
+              </div>
+              <div>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-[#0E1B2B]">Pro Multi-Caja</h3>
+                <p class="text-xs text-[#0E1B2B]/70 mt-1 leading-relaxed">
+                  Para comercios con varias cajas, domicilios o hasta 3 sedes activas.
+                </p>
+              </div>
+
+              <!-- Precio -->
+              <div class="py-2 border-y border-[#0E1B2B]/10">
+                <div class="flex items-baseline gap-1">
+                  <span id="pricePro" class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B]">$89.900</span>
+                  <span class="text-xs text-[#0E1B2B]/60 font-medium">COP / mes</span>
+                </div>
+                <div id="subtextPro" class="text-[11px] text-[#0B7A4B] font-semibold mt-1 hidden">
+                  Facturado $899.000 COP al año · <span class="text-[#0E1B2B] font-bold">Ahorras $179.800</span>
+                </div>
+              </div>
+
+              <!-- Features -->
+              <ul class="space-y-2.5 text-xs text-[#0E1B2B]/85 font-medium pt-1">
+                <li class="font-bold text-[#0E1B2B] text-[11px] uppercase tracking-wide">
+                  Todo lo de Negocio, más:
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>4 cajeros</strong> con notificaciones por WhatsApp</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Hasta 7.500 alertas</strong> de pago al mes</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span><strong>Hasta 3 sedes o dispositivos Centinela</strong> en una sola cuenta</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Enrutamiento inteligente por caja o sede (cada cajero recibe solo su punto)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Control de permisos y auditoría por usuario</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#19C37D] font-bold text-sm leading-none shrink-0">✓</span>
+                  <span>Instalación guiada 1 a 1 con nuestro equipo</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-6 mt-4">
+              <a id="ctaPro" href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20activar%20el%20Plan%20Pro%20Multi-Caja%20de%20TransferYA%20(Mensual%20%2489.900)"
+                target="_blank" rel="noopener noreferrer"
+                class="block w-full py-3.5 rounded-full border-2 border-[#0E1B2B] bg-white text-[#0E1B2B] text-xs font-extrabold text-center hover:bg-[#0E1B2B] hover:text-white transition-all shadow-sm">
+                Activar Plan Pro
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-SECCIÓN: ADICIONALES (ADD-ONS)         -->
+        <!-- ========================================== -->
+        <div class="mt-16 pt-12 border-t border-[#0E1B2B]/10 max-w-4xl mx-auto text-left">
+          <div class="text-center max-w-xl mx-auto mb-8">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#0B7A4B] bg-[#19C37D]/15 px-3 py-1 rounded-full">
+              Flexibilidad Total
+            </span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-[#0E1B2B] mt-2">
+              ¿Tu negocio creció este mes? Escala sin cambiar de plan
+            </h3>
+            <p class="text-xs sm:text-sm text-[#0E1B2B]/70 mt-1">
+              Agrega capacidad únicamente cuando lo requieras, sin contratos forzosos.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <!-- Addon 1: Cajero Extra -->
+            <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 flex flex-col justify-between gap-4">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-extrabold text-[#0B7A4B]">Mensual recurrente</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#19C37D]/20 text-[#0E1B2B]">+1.200 alertas</span>
+                </div>
+                <h4 class="text-lg font-bold text-[#0E1B2B]">Cajero WhatsApp Adicional</h4>
+                <p class="text-xs text-[#0E1B2B]/70 mt-1 leading-relaxed">
+                  Agrega un número de WhatsApp extra a tu equipo de trabajo y suma <strong>+1.200 alertas mensuales</strong> a tu cupo actual.
+                </p>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-[#0E1B2B]/10">
+                <span class="text-xl font-extrabold text-[#0E1B2B]">$12.900 <span class="text-xs font-normal text-[#0E1B2B]/60">COP / mes</span></span>
+                <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20agregar%20un%20Cajero%20WhatsApp%20Adicional%20a%20mi%20cuenta"
+                  target="_blank" rel="noopener noreferrer"
+                  class="px-4 py-2 rounded-full bg-[#0E1B2B] text-white text-xs font-bold hover:bg-black transition-colors">
+                  Solicitar
+                </a>
+              </div>
+            </div>
+
+            <!-- Addon 2: Paquete 1000 alertas -->
+            <div class="p-6 rounded-2xl bg-[#F7F5EF] border border-[#0E1B2B]/10 flex flex-col justify-between gap-4">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-extrabold text-[#19C37D]">Pago único / Recarga</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#19C37D]/20 text-[#0E1B2B]">+1.000 alertas</span>
+                </div>
+                <h4 class="text-lg font-bold text-[#0E1B2B]">Paquete de 1.000 Alertas Extra</h4>
+                <p class="text-xs text-[#0E1B2B]/70 mt-1 leading-relaxed">
+                  ¿Temporada alta, quincena o fin de semana con lleno total? Amplía tu cupo de inmediato sin interrumpir ninguna notificación.
+                </p>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-[#0E1B2B]/10">
+                <span class="text-xl font-extrabold text-[#0E1B2B]">$7.900 <span class="text-xs font-normal text-[#0E1B2B]/60">COP recarga</span></span>
+                <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20recargar%20un%20Paquete%20de%201.000%20Alertas%20Extra"
+                  target="_blank" rel="noopener noreferrer"
+                  class="px-4 py-2 rounded-full bg-[#19C37D] text-[#0E1B2B] text-xs font-extrabold hover:brightness-105 transition-colors">
+                  Recargar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-SECCIÓN: ANCLA DE AHORRO (ROI REAL)    -->
+        <!-- ========================================== -->
+        <div class="mt-14 p-6 sm:p-10 rounded-3xl bg-[#0E1B2B] text-white text-left max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+          <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-[#19C37D]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#19C37D]/20 text-[#19C37D] border border-[#19C37D]/30">
+                Análisis de Ahorro Real para tu Negocio
+              </span>
+              <span class="text-xs font-mono text-gray-400">Ejemplo: 40 ventas/día x $32.000 COP</span>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                ¿Por qué pagar $49.900 fijos en vez de comisiones por cada venta?
+              </h3>
+              <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-2xl">
+                Un comercio activo en Colombia que recibe 40 pagos al día genera aproximadamente <strong>$38.400.000 COP al mes</strong> (1.200 transferencias de Nequi o Bancolombia). Mira la diferencia en tu bolsillo:
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <!-- Datáfono tradicional -->
+              <div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                <span class="text-xs font-bold text-rose-400 uppercase tracking-wide block">Pasarela o Datáfono Tradicional</span>
+                <div class="text-xs text-gray-300">Comisión habitual: 2,95% + $800 por transacción + retenciones</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono">-$2.092.800 <span class="text-xs font-sans text-gray-400">COP/mes</span></div>
+                <p class="text-[11px] text-gray-400 leading-normal">
+                  Dinero retenido entre 24 y 48 horas hábiles, comisiones que se comen tu utilidad y costos de alquiler de datáfono.
+                </p>
+              </div>
+
+              <!-- TransferYA -->
+              <div class="p-5 rounded-2xl bg-[#19C37D]/10 border border-[#19C37D]/40 space-y-2">
+                <span class="text-xs font-bold text-[#19C37D] uppercase tracking-wide block">TransferYA Plan Negocio</span>
+                <div class="text-xs text-gray-200">Tarifa fija mensual sin importar cuánto vendas (0% comisión)</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-[#19C37D] font-mono">$49.900 <span class="text-xs font-sans text-gray-300">COP/mes</span></div>
+                <p class="text-[11px] text-emerald-200/90 leading-normal font-medium">
+                  El 100% de la plata entra directa e inmediata a tu Nequi o cuenta bancaria, sin intermediación ni retenciones.
+                </p>
+              </div>
+            </div>
+
+            <!-- Conclusión destacada -->
+            <div class="p-4 rounded-xl bg-gradient-to-r from-[#19C37D]/20 to-transparent border-l-4 border-[#19C37D] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-extrabold text-white">
+                  Ahorro neto con TransferYA: <span class="text-[#19C37D] text-lg">$2.042.900 COP al mes (97,6% menos)</span>
+                </div>
+                <div class="text-xs text-gray-300">
+                  En un solo año mantienes en tu negocio más de <strong>$24.500.000 COP</strong> que antes se iban en comisiones bancarias.
+                </div>
+              </div>
+              <a href="https://wa.me/573113654315?text=Hola%20MurSat%20Solutions%2C%20quiero%20empezar%20a%20ahorrar%20con%20TransferYA"
+                target="_blank" rel="noopener noreferrer"
+                class="px-5 py-2.5 rounded-full bg-[#19C37D] text-[#0E1B2B] text-xs font-extrabold hover:brightness-105 transition-all shrink-0 text-center">
+                Blindar mi negocio hoy ➜
+              </a>
+            </div>
+
+          </div>
         </div>
 
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 10. PREGUNTAS FRECUENTES (DON JORGE) -->
+    <!-- 10. PREGUNTAS FRECUENTES (FAQ OFICIAL)     -->
     <!-- ========================================== -->
     <section id="faq" class="py-16 sm:py-24 bg-[#F7F5EF] border-b border-[#0E1B2B]/10">
       <div class="max-w-3xl mx-auto px-4 sm:px-6">
         
         <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#19C37D]/20 text-[#0B7A4B] font-bold text-xs tracking-wide mb-2 uppercase">
+            RESOLVEMOS TUS DUDAS
+          </div>
           <h2 class="text-3xl sm:text-4xl font-extrabold text-[#0E1B2B] tracking-tight">
             Preguntas Frecuentes
           </h2>
           <p class="mt-2 text-sm text-[#0E1B2B]/70">
-            Respuestas claras y sin rodeos.
+            Respuestas claras, transparentes y sin rodeos.
           </p>
         </div>
 
         <div class="space-y-4">
           
-          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
             <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
-              <span>¿Tengo que comprar un parlante o aparato nuevo?</span>
-              <span class="text-[#0B7A4B]">▼</span>
+              <span>1. ¿TransferYA tiene acceso a mi plata o a mis claves de Nequi?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
-              No. Funciona con el celular donde recibes tus pagos y con cualquier tablet, computador o celular que ya tengas en caja. Puedes conectarlo por Bluetooth a cualquier parlante que ya tengas en el local si quieres que suene más duro.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              <strong>No, jamás.</strong> TransferYA nunca te pide contraseñas, no mueve dinero ni custodia fondos de tu negocio. La App Centinela únicamente lee la notificación oficial de pago entrante que tú autorizas en tu celular para avisarle de inmediato a tu cajero por WhatsApp y cantar el monto en la pantalla.
             </p>
           </details>
 
-          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
             <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
-              <span>¿Qué pasa si yo no estoy en el negocio?</span>
-              <span class="text-[#0B7A4B]">▼</span>
+              <span>2. ¿Cómo funciona la prueba gratis de 7 días?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
-              No tienes que estar en el negocio. Apenas entra la plata a tu cuenta, el sistema le envía un mensaje por WhatsApp al número de tus cajeros y la pantalla en caja canta el pago. Nadie tiene que llamarte para saber si pagaron.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              Activas tu negocio en menos de 5 minutos <strong>sin registrar tarjeta de crédito</strong>. Recibes hasta <strong>150 alertas reales de WhatsApp</strong> durante 7 días para comprobar la velocidad y tranquilidad en tu mostrador. Al terminar tu prueba, decides si continúas eligiendo el plan que mejor se ajuste a tu volumen.
             </p>
           </details>
 
-          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
             <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
-              <span>¿Tengo que darle mi clave de Nequi a los cajeros?</span>
-              <span class="text-[#0B7A4B]">▼</span>
+              <span>3. ¿Qué pasa si supero el tope de alertas de mi plan en un mes muy bueno?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
-              Nunca. Tus empleados solo reciben el aviso del pago con el valor y el nombre del cliente. Jamás tienen acceso a tu cuenta bancaria ni a tus contraseñas.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              Te avisamos con anticipación por WhatsApp cuando alcances el <strong>80% de tu cupo</strong>. Nunca te dejamos a ciegas: puedes comprar una recarga de 1.000 alertas por solo $7.900 COP o subir de plan en un solo clic. Además, tu <strong>Pantalla de Caja Web y tu panel siguen funcionando sin interrupción</strong> para que nunca pierdas el registro contable de tus ventas.
             </p>
           </details>
 
-          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden">
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
             <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
-              <span>¿Cómo lo instalo en mi negocio?</span>
-              <span class="text-[#0B7A4B]">▼</span>
+              <span>4. ¿Qué pasa si me voy de viaje o se apaga el celular con Nequi?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/70 leading-relaxed border-t border-gray-100 pt-3">
-              Te acompañamos paso a paso por WhatsApp. Instalas la aplicación en el celular donde te llegan los pagos, vinculas la pantalla del local con un código y listo en 10 minutos.
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              Desde el <strong>Plan Negocio</strong> cuentas con el <strong>Respaldo Cloud automático por correo</strong>: mediante un filtro sencillo (sin cambiar tu correo personal de Nequi), tus cajeros siguen recibiendo las confirmaciones en tiempo real aunque tu celular se quede sin señal, sin batería o salgas de la ciudad.
+            </p>
+          </details>
+
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>5. ¿Cómo puedo pagar mi suscripción?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              Aceptamos pagos directos por <strong>Nequi, llave Bre-B, PSE y tarjeta de débito o crédito</strong>. Puedes pagar mes a mes o aprovechar el <strong>Plan Anual con 2 meses gratis</strong> para despreocuparte todo el año.
+            </p>
+          </details>
+
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>6. ¿Tengo que comprar un parlante o aparato nuevo?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              <strong>No.</strong> Funciona con el celular donde recibes tus pagos y con cualquier tablet, computador o celular secundario que ya tengas en caja. Si deseas que el sonido sea más potente en horas pico, puedes enlazarlo por Bluetooth a cualquier parlante que ya tengas en el local.
+            </p>
+          </details>
+
+          <details class="bg-white rounded-2xl p-5 border border-[#0E1B2B]/10 [&_summary::-webkit-details-marker]:hidden shadow-sm group">
+            <summary class="flex items-center justify-between cursor-pointer font-bold text-[#0E1B2B]">
+              <span>7. ¿Cómo se instala en mi negocio?</span>
+              <span class="text-[#0B7A4B] transition-transform group-open:rotate-180">▼</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-[#0E1B2B]/75 leading-relaxed border-t border-gray-100 pt-3">
+              Te acompañamos paso a paso por WhatsApp. Descargas la aplicación en el celular donde te llegan las transferencias, vinculas la pantalla del mostrador con un código QR o enlace en 1 clic y quedas listo para operar en menos de 5 minutos.
             </p>
           </details>
 
@@ -1302,6 +1669,81 @@
           if (ripple) ripple.classList.add('hidden');
           if (audioWave) audioWave.classList.add('hidden');
         }, 1200);
+      }
+    }
+
+    // ============================================================
+    // TOGGLE FACTURACIÓN LANDING (MENSUAL / ANUAL CON 2 MESES GRATIS)
+    // ============================================================
+    let currentLandingBillingCycle = 'monthly';
+
+    function setLandingBillingCycle(cycle) {
+      currentLandingBillingCycle = cycle;
+      const btnMonthly = document.getElementById('toggleMonthlyBtn');
+      const btnAnnual = document.getElementById('toggleAnnualBtn');
+
+      const priceEmprendedor = document.getElementById('priceEmprendedor');
+      const subtextEmprendedor = document.getElementById('subtextEmprendedor');
+      const ctaEmprendedor = document.getElementById('ctaEmprendedor');
+
+      const priceNegocio = document.getElementById('priceNegocio');
+      const subtextNegocio = document.getElementById('subtextNegocio');
+      const ctaNegocio = document.getElementById('ctaNegocio');
+
+      const pricePro = document.getElementById('pricePro');
+      const subtextPro = document.getElementById('subtextPro');
+      const ctaPro = document.getElementById('ctaPro');
+
+      if (cycle === 'annual') {
+        if (btnMonthly) {
+          btnMonthly.className = 'px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all text-[#0E1B2B]/70 hover:text-[#0E1B2B]';
+        }
+        if (btnAnnual) {
+          btnAnnual.className = 'px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all bg-[#0E1B2B] text-white shadow-sm flex items-center gap-2';
+        }
+
+        if (priceEmprendedor) priceEmprendedor.textContent = '$24.917';
+        if (subtextEmprendedor) subtextEmprendedor.classList.remove('hidden');
+        if (ctaEmprendedor) {
+          ctaEmprendedor.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero el Plan Emprendedor Anual de TransferYA ($299.000 COP al año con 2 meses gratis)');
+        }
+
+        if (priceNegocio) priceNegocio.textContent = '$41.583';
+        if (subtextNegocio) subtextNegocio.classList.remove('hidden');
+        if (ctaNegocio) {
+          ctaNegocio.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero el Plan Negocio Anual de TransferYA ($499.000 COP al año con 2 meses gratis)');
+        }
+
+        if (pricePro) pricePro.textContent = '$74.917';
+        if (subtextPro) subtextPro.classList.remove('hidden');
+        if (ctaPro) {
+          ctaPro.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero el Plan Pro Multi-Caja Anual de TransferYA ($899.000 COP al año con 2 meses gratis)');
+        }
+      } else {
+        if (btnMonthly) {
+          btnMonthly.className = 'px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all bg-[#0E1B2B] text-white shadow-sm';
+        }
+        if (btnAnnual) {
+          btnAnnual.className = 'px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all text-[#0E1B2B]/70 hover:text-[#0E1B2B] flex items-center gap-2';
+        }
+
+        if (priceEmprendedor) priceEmprendedor.textContent = '$29.900';
+        if (subtextEmprendedor) subtextEmprendedor.classList.add('hidden');
+        if (ctaEmprendedor) {
+          ctaEmprendedor.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero empezar mi prueba gratis de 7 días del Plan Emprendedor de TransferYA (Mensual $29.900 COP)');
+        }
+
+        if (priceNegocio) priceNegocio.textContent = '$49.900';
+        if (subtextNegocio) subtextNegocio.classList.add('hidden');
+        if (ctaNegocio) {
+          ctaNegocio.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero probar gratis el Plan Negocio de TransferYA (Mensual $49.900 COP)');
+        }
+
+        if (pricePro) pricePro.textContent = '$89.900';
+        if (subtextPro) subtextPro.classList.add('hidden');
+        if (ctaPro) {
+          ctaPro.href = 'https://wa.me/573113654315?text=' + encodeURIComponent('Hola MurSat Solutions, quiero activar el Plan Pro Multi-Caja de TransferYA (Mensual $89.900 COP)');
+        }
       }
     }
   </script>
