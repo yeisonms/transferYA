@@ -184,7 +184,7 @@ describe('DeviceHeartbeatHandler (Ticket 07 / ADR-0003)', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.subscription_status).toBe('PAST_DUE');
     expect(res.body.remaining_days).toBe(0);
-    expect(res.body.billing_amount_cop).toBe(50000);
+    expect(res.body.billing_amount_cop).toBe(49900);
   });
 });
 

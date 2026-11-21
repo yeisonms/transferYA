@@ -1,4 +1,5 @@
 import { verifyWebhookRequest } from '../../protocol/signer.js';
+import { getPlanById } from '../../config/plans.js';
 import {
   evaluateEffectiveSubscriptionStatus,
   getRemainingSubscriptionDays,
@@ -6,6 +7,7 @@ import {
 } from '../../domain/routing/billing.js';
 import type {
   IMerchantRoutingRepository,
+  Merchant,
   SubscriptionStatus,
 } from '../../domain/routing/types.js';
 import type { IDeviceRepository, INonceCache, HttpRequest, HttpResponse } from '../webhook/types.js';
@@ -16,9 +18,9 @@ import type {
   IDeviceHealthRepository,
 } from './types.js';
 
-export const DEFAULT_PLAN_PRO_AMOUNT_COP = 50_000;
+export const DEFAULT_PLAN_PRO_AMOUNT_COP = 49_900;
 export const DEFAULT_NEQUI_BILLING_QR_PAYLOAD =
-  'https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=50000';
+  'https://recarga.nequi.com.co/bdigital/?phone=3113654315&amount=49900';
 
 export interface HeartbeatHandlerDependencies {
   deviceRepository: IDeviceRepository;
@@ -132,9 +134,11 @@ export class DeviceHeartbeatHandler {
     let subscriptionEndsAtMs: number | null = null;
     let remainingDays = 0;
 
+    let matchedMerchant: Merchant | null = null;
     if (this.dependencies.merchantRoutingRepository) {
       const merchant = await this.dependencies.merchantRoutingRepository.getMerchantByDeviceId(deviceId);
       if (merchant) {
+        matchedMerchant = merchant;
         subscriptionStatus = evaluateEffectiveSubscriptionStatus(merchant, now);
         subscriptionEndsAtMs = resolveSubscriptionEndsAt(merchant);
         subscriptionEndsAtIso = subscriptionEndsAtMs
@@ -144,14 +148,24 @@ export class DeviceHeartbeatHandler {
       }
     }
 
-    const billingQrPayload =
+    let defaultAmount = DEFAULT_PLAN_PRO_AMOUNT_COP;
+    if (matchedMerchant?.planId) {
+      const plan = getPlanById(matchedMerchant.planId);
+      if (plan) defaultAmount = plan.priceMonthlyCop;
+    }
+
+    const billingAmountCop =
+      this.dependencies.billingConfig?.planAmountCop ??
+      Number(process.env.PLAN_PRO_PRICE_COP || defaultAmount);
+
+    let billingQrPayload =
       this.dependencies.billingConfig?.qrPayload ??
       process.env.BILLING_NEQUI_QR_PAYLOAD ??
       DEFAULT_NEQUI_BILLING_QR_PAYLOAD;
 
-    const billingAmountCop =
-      this.dependencies.billingConfig?.planAmountCop ??
-      Number(process.env.PLAN_PRO_PRICE_COP || DEFAULT_PLAN_PRO_AMOUNT_COP);
+    if (billingQrPayload.includes('amount=') && matchedMerchant?.planId) {
+      billingQrPayload = billingQrPayload.replace(/amount=\d+/, `amount=${billingAmountCop}`);
+    }
 
     const responseBody: HeartbeatResponseBody = {
       success: true,

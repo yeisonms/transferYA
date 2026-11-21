@@ -596,7 +596,7 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         amount: 15000,
         storeName: 'Tienda La Esquina',
         isSuspended: false,
-        renewalPriceCop: 50000,
+        renewalPriceCop: 49900,
       }),
     );
 
@@ -604,6 +604,42 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
     expect(updated?.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
     expect(updated?.amount).toBe(15000);
     expect(updated?.senderName).toBe('Pedro Gomez');
+  });
+
+  it('8.1. Kill Switch despacha aviso con precio dinámico del Plan Emprendedor ($29.900) si merchant.planId es emprendedor', async () => {
+    const emprendedorMerchant: Merchant = {
+      ...merchant,
+      id: 'merchant_emprendedor_past_due',
+      status: 'ACTIVE',
+      subscriptionStatus: 'PAST_DUE',
+      planId: 'emprendedor',
+      billingPhone: '+573113654315',
+    };
+    routingRepo.registerDeviceMerchant('dev_emprendedor_pd', emprendedorMerchant);
+
+    notificationRepo.seed({
+      id: 'notif_emprendedor_pd',
+      deviceId: 'dev_emprendedor_pd',
+      walletPackage: 'com.nequi.MobileApp',
+      rawTitle: 'Nequi',
+      rawText: 'Carlos te envió $20.000 a tu Nequi',
+      capturedAt: now,
+      dispatchedAt: now,
+      receivedAt: now,
+      latencyMs: 0,
+      isStale: false,
+      status: 'RECEIVED',
+    });
+
+    const result = await pipeline.processCapturedNotification('notif_emprendedor_pd');
+
+    expect(result.status).toBe('IGNORED_SUSPENDED_ACCOUNT');
+    expect(mockWhatsappClient.sendSubscriptionNotice).toHaveBeenCalledWith(
+      '+573113654315',
+      expect.objectContaining({
+        renewalPriceCop: 29900,
+      }),
+    );
   });
 
   it('9. Kill Switch aplica cooldown anti-spam de 6h en avisos de cobro al dueño', async () => {

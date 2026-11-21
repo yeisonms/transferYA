@@ -1,3 +1,4 @@
+import { getPlanById } from '../../config/plans.js';
 import {
   generateCanonicalPaymentFingerprint,
   generatePaymentFingerprint,
@@ -72,7 +73,7 @@ export class PaymentProcessingPipeline {
     this.nowProvider = deps.nowProvider ?? (() => Date.now());
     this.billingNoticeCooldownMs =
       deps.billingNoticeCooldownMs ?? 6 * 60 * 60 * 1000;
-    this.renewalPriceCop = deps.renewalPriceCop ?? 50_000;
+    this.renewalPriceCop = deps.renewalPriceCop ?? 49_900;
   }
 
   private async handleBlockedSubscription(
@@ -93,6 +94,16 @@ export class PaymentProcessingPipeline {
     if (!isWithinCooldown && merchant.billingPhone) {
       try {
         const ownerPhone = normalizePhoneNumberE164(merchant.billingPhone);
+
+        // Resolver precio de renovación dinámico según el plan del comercio (o Plan Negocio por defecto)
+        let effectiveRenewalPrice = this.renewalPriceCop;
+        if (merchant.planId) {
+          const plan = getPlanById(merchant.planId);
+          if (plan) {
+            effectiveRenewalPrice = plan.priceMonthlyCop;
+          }
+        }
+
         const sendRes = await this.deps.whatsappClient.sendSubscriptionNotice(
           ownerPhone,
           {
@@ -100,7 +111,7 @@ export class PaymentProcessingPipeline {
             wallet: receipt.wallet,
             storeName: merchant.name,
             isSuspended: reason === 'SUBSCRIPTION_SUSPENDED',
-            renewalPriceCop: this.renewalPriceCop,
+            renewalPriceCop: effectiveRenewalPrice,
           },
         );
         if (sendRes.success) {

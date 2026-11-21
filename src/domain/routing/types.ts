@@ -22,6 +22,7 @@ export interface Merchant {
   subscriptionStatus?: SubscriptionStatus;
   subscriptionEndsAt?: number | null; // Timestamp epoch ms (Fase 3)
   subscriptionExpiresAt?: number | null; // Timestamp epoch ms (heredado)
+  planId?: string | null; // Identificador del plan de suscripción (ej. 'emprendedor', 'negocio', 'pro')
   billingPhone?: string | null; // WhatsApp E.164 del dueño para cobros
   createdAt: number;
 }

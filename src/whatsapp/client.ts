@@ -327,7 +327,7 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
     options: SubscriptionNoticeOptions,
   ): Promise<WhatsAppSendResult> {
     const formattedAmount = formatCopCurrency(options.amount);
-    const renewalPrice = options.renewalPriceCop ?? 50000;
+    const renewalPrice = options.renewalPriceCop ?? 49900;
     const formattedRenewal = formatCopCurrency(renewalPrice);
     const storeLabel = options.storeName ? ` (${options.storeName})` : '';
 

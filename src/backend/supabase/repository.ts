@@ -775,6 +775,7 @@ export class SupabaseRepository
       subscriptionExpiresAt: m.subscription_expires_at
         ? new Date(m.subscription_expires_at).getTime()
         : null,
+      planId: m.plan_id ?? null,
       billingPhone: m.billing_phone ?? null,
       createdAt: new Date(m.created_at).getTime(),
     };
