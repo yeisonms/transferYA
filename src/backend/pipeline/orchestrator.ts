@@ -12,6 +12,7 @@ import { normalizePhoneNumberE164 } from '../../domain/routing/phone-utils.js';
 import type { Merchant } from '../../domain/routing/types.js';
 import type {
   DispatchSummary,
+  MerchantUsageRecord,
   PaymentPipelineDependencies,
   PipelineResult,
 } from './types.js';
@@ -434,7 +435,50 @@ export class PaymentProcessingPipeline {
         };
       }
 
-      // 5. Despachar a WhatsApp a los destinatarios de caja autorizados
+      // 5. Control de cuota mensual de WhatsApp (Fase 4: Reglas de Negocio)
+      let isQuotaExceeded = false;
+      let merchantUsage: MerchantUsageRecord | null = null;
+
+      if (this.deps.usageRepository) {
+        try {
+          merchantUsage = await this.deps.usageRepository.getMerchantUsage(routeResult.merchant.id);
+          if (merchantUsage && merchantUsage.usedAlerts >= merchantUsage.quotaAlerts) {
+            isQuotaExceeded = true;
+          }
+        } catch (usageErr) {
+          console.warn('Advertencia consultando cuota de alertas del comercio:', usageErr);
+        }
+      }
+
+      // Si el comercio alcanzó el 100% de su cupo mensual:
+      // Se pausa el despacho a WhatsApp para proteger presupuesto Meta,
+      // pero la transacción se procesa con éxito en la base de datos, Panel Web y Pantalla POS
+      if (isQuotaExceeded) {
+        await this.deps.notificationRepository.updateNotification(
+          notificationId,
+          {
+            status: 'PROCESSED',
+            amount: receipt.amount,
+            senderName: receipt.senderName,
+            paymentReference: receipt.reference || finalReference,
+            whatsappMessageIds: [],
+            failureReason: 'WhatsApp pausado: cupo mensual de alertas alcanzado (100%)',
+            processedAt: now,
+          },
+        );
+
+        return {
+          status: 'PROCESSED',
+          notificationId,
+          fingerprint,
+          receipt,
+          merchantId: routeResult.merchant.id,
+          dispatches: [],
+          whatsappQuotaExceeded: true,
+        };
+      }
+
+      // 6. Despachar a WhatsApp a los destinatarios de caja autorizados
       const dispatches: DispatchSummary[] = [];
 
       for (const recipient of routeResult.recipients) {
@@ -450,18 +494,54 @@ export class PaymentProcessingPipeline {
           },
         );
 
-        dispatches.push({
+        const dispatchItem: DispatchSummary = {
           recipientId: recipient.id,
           phoneNumber: recipient.phoneNumber,
           success: sendResult.success,
           messageId: sendResult.success ? sendResult.messageId : undefined,
           error: !sendResult.success ? sendResult.message : undefined,
-        });
+        };
+        dispatches.push(dispatchItem);
+
+        // Registro de auditoría financiera individual y descuento de cuota
+        if (sendResult.success && this.deps.usageRepository) {
+          try {
+            await this.deps.usageRepository.recordWhatsAppDispatch({
+              merchantId: routeResult.merchant.id,
+              cashierPhone: recipient.phoneNumber,
+              wamid: sendResult.messageId,
+              category: 'utility',
+              estimatedCostCop: 2.95,
+              notificationId,
+            });
+          } catch (logErr) {
+            console.warn('Error registrando auditoría en whatsapp_usage_logs:', logErr);
+          }
+        }
+      }
+
+      // Evaluar semáforo de advertencia al 80% si aún no se ha alertado al dueño este mes
+      if (
+        this.deps.usageRepository &&
+        merchantUsage &&
+        !merchantUsage.warning80SentAt
+      ) {
+        const successfulCount = dispatches.filter((d) => d.success).length;
+        const newUsed = merchantUsage.usedAlerts + successfulCount;
+        if (newUsed >= merchantUsage.quotaAlerts * 0.8 && newUsed < merchantUsage.quotaAlerts) {
+          try {
+            if (this.deps.usageRepository.recordQuotaWarningSent) {
+              await this.deps.usageRepository.recordQuotaWarningSent(routeResult.merchant.id, now);
+            }
+          } catch (warnErr) {
+            console.warn('Error registrando semáforo 80%:', warnErr);
+          }
+        }
       }
 
       const successfulDispatches = dispatches.filter((d) => d.success);
 
-      // 6. Actualización en base de datos
+      // 7. Actualización en base de datos
       if (successfulDispatches.length > 0) {
         const messageIds = successfulDispatches
           .map((d) => d.messageId)

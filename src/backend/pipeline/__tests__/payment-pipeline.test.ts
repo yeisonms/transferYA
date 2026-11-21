@@ -987,4 +987,160 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
       expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe('Fase 4: Control de Cuotas de WhatsApp, Auditoría y Semáforo de Consumo', () => {
+    it('debe pausar el despacho a WhatsApp cuando se alcanza el 100% del cupo, pero mantener el estado PROCESSED', async () => {
+      const mockUsageRepo = {
+        getMerchantUsage: vi.fn().mockResolvedValue({
+          usedAlerts: 1500,
+          quotaAlerts: 1500,
+          planId: 'emprendedor',
+        }),
+        recordWhatsAppDispatch: vi.fn(),
+        recordQuotaWarningSent: vi.fn(),
+      };
+
+      const customPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        usageRepository: mockUsageRepo,
+        nowProvider: () => now,
+      });
+
+      const notification: StoredNotificationRecord & { id: string } = {
+        id: 'notif_quota_100',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: '¡Plata recibida! Carlos Gomez te envió $50.000 a tu Nequi.',
+        capturedAt: now - 1000,
+        dispatchedAt: now - 500,
+        receivedAt: now,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+      notificationRepo.seed(notification);
+
+      const result = await customPipeline.processCapturedNotification('notif_quota_100');
+
+      expect(result.status).toBe('PROCESSED');
+      if (result.status === 'PROCESSED') {
+        expect(result.whatsappQuotaExceeded).toBe(true);
+        expect(result.dispatches).toHaveLength(0);
+      }
+
+      // WhatsApp no debe haberse llamado para proteger el presupuesto de Meta
+      expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+
+      // La notificación en base de datos debe figurar como PROCESSED para el dashboard web
+      const updated = await notificationRepo.getNotificationById('notif_quota_100');
+      expect(updated?.status).toBe('PROCESSED');
+      expect(updated?.failureReason).toContain('100%');
+    });
+
+    it('debe registrar el costo de $2.95 COP en auditoría por cada despacho exitoso', async () => {
+      (mockWhatsappClient.sendPaymentAlert as any).mockResolvedValue({
+        success: true,
+        messageId: 'wamid.HBgLMzAwMTIzNDU2Nw==',
+      });
+
+      const mockUsageRepo = {
+        getMerchantUsage: vi.fn().mockResolvedValue({
+          usedAlerts: 500,
+          quotaAlerts: 1500,
+          planId: 'emprendedor',
+        }),
+        recordWhatsAppDispatch: vi.fn().mockResolvedValue(undefined),
+        recordQuotaWarningSent: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const customPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        usageRepository: mockUsageRepo,
+        nowProvider: () => now,
+      });
+
+      const notification: StoredNotificationRecord & { id: string } = {
+        id: 'notif_usage_audit',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: '¡Plata recibida! Maria te envió $25.000 a tu Nequi.',
+        capturedAt: now - 1000,
+        dispatchedAt: now - 500,
+        receivedAt: now,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+      notificationRepo.seed(notification);
+
+      const result = await customPipeline.processCapturedNotification('notif_usage_audit');
+      expect(result.status).toBe('PROCESSED');
+
+      // Se debe haber registrado auditoría para los 2 cajeros con costo $2.95 COP
+      expect(mockUsageRepo.recordWhatsAppDispatch).toHaveBeenCalledTimes(2);
+      expect(mockUsageRepo.recordWhatsAppDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          merchantId: merchant.id,
+          category: 'utility',
+          estimatedCostCop: 2.95,
+          notificationId: 'notif_usage_audit',
+        }),
+      );
+    });
+
+    it('debe registrar la alerta del 80% cuando el consumo cruza el umbral preventivo', async () => {
+      (mockWhatsappClient.sendPaymentAlert as any).mockResolvedValue({
+        success: true,
+        messageId: 'wamid.WARNING_80_TEST',
+      });
+
+      const mockUsageRepo = {
+        getMerchantUsage: vi.fn().mockResolvedValue({
+          usedAlerts: 1199,
+          quotaAlerts: 1500,
+          planId: 'emprendedor',
+          warning80SentAt: null,
+        }),
+        recordWhatsAppDispatch: vi.fn().mockResolvedValue(undefined),
+        recordQuotaWarningSent: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const customPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        usageRepository: mockUsageRepo,
+        nowProvider: () => now,
+      });
+
+      const notification: StoredNotificationRecord & { id: string } = {
+        id: 'notif_warning_80',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: '¡Plata recibida! Pedro te envió $10.000 a tu Nequi.',
+        capturedAt: now - 1000,
+        dispatchedAt: now - 500,
+        receivedAt: now,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+      notificationRepo.seed(notification);
+
+      await customPipeline.processCapturedNotification('notif_warning_80');
+
+      expect(mockUsageRepo.recordQuotaWarningSent).toHaveBeenCalledTimes(1);
+      expect(mockUsageRepo.recordQuotaWarningSent).toHaveBeenCalledWith(merchant.id, now);
+    });
+  });
 });

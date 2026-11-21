@@ -27,6 +27,26 @@ export interface DispatchSummary {
   error?: string;
 }
 
+export interface MerchantUsageRecord {
+  usedAlerts: number;
+  quotaAlerts: number;
+  planId: string;
+  warning80SentAt?: number | null;
+}
+
+export interface IUsageTrackingRepository {
+  getMerchantUsage(merchantId: string): Promise<MerchantUsageRecord>;
+  recordWhatsAppDispatch(params: {
+    merchantId: string;
+    cashierPhone: string;
+    wamid?: string;
+    category?: string;
+    estimatedCostCop?: number;
+    notificationId?: string;
+  }): Promise<void>;
+  recordQuotaWarningSent?(merchantId: string, timestamp: number): Promise<void>;
+}
+
 export interface PipelineNotificationUpdate {
   status:
     | 'PROCESSING'
@@ -75,6 +95,7 @@ export type PipelineResult =
       invoiceId?: string;
       renewedUntilIso?: string;
       daysRemaining?: number;
+      whatsappQuotaExceeded?: boolean;
     }
   | {
       status: 'IGNORED_NON_PAYMENT';
@@ -116,6 +137,7 @@ export interface PaymentPipelineDependencies {
   routingService: MerchantRoutingService;
   whatsappClient: IWhatsAppCloudApiClient;
   billingReconciliationService?: BillingReconciliationService;
+  usageRepository?: IUsageTrackingRepository;
   parser?: (
     rawText: string,
     rawTitle?: string,

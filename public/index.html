@@ -2647,6 +2647,82 @@
             </button>
           </div>
 
+          <!-- Resumen de Cuota de Alertas WhatsApp y Cajeros del Plan (Fase 4) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tarjeta 1: Semáforo de Consumo de Alertas WhatsApp -->
+            <div class="p-5 bg-ty-surface-low border border-ty-border rounded-2xl space-y-3.5 shadow-sm">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <span id="quotaTrafficLightDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span class="text-xs font-semibold text-white">Consumo de Alertas WhatsApp</span>
+                </div>
+                <span id="quotaStatusBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Normal
+                </span>
+              </div>
+
+              <div>
+                <div class="flex items-baseline justify-between mb-1.5">
+                  <span id="quotaAlertsNumbers" class="text-lg font-bold text-white font-mono">0 / 1,500</span>
+                  <span id="quotaAlertsPercentage" class="text-xs font-semibold text-ty-muted font-mono">0%</span>
+                </div>
+                <!-- Barra de Progreso del Semáforo -->
+                <div class="w-full h-2 rounded-full bg-ty-surface overflow-hidden border border-ty-border">
+                  <div id="quotaProgressBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div id="quotaMessageText" class="text-[11px] text-ty-muted leading-relaxed">
+                Cada pago confirmado se envía de inmediato a los celulares de tus cajeros vía Meta WhatsApp API.
+              </div>
+
+              <div class="pt-1 flex items-center justify-between gap-2">
+                <button type="button" onclick="buyAlertsAddon()" class="text-xs font-semibold text-ty-cyan hover:underline inline-flex items-center gap-1">
+                  <span>+1,000 Alertas extra ($7.900)</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+                <span id="quotaPlanNameLabel" class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-ty-surface text-ty-muted">Plan Emprendedor</span>
+              </div>
+            </div>
+
+            <!-- Tarjeta 2: Capacidad de Cajeros del Plan -->
+            <div class="p-5 bg-ty-surface-low border border-ty-border rounded-2xl space-y-3.5 shadow-sm">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span class="text-xs font-semibold text-white">Cupo de Cajeros WhatsApp</span>
+                </div>
+                <span id="cashiersQuotaBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-ty-surface text-ty-muted border border-ty-border">
+                  1 / 1
+                </span>
+              </div>
+
+              <div>
+                <div class="flex items-baseline justify-between mb-1.5">
+                  <span id="cashiersUsageNumbers" class="text-lg font-bold text-white font-mono">0 activos</span>
+                  <span id="cashiersUsageMax" class="text-xs font-semibold text-ty-muted">Máx permitido: 1</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-ty-surface overflow-hidden border border-ty-border">
+                  <div id="cashiersProgressBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-ty-muted leading-relaxed">
+                Tus cajeros no necesitan entrar al panel web: reciben el comprobante auditado directo en su WhatsApp personal.
+              </div>
+
+              <div class="pt-1 flex items-center justify-between gap-2">
+                <button type="button" onclick="buyCashierAddon()" class="text-xs font-semibold text-ty-cyan hover:underline inline-flex items-center gap-1">
+                  <span>+1 Cajero WhatsApp ($12.900/mes)</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+                <span class="text-[10px] text-emerald-400 font-medium">+1.200 alertas</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Contenedor y Lista de Cajeros -->
           <div class="bg-ty-surface-low border border-ty-border rounded-2xl overflow-hidden shadow-sm">
             <div class="px-5 py-3.5 border-b border-ty-border bg-ty-surface text-xs font-semibold text-ty-muted grid grid-cols-12 gap-3 items-center">
@@ -4538,12 +4614,14 @@
             : rawStatus;
 
       const daysLeft = endsAtMs && endsAtMs > nowMs ? Math.ceil((endsAtMs - nowMs) / 86400000) : 0;
+      const planId = currentMerchant?.plan_id || "emprendedor";
+      const planName = planId === "pro" ? "Plan Pro Multi-Caja" : (planId === "negocio" ? "Plan Negocio" : "Plan Emprendedor");
 
       if (effectiveStatus === "ACTIVE") {
-        badgeEl.textContent = daysLeft > 0 ? `Plan Pro · ${daysLeft} días restantes` : "Plan Pro Activo";
+        badgeEl.textContent = daysLeft > 0 ? `${planName} · ${daysLeft} días restantes` : `${planName} Activo`;
         badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-500/10 border-emerald-500/25 text-emerald-400";
       } else if (effectiveStatus === "TRIAL") {
-        badgeEl.textContent = daysLeft > 0 ? `Prueba Pro · ${daysLeft} días restantes` : "Prueba Activa";
+        badgeEl.textContent = daysLeft > 0 ? `Prueba ${planName} · ${daysLeft} días restantes` : "Prueba Activa";
         badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-sky-500/10 border-sky-500/25 text-sky-400";
       } else if (effectiveStatus === "PAST_DUE") {
         badgeEl.textContent = "Plan Vencido";
@@ -7530,6 +7608,7 @@
       }
 
       const list = document.getElementById("cashiersList");
+      updateCashiersQuotaUI();
       if (!cashierRecords.length) {
         list.innerHTML = `
           <div class="p-8 text-center">
@@ -7589,7 +7668,127 @@
       }).join("");
     }
 
+    function getMaxAllowedCashiersForMerchant() {
+      const planId = currentMerchant?.plan_id || "emprendedor";
+      let base = 1;
+      if (planId === "pro") base = 4;
+      else if (planId === "negocio") base = 2;
+      const extra = currentMerchant?.extra_cashiers_quota || 0;
+      return base + extra;
+    }
+
+    function buyAlertsAddon() {
+      const merchantName = currentMerchant?.name || "mi negocio";
+      const merchantId = currentMerchant?.id || "";
+      const text = `Hola MurSat Solutions, deseo adquirir el Paquete de 1.000 Alertas WhatsApp Extra ($7.900 COP) para mi comercio ${merchantName} (${merchantId}).`;
+      window.open(`https://wa.me/573113654315?text=${encodeURIComponent(text)}`, "_blank");
+    }
+
+    function buyCashierAddon() {
+      const merchantName = currentMerchant?.name || "mi negocio";
+      const merchantId = currentMerchant?.id || "";
+      const text = `Hola MurSat Solutions, deseo agregar un Cajero WhatsApp Extra ($12.900 COP/mes con +1.200 alertas) para mi comercio ${merchantName} (${merchantId}).`;
+      window.open(`https://wa.me/573113654315?text=${encodeURIComponent(text)}`, "_blank");
+    }
+
+    function updateCashiersQuotaUI() {
+      if (!currentMerchant) return;
+      const planId = currentMerchant.plan_id || "emprendedor";
+      const planName = planId === "pro" ? "Plan Pro Multi-Caja" : (planId === "negocio" ? "Plan Negocio" : "Plan Emprendedor");
+
+      const planLabel = document.getElementById("quotaPlanNameLabel");
+      if (planLabel) planLabel.textContent = planName;
+
+      // Cálculo de alertas
+      let baseCap = 1500;
+      if (planId === "pro") baseCap = 7500;
+      else if (planId === "negocio") baseCap = 3500;
+      if (currentMerchant.monthly_alerts_cap) baseCap = currentMerchant.monthly_alerts_cap;
+
+      const extraAlerts = currentMerchant.extra_alerts_quota || 0;
+      const totalCap = baseCap + extraAlerts;
+      const usedAlerts = currentMerchant.monthly_alerts_used || 0;
+      const pct = Math.min(100, Math.round((usedAlerts / totalCap) * 100));
+
+      const numEl = document.getElementById("quotaAlertsNumbers");
+      const pctEl = document.getElementById("quotaAlertsPercentage");
+      const barEl = document.getElementById("quotaProgressBar");
+      const dotEl = document.getElementById("quotaTrafficLightDot");
+      const badgeEl = document.getElementById("quotaStatusBadge");
+      const msgEl = document.getElementById("quotaMessageText");
+
+      if (numEl) numEl.textContent = `${usedAlerts.toLocaleString()} / ${totalCap.toLocaleString()}`;
+      if (pctEl) pctEl.textContent = `${pct}%`;
+      if (barEl) {
+        barEl.style.width = `${pct}%`;
+        if (pct >= 100) {
+          barEl.className = "h-full bg-rose-500 transition-all duration-500";
+        } else if (pct >= 80) {
+          barEl.className = "h-full bg-amber-500 transition-all duration-500";
+        } else {
+          barEl.className = "h-full bg-emerald-500 transition-all duration-500";
+        }
+      }
+
+      if (dotEl && badgeEl && msgEl) {
+        if (pct >= 100) {
+          dotEl.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping";
+          badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+          badgeEl.textContent = "WhatsApp Pausado (100%)";
+          msgEl.innerHTML = `<strong class="text-rose-400">Cupo mensual alcanzado:</strong> Para proteger tu presupuesto, los avisos a WhatsApp están pausados. La voz en vivo y el panel web siguen funcionando normalmente.`;
+        } else if (pct >= 80) {
+          dotEl.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+          badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+          badgeEl.textContent = "Alerta 80% Consumido";
+          msgEl.innerHTML = `<strong class="text-amber-400">Atención:</strong> Has utilizado más del 80% de tus alertas. Adquiere un paquete extra de 1.000 alertas ($7.900 COP) para no interrumpir el servicio de tus cajeros.`;
+        } else {
+          dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+          badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          badgeEl.textContent = "Consumo Normal";
+          msgEl.textContent = "Cada pago confirmado se envía de inmediato a los celulares de tus cajeros vía Meta WhatsApp API.";
+        }
+      }
+
+      // Cálculo de cajeros
+      const maxCashiers = getMaxAllowedCashiersForMerchant();
+      const activeCashiers = cashierRecords ? cashierRecords.filter((c) => c.is_active).length : 0;
+      const cashiersPct = Math.min(100, Math.round((activeCashiers / maxCashiers) * 100));
+
+      const cBadge = document.getElementById("cashiersQuotaBadge");
+      const cNums = document.getElementById("cashiersUsageNumbers");
+      const cMax = document.getElementById("cashiersUsageMax");
+      const cBar = document.getElementById("cashiersProgressBar");
+
+      if (cBadge) cBadge.textContent = `${activeCashiers} / ${maxCashiers}`;
+      if (cNums) cNums.textContent = `${activeCashiers} activo${activeCashiers === 1 ? "" : "s"}`;
+      if (cMax) cMax.textContent = `Máx permitido: ${maxCashiers}`;
+      if (cBar) {
+        cBar.style.width = `${cashiersPct}%`;
+        cBar.className = activeCashiers >= maxCashiers
+          ? "h-full bg-amber-500 transition-all duration-500"
+          : "h-full bg-emerald-500 transition-all duration-500";
+      }
+    }
+
     function openAddCashierModal() {
+      const maxAllowed = getMaxAllowedCashiersForMerchant();
+      const currentActiveCashiers = cashierRecords.filter((c) => c.is_active).length;
+
+      if (currentActiveCashiers >= maxAllowed) {
+        const planName = currentMerchant?.plan_id === "pro" ? "Pro Multi-Caja" : (currentMerchant?.plan_id === "negocio" ? "Negocio" : "Emprendedor");
+        const confirmUpgrade = confirm(
+          `Has alcanzado el límite de ${maxAllowed} cajero(s) de tu Plan ${planName}.\n\n` +
+          `¿Deseas agregar el Add-on de Cajero WhatsApp Extra ($12.900 COP/mes) o actualizar tu plan?\n\nToca Aceptar para escribir a soporte por WhatsApp.`
+        );
+        if (confirmUpgrade) {
+          window.open(
+            "https://wa.me/573113654315?text=" + encodeURIComponent(`Hola MurSat Solutions, quiero solicitar un Cajero WhatsApp Extra para mi comercio ${currentMerchant.name} (${currentMerchant.id})`),
+            "_blank"
+          );
+        }
+        return;
+      }
+
       document.getElementById("newCashierName").value = "";
       document.getElementById("newCashierPhone").value = "+57";
       document.getElementById("addCashierModal").classList.remove("hidden");
@@ -7600,6 +7799,13 @@
     }
 
     async function saveNewCashier() {
+      const maxAllowed = getMaxAllowedCashiersForMerchant();
+      const currentActiveCashiers = cashierRecords.filter((c) => c.is_active).length;
+      if (currentActiveCashiers >= maxAllowed) {
+        showToast(`Límite alcanzado (${maxAllowed} cajeros). Adquiere el Add-on de Cajero Extra.`, true);
+        return;
+      }
+
       const name = document.getElementById("newCashierName").value.trim();
       const phone = document.getElementById("newCashierPhone").value.trim();
       const deviceId = document.getElementById("newCashierDeviceSelect").value || null;
