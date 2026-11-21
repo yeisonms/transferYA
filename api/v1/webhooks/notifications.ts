@@ -68,7 +68,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             routingService,
             whatsappClient,
             billingReconciliationService,
-            usageRepository: repository,
           });
 
           const pipelineResult = await pipeline.processCapturedNotification(notificationId);

@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { TrialNurtureService } from '../../src/backend/billing/trial-nurture.js';
-import { WhatsAppCloudApiClient } from '../../src/whatsapp/client.js';
-import { getSupabaseRepository } from '../../src/backend/supabase/client.js';
+import { TrialNurtureService } from '../../../src/backend/billing/trial-nurture.js';
+import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
+import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
 
 /**
  * Tarea Cron programada para la evaluación y despacho diario de recordatorios

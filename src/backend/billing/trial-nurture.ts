@@ -7,7 +7,8 @@ import type { Merchant } from '../../domain/routing/types.js';
 import type { IWhatsAppCloudApiClient } from '../../whatsapp/types.js';
 
 export interface ITrialNurtureRepository {
-  getMerchantById(merchantId: string): Promise<Merchant | null>;
+  findMerchantById?(merchantId: string): Promise<Merchant | null>;
+  getMerchantById?(merchantId: string): Promise<any>;
   getTrialMerchants(): Promise<Merchant[]>;
   recordTrialNoticeSent(
     merchantId: string,
@@ -43,11 +44,15 @@ export class TrialNurtureService {
    */
   async sendWelcomeIfEligible(merchantId: string): Promise<boolean> {
     try {
-      const merchant = await this.deps.repository.getMerchantById(merchantId);
-      if (!merchant || !merchant.billingPhone) return false;
-      if (merchant.trialWelcomeSentAt) return false;
+      const merchant = this.deps.repository.findMerchantById
+        ? await this.deps.repository.findMerchantById(merchantId)
+        : (this.deps.repository.getMerchantById ? await this.deps.repository.getMerchantById(merchantId) : null);
+      if (!merchant) return false;
+      const billingPhone = (merchant as any).billingPhone || (merchant as any).billing_phone;
+      const trialWelcomeSentAt = (merchant as any).trialWelcomeSentAt || (merchant as any).trial_welcome_sent_at;
+      if (!billingPhone || trialWelcomeSentAt) return false;
 
-      const ownerPhone = normalizePhoneNumberE164(merchant.billingPhone);
+      const ownerPhone = normalizePhoneNumberE164(billingPhone);
       const res = await this.deps.whatsappClient.sendTrialWelcome(ownerPhone, {
         storeName: merchant.name,
         trialDays: 7,
