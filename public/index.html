@@ -95,9 +95,9 @@
       --ty-border-strong: #CBD5E1;
       --ty-text: #101C2D;
       --ty-heading: #101C2D;
-      --ty-muted: #64748B;
-      --ty-emerald: #13B981;
-      --ty-emerald-soft: #E8F7F0;
+      --ty-muted: #475569;
+      --ty-emerald: #059669;
+      --ty-emerald-soft: #ECFDF5;
       --ty-sidebar-bg: #101C2D;
       --ty-sidebar-border: rgba(255, 255, 255, 0.08);
     }
@@ -256,7 +256,7 @@
       color: #101C2D !important;
     }
     html:not(.dark) header .text-ty-muted {
-      color: #64748B !important;
+      color: #475569 !important;
     }
     html:not(.dark) header .bg-ty-surface {
       background-color: #F8FAFC !important;
@@ -321,7 +321,11 @@
     html:not(.dark) #txDetailDrawer .text-ty-muted,
     html:not(.dark) [id$="Modal"] .text-ty-muted,
     html:not(.dark) nav[aria-label="Navegación Móvil"] .text-ty-muted {
-      color: #64748B !important;
+      color: #475569 !important;
+    }
+    html:not(.dark) [class*="text-ty-muted/"] {
+      color: #334155 !important;
+      opacity: 1 !important;
     }
     html:not(.dark) main .border-ty-border,
     html:not(.dark) header .border-ty-border,
@@ -337,6 +341,75 @@
     }
     html:not(.dark) main input::placeholder {
       color: #94A3B8 !important;
+    }
+
+    /* Corrección global de colores de acento neón a variantes oscuras de alto contraste (WCAG AAA) */
+    html:not(.dark) .text-emerald-400,
+    html:not(.dark) .text-ty-emerald,
+    html:not(.dark) [class*="text-emerald-400"],
+    html:not(.dark) [class*="text-ty-emerald"] {
+      color: #047857 !important;
+    }
+
+    html:not(.dark) .text-amber-400,
+    html:not(.dark) .text-ty-amber,
+    html:not(.dark) [class*="text-amber-400"],
+    html:not(.dark) [class*="text-ty-amber"] {
+      color: #B45309 !important;
+    }
+
+    html:not(.dark) .text-sky-400,
+    html:not(.dark) .text-ty-cyan,
+    html:not(.dark) [class*="text-sky-400"],
+    html:not(.dark) [class*="text-ty-cyan"] {
+      color: #0369A1 !important;
+    }
+
+    html:not(.dark) .text-rose-400,
+    html:not(.dark) .text-ty-rose,
+    html:not(.dark) [class*="text-rose-400"],
+    html:not(.dark) [class*="text-ty-rose"] {
+      color: #BE123C !important;
+    }
+
+    /* Badges de estado con fondo pastel y borde nítido */
+    html:not(.dark) [class*="bg-emerald-500/"],
+    html:not(.dark) [class*="bg-ty-emerald/"] {
+      background-color: #ECFDF5 !important;
+      border-color: #A7F3D0 !important;
+    }
+    html:not(.dark) [class*="bg-amber-500/"],
+    html:not(.dark) [class*="bg-ty-amber/"] {
+      background-color: #FFFBEB !important;
+      border-color: #FDE68A !important;
+    }
+    html:not(.dark) [class*="bg-sky-500/"],
+    html:not(.dark) [class*="bg-ty-cyan/"] {
+      background-color: #F0F9FF !important;
+      border-color: #BAE6FD !important;
+    }
+    html:not(.dark) [class*="bg-rose-500/"],
+    html:not(.dark) [class*="bg-ty-rose/"] {
+      background-color: #FFF1F2 !important;
+      border-color: #FECDD3 !important;
+    }
+
+    /* Bordes de badges y tarjetas de estado */
+    html:not(.dark) [class*="border-emerald-500/"],
+    html:not(.dark) [class*="border-ty-emerald/"] {
+      border-color: #A7F3D0 !important;
+    }
+    html:not(.dark) [class*="border-amber-500/"],
+    html:not(.dark) [class*="border-ty-amber/"] {
+      border-color: #FDE68A !important;
+    }
+    html:not(.dark) [class*="border-sky-500/"],
+    html:not(.dark) [class*="border-ty-cyan/"] {
+      border-color: #BAE6FD !important;
+    }
+    html:not(.dark) [class*="border-rose-500/"],
+    html:not(.dark) [class*="border-ty-rose/"] {
+      border-color: #FECDD3 !important;
     }
 
     /* Navegación móvil en Light Mode */
@@ -369,7 +442,7 @@
     }
     html:not(.dark) #txDetailDrawer .text-ty-muted,
     html:not(.dark) [id$="Modal"] .text-ty-muted {
-      color: #64748B !important;
+      color: #475569 !important;
     }
     html:not(.dark) #txDetailDrawer .bg-ty-surface,
     html:not(.dark) [id$="Modal"] .bg-ty-surface {
@@ -381,6 +454,234 @@
       background-color: #FFFFFF !important;
       color: #101C2D !important;
       border-color: #CBD5E1 !important;
+    }
+
+    /* Eliminación de franjas y gradientes oscuros en Modales y Banners */
+    html:not(.dark) #panelPairingSamePhone > div:first-child,
+    html:not(.dark) [id$="Modal"] .bg-gradient-to-r {
+      background-image: none !important;
+      background-color: #F0FDF4 !important;
+      border: 1px solid #86EFAC !important;
+      box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1) !important;
+    }
+    html:not(.dark) #panelPairingSamePhone h4,
+    html:not(.dark) [id$="Modal"] .bg-gradient-to-r h4,
+    html:not(.dark) [id$="Modal"] .bg-gradient-to-r p.text-white {
+      color: #064E3B !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) #panelPairingSamePhone p,
+    html:not(.dark) [id$="Modal"] .bg-gradient-to-r p {
+      color: #166534 !important;
+    }
+    html:not(.dark) #panelPairingSamePhone strong.text-ty-cyan,
+    html:not(.dark) [id$="Modal"] .bg-gradient-to-r strong.text-ty-cyan {
+      color: #0369A1 !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) #panelPairingSamePhone .w-9,
+    html:not(.dark) #panelPairingSamePhone .w-10 {
+      background-color: #DCFCE7 !important;
+      border-color: #86EFAC !important;
+      color: #047857 !important;
+    }
+
+    /* Botón Deep Link Principal en Pairing Modal */
+    html:not(.dark) #qrDeepLinkBtn {
+      background-color: #10B981 !important;
+      color: #042F1A !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    }
+    html:not(.dark) #qrDeepLinkBtn:hover {
+      background-color: #059669 !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Tabs de Vinculación en Pairing Modal */
+    html:not(.dark) #pairingModal .grid.grid-cols-2 {
+      background-color: #F1F5F9 !important;
+      border-color: #CBD5E1 !important;
+    }
+    html:not(.dark) #pairingTabSamePhone.bg-ty-surface-highest,
+    html:not(.dark) #pairingTabQr.bg-ty-surface-highest {
+      background-color: #FFFFFF !important;
+      color: #0F172A !important;
+      border: 1px solid #CBD5E1 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    }
+    html:not(.dark) #pairingTabSamePhone:not(.bg-ty-surface-highest),
+    html:not(.dark) #pairingTabQr:not(.bg-ty-surface-highest) {
+      color: #475569 !important;
+      background-color: transparent !important;
+    }
+    html:not(.dark) #pairingTabSamePhone:not(.bg-ty-surface-highest):hover,
+    html:not(.dark) #pairingTabQr:not(.bg-ty-surface-highest):hover {
+      color: #0F172A !important;
+    }
+
+    /* Input y Botón Copiar Token en Modal */
+    html:not(.dark) #manualTokenInput {
+      background-color: #FFFFFF !important;
+      color: #0F172A !important;
+      border-color: #CBD5E1 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #copyTokenBtn {
+      background-color: #F0F9FF !important;
+      border-color: #BAE6FD !important;
+      color: #0369A1 !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) #copyTokenBtn:hover {
+      background-color: #E0F2FE !important;
+      border-color: #7DD3FC !important;
+    }
+
+    /* Temporizador de Token */
+    html:not(.dark) #qrTimerText {
+      color: #047857 !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #qrTimerProgress {
+      background-color: #10B981 !important;
+    }
+
+    /* Acordeón de Configuración de Caja en Modal */
+    html:not(.dark) #pairingModal details {
+      background-color: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+    }
+    html:not(.dark) #pairingModal details summary {
+      color: #334155 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #pairingModal details label {
+      color: #475569 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #pairingModal details input {
+      background-color: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      color: #0F172A !important;
+    }
+    html:not(.dark) #pairingModal details button {
+      background-color: #ECFDF5 !important;
+      border-color: #A7F3D0 !important;
+      color: #047857 !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) #pairingModal details button:hover {
+      background-color: #10B981 !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Enlace de descarga APK en Modal */
+    html:not(.dark) #pairingModal a[download] {
+      color: #0369A1 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #pairingModal a[download]:hover {
+      color: #0284C7 !important;
+      text-decoration: underline;
+    }
+    html:not(.dark) #pairingModal button[onclick*="openSecurityPrivacyModal"] {
+      color: #475569 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #pairingModal button[onclick*="openSecurityPrivacyModal"]:hover {
+      color: #047857 !important;
+    }
+
+    /* Mis cajas y Teléfonos en Light Mode */
+    html:not(.dark) #devicesGrid > div {
+      background-color: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 1px 3px 0 rgba(16, 28, 45, 0.05), 0 1px 2px -1px rgba(16, 28, 45, 0.03) !important;
+    }
+    html:not(.dark) #devicesGrid .text-ty-muted {
+      color: #475569 !important;
+      font-weight: 500 !important;
+    }
+    html:not(.dark) #devicesGrid .font-mono.text-ty-muted {
+      color: #334155 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #devicesGrid [class*="text-ty-muted/80"] {
+      color: #334155 !important;
+      background-color: #F1F5F9 !important;
+      border-color: #CBD5E1 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #devicesGrid button {
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) #devicesGrid button[onclick*="renameDevice"] {
+      background-color: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      color: #1E293B !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #devicesGrid button[onclick*="renameDevice"]:hover {
+      background-color: #F8FAFC !important;
+      border-color: #94A3B8 !important;
+      color: #0F172A !important;
+    }
+
+    /* Slot Conectar Celular de Caja #N (Dotted Card) */
+    html:not(.dark) #devicesGrid > div:last-child {
+      background-color: #FFFFFF !important;
+      border: 2px dashed #CBD5E1 !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child:hover {
+      background-color: #F8FAFC !important;
+      border-color: #10B981 !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child .w-12 {
+      background-color: #F1F5F9 !important;
+      border: 1px solid #CBD5E1 !important;
+      color: #334155 !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child:hover .w-12 {
+      background-color: #ECFDF5 !important;
+      border-color: #A7F3D0 !important;
+      color: #047857 !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child h3 {
+      color: #0F172A !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child:hover h3 {
+      color: #047857 !important;
+    }
+    html:not(.dark) #devicesGrid > div:last-child p {
+      color: #475569 !important;
+      font-weight: 500 !important;
+    }
+
+    /* Tarjeta superior de Garantía de Seguridad */
+    html:not(.dark) #tab-devices button[onclick*="openSecurityPrivacyModal"] {
+      background-color: #F0F9FF !important;
+      border-color: #BAE6FD !important;
+      color: #0369A1 !important;
+      font-weight: 600 !important;
+    }
+    html:not(.dark) #tab-devices button[onclick*="openSecurityPrivacyModal"]:hover {
+      background-color: #E0F2FE !important;
+      border-color: #7DD3FC !important;
+      color: #0284C7 !important;
+    }
+
+    /* Banner Onboarding de Inicio Rápido (noDevicesBanner) */
+    html:not(.dark) #noDevicesBanner {
+      background-image: none !important;
+      background-color: #FFFFFF !important;
+      border-color: #A7F3D0 !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) #noDevicesBanner h2 {
+      color: #0F172A !important;
+    }
+    html:not(.dark) #noDevicesBanner p {
+      color: #475569 !important;
     }
 
     /* Tablas en Light Mode */
