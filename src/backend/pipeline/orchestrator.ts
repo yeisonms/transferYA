@@ -2,6 +2,7 @@ import { getPlanById } from '../../config/plans.js';
 import {
   generateCanonicalPaymentFingerprint,
   generatePaymentFingerprint,
+  isUniqueBankTransactionReference,
 } from '../../domain/idempotency/fingerprint.js';
 import { parseBankingNotification } from '../../domain/parser/engine.js';
 import { parseNequiEmailReceipt, parseBancolombiaEmailReceipt } from '../../domain/parser/email-parser.js';
@@ -202,8 +203,13 @@ export class PaymentProcessingPipeline {
     const receipt = parseResult.payment;
 
     // Determinar o generar Referencia de Transferencia para auditoría y trazabilidad
-    const hasOfficialRef = Boolean(receipt.reference && receipt.reference.trim());
-    const finalReference = hasOfficialRef
+    const isOfficialUniqueRef = Boolean(
+      receipt.reference && isUniqueBankTransactionReference(receipt.reference),
+    );
+    const hasExplicitRefOrAccount = Boolean(
+      receipt.reference && receipt.reference.trim(),
+    );
+    const finalReference = hasExplicitRefOrAccount
       ? receipt.reference!.trim().toUpperCase()
       : (() => {
         const isBreB =
@@ -217,9 +223,7 @@ export class PaymentProcessingPipeline {
         return `${prefix}-${shortId}`;
       })();
 
-    if (hasOfficialRef) {
-      receipt.reference = finalReference;
-    }
+    receipt.reference = finalReference;
 
     // Intentar resolver merchantId para habilitar deduplicación multicanal híbrida por comercio
     let merchantId: string | undefined;
@@ -253,7 +257,7 @@ export class PaymentProcessingPipeline {
           capturedAt: notification.capturedAt,
           currentDeviceId: notification.deviceId,
           currentNotificationId: notification.id || notificationId,
-          reference: hasOfficialRef ? finalReference : null,
+          reference: isOfficialUniqueRef ? finalReference : null,
           senderName: receipt.senderName,
           rawTitle: notification.rawTitle,
         });

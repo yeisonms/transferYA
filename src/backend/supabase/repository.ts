@@ -39,7 +39,10 @@ import type {
 } from '../billing/types.js';
 import { generateInvoiceReferenceCode } from '../billing/utils.js';
 import { resolveSubscriptionEndsAt } from '../../domain/routing/billing.js';
-import { normalizeSenderForFingerprint } from '../../domain/idempotency/fingerprint.js';
+import {
+  normalizeSenderForFingerprint,
+  isUniqueBankTransactionReference,
+} from '../../domain/idempotency/fingerprint.js';
 import { cleanCopAmount } from '../../domain/parser/engine.js';
 
 export interface SupabaseConfig {
@@ -415,7 +418,7 @@ export class SupabaseRepository
 
         // Criterio 1: Misma referencia bancaria explícita de la entidad financiera
         const isOfficialBankRef =
-          Boolean(params.reference && !params.reference.startsWith('BREB-') && !params.reference.startsWith('TRF-'));
+          Boolean(params.reference && isUniqueBankTransactionReference(params.reference));
 
         if (
           isOfficialBankRef &&

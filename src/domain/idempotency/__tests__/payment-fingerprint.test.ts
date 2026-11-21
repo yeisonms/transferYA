@@ -4,6 +4,7 @@ import {
   generatePaymentFingerprint,
   generateCanonicalPaymentFingerprint,
   InMemoryPaymentFingerprintRepository,
+  isUniqueBankTransactionReference,
   normalizeSenderForFingerprint,
 } from '../fingerprint.js';
 import type { PaymentFingerprintRecord } from '../types.js';
@@ -397,6 +398,40 @@ describe('Motor de Huella de Idempotencia para Pagos P2P (Ticket 09)', () => {
       const fp2 = generateCanonicalPaymentFingerprint(receiptNoRef, t2, 10);
 
       expect(fp1).toBe(fp2);
+    });
+
+    it('NUNCA debe usar máscaras de cuenta (*1082) ni llaves como referencia bancaria única para evitar colisiones eternas', () => {
+      expect(isUniqueBankTransactionReference('*1082')).toBe(false);
+      expect(isUniqueBankTransactionReference('*5871')).toBe(false);
+      expect(isUniqueBankTransactionReference('3113278414')).toBe(false);
+      expect(isUniqueBankTransactionReference('0079127304')).toBe(false);
+      expect(isUniqueBankTransactionReference('@jefferson0769')).toBe(false);
+      expect(isUniqueBankTransactionReference('BREB-12345678')).toBe(false);
+      expect(isUniqueBankTransactionReference('TRF-12345678')).toBe(false);
+      expect(isUniqueBankTransactionReference('M87654321')).toBe(true);
+      expect(isUniqueBankTransactionReference('B1234567')).toBe(true);
+
+      const edwinPago1: ParsedPaymentReceipt = {
+        wallet: 'BANCOLOMBIA',
+        amount: 20,
+        senderName: 'Yeison Stiven Murcia Calvo',
+        reference: '*1082',
+        rawText: 'Bancolombia: EDWIN, recibiste una transferencia de YEISON por $20.00 en tu cuenta *1082',
+      };
+
+      const edwinPago2: ParsedPaymentReceipt = {
+        wallet: 'BANCOLOMBIA',
+        amount: 24,
+        senderName: 'Yeison Stiven Murcia Calvo',
+        reference: '*1082',
+        rawText: 'Bancolombia: EDWIN, recibiste una transferencia de YEISON por $24.00 en tu cuenta *1082',
+      };
+
+      const fp1 = generateCanonicalPaymentFingerprint(edwinPago1, 1715000000000);
+      const fp2 = generateCanonicalPaymentFingerprint(edwinPago2, 1715000000000);
+
+      // Los dos pagos tienen diferente monto ($20 vs $24) en la misma cuenta *1082: NO deben colisionar
+      expect(fp1).not.toBe(fp2);
     });
   });
 });

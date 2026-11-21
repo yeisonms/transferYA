@@ -85,23 +85,57 @@ export function generatePaymentFingerprint(
 }
 
 /**
+ * Determina si una referencia corresponde a un identificador único de transacción emitido por la entidad bancaria
+ * (ej. "M1234567" de Nequi o número de comprobante único), o si por el contrario es un identificador de cuenta/destino
+ * (ej. máscara de cuenta "*1082", o llave Bre-B "3113278414", "@usuario") o un prefijo sintético del sistema ("BREB-", "TRF-").
+ *
+ * Los identificadores de cuenta y llaves NUNCA deben utilizarse como identificador único de transacción
+ * porque provocarían colisiones masivas entre pagos distintos recibidos en la misma cuenta.
+ */
+export function isUniqueBankTransactionReference(ref?: string | null): boolean {
+  if (!ref || typeof ref !== 'string') return false;
+  const clean = ref.trim().toUpperCase();
+  if (!clean) return false;
+
+  // Prefijos sintéticos generados internamente por TransferYA
+  if (clean.startsWith('BREB-') || clean.startsWith('TRF-')) return false;
+
+  // Máscaras de cuentas bancarias (ej. *1082, *5871)
+  if (clean.startsWith('*')) return false;
+
+  // Llaves de Bre-B numéricas o telefónicas (ej. 3113278414, 0079127304)
+  if (/^[0-9]{8,15}$/.test(clean)) return false;
+
+  // Llaves de Bre-B alfanuméricas con @ (ej. @jefferson0769)
+  if (clean.startsWith('@')) return false;
+
+  // Longitud mínima para un comprobante bancario real
+  return clean.length >= 5;
+}
+
+/**
  * Genera la Huella Canónica Multicanal para arquitecturas híbridas (Centinela Push + Inbound Email).
  *
- * 1. Si el comprobante cuenta con una Referencia Bancaria explícita (ej. "Ref: M123456" de Nequi),
+ * 1. Si el comprobante cuenta con una Referencia Bancaria explícita y única (ej. "Ref: M123456" de Nequi),
  *    la huella se basa exclusivamente en la billetera y la referencia. Esto garantiza que
  *    el Push (T=0s) y el Correo (T=15s) generen EXACTAMENTE la misma huella determinista,
  *    independiente de variaciones en el timestamp o milisegundos.
  *
- * 2. Si el comprobante NO incluye referencia bancaria (ej. notificaciones cortas o DaviPlata básico),
+ * 2. Si el comprobante NO incluye referencia bancaria única (ej. notificaciones cortas, DaviPlata básico,
+ *    o transferencias de Bancolombia que solo traen máscara de cuenta "*1082"),
  *    delega en `generatePaymentFingerprint` utilizando un time-bucket de 10 minutos para
- *    absorber retrasos entre la red celular y el encolado de correos.
+ *    absorber retrasos entre la red celular y el encolado de correos sin provocar colisiones permanentes por cuenta.
  */
 export function generateCanonicalPaymentFingerprint(
   receipt: ParsedPaymentReceipt | FingerprintSource,
   captureTimestamp: number,
   windowBucketMinutes = 10,
 ): string {
-  if ('reference' in receipt && receipt.reference && receipt.reference.trim()) {
+  if (
+    'reference' in receipt &&
+    receipt.reference &&
+    isUniqueBankTransactionReference(receipt.reference)
+  ) {
     const cleanRef = receipt.reference.trim().toUpperCase();
     const canonical = `${receipt.wallet.toUpperCase()}|REF:${cleanRef}`;
     return createHash('sha256').update(canonical, 'utf-8').digest('hex');

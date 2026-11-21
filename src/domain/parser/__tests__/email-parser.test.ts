@@ -287,6 +287,24 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
       }
     });
 
+    it('debe clasificar correctamente un comprobante de pago de Bancolombia para EDWIN por $24.00', () => {
+      const email: InboundEmailInput = {
+        from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',
+        to: 'pago+7ba727b7-5f0a-402c-ad47-e020a259e0c3@transferya.app',
+        subject: '¡Listo! Todo salió bien con tus movimientos',
+        text: 'Bancolombia: EDWIN, recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $24.00 en tu cuenta *1082 conectada a la llave 3113278414 el 21/11/26 a las 14:34. Con llaves es de una y gratis. Dudas al 018000912345.',
+      };
+
+      const result = parseInboundEmail(email);
+      expect(result.success).toBe(true);
+      if (result.success && result.type === 'PAYMENT') {
+        expect(result.payment.wallet).toBe('BANCOLOMBIA');
+        expect(result.payment.amount).toBe(24);
+        expect(result.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+        expect(result.payment.reference).toBe('*1082');
+      }
+    });
+
     it('debe rechazar correos informativos o de seguridad de Bancolombia', () => {
       const email: InboundEmailInput = {
         from: 'alertasynotificaciones@ayn.notificacionesbancolombia.com',
