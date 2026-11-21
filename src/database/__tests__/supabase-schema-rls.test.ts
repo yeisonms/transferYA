@@ -172,5 +172,41 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
       expect(sql).toMatch(/prevent_billing_invoices_tampering/i);
     });
   });
+
+  describe('7. Migración de Planes Oficiales, Límites y Auditoría de WhatsApp (Fase 3)', () => {
+    it('debe definir subscription_plans, merchant_addons y whatsapp_usage_logs con RLS y blindaje', () => {
+      const plansMigrationPath = resolve(
+        migrationsDir,
+        '20261121000001_plans_limits_usage_schema.sql',
+      );
+      expect(existsSync(plansMigrationPath)).toBe(true);
+      const sql = readFileSync(plansMigrationPath, 'utf-8');
+
+      // 1. subscription_plans y los 3 planes
+      expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS\s+subscription_plans/i);
+      expect(sql).toMatch(/INSERT INTO subscription_plans/i);
+      expect(sql).toMatch(/'emprendedor'/i);
+      expect(sql).toMatch(/'negocio'/i);
+      expect(sql).toMatch(/'pro'/i);
+
+      // 2. Extensión de merchants con plan y cuotas
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+plan_id/i);
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+monthly_alerts_used/i);
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+monthly_alerts_cap/i);
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+alerts_reset_at/i);
+
+      // 3. merchant_addons y whatsapp_usage_logs
+      expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS\s+merchant_addons/i);
+      expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS\s+whatsapp_usage_logs/i);
+      expect(sql).toMatch(/estimated_cost_cop/i);
+
+      // 4. RLS y anti-tampering
+      expect(sql).toMatch(/ALTER TABLE\s+subscription_plans\s+ENABLE ROW LEVEL SECURITY/i);
+      expect(sql).toMatch(/ALTER TABLE\s+merchant_addons\s+ENABLE ROW LEVEL SECURITY/i);
+      expect(sql).toMatch(/ALTER TABLE\s+whatsapp_usage_logs\s+ENABLE ROW LEVEL SECURITY/i);
+      expect(sql).toMatch(/prevent_merchant_billing_tampering/i);
+      expect(sql).toMatch(/prevent_merchant_addons_tampering/i);
+    });
+  });
 });
 
