@@ -3445,7 +3445,7 @@
             <div class="flex items-center gap-2">
               <input type="text" id="iosWebhookUrlInput" readonly
                 class="flex-1 min-w-0 bg-ty-surface border border-ty-border rounded px-2.5 py-1.5 text-[11px] font-mono text-ty-cyan truncate select-all"
-                value="https://transferya.vercel.app/api/v1/webhooks/ios-shortcut" />
+                value="https://www.transferya.app/api/v1/webhooks/ios-shortcut" />
               <button onclick="copyIosWebhookUrl()" id="copyIosWebhookBtn"
                 class="px-2.5 py-1.5 rounded bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-[11px] font-mono text-orange-300 font-bold transition-all flex items-center gap-1 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7494,7 +7494,7 @@
 
       const iosInput = document.getElementById("iosWebhookUrlInput");
       if (iosInput && currentMerchant) {
-        const origin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "https://transferya.vercel.app";
+        const origin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "https://www.transferya.app";
         iosInput.value = `${origin}/api/v1/webhooks/ios-shortcut?token=${currentMerchant.id}`;
       }
 

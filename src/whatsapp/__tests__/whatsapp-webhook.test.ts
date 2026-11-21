@@ -6,7 +6,7 @@ function createMockReqRes(method: string, url: string) {
   const req = new EventEmitter() as any;
   req.method = method;
   req.url = url;
-  req.headers = { host: 'transferya.vercel.app' };
+  req.headers = { host: 'www.transferya.app' };
 
   let statusCode = 200;
   const headers: Record<string, string> = {};
