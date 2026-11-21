@@ -13,6 +13,8 @@ import type {
   PaymentAlertOptions,
   RenewalConfirmationOptions,
   SubscriptionNoticeOptions,
+  TrialReminderOptions,
+  TrialWelcomeOptions,
   TemplateComponent,
   WhatsAppSendResult,
   WhatsAppTemplatePayload,
@@ -385,6 +387,91 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
           { type: 'text', text: formattedAmount },
           { type: 'text', text: `${options.daysRemaining} días` },
           { type: 'text', text: dateStr },
+        ],
+      },
+    ];
+
+    let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+    if (!templateResult.success) {
+      templateResult = await this.sendTemplate(to, templateName, components, 'es');
+    }
+
+    if (templateResult.success) {
+      return templateResult;
+    }
+
+    const textResult = await this.sendTextMessage(to, text);
+    if (textResult.success) {
+      return textResult;
+    }
+
+    return templateResult;
+  }
+
+  async sendTrialWelcome(
+    to: string,
+    options: TrialWelcomeOptions = {},
+  ): Promise<WhatsAppSendResult> {
+    const storeLabel = options.storeName ? ` en *${options.storeName}*` : '';
+    const days = options.trialDays ?? 7;
+
+    const text = `🎉 *¡Tu caja${storeLabel} ya está protegida con TransferYA!* 🛡️\n\nTienes *${days} días de prueba gratis*. Tus cajeros recibirán cada pago verificado por Nequi, DaviPlata o Bancolombia en segundos, sin que tengas que mandarles capturas de pantalla.\n\n👉 Mira tus ventas en vivo en tu panel: https://transferya.vercel.app`;
+
+    const templateName = 'transferya_trial_welcome_v1';
+    const components: TemplateComponent[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: options.storeName || 'tu negocio' },
+          { type: 'text', text: `${days}` },
+        ],
+      },
+    ];
+
+    let templateResult = await this.sendTemplate(to, templateName, components, 'es_CO');
+    if (!templateResult.success) {
+      templateResult = await this.sendTemplate(to, templateName, components, 'es');
+    }
+
+    if (templateResult.success) {
+      return templateResult;
+    }
+
+    const textResult = await this.sendTextMessage(to, text);
+    if (textResult.success) {
+      return textResult;
+    }
+
+    return templateResult;
+  }
+
+  async sendTrialReminder(
+    to: string,
+    options: TrialReminderOptions,
+  ): Promise<WhatsAppSendResult> {
+    const storeLabel = options.storeName ? ` (${options.storeName})` : '';
+    const minPrice = options.minPriceCop ? formatCopCurrency(options.minPriceCop) : '$ 29.900';
+    const days = options.daysRemaining;
+
+    let text = '';
+    if (days <= 1) {
+      text = `⏳ *¡Hoy finaliza tu prueba gratuita en TransferYA!*${storeLabel}\n\nPara que tus cajeros continúen verificando pagos y nunca entreguen mercancía con comprobantes falsos, activa tu plan hoy desde *${minPrice}* (Plan Emprendedor) o *$ 49.900* (Plan Negocio).\n\nRenueva en 1 clic en: https://transferya.vercel.app`;
+    } else {
+      text = `👋 *Hola, te quedan ${days} días de tu prueba gratuita en TransferYA*${storeLabel}\n\nTus cajeros han cobrado con total tranquilidad toda la semana. Para no dejar tus cajas a ciegas este fin de semana, asegura tu plan mensual desde *${minPrice}* (Plan Emprendedor) o *$ 49.900* (Plan Negocio).\n\nConoce los planes y activa el tuyo en: https://transferya.vercel.app`;
+    }
+
+    const templateName =
+      days <= 1
+        ? 'transferya_trial_expiring_today_v1'
+        : 'transferya_trial_expiring_soon_v1';
+
+    const components: TemplateComponent[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: options.storeName || 'tu comercio' },
+          { type: 'text', text: `${days}` },
+          { type: 'text', text: minPrice },
         ],
       },
     ];

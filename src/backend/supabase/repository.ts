@@ -778,7 +778,52 @@ export class SupabaseRepository
       planId: m.plan_id ?? null,
       billingPhone: m.billing_phone ?? null,
       createdAt: new Date(m.created_at).getTime(),
+      trialWelcomeSentAt: m.trial_welcome_sent_at
+        ? new Date(m.trial_welcome_sent_at).getTime()
+        : null,
+      trialDay5SentAt: m.trial_day5_sent_at
+        ? new Date(m.trial_day5_sent_at).getTime()
+        : null,
+      trialDay7SentAt: m.trial_day7_sent_at
+        ? new Date(m.trial_day7_sent_at).getTime()
+        : null,
     };
+  }
+
+  async getTrialMerchants(): Promise<Merchant[]> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?subscription_status=eq.TRIAL&select=*`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return [];
+    const rows = (await res.json()) as any[];
+    if (!Array.isArray(rows)) return [];
+    return rows.map((r) => {
+      const { ownerId: _ownerId, ...m } = this.mapMerchantRow(r);
+      return m;
+    });
+  }
+
+  async recordTrialNoticeSent(
+    merchantId: string,
+    noticeType: 'WELCOME' | 'DAY_5' | 'DAY_7',
+    timestampIso: string = new Date().toISOString(),
+  ): Promise<void> {
+    const field =
+      noticeType === 'WELCOME'
+        ? 'trial_welcome_sent_at'
+        : noticeType === 'DAY_5'
+          ? 'trial_day5_sent_at'
+          : 'trial_day7_sent_at';
+
+    await fetch(
+      `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}`,
+      {
+        method: 'PATCH',
+        headers: this.headers,
+        body: JSON.stringify({ [field]: timestampIso }),
+      },
+    );
   }
 
   async getMerchantByDeviceId(deviceId: string): Promise<Merchant | null> {

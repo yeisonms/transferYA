@@ -150,5 +150,6 @@ export interface PaymentPipelineDependencies {
   nowProvider?: () => number;
   billingNoticeCooldownMs?: number;
   renewalPriceCop?: number;
+  trialNurtureService?: any;
 }
 

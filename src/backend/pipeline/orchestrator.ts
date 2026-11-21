@@ -478,6 +478,19 @@ export class PaymentProcessingPipeline {
           },
         );
 
+        // Evaluar oportunamente nutrición de prueba (Trial Day 5 / Day 7) si aplica
+        if (
+          routeResult.merchant.subscriptionStatus === 'TRIAL' &&
+          this.deps.trialNurtureService &&
+          typeof this.deps.trialNurtureService.evaluateMerchantTrial === 'function'
+        ) {
+          this.deps.trialNurtureService
+            .evaluateMerchantTrial(routeResult.merchant)
+            .catch((err: any) => {
+              console.warn('Advertencia evaluando recordatorio de trial en pipeline:', err);
+            });
+        }
+
         return {
           status: 'PROCESSED',
           notificationId,
@@ -569,6 +582,19 @@ export class PaymentProcessingPipeline {
             processedAt: now,
           },
         );
+
+        // Evaluar oportunamente nutrición de prueba (Trial Day 5 / Day 7) si aplica
+        if (
+          routeResult.merchant.subscriptionStatus === 'TRIAL' &&
+          this.deps.trialNurtureService &&
+          typeof this.deps.trialNurtureService.evaluateMerchantTrial === 'function'
+        ) {
+          this.deps.trialNurtureService
+            .evaluateMerchantTrial(routeResult.merchant)
+            .catch((err: any) => {
+              console.warn('Advertencia evaluando recordatorio de trial en pipeline:', err);
+            });
+        }
 
         return {
           status: 'PROCESSED',

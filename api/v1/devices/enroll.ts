@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DeviceEnrollmentHandler } from '../../../src/backend/enrollment/handler.js';
+import { TrialNurtureService } from '../../../src/backend/billing/trial-nurture.js';
+import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
 import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -30,6 +32,24 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       method: req.method,
       path: '/api/v1/devices/enroll',
     });
+
+    // Enviar bienvenida de trial por WhatsApp de forma asíncrona sin bloquear la respuesta de enrolamiento
+    if (result.statusCode === 200 && (result.body as any)?.data?.merchantId) {
+      const merchantId = (result.body as any).data.merchantId;
+      const whatsappClient = new WhatsAppCloudApiClient({
+        accessToken:
+          process.env.META_WHATSAPP_TOKEN ||
+          'EAAalAQFm5uEBTF5PTndwu9EPvlVg4SAb6pFzXECWCCUKmSnafqr6UiA0KHZCfq9R5WjYIr0z3b7ZCUHu5EPeaja9xj87NZBjQsRdDm9tDBxqxkbx8t4nOauzAJdVsaMPIq9U4CKfxA9HGHQjCtOTMvCyoLNkX6FZCEVZAc6otELlUyGEczzZAqyoj0WYLspwZDZD',
+        phoneNumberId: process.env.META_PHONE_NUMBER_ID || '1541112255749953',
+      });
+      const nurture = new TrialNurtureService({
+        repository,
+        whatsappClient,
+      });
+      nurture.sendWelcomeIfEligible(merchantId).catch((nurtureErr) => {
+        console.warn('Advertencia despachando bienvenida de trial WhatsApp:', nurtureErr);
+      });
+    }
 
     res.statusCode = result.statusCode;
     res.end(JSON.stringify(result.body));

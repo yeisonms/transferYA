@@ -93,6 +93,23 @@ export interface RenewalConfirmationOptions {
 }
 
 /**
+ * Parámetros para la bienvenida de prueba gratuita (Trial Day 1).
+ */
+export interface TrialWelcomeOptions {
+  storeName?: string;
+  trialDays?: number;
+}
+
+/**
+ * Parámetros para recordatorios preventivos de expiración de prueba (Trial Day 5 / Day 7).
+ */
+export interface TrialReminderOptions {
+  storeName?: string;
+  daysRemaining: number;
+  minPriceCop?: number;
+}
+
+/**
  * Abstracción de cliente HTTP para desacoplar de bibliotecas externas (fetch, axios, got).
  */
 export interface HttpResponseData<T = any> {
@@ -148,6 +165,22 @@ export interface IWhatsAppCloudApiClient {
   sendRenewalConfirmation(
     to: string,
     options: RenewalConfirmationOptions,
+  ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía mensaje de bienvenida al dueño al vincular su primera caja durante el período de prueba (Trial Día 1).
+   */
+  sendTrialWelcome(
+    to: string,
+    options: TrialWelcomeOptions,
+  ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía recordatorio preventivo al dueño antes del vencimiento del período de prueba (Día 5 o Día 7).
+   */
+  sendTrialReminder(
+    to: string,
+    options: TrialReminderOptions,
   ): Promise<WhatsAppSendResult>;
 }
 

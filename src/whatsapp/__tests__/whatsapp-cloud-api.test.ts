@@ -381,6 +381,47 @@ describe('Cliente de Meta WhatsApp Cloud API para Plantillas de Utilidad (Ticket
       );
       expect((lastCall?.[1] as any).text.body).toContain('$ 50.000');
     });
+
+    it('debe enviar bienvenida de prueba (Trial Día 1) con fallback de texto enriquecido', async () => {
+      vi.spyOn(mockHttpClient, 'post')
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } })
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } })
+        .mockResolvedValueOnce({ status: 200, data: { messages: [{ id: 'wamid.WELCOME_MSG_1' }] } });
+
+      const result = await client.sendTrialWelcome('+573113654315', {
+        storeName: 'Panadería Central',
+        trialDays: 7,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.messageId).toBe('wamid.WELCOME_MSG_1');
+      }
+      const lastCall = vi.mocked(mockHttpClient.post).mock.calls[2];
+      expect((lastCall?.[1] as any).text.body).toContain('Panadería Central');
+      expect((lastCall?.[1] as any).text.body).toContain('7 días de prueba gratis');
+    });
+
+    it('debe enviar recordatorio de prueba (Trial Día 5 / Día 7) con fallback de texto y precios oficiales', async () => {
+      vi.spyOn(mockHttpClient, 'post')
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } })
+        .mockResolvedValueOnce({ status: 400, data: { error: { code: 132001 } } })
+        .mockResolvedValueOnce({ status: 200, data: { messages: [{ id: 'wamid.REMINDER_MSG_1' }] } });
+
+      const result = await client.sendTrialReminder('+573113654315', {
+        storeName: 'Boutique Dama',
+        daysRemaining: 2,
+        minPriceCop: 29900,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.messageId).toBe('wamid.REMINDER_MSG_1');
+      }
+      const lastCall = vi.mocked(mockHttpClient.post).mock.calls[2];
+      expect((lastCall?.[1] as any).text.body).toContain('te quedan 2 días');
+      expect((lastCall?.[1] as any).text.body).toContain('$ 29.900');
+    });
   });
 });
 

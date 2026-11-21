@@ -166,6 +166,14 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
         success: true,
         messageId: 'wamid.RENEWAL_CONFIRM_DEFAULT',
       }),
+      sendTrialWelcome: vi.fn().mockResolvedValue({
+        success: true,
+        messageId: 'wamid.TRIAL_WELCOME_DEFAULT',
+      }),
+      sendTrialReminder: vi.fn().mockResolvedValue({
+        success: true,
+        messageId: 'wamid.TRIAL_REMINDER_DEFAULT',
+      }),
     };
 
     pipeline = new PaymentProcessingPipeline({

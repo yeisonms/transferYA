@@ -61,6 +61,8 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
         success: true,
         messageId: 'wamid.RENEWAL_CONFIRMED_123',
       } as WhatsAppSendResult),
+      sendTrialWelcome: vi.fn(),
+      sendTrialReminder: vi.fn(),
     };
 
     service = new BillingReconciliationService({

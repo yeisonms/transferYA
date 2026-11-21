@@ -25,6 +25,9 @@ export interface Merchant {
   planId?: string | null; // Identificador del plan de suscripción (ej. 'emprendedor', 'negocio', 'pro')
   billingPhone?: string | null; // WhatsApp E.164 del dueño para cobros
   createdAt: number;
+  trialWelcomeSentAt?: number | null; // Timestamp epoch ms cuando se envió la bienvenida de trial
+  trialDay5SentAt?: number | null; // Timestamp epoch ms cuando se envió el aviso de día 5 (quedan 2 días)
+  trialDay7SentAt?: number | null; // Timestamp epoch ms cuando se envió el aviso de día 7 (último día)
 }
 
 /**
