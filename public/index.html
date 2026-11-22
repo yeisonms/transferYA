@@ -2883,6 +2883,27 @@
             </div>
           </div>
 
+          <!-- Pagos y Facturas Pendientes de Verificación (Comercios) -->
+          <div id="adminPendingInvoicesSection" class="bg-ty-surface-low border border-amber-500/30 rounded-xl overflow-hidden shadow-sm">
+            <div class="p-4 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <span>Solicitudes de Pago Pendientes de Aprobación</span>
+                  <span id="adminPendingCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">0</span>
+                </h3>
+              </div>
+              <button type="button" onclick="loadAdminPendingInvoices()" class="text-xs text-ty-muted hover:text-amber-400 font-mono transition-colors">
+                ↻ Actualizar solicitudes
+              </button>
+            </div>
+            <div id="adminPendingInvoicesList" class="divide-y divide-ty-border">
+              <div class="p-6 text-center text-xs font-mono text-ty-muted">
+                Consultando solicitudes pendientes de comercios...
+              </div>
+            </div>
+          </div>
+
           <!-- Filtros y Búsqueda -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="relative flex-1 max-w-sm">
@@ -8514,10 +8535,12 @@
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
               <span>WhatsApp</span>
             </button>
-            <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="text-xs text-sky-400 hover:text-sky-300 font-semibold inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500/20 px-2.5 py-1 rounded-lg border border-sky-500/30 transition-colors shadow-sm" title="Marcar orden como PAGADA">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>✓ Aprobar</span>
-            </button>
+            ${isSuperAdmin() ? `
+              <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="text-xs text-sky-400 hover:text-sky-300 font-semibold inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500/20 px-2.5 py-1 rounded-lg border border-sky-500/30 transition-colors shadow-sm" title="Marcar orden como PAGADA (Super-Admin)">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>✓ Aprobar</span>
+              </button>
+            ` : ''}
           </div>`;
         }
 
@@ -8528,8 +8551,8 @@
             <td class="px-5 py-3 font-mono text-ty-cyan">${escapeHtml(inv.reference_code || '-')}</td>
             <td class="px-5 py-3 font-mono font-bold text-white">$${Number(inv.amount_cop).toLocaleString('es-CO')}</td>
             <td class="px-5 py-3">
-              ${isPending ? `
-                <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="inline-block px-2.5 py-1 rounded text-[11px] font-semibold border ${badgeClass} hover:border-amber-400 hover:bg-amber-500/20 cursor-pointer transition-colors" title="Toca aquí para marcar como PAGADA">
+              ${isPending && isSuperAdmin() ? `
+                <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="inline-block px-2.5 py-1 rounded text-[11px] font-semibold border ${badgeClass} hover:border-amber-400 hover:bg-amber-500/20 cursor-pointer transition-colors" title="Toca aquí para marcar como PAGADA (Super-Admin)">
                   ${statusLabel} ✎
                 </button>
               ` : `
@@ -9341,6 +9364,7 @@
         adminMerchants = data.merchants || [];
         updateAdminMetrics();
         renderAdminMerchantsList();
+        loadAdminPendingInvoices();
 
         if (showToastFeedback) {
           showToast("Lista de comercios actualizada.");
@@ -9350,6 +9374,162 @@
       } finally {
         if (refreshIcon) refreshIcon.classList.remove("animate-spin");
       }
+    }
+
+    async function loadAdminPendingInvoices() {
+      const container = document.getElementById("adminPendingInvoicesList");
+      const badge = document.getElementById("adminPendingCountBadge");
+      if (!container) return;
+
+      let remotePending = [];
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from("billing_invoices")
+            .select("*")
+            .eq("status", "PENDING")
+            .order("created_at", { ascending: false });
+          if (!error && Array.isArray(data)) {
+            remotePending = data;
+          }
+        } catch (e) {
+          console.warn("Error consultando billing_invoices:", e);
+        }
+      }
+
+      // Escanear también órdenes pendientes almacenadas localmente
+      const localPending = [];
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("ty_pending_orders_")) {
+            const mId = key.replace("ty_pending_orders_", "");
+            const orders = JSON.parse(localStorage.getItem(key) || "[]");
+            orders.forEach(o => {
+              if (o.status === "PENDING") {
+                localPending.push({ ...o, merchant_id: o.merchant_id || mId });
+              }
+            });
+          }
+        }
+      } catch (e) {}
+
+      // Combinar sin duplicados por reference_code
+      const seen = new Set();
+      const allPending = [];
+      [...remotePending, ...localPending].forEach(inv => {
+        const ref = (inv.reference_code || "").toUpperCase();
+        if (ref && !seen.has(ref)) {
+          seen.add(ref);
+          allPending.push(inv);
+        }
+      });
+
+      if (badge) badge.textContent = allPending.length;
+
+      if (allPending.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-xs font-mono text-emerald-400 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>No hay pagos pendientes de aprobación. Todos los comercios están al día.</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = allPending.map(inv => {
+        const dateStr = new Date(inv.created_at || Date.now()).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        const m = adminMerchants.find(x => x.id === inv.merchant_id);
+        const merchantName = m ? m.name : (inv.merchant_id ? `Comercio (${inv.merchant_id.substring(0, 8)})` : "Comercio TransferYA");
+        const payerInfo = [inv.payer_name, inv.payer_phone].filter(Boolean).join(" · ");
+        const amountFormatted = `$${Number(inv.amount_cop || 29900).toLocaleString("es-CO")} COP`;
+        const desc = inv.item_description || "Plan Emprendedor (Mensual)";
+
+        return `
+          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-ty-surface/40 transition-colors">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-sm">${escapeHtml(merchantName)}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-ty-cyan/15 text-ty-cyan border border-ty-cyan/30">${escapeHtml(inv.reference_code)}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">PENDIENTE</span>
+              </div>
+              <div class="text-xs text-ty-muted font-mono flex flex-wrap items-center gap-2">
+                <span>${escapeHtml(desc)}</span>
+                <span>•</span>
+                <span class="text-emerald-400 font-bold">${amountFormatted}</span>
+                <span>•</span>
+                <span>${dateStr}</span>
+              </div>
+              ${payerInfo ? `<div class="text-[11px] text-ty-muted font-mono">👤 Titular reportado: <span class="text-white">${escapeHtml(payerInfo)}</span></div>` : ''}
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="adminApproveInvoiceAndExtend('${inv.merchant_id || ''}', '${inv.reference_code}', ${Number(inv.amount_cop || 29900)})"
+                class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs font-mono inline-flex items-center gap-1.5 shadow-md hover:shadow-emerald-500/20 transition-all cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>✓ Aprobar Pago (+30 días)</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function adminApproveInvoiceAndExtend(merchantId, ref, amount = 29900) {
+      if (!confirm(`¿Confirmas APROBAR el pago de la orden ${ref} y acreditar +30 Días Pro al comercio?`)) return;
+
+      // 1. Si no hay merchantId conocido, buscar en local y en adminMerchants
+      let targetMerchantId = merchantId;
+      if (!targetMerchantId) {
+        const found = adminMerchants.find(m => {
+          const orders = getLocalPendingInvoices(m.id);
+          return orders.some(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
+        });
+        if (found) targetMerchantId = found.id;
+      }
+
+      // 2. Marcar orden en local storage como PAID
+      if (targetMerchantId) {
+        const localOrders = getLocalPendingInvoices(targetMerchantId);
+        let target = localOrders.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
+        if (target) {
+          target.status = 'PAID';
+          target.paid_at = new Date().toISOString();
+        } else {
+          localOrders.unshift({
+            id: 'ord_' + Math.random().toString(36).substring(2, 9),
+            reference_code: ref,
+            merchant_id: targetMerchantId,
+            amount_cop: amount,
+            status: 'PAID',
+            created_at: new Date().toISOString(),
+            paid_at: new Date().toISOString(),
+            item_description: 'Plan Emprendedor (Mensual)'
+          });
+        }
+        localStorage.setItem(`ty_pending_orders_${targetMerchantId}`, JSON.stringify(localOrders));
+      }
+
+      // 3. Marcar en Supabase billing_invoices
+      if (supabaseClient) {
+        try {
+          await supabaseClient
+            .from("billing_invoices")
+            .update({ status: 'PAID', paid_at: new Date().toISOString() })
+            .eq("reference_code", ref);
+        } catch (e) {
+          console.warn("Error actualizando billing_invoices en Supabase:", e);
+        }
+      }
+
+      // 4. Extender +30 días al comercio usando la API de admin
+      if (targetMerchantId) {
+        await executeAdminAction(targetMerchantId, 'EXTEND_30_DAYS');
+      }
+
+      showToast(`¡Orden ${ref} aprobada con éxito! Se sumaron +30 días al comercio.`);
+      loadAdminPendingInvoices();
+      loadAdminMerchants();
     }
 
     function updateAdminMetrics() {
@@ -9476,8 +9656,9 @@
 
             <!-- Acciones -->
             <div class="md:col-span-3 flex flex-wrap items-center justify-end gap-1.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-ty-border">
-              <button onclick="executeAdminAction('${m.id}', 'EXTEND_30_DAYS')" class="px-2.5 py-1.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all" title="Sumar +30 días Pro">
-                +30d
+              <button onclick="executeAdminAction('${m.id}', 'EXTEND_30_DAYS')" class="px-2.5 py-1.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all inline-flex items-center gap-1 shadow-sm" title="Aprobar pago y sumar +30 días Pro al comercio">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>✓ Aprobar (+30d)</span>
               </button>
               <button onclick="executeAdminAction('${m.id}', 'ACTIVATE_TRIAL', { days: 7 })" class="px-2 py-1.5 rounded-lg bg-ty-cyan/15 border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan text-xs font-mono transition-all" title="Activar 7 días Trial">
                 Trial
