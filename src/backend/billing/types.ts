@@ -63,11 +63,11 @@ export interface ReconciliationResult {
   whatsappSent?: boolean;
   whatsappMessageId?: string;
   failureReason?:
-    | 'NOT_BILLING_SENTINEL'
-    | 'INSUFFICIENT_AMOUNT'
-    | 'UNMATCHED_MERCHANT'
-    | 'ALREADY_PAID'
-    | 'INTERNAL_ERROR';
+  | 'NOT_BILLING_SENTINEL'
+  | 'INSUFFICIENT_AMOUNT'
+  | 'UNMATCHED_MERCHANT'
+  | 'ALREADY_PAID'
+  | 'INTERNAL_ERROR';
   details?: string;
 }
 
