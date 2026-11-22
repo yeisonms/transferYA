@@ -139,7 +139,7 @@ describe('Auditoría Integral de Certeza Monetaria (Pesos vs Miles vs Millones)'
       };
       const res = parseInboundEmail(email);
       expect(res.success).toBe(true);
-      if (res.success) {
+      if (res.success && res.type === 'PAYMENT') {
         expect(res.payment.amount).toBe(29900);
         expect(res.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
       }
@@ -153,7 +153,7 @@ describe('Auditoría Integral de Certeza Monetaria (Pesos vs Miles vs Millones)'
       };
       const res = parseInboundEmail(email);
       expect(res.success).toBe(true);
-      if (res.success) {
+      if (res.success && res.type === 'PAYMENT') {
         expect(res.payment.amount).toBe(1500000);
         expect(res.payment.reference).toBe('M1234567');
       }
@@ -167,7 +167,7 @@ describe('Auditoría Integral de Certeza Monetaria (Pesos vs Miles vs Millones)'
       };
       const res = parseInboundEmail(email);
       expect(res.success).toBe(true);
-      if (res.success) {
+      if (res.success && res.type === 'PAYMENT') {
         expect(res.payment.amount).toBe(10);
       }
     });
@@ -180,7 +180,7 @@ describe('Auditoría Integral de Certeza Monetaria (Pesos vs Miles vs Millones)'
       };
       const res = parseInboundEmail(email);
       expect(res.success).toBe(true);
-      if (res.success) {
+      if (res.success && res.type === 'PAYMENT') {
         expect(res.payment.amount).toBe(15);
       }
     });
