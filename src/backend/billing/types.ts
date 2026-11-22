@@ -11,6 +11,8 @@ export interface BillingInvoiceRecord {
   status: BillingInvoiceStatus;
   item_type?: BillingItemType;
   item_description?: string;
+  payer_name?: string | null;
+  payer_phone?: string | null;
   notification_id: string | null;
   paid_at: string | null;
   expires_at: string;
@@ -25,12 +27,14 @@ export interface CreateBillingInvoiceInput {
   status?: BillingInvoiceStatus;
   itemType?: BillingItemType;
   itemDescription?: string;
+  payerName?: string;
+  payerPhone?: string;
   notificationId?: string;
   paidAt?: string | null;
   expiresAt?: string;
 }
 
-export type ReconciliationStrategy = 'REFERENCE_CODE' | 'BILLING_PHONE';
+export type ReconciliationStrategy = 'REFERENCE_CODE' | 'BILLING_PHONE' | 'SENDER_NAME';
 
 export interface BillingReconciliationConfig {
   billingSentinelDeviceId: string;
@@ -69,6 +73,7 @@ export interface ReconciliationResult {
 
 export interface IBillingInvoicesRepository {
   findMerchantByBillingPhone(normalizedPhone: string): Promise<Merchant | null>;
+  findMerchantBySenderName?(senderName: string): Promise<Merchant | null>;
   findMerchantById(merchantId: string): Promise<Merchant | null>;
   findInvoiceByReference(referenceCode: string): Promise<BillingInvoiceRecord | null>;
   getPendingInvoiceForMerchant(merchantId: string): Promise<BillingInvoiceRecord | null>;

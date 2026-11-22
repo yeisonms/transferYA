@@ -11,12 +11,22 @@ CREATE TABLE IF NOT EXISTS billing_invoices (
     amount_cop BIGINT NOT NULL DEFAULT 50000,
     reference_code VARCHAR(30) UNIQUE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAID', 'CANCELLED', 'EXPIRED')),
+    item_type VARCHAR(30) DEFAULT 'plan_subscription',
+    item_description TEXT,
+    payer_name TEXT,
+    payer_phone VARCHAR(30),
     notification_id UUID REFERENCES captured_notifications(id) ON DELETE SET NULL,
     paid_at TIMESTAMPTZ,
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Asegurar columnas si la tabla ya existía
+ALTER TABLE billing_invoices ADD COLUMN IF NOT EXISTS item_type VARCHAR(30) DEFAULT 'plan_subscription';
+ALTER TABLE billing_invoices ADD COLUMN IF NOT EXISTS item_description TEXT;
+ALTER TABLE billing_invoices ADD COLUMN IF NOT EXISTS payer_name TEXT;
+ALTER TABLE billing_invoices ADD COLUMN IF NOT EXISTS payer_phone VARCHAR(30);
 
 -- 2. Índices de búsqueda para conciliación rápida y auditoría
 CREATE INDEX IF NOT EXISTS idx_billing_invoices_merchant

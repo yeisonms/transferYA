@@ -45,6 +45,7 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
   beforeEach(() => {
     mockRepo = {
       findMerchantByBillingPhone: vi.fn(),
+      findMerchantBySenderName: vi.fn(),
       findMerchantById: vi.fn(),
       findInvoiceByReference: vi.fn(),
       getPendingInvoiceForMerchant: vi.fn(),
@@ -385,6 +386,56 @@ describe('Ticket 22 — Automatización de Cobros por Dogfooding (MurSat Solutio
           notificationId: notification.id,
         }),
       );
+    });
+  });
+
+  describe('4.1 Conciliación Estrategia C: Por Nombre del Titular / Remitente (Bancolombia, Bre-B)', () => {
+    it('debe conciliar por coincidencia del nombre del remitente contra cajeros o comercio', async () => {
+      const notification: StoredNotificationRecord = {
+        id: 'notif-sender-match',
+        deviceId: BILLING_SENTINEL_ID,
+        walletPackage: 'com.bancolombia.personas',
+        rawTitle: 'Bancolombia',
+        rawText: 'recibiste una transferencia de YEISON STIVEN MURCIA CALVO por $50.000 en tu cuenta *5871',
+        capturedAt: FIXED_NOW - 1000,
+        dispatchedAt: FIXED_NOW - 500,
+        receivedAt: FIXED_NOW,
+        latencyMs: 1000,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+
+      const receipt: ParsedPaymentReceipt = {
+        wallet: 'BANCOLOMBIA',
+        amount: 50_000,
+        senderName: 'YEISON STIVEN MURCIA CALVO',
+        reference: null,
+        rawText: notification.rawText,
+      };
+
+      vi.mocked(mockRepo.findInvoiceByReference).mockResolvedValue(null);
+      vi.mocked(mockRepo.findMerchantByBillingPhone).mockResolvedValue(null);
+      vi.mocked(mockRepo.findMerchantBySenderName!).mockResolvedValueOnce(sampleMerchant);
+      vi.mocked(mockRepo.getPendingInvoiceForMerchant).mockResolvedValueOnce(samplePendingInvoice);
+      vi.mocked(mockRepo.extendMerchantSubscription).mockResolvedValueOnce({
+        previousEndsAt: new Date(sampleMerchant.subscriptionEndsAt!).toISOString(),
+        newEndsAt: '2026-12-20T12:00:00.000Z',
+        daysRemaining: 35,
+      });
+      vi.mocked(mockRepo.markInvoicePaid).mockResolvedValueOnce({
+        ...samplePendingInvoice,
+        status: 'PAID',
+        notification_id: notification.id ?? null,
+      });
+
+      const result = await service.reconcile(notification, receipt);
+
+      expect(result.success).toBe(true);
+      expect(result.strategy).toBe('SENDER_NAME');
+      expect(result.matchedMerchant?.id).toBe(sampleMerchant.id);
+      expect(result.daysRemaining).toBe(35);
+      expect(mockRepo.findMerchantBySenderName).toHaveBeenCalledWith('YEISON STIVEN MURCIA CALVO');
+      expect(mockRepo.extendMerchantSubscription).toHaveBeenCalledWith(sampleMerchant.id, 30, FIXED_NOW, 'pro');
     });
   });
 

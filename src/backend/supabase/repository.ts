@@ -1083,11 +1083,70 @@ export class SupabaseRepository
       `${this.baseUrl}/rest/v1/merchants?or=(billing_phone.eq.${encodeURIComponent(clean)},billing_phone.eq.${encodeURIComponent(noPlus)},billing_phone.ilike.*${encodeURIComponent(last10)})&select=*&limit=1`,
       { headers: this.headers },
     );
-    if (!res.ok) return null;
-    const rows = (await res.json()) as any[];
-    if (!rows || rows.length === 0) return null;
-    const { ownerId: _ownerId, ...merchant } = this.mapMerchantRow(rows[0]);
-    return merchant;
+    if (res.ok) {
+      const rows = (await res.json()) as any[];
+      if (rows && rows.length > 0) {
+        const { ownerId: _ownerId, ...merchant } = this.mapMerchantRow(rows[0]);
+        return merchant;
+      }
+    }
+
+    // Fallback: Si el celular remitente no está configurado en `billing_phone` del comercio,
+    // buscar si coincide con el teléfono de algún cajero o dueño registrado en `cashier_recipients`
+    const cashierRes = await fetch(
+      `${this.baseUrl}/rest/v1/cashier_recipients?or=(phone_number.eq.${encodeURIComponent(clean)},phone_number.eq.${encodeURIComponent(noPlus)},phone_number.ilike.*${encodeURIComponent(last10)})&select=merchant_id&limit=1`,
+      { headers: this.headers },
+    );
+    if (cashierRes.ok) {
+      const cRows = (await cashierRes.json()) as any[];
+      if (cRows && cRows.length > 0 && cRows[0].merchant_id) {
+        return this.findMerchantById(cRows[0].merchant_id);
+      }
+    }
+
+    return null;
+  }
+
+  async findMerchantBySenderName(senderName: string): Promise<Merchant | null> {
+    if (!senderName || senderName.trim().length < 3) return null;
+    const clean = senderName.trim().toUpperCase();
+
+    // 1. Buscar en cashier_recipients por coincidencia de nombre de cajero o dueño
+    const cashierRes = await fetch(
+      `${this.baseUrl}/rest/v1/cashier_recipients?select=merchant_id,name`,
+      { headers: this.headers },
+    );
+    if (cashierRes.ok) {
+      const cRows = (await cashierRes.json()) as any[];
+      if (Array.isArray(cRows)) {
+        for (const row of cRows) {
+          const cName = (row.name || '').trim().toUpperCase();
+          if (cName.length >= 3 && (clean.includes(cName) || cName.includes(clean))) {
+            return this.findMerchantById(row.merchant_id);
+          }
+        }
+      }
+    }
+
+    // 2. Buscar en merchants por coincidencia con el nombre del comercio
+    const merchantRes = await fetch(
+      `${this.baseUrl}/rest/v1/merchants?select=*`,
+      { headers: this.headers },
+    );
+    if (merchantRes.ok) {
+      const mRows = (await merchantRes.json()) as any[];
+      if (Array.isArray(mRows)) {
+        for (const row of mRows) {
+          const mName = (row.name || '').trim().toUpperCase();
+          if (mName.length >= 3 && (clean.includes(mName) || mName.includes(clean))) {
+            const { ownerId: _ownerId, ...merchant } = this.mapMerchantRow(row);
+            return merchant;
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   async findMerchantById(merchantId: string): Promise<Merchant | null> {
@@ -1121,22 +1180,44 @@ export class SupabaseRepository
 
   async createInvoice(input: CreateBillingInvoiceInput): Promise<BillingInvoiceRecord> {
     const referenceCode = input.referenceCode || generateInvoiceReferenceCode();
-    const res = await fetch(`${this.baseUrl}/rest/v1/billing_invoices`, {
+    const payload: Record<string, any> = {
+      merchant_id: input.merchantId,
+      amount_cop: input.amountCop ?? 50_000,
+      reference_code: referenceCode,
+      status: input.status ?? 'PENDING',
+      notification_id: input.notificationId ?? null,
+      paid_at: input.paidAt ?? null,
+      expires_at: input.expiresAt ?? new Date(Date.now() + 30 * 86_400_000).toISOString(),
+    };
+    if (input.itemType) payload.item_type = input.itemType;
+    if (input.itemDescription) payload.item_description = input.itemDescription;
+    if (input.payerName) payload.payer_name = input.payerName;
+    if (input.payerPhone) payload.payer_phone = input.payerPhone;
+
+    let res = await fetch(`${this.baseUrl}/rest/v1/billing_invoices`, {
       method: 'POST',
       headers: {
         ...this.headers,
         Prefer: 'return=representation',
       },
-      body: JSON.stringify({
-        merchant_id: input.merchantId,
-        amount_cop: input.amountCop ?? 50_000,
-        reference_code: referenceCode,
-        status: input.status ?? 'PENDING',
-        notification_id: input.notificationId ?? null,
-        paid_at: input.paidAt ?? null,
-        expires_at: input.expiresAt ?? new Date(Date.now() + 30 * 86_400_000).toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
+
+    // Fallback si columnas opcionales adicionales no existen en el esquema cache
+    if (res.status === 400 && (payload.payer_name || payload.payer_phone || payload.item_type)) {
+      delete payload.payer_name;
+      delete payload.payer_phone;
+      delete payload.item_type;
+      delete payload.item_description;
+      res = await fetch(`${this.baseUrl}/rest/v1/billing_invoices`, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify(payload),
+      });
+    }
 
     if (!res.ok) {
       const err = await res.text();

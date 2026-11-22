@@ -157,7 +157,7 @@ export class BillingReconciliationService {
       }
     }
 
-    // 4. Estrategia B: Conciliación por Teléfono del Dueño (billing_phone en formato E.164)
+    // 4. Estrategia B: Conciliación por Teléfono del Dueño o Cajero (billing_phone en formato E.164)
     if (!matchedMerchant) {
       const combinedPhoneCandidates = [
         ...extractColombianPhoneNumbers(notification.rawText),
@@ -182,7 +182,22 @@ export class BillingReconciliationService {
       }
     }
 
-    // 5. Si no se logró identificar al comercio remitente
+    // 5. Estrategia C: Conciliación por Nombre del Titular / Remitente (Bancolombia, Bre-B)
+    if (!matchedMerchant && receipt.senderName && this.repository.findMerchantBySenderName) {
+      const merchantByName = await this.repository.findMerchantBySenderName(receipt.senderName);
+      if (merchantByName) {
+        matchedMerchant = merchantByName;
+        strategy = 'SENDER_NAME';
+
+        // Buscar si el comercio tenía una factura pendiente
+        const pendingInvoice = await this.repository.getPendingInvoiceForMerchant(merchantByName.id);
+        if (pendingInvoice) {
+          matchedInvoice = pendingInvoice;
+        }
+      }
+    }
+
+    // 6. Si no se logró identificar al comercio remitente
     if (!matchedMerchant) {
       return {
         isBillingSentinel: true,
@@ -190,7 +205,7 @@ export class BillingReconciliationService {
         success: false,
         failureReason: 'UNMATCHED_MERCHANT',
         amountCop: receipt.amount,
-        details: 'No se encontró ningún comercio cliente coincidente con la referencia o teléfono del pago',
+        details: 'No se encontró ningún comercio cliente coincidente con la referencia, teléfono o titular del pago',
       };
     }
 
