@@ -6,6 +6,7 @@ export type AdminSubscriptionAction =
   | 'PAUSE'
   | 'RESUME'
   | 'UPDATE_BILLING_PHONE'
+  | 'APPROVE_INVOICE'
   | 'DELETE_MERCHANT';
 
 export interface AdminSubscriptionActionPayload {
@@ -13,6 +14,8 @@ export interface AdminSubscriptionActionPayload {
   action: AdminSubscriptionAction;
   days?: number;
   billingPhone?: string;
+  referenceCode?: string;
+  invoiceId?: string;
 }
 
 export interface AdminMerchantSummary {
@@ -69,4 +72,9 @@ export interface IAdminSubscriptionsRepository {
     },
   ): Promise<AdminMerchantRow | null>;
   deleteMerchant?(merchantId: string): Promise<boolean>;
+  updateInvoiceStatusByReference?(
+    referenceCode: string,
+    status?: string,
+    paidAtMs?: number,
+  ): Promise<any>;
 }

@@ -1259,6 +1259,35 @@ export class SupabaseRepository
     return rows[0] as BillingInvoiceRecord;
   }
 
+  async updateInvoiceStatusByReference(
+    referenceCode: string,
+    status: string = 'PAID',
+    paidAtMs: number = Date.now(),
+  ): Promise<BillingInvoiceRecord | null> {
+    try {
+      const res = await fetch(
+        `${this.baseUrl}/rest/v1/billing_invoices?reference_code=ilike.${encodeURIComponent(referenceCode.trim())}`,
+        {
+          method: 'PATCH',
+          headers: {
+            ...this.headers,
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({
+            status,
+            paid_at: new Date(paidAtMs).toISOString(),
+            updated_at: new Date(paidAtMs).toISOString(),
+          }),
+        },
+      );
+      if (!res.ok) return null;
+      const rows = (await res.json()) as any[];
+      return rows && rows.length > 0 ? (rows[0] as BillingInvoiceRecord) : null;
+    } catch {
+      return null;
+    }
+  }
+
   async extendMerchantSubscription(
     merchantId: string,
     days: number = 30,

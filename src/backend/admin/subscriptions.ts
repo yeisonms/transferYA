@@ -197,6 +197,33 @@ export async function applySubscriptionAction(
       break;
     }
 
+    case 'APPROVE_INVOICE': {
+      const days = payload.days ?? 30;
+      const ref = payload.referenceCode?.trim() || '';
+
+      if (ref && typeof repo.updateInvoiceStatusByReference === 'function') {
+        try {
+          await repo.updateInvoiceStatusByReference(ref, 'PAID', nowMs);
+        } catch (e) {
+          console.warn('[AdminSubscriptions] Error marcando factura como PAID:', e);
+        }
+      }
+
+      // Extender suscripción al comercio (+30 días acumulativos)
+      const baseMs = currentEndsAtMs && currentEndsAtMs > nowMs ? currentEndsAtMs : nowMs;
+      const endsAtMs = baseMs + days * 86_400_000;
+      const iso = new Date(endsAtMs).toISOString();
+
+      updates.subscription_status = 'ACTIVE';
+      updates.subscription_ends_at = iso;
+      updates.subscription_expires_at = iso;
+      updates.status = 'ACTIVE';
+      message = ref
+        ? `Factura ${ref} aprobada con éxito. Plan Pro extendido +${days} días (nuevo corte: ${iso.split('T')[0]}).`
+        : `Pago aprobado. Plan Pro extendido +${days} días con éxito.`;
+      break;
+    }
+
     default:
       throw new Error(`Acción administrativa no soportada: ${(payload as any).action}`);
   }

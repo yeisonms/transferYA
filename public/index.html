@@ -8389,48 +8389,75 @@
       window.open(`https://wa.me/573144886484?text=${encodeURIComponent(waText)}`, "_blank");
     }
 
-    async function adminApprovePendingInvoice(ref) {
-      if (!confirm(`¿Confirmas aprobar y marcar como PAGADA la factura ${ref}?`)) return;
+    async function adminApprovePendingInvoice(ref, merchantId, amount = 29900) {
+      if (!confirm(`¿Confirmas APROBAR el pago de la orden ${ref} y acreditar +30 Días Pro al comercio?`)) return;
 
-      const localOrders = getLocalPendingInvoices(currentMerchant?.id);
-      let target = localOrders.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
-      if (target) {
-        target.status = 'PAID';
-        target.paid_at = new Date().toISOString();
-      } else {
-        localOrders.unshift({
-          id: 'ord_' + Math.random().toString(36).substring(2, 9),
-          reference_code: ref,
-          amount_cop: 29900,
-          status: 'PAID',
-          created_at: new Date().toISOString(),
-          paid_at: new Date().toISOString(),
-          item_description: 'Plan Emprendedor (Mensual)'
+      const targetMerchantId = merchantId || currentMerchant?.id;
+      if (!targetMerchantId) {
+        showToast("Error: No se pudo determinar el comercio de la orden.", true);
+        return;
+      }
+
+      try {
+        // 1. Llamar a la API Administrativa oficial (/api/v1/admin/subscriptions)
+        const res = await fetch("/api/v1/admin/subscriptions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentSession?.access_token || ""}`,
+          },
+          body: JSON.stringify({
+            merchantId: targetMerchantId,
+            action: "APPROVE_INVOICE",
+            referenceCode: ref,
+            days: 30,
+          }),
         });
-      }
-      localStorage.setItem(`ty_pending_orders_${currentMerchant.id}`, JSON.stringify(localOrders));
 
-      if (cachedMerchantInvoices) {
-        const cTarget = cachedMerchantInvoices.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
-        if (cTarget) {
-          cTarget.status = 'PAID';
-          cTarget.paid_at = new Date().toISOString();
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || data.error || "Error al procesar la aprobación.");
         }
-      }
 
-      if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from("billing_invoices")
-            .update({ status: 'PAID', paid_at: new Date().toISOString() })
-            .eq("reference_code", ref);
-        } catch (e) {
-          console.warn("Error actualizando factura en Supabase:", e);
+        // 2. Actualizar estado en almacén local
+        const localOrders = getLocalPendingInvoices(targetMerchantId);
+        let target = localOrders.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
+        if (target) {
+          target.status = 'PAID';
+          target.paid_at = new Date().toISOString();
+        } else {
+          localOrders.unshift({
+            id: 'ord_' + Math.random().toString(36).substring(2, 9),
+            reference_code: ref,
+            merchant_id: targetMerchantId,
+            amount_cop: amount,
+            status: 'PAID',
+            created_at: new Date().toISOString(),
+            paid_at: new Date().toISOString(),
+            item_description: 'Plan Emprendedor (Mensual)'
+          });
         }
-      }
+        localStorage.setItem(`ty_pending_orders_${targetMerchantId}`, JSON.stringify(localOrders));
 
-      showToast(`Factura ${ref} aprobada y marcada como PAGADA.`);
-      loadMerchantInvoices();
+        if (cachedMerchantInvoices) {
+          const cTarget = cachedMerchantInvoices.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
+          if (cTarget) {
+            cTarget.status = 'PAID';
+            cTarget.paid_at = new Date().toISOString();
+          }
+        }
+
+        showToast(data.message || `¡Orden ${ref} aprobada con éxito! Se sumaron +30 días al comercio.`);
+
+        // 3. Recargar vistas en tiempo real
+        if (typeof loadMerchantInvoices === "function") loadMerchantInvoices();
+        if (typeof loadAdminPendingInvoices === "function") loadAdminPendingInvoices();
+        if (typeof loadAdminMerchants === "function") loadAdminMerchants();
+        if (typeof loadMerchantData === "function") loadMerchantData();
+      } catch (err) {
+        console.error("Error aprobando orden:", err);
+        showToast("Error aprobando orden: " + (err.message || err), true);
+      }
     }
 
     async function loadMerchantInvoices() {
@@ -8536,9 +8563,9 @@
               <span>WhatsApp</span>
             </button>
             ${isSuperAdmin() ? `
-              <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="text-xs text-sky-400 hover:text-sky-300 font-semibold inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500/20 px-2.5 py-1 rounded-lg border border-sky-500/30 transition-colors shadow-sm" title="Marcar orden como PAGADA (Super-Admin)">
+              <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}', '${inv.merchant_id || currentMerchant?.id || ''}', ${Number(inv.amount_cop || 29900)})" class="text-xs text-sky-400 hover:text-sky-300 font-semibold inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500/20 px-2.5 py-1 rounded-lg border border-sky-500/30 transition-colors shadow-sm" title="Marcar orden como PAGADA (Super-Admin)">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                <span>✓ Aprobar</span>
+                <span>✓ Aprobar (+30d)</span>
               </button>
             ` : ''}
           </div>`;
@@ -8552,7 +8579,7 @@
             <td class="px-5 py-3 font-mono font-bold text-white">$${Number(inv.amount_cop).toLocaleString('es-CO')}</td>
             <td class="px-5 py-3">
               ${isPending && isSuperAdmin() ? `
-                <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}')" class="inline-block px-2.5 py-1 rounded text-[11px] font-semibold border ${badgeClass} hover:border-amber-400 hover:bg-amber-500/20 cursor-pointer transition-colors" title="Toca aquí para marcar como PAGADA (Super-Admin)">
+                <button type="button" onclick="adminApprovePendingInvoice('${inv.reference_code}', '${inv.merchant_id || currentMerchant?.id || ''}', ${Number(inv.amount_cop || 29900)})" class="inline-block px-2.5 py-1 rounded text-[11px] font-semibold border ${badgeClass} hover:border-amber-400 hover:bg-amber-500/20 cursor-pointer transition-colors" title="Toca aquí para marcar como PAGADA (Super-Admin)">
                   ${statusLabel} ✎
                 </button>
               ` : `
@@ -9476,11 +9503,9 @@
     }
 
     async function adminApproveInvoiceAndExtend(merchantId, ref, amount = 29900) {
-      if (!confirm(`¿Confirmas APROBAR el pago de la orden ${ref} y acreditar +30 Días Pro al comercio?`)) return;
-
       // 1. Si no hay merchantId conocido, buscar en local y en adminMerchants
       let targetMerchantId = merchantId;
-      if (!targetMerchantId) {
+      if (!targetMerchantId && Array.isArray(adminMerchants)) {
         const found = adminMerchants.find(m => {
           const orders = getLocalPendingInvoices(m.id);
           return orders.some(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
@@ -9488,115 +9513,36 @@
         if (found) targetMerchantId = found.id;
       }
 
-      // 2. Marcar orden en local storage como PAID
-      if (targetMerchantId) {
-        const localOrders = getLocalPendingInvoices(targetMerchantId);
-        let target = localOrders.find(o => (o.reference_code || '').toUpperCase() === (ref || '').toUpperCase());
-        if (target) {
-          target.status = 'PAID';
-          target.paid_at = new Date().toISOString();
-        } else {
-          localOrders.unshift({
-            id: 'ord_' + Math.random().toString(36).substring(2, 9),
-            reference_code: ref,
-            merchant_id: targetMerchantId,
-            amount_cop: amount,
-            status: 'PAID',
-            created_at: new Date().toISOString(),
-            paid_at: new Date().toISOString(),
-            item_description: 'Plan Emprendedor (Mensual)'
-          });
-        }
-        localStorage.setItem(`ty_pending_orders_${targetMerchantId}`, JSON.stringify(localOrders));
-      }
-
-      // 3. Marcar en Supabase billing_invoices
-      if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from("billing_invoices")
-            .update({ status: 'PAID', paid_at: new Date().toISOString() })
-            .eq("reference_code", ref);
-        } catch (e) {
-          console.warn("Error actualizando billing_invoices en Supabase:", e);
-        }
-      }
-
-      // 4. Extender +30 días al comercio usando la API de admin
-      if (targetMerchantId) {
-        await executeAdminAction(targetMerchantId, 'EXTEND_30_DAYS');
-      }
-
-      showToast(`¡Orden ${ref} aprobada con éxito! Se sumaron +30 días al comercio.`);
-      loadAdminPendingInvoices();
-      loadAdminMerchants();
+      return adminApprovePendingInvoice(ref, targetMerchantId, amount);
     }
 
-    function updateAdminMetrics() {
-      const total = adminMerchants.length;
-      let active = 0;
-      let trial = 0;
-      let pastDue = 0;
-
-      adminMerchants.forEach((m) => {
-        const st = m.effectiveSubscriptionStatus;
-        if (st === "ACTIVE") active++;
-        else if (st === "TRIAL") trial++;
-        else if (st === "PAST_DUE" || st === "SUSPENDED") pastDue++;
-      });
-
-      const elTot = document.getElementById("adminMetricTotal");
-      const elAct = document.getElementById("adminMetricActive");
-      const elTri = document.getElementById("adminMetricTrial");
-      const elPas = document.getElementById("adminMetricPastDue");
-
-      if (elTot) elTot.textContent = total;
-      if (elAct) elAct.textContent = active;
-      if (elTri) elTri.textContent = trial;
-      if (elPas) elPas.textContent = pastDue;
-    }
-
-    function setAdminFilter(filter) {
-      adminCurrentFilter = filter;
-      document.querySelectorAll(".admin-filter-btn").forEach((btn) => {
-        if (btn.getAttribute("data-filter") === filter) {
-          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono bg-ty-surface-high text-ty-amber font-bold border border-ty-amber/40";
-        } else {
-          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border";
-        }
-      });
-      renderAdminMerchantsList();
-    }
-
-    function renderAdminMerchantsList() {
-      const container = document.getElementById("adminMerchantsList");
+    async function loadAdminPendingInvoices() {
+      const container = document.getElementById("adminPendingInvoicesList");
+      const badge = document.getElementById("adminPendingCountBadge");
       if (!container) return;
 
-      const q = (document.getElementById("adminSearchInput")?.value || "").toLowerCase().trim();
-
-      const filtered = adminMerchants.filter((m) => {
-        if (adminCurrentFilter !== "ALL" && m.effectiveSubscriptionStatus !== adminCurrentFilter) {
-          return false;
+      let remotePending = [];
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from("billing_invoices")
+            .select("*")
+            .eq("status", "PENDING")
+            .order("created_at", { ascending: false });
+          if (!error && Array.isArray(data)) {
+            remotePending = data;
+          }
+        } catch (e) {
+          console.warn("Error consultando billing_invoices:", e);
         }
-        if (q) {
-          const matchName = m.name?.toLowerCase().includes(q);
-          const matchId = m.id?.toLowerCase().includes(q);
-          const matchPhone = m.billingPhone?.toLowerCase().includes(q);
-          if (!matchName && !matchId && !matchPhone) return false;
-        }
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="p-8 text-center text-xs font-mono text-ty-muted">
-            No se encontraron comercios con los filtros actuales.
-          </div>
-        `;
-        return;
       }
 
-      container.innerHTML = filtered.map((m) => {
+      // Escanear también órdenes pendientes almacenadas localmente
+      const localPending = [];
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("ty_pending_orders_")) {
         const badgeInfo = getAdminStatusBadge(m.effectiveSubscriptionStatus);
         const endsDateStr = m.subscriptionEndsAt ? new Date(m.subscriptionEndsAt).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "Sin fecha";
         const cleanPhone = m.billingPhone ? m.billingPhone.replace(/[^\d+]/g, "") : "";

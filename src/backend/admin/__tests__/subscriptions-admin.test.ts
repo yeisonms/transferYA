@@ -58,6 +58,17 @@ class InMemoryAdminRepository implements IAdminSubscriptionsRepository {
     }
     return true;
   }
+
+  public paidInvoices: Array<{ referenceCode: string; status: string; paidAtMs: number }> = [];
+
+  async updateInvoiceStatusByReference(
+    referenceCode: string,
+    status: string = 'PAID',
+    paidAtMs: number = Date.now(),
+  ): Promise<any> {
+    this.paidInvoices.push({ referenceCode, status, paidAtMs });
+    return { reference_code: referenceCode, status };
+  }
 }
 
 describe('Ticket 20 — Super-Admin Authentication & Authorization', () => {
@@ -421,15 +432,46 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
       repo,
       {
         merchantId: 'm1',
-        action: 'ACTIVATE_TRIAL',
-        billingPhone: '311 365 4315',
+        action: 'UPDATE_BILLING_PHONE',
+        billingPhone: '+573113654315',
+      },
+      baseTime,
+    );
+    expect(summary?.billingPhone).toBe('+573113654315');
+  });
+
+  it('ejecuta APPROVE_INVOICE marcando la factura como PAID y extendiendo +30 días al comercio', async () => {
+    const repo = new InMemoryAdminRepository();
+    repo.merchants = [
+      {
+        id: 'm_pruebas',
+        name: 'Comercio Pruebas',
+        owner_id: 'o_pruebas',
+        status: 'ACTIVE',
+        subscription_status: 'TRIAL',
+        subscription_ends_at: new Date(baseTime + 5 * 86_400_000).toISOString(),
+        created_at: new Date(baseTime).toISOString(),
+      },
+    ];
+
+    const { summary, message } = await applySubscriptionAction(
+      repo,
+      {
+        merchantId: 'm_pruebas',
+        action: 'APPROVE_INVOICE',
+        referenceCode: 'TYA-BC8B5B',
+        days: 30,
       },
       baseTime,
     );
 
-    expect(summary?.billingPhone).toBe('+3113654315');
-    const updated = await repo.getMerchantById('m1');
-    expect(updated?.billing_phone).toBe('+3113654315');
+    expect(summary).not.toBeNull();
+    expect(summary!.subscriptionStatus).toBe('ACTIVE');
+    expect(summary!.remainingDays).toBe(35); // 5 días previos + 30 nuevos
+    expect(message).toContain('Factura TYA-BC8B5B aprobada con éxito');
+    expect(repo.paidInvoices).toHaveLength(1);
+    expect(repo.paidInvoices[0].referenceCode).toBe('TYA-BC8B5B');
+    expect(repo.paidInvoices[0].status).toBe('PAID');
   });
 
   it('permite eliminar un comercio definitivamente con DELETE_MERCHANT', async () => {

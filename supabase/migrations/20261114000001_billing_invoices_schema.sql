@@ -75,7 +75,7 @@ CREATE POLICY "service_role_manage_billing_invoices"
     USING (true)
     WITH CHECK (true);
 
--- 5. Trigger anti-manipulación: impedir inserciones o mutaciones directas desde el frontend
+-- 5. Trigger anti-manipulación: impedir alteraciones directas desde el frontend
 CREATE OR REPLACE FUNCTION prevent_billing_invoices_tampering()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -84,7 +84,21 @@ DECLARE
     jwt_role TEXT := COALESCE(NULLIF(current_setting('request.jwt.claim.role', true), ''), current_user);
 BEGIN
     IF jwt_role = 'authenticated' THEN
-        RAISE EXCEPTION 'No autorizado: las facturas comerciales solo pueden generarse y conciliarse desde el backend o Admin API.'
+        -- Permitir a comercios autenticados únicamente CREAR facturas en estado PENDING sin paid_at
+        IF TG_OP = 'INSERT' THEN
+            IF NEW.status IS DISTINCT FROM 'PENDING' THEN
+                RAISE EXCEPTION 'No autorizado: las facturas nuevas solo pueden crearse en estado PENDING.'
+                    USING ERRCODE = '42501';
+            END IF;
+            IF NEW.paid_at IS NOT NULL OR NEW.notification_id IS NOT NULL THEN
+                RAISE EXCEPTION 'No autorizado: paid_at y notification_id solo pueden asignarse por conciliación bancaria o Admin API.'
+                    USING ERRCODE = '42501';
+            END IF;
+            RETURN NEW;
+        END IF;
+
+        -- Bloquear cualquier UPDATE o DELETE desde el navegador
+        RAISE EXCEPTION 'No autorizado: las facturas comerciales solo pueden modificarse o conciliarse desde el backend o Admin API.'
             USING ERRCODE = '42501';
     END IF;
     RETURN NEW;
