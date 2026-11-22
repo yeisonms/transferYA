@@ -158,12 +158,11 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
   // 2. Extraer Monto
   let rawAmount = '';
   const amountPatterns = [
-    /¿Cu[aá]nto\?[:\s]*([\$\d.,\s]+)/i,
-    /Valor[:\s]*([\$\d.,\s]+)/i,
-    /Monto[:\s]*([\$\d.,\s]+)/i,
-    /Valor recibido[:\s]*([\$\d.,\s]+)/i,
-    /(?:Te enviaron|recibiste)\s+([\$\d.,\s]+?)(?:\s+de\s+|\s+a tu Nequi|\s+en Nequi|\s+por Bre-B|\.|$)/i,
-    /(?:Te enviaron|recibiste)\s+([\$\d.,\s]+)/i,
+    /¿Cu[aá]nto\?[:\s]*([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
+    /Valor(?: recibido)?[:\s]*([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
+    /Monto[:\s]*([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
+    /(?:Te enviaron|recibiste)\s+([\$]?\s*[\d]+(?:[.,]\d+)*)(?:\s+(?:de\b|a tu Nequi|en Nequi|por Bre-B)|\s*\.|\s*$)/i,
+    /(?:Te enviaron|recibiste)\s+([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
   ];
 
   for (const pat of amountPatterns) {
@@ -186,7 +185,7 @@ export function parseNequiEmailReceipt(email: InboundEmailInput): ParseResult {
   // 3. Extraer Remitente
   let rawSender = '';
   const senderPatterns = [
-    /(?:recibiste|te enviaron)\s+[\$\d.,\s]+\s+de\s+([a-zA-Z\s]+?)(?:\s+el|\s+a las|\s+desde|\.|$)/i,
+    /(?:recibiste|te enviaron)\s+[\$\d.,\s]+\s+de\s+([a-zA-ZÁÉÍÓÚÑáéíóúñ\s]+?)(?:\s+el|\s+a las|\s+desde|\s+a tu Nequi|\s+en Nequi|\.|$)/i,
     /(?:^|\n)\s*¿Qui[eé]n te la envi[oó]\?[:\s]*([^\n\r]+)/i,
     /(?:^|\n)\s*Env[ií]a[:\s]*([^\n\r]+)/i,
     /(?:^|\n)\s*Nombre[:\s]*([^\n\r]+)/i,
@@ -272,13 +271,13 @@ export function parseBancolombiaEmailReceipt(email: InboundEmailInput): ParseRes
   // 2. Extraer Monto
   let rawAmount = '';
   const amountPatterns = [
-    /recibiste una transferencia de\s+.*?\s+por\s+([\$\d.,\s]+?)(?:\s+en tu cuenta|\.|$|\s+el)/i,
-    /recibiste una transferencia\s+por\s+([\$\d.,\s]+?)(?:\s+de\s+|\s+en tu cuenta|\.|$)/i,
-    /recibiste un pago de\s+.*?\s+por\s+([\$\d.,\s]+?)(?:\s+en tu cuenta|\.|$)/i,
-    /Te transfirieron\s+([\$\d.,\s]+?)(?:\s+por Transfiya|\s+a trav[eé]s de Transfiya|\s+de\s+|\s+a tu cuenta|\.|$)/i,
-    /Valor[:\s]*([\$\d.,\s]+)/i,
-    /Monto[:\s]*([\$\d.,\s]+)/i,
-    /(?:recibiste|te enviaron)\s+([\$\d.,\s]+)/i,
+    /recibiste una transferencia de\s+.*?\s+por\s+([\$]?\s*[\d]+(?:[.,]\d+)*)(?:\s+en tu cuenta|\s+el|\s*\.|\s*$)/i,
+    /recibiste una transferencia\s+por\s+([\$]?\s*[\d]+(?:[.,]\d+)*)(?:\s+de\s+|\s+en tu cuenta|\s*\.|\s*$)/i,
+    /recibiste un pago de\s+.*?\s+por\s+([\$]?\s*[\d]+(?:[.,]\d+)*)(?:\s+en tu cuenta|\s*\.|\s*$)/i,
+    /Te transfirieron\s+([\$]?\s*[\d]+(?:[.,]\d+)*)(?:\s+por Transfiya|\s+a trav[eé]s de Transfiya|\s+de\s+|\s+a tu cuenta|\s*\.|\s*$)/i,
+    /Valor[:\s]*([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
+    /Monto[:\s]*([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
+    /(?:recibiste|te enviaron)\s+([\$]?\s*[\d]+(?:[.,]\d+)*)/i,
   ];
 
   for (const pat of amountPatterns) {

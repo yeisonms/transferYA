@@ -168,6 +168,26 @@ describe('Motor de Parsing de Inbound Email (Ruta Cloud TransferYA)', () => {
       }
     });
 
+    it('debe parsear correctamente montos con separador de miles con punto (ej: 29.900) en correos Bre-B', () => {
+      const email: InboundEmailInput = {
+        from: 'notificaciones@nequi.com.co',
+        subject: '¡Recibiste plata por Bre-B!',
+        text: `
+          ¡Hola, Yeison Stiven Murcia Calvo!
+
+          Recibiste 29.900 de YEISON STIVEN MURCIA CALVO el 21 de noviembre de 2026 a las 8:50 p.m, desde el banco Daviplata. Revisa el detalle en los movimientos de tu app o descarga el comprobante si lo necesitas.
+        `,
+      };
+
+      const result = parseNequiEmailReceipt(email);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.payment.wallet).toBe('NEQUI');
+        expect(result.payment.amount).toBe(29900);
+        expect(result.payment.senderName).toBe('Yeison Stiven Murcia Calvo');
+      }
+    });
+
     it('debe parsear transferencias por Bre-B / Transfiya notificadas por correo', () => {
       const email: InboundEmailInput = {
         from: 'notificaciones@nequi.com.co',
