@@ -62,7 +62,7 @@ describe('Página Puente para QR de Volanteo (/go) y Telemetría', () => {
       // Opción 3: Botón terciario
       expect(html).toContain('Entiende cómo funciona y ve los planes');
       expect(html).toContain('Paso a paso, panel web sonoro y precios desde $29.900/mes');
-      expect(html).toContain('/?utm_source=volante&utm_medium=qr&utm_campaign=go');
+      expect(html).toContain('/landing?utm_source=volante&utm_medium=qr&utm_campaign=go');
     });
 
     it('debe incluir el pie de confianza con las 4 entidades financieras y el número de contacto', () => {

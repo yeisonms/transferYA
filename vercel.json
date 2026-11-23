@@ -4,6 +4,7 @@
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/go", "destination": "/go.html" },
+    { "source": "/landing", "destination": "/landing.html" },
     { "source": "/api/v1/devices/:action", "destination": "/api/v1/devices/:action" },
     { "source": "/api/v1/merchants/:action", "destination": "/api/v1/merchants/:action" }
   ],
