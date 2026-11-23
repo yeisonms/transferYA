@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Simulador de Ahorro Comercial — transferYA</title>
+  
+  <meta name="description" content="Calculadora de ahorro comercial para vendedores y comercios de transferYA. Compara el costo de datáfonos frente a 0% comisión con transferYA.">
+  <meta name="theme-color" content="#090F1D">
+
+  <!-- Favicon e Íconos Oficiales -->
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+  <!-- Estilos del Proyecto (Tailwind) -->
+  <link rel="stylesheet" href="/css/app.css">
+
+  <style>
+    body {
+      font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #090F1D;
+      background-image: radial-gradient(circle at 50% 0%, rgba(25, 195, 125, 0.14) 0%, #090F1D 70%);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+
+<body class="text-white min-h-screen min-h-[100dvh] antialiased py-4 sm:py-8 px-4 flex flex-col justify-between">
+
+  <div class="w-full max-w-[460px] mx-auto flex-1 flex flex-col justify-between">
+
+    <!-- Header Compacto -->
+    <header class="text-center mb-4">
+      <a href="/landing" class="inline-flex items-center justify-center gap-2 mb-2 group">
+        <img src="/icons/logo-sound-check.svg" alt="transferYA" class="w-7 h-7 object-contain" />
+        <span class="text-2xl font-black tracking-tight text-white">transfer<span class="text-[#19C37D]">YA</span></span>
+      </a>
+      <div class="flex items-center justify-center gap-1.5">
+        <span class="px-2.5 py-0.5 rounded-full bg-[#19C37D]/20 text-[#19C37D] border border-[#19C37D]/30 text-[10px] font-mono font-bold uppercase tracking-wider">
+          💼 Herramienta Comercial para Vendedores
+        </span>
+      </div>
+    </header>
+
+    <!-- Tarjeta Principal de la Calculadora -->
+    <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-2xl text-left border border-slate-200 text-[#0E1B2B]">
+      
+      <div class="border-b border-slate-100 pb-3 mb-5">
+        <h1 class="text-lg sm:text-xl font-extrabold text-[#0E1B2B] tracking-tight leading-snug">
+          ¿Cuánto podría ahorrar tu negocio con TransferYA?
+        </h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">
+          Simulador comercial en vivo
+        </p>
+      </div>
+
+      <!-- Presets Rápidos por Tipo de Negocio -->
+      <div class="mb-5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+        <span class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">
+          ⚡ Perfiles rápidos de clientes:
+        </span>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="applyPreset(15000000, 1.5, 29900)" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 border border-slate-200 transition-all cursor-pointer">
+            🛒 Tienda ($15M)
+          </button>
+          <button type="button" onclick="applyPreset(20000000, 1.5, 49900)" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-[#19C37D]/20 text-[#0B7A4B] border border-[#19C37D]/40 transition-all cursor-pointer">
+            🥐 Panadería ($20M)
+          </button>
+          <button type="button" onclick="applyPreset(35000000, 2.0, 49900)" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 border border-slate-200 transition-all cursor-pointer">
+            🍔 Restaurante ($35M)
+          </button>
+          <button type="button" onclick="applyPreset(50000000, 2.8, 89900)" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 border border-slate-200 transition-all cursor-pointer">
+            💊 Droguería ($50M)
+          </button>
+          <button type="button" onclick="applyPreset(80000000, 2.8, 89900)" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 border border-slate-200 transition-all cursor-pointer">
+            🔨 Ferretería ($80M)
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. Ventas mensuales por QR -->
+      <div class="space-y-1.5 mb-5">
+        <div class="flex items-center justify-between">
+          <label for="calcSalesSlider" class="text-xs sm:text-sm font-bold text-[#0E1B2B]">
+            Ventas mensuales por QR
+          </label>
+          <span id="calcSalesDisplay" class="text-base sm:text-lg font-black text-[#0E1B2B] font-mono">
+            $20.000.000
+          </span>
+        </div>
+        
+        <input id="calcSalesSlider" type="range" min="2000000" max="100000000" step="500000" value="20000000"
+          oninput="updateSavingsCalculator()"
+          class="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#19C37D] focus:outline-none">
+        
+        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono px-0.5">
+          <span>$2M</span>
+          <span>$20M</span>
+          <span>$50M</span>
+          <span>$100M</span>
+        </div>
+      </div>
+
+      <!-- 2. Comisión actual del comercio (%) -->
+      <div class="space-y-1.5 mb-5">
+        <label for="calcFeeInput" class="block text-xs sm:text-sm font-bold text-[#0E1B2B]">
+          Comisión actual del comercio (%)
+        </label>
+        <div class="relative">
+          <input id="calcFeeInput" type="text" value="1,5" inputmode="decimal"
+            oninput="updateSavingsCalculator()"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-[#19C37D] focus:ring-2 focus:ring-[#19C37D]/20 text-sm font-bold text-[#0E1B2B] bg-white transition-all outline-none"
+            placeholder="1.5">
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+          <span class="text-[10px] text-slate-500 font-semibold mr-0.5">Típico:</span>
+          <button type="button" onclick="setFeeQuick(1.5)" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 transition-colors cursor-pointer">1.5% (Datáfono QR)</button>
+          <button type="button" onclick="setFeeQuick(2.0)" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 transition-colors cursor-pointer">2.0%</button>
+          <button type="button" onclick="setFeeQuick(2.8)" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 transition-colors cursor-pointer">2.8% (Tarjetas)</button>
+          <button type="button" onclick="setFeeQuick(3.2)" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 hover:bg-[#19C37D]/20 hover:text-[#0B7A4B] text-slate-700 transition-colors cursor-pointer">3.2%</button>
+        </div>
+      </div>
+
+      <!-- 3. Plan TransferYA -->
+      <div class="space-y-1.5 mb-5">
+        <span class="block text-xs sm:text-sm font-bold text-[#0E1B2B]">
+          Plan TransferYA
+        </span>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 p-2 rounded-xl border border-slate-200 hover:border-[#19C37D]/60 cursor-pointer transition-all">
+            <input type="radio" name="calcPlan" value="29900" data-name="Emprendedor ($29.900)" onchange="updateSavingsCalculator()"
+              class="w-4 h-4 text-[#19C37D] focus:ring-[#19C37D] border-slate-300">
+            <span class="text-xs sm:text-sm font-bold text-[#0E1B2B]">
+              Emprendedor — $29.900 <span class="text-[10px] text-slate-500 font-normal">(1 caja)</span>
+            </span>
+          </label>
+
+          <label class="flex items-center gap-3 p-2 rounded-xl border-2 border-[#19C37D] bg-[#19C37D]/5 cursor-pointer transition-all">
+            <input type="radio" name="calcPlan" value="49900" data-name="Negocio ($49.900)" checked onchange="updateSavingsCalculator()"
+              class="w-4 h-4 text-[#19C37D] focus:ring-[#19C37D] border-slate-300">
+            <div class="flex items-center justify-between w-full">
+              <span class="text-xs sm:text-sm font-extrabold text-[#0E1B2B]">
+                Negocio — $49.900 <span class="text-[10px] text-slate-500 font-normal">(2 cajas)</span>
+              </span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#19C37D] text-[#07131A] uppercase tracking-wide">Más elegido</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 p-2 rounded-xl border border-slate-200 hover:border-[#19C37D]/60 cursor-pointer transition-all">
+            <input type="radio" name="calcPlan" value="89900" data-name="Pro Multi-Caja ($89.900)" onchange="updateSavingsCalculator()"
+              class="w-4 h-4 text-[#19C37D] focus:ring-[#19C37D] border-slate-300">
+            <span class="text-xs sm:text-sm font-bold text-[#0E1B2B]">
+              Pro Multi-Caja — $89.900 <span class="text-[10px] text-slate-500 font-normal">(hasta 5 cajas)</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <div class="h-px bg-slate-200 my-5"></div>
+
+      <!-- 4. Costo mensual comparado -->
+      <div class="space-y-3 mb-5">
+        <div class="text-[11px] uppercase font-extrabold tracking-wider text-slate-500">
+          Costo mensual comparado
+        </div>
+
+        <!-- Sistema actual -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <span class="font-bold text-slate-700">Sistema actual</span>
+            <span id="calcCurrentCost" class="font-extrabold text-[#0E1B2B] font-mono">$300.000</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-lg h-5 sm:h-6 overflow-hidden">
+            <div id="calcCurrentBar" class="h-full bg-[#5B6E85] rounded-lg transition-all duration-300" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- TransferYA -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <span class="font-bold text-[#0B7A4B] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#19C37D]"></span>
+              TransferYA
+            </span>
+            <span id="calcTyCost" class="font-black text-[#0B7A4B] font-mono">$49.900</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-lg h-5 sm:h-6 overflow-hidden">
+            <div id="calcTyBar" class="h-full bg-[#19C37D] rounded-lg transition-all duration-300" style="width: 16.6%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <div class="h-px bg-slate-200 my-5"></div>
+
+      <!-- 5. Resumen de Ahorros -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-center sm:text-left">
+          <div class="text-[11px] sm:text-xs font-semibold text-slate-500">
+            Ahorro mensual estimado
+          </div>
+          <div id="calcMonthlySavings" class="text-lg sm:text-2xl font-black text-[#0B7A4B] font-mono mt-0.5">
+            $250.100
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 text-center sm:text-left">
+          <div class="text-[11px] sm:text-xs font-semibold text-slate-500">
+            Ahorro anual estimado
+          </div>
+          <div id="calcYearlySavings" class="text-lg sm:text-2xl font-black text-[#0B7A4B] font-mono mt-0.5">
+            $3.001.200
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[10px] text-slate-400 leading-normal mb-5">
+        Comparación ilustrativa de mensualidades y comisiones. No incluye impuestos, costos bancarios, equipos ni alertas adicionales.
+      </p>
+
+      <!-- 6. Botones de Acción Comercial -->
+      <div class="flex flex-col gap-2 pt-1 border-t border-slate-100">
+        <a id="calcWaShareBtn" href="#" target="_blank" rel="noopener noreferrer"
+           class="w-full py-3 px-4 rounded-xl bg-[#0E2230] hover:bg-black text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer">
+          <svg class="w-4 h-4 text-[#19C37D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+          <span>Compartir cotización por WhatsApp</span>
+        </a>
+        <a href="/go"
+           class="w-full py-3 px-4 rounded-xl bg-[#19C37D] hover:brightness-105 text-[#07131A] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-[#19C37D]/25 transition-all text-center cursor-pointer">
+          <span>Activar 7 días gratis sin tarjeta</span>
+          <span>→</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Footer Discreto -->
+    <footer class="text-center mt-5 text-[11px] text-slate-400">
+      <p>0% comisiones por venta · transferYA por MurSat Solutions</p>
+    </footer>
+
+  </div>
+
+  <script>
+    function formatCOP(num) {
+      return '$' + Math.round(num).toLocaleString('es-CO');
+    }
+
+    function applyPreset(sales, fee, planPrice) {
+      const slider = document.getElementById('calcSalesSlider');
+      const feeInput = document.getElementById('calcFeeInput');
+      const planRadios = document.getElementsByName('calcPlan');
+
+      if (slider) slider.value = sales;
+      if (feeInput) feeInput.value = fee.toString().replace('.', ',');
+      
+      for (const r of planRadios) {
+        if (parseFloat(r.value) === planPrice) {
+          r.checked = true;
+          break;
+        }
+      }
+
+      updateSavingsCalculator();
+    }
+
+    function setFeeQuick(fee) {
+      const feeInput = document.getElementById('calcFeeInput');
+      if (feeInput) {
+        feeInput.value = fee.toString().replace('.', ',');
+        updateSavingsCalculator();
+      }
+    }
+
+    function updateSavingsCalculator() {
+      const slider = document.getElementById('calcSalesSlider');
+      const salesDisplay = document.getElementById('calcSalesDisplay');
+      const feeInput = document.getElementById('calcFeeInput');
+      const planRadios = document.getElementsByName('calcPlan');
+
+      const currentCostDisplay = document.getElementById('calcCurrentCost');
+      const tyCostDisplay = document.getElementById('calcTyCost');
+      const tyBar = document.getElementById('calcTyBar');
+      const currentBar = document.getElementById('calcCurrentBar');
+
+      const monthlySavingsDisplay = document.getElementById('calcMonthlySavings');
+      const yearlySavingsDisplay = document.getElementById('calcYearlySavings');
+      const waShareBtn = document.getElementById('calcWaShareBtn');
+
+      if (!slider || !feeInput) return;
+
+      const sales = parseFloat(slider.value) || 20000000;
+      if (salesDisplay) salesDisplay.textContent = formatCOP(sales);
+
+      let rawFee = feeInput.value.replace(',', '.').trim();
+      let fee = parseFloat(rawFee);
+      if (isNaN(fee) || fee < 0) fee = 1.5;
+      if (fee > 100) fee = 100;
+
+      let planPrice = 49900;
+      let planName = 'Negocio ($49.900/mes)';
+      for (const r of planRadios) {
+        if (r.checked) {
+          planPrice = parseFloat(r.value);
+          planName = r.getAttribute('data-name') || planName;
+          break;
+        }
+      }
+
+      const currentCost = sales * (fee / 100);
+      const tyCost = planPrice;
+      const monthlySavings = Math.max(0, currentCost - tyCost);
+      const yearlySavings = monthlySavings * 12;
+
+      if (currentCostDisplay) currentCostDisplay.textContent = formatCOP(currentCost);
+      if (tyCostDisplay) tyCostDisplay.textContent = formatCOP(tyCost);
+      if (monthlySavingsDisplay) monthlySavingsDisplay.textContent = formatCOP(monthlySavings);
+      if (yearlySavingsDisplay) yearlySavingsDisplay.textContent = formatCOP(yearlySavings);
+
+      if (currentBar) currentBar.style.width = '100%';
+      if (tyBar) {
+        const pct = currentCost > 0 ? Math.min(100, Math.max(8, (tyCost / currentCost) * 100)) : 100;
+        tyBar.style.width = pct + '%';
+      }
+
+      if (waShareBtn) {
+        const text =
+          `Hola, según calculamos en tu negocio con TransferYA:\n\n` +
+          `📊 Ventas por QR estimadas: ${formatCOP(sales)}/mes\n` +
+          `💳 Comisión actual del datáfono: ${fee}%\n` +
+          `❌ Lo que pagas hoy en comisiones: ${formatCOP(currentCost)}/mes\n` +
+          `✅ Con TransferYA (${planName}): ${formatCOP(tyCost)}/mes (0% comisión)\n\n` +
+          `💰 Ahorro mensual: ${formatCOP(monthlySavings)}\n` +
+          `🚀 Ahorro anual estimado: ${formatCOP(yearlySavings)}\n\n` +
+          `Activa tus 7 días gratis sin tarjeta aquí: https://www.transferya.app/go`;
+        waShareBtn.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => updateSavingsCalculator());
+    } else {
+      updateSavingsCalculator();
+    }
+  </script>
+</body>
+</html>
