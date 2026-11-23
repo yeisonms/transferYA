@@ -182,5 +182,23 @@ export interface IWhatsAppCloudApiClient {
     to: string,
     options: TrialReminderOptions,
   ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía un mensaje de texto plano directamente por WhatsApp Cloud API.
+   */
+  sendTextMessage?(
+    to: string,
+    text: string,
+  ): Promise<WhatsAppSendResult>;
+
+  /**
+   * Envía alerta de WhatsApp al dueño cuando el celular Centinela pierde conexión o se apaga (> 5 min).
+   */
+  sendOfflineSentinelAlert?(
+    to: string,
+    options: { deviceLabel: string; merchantName?: string; minutesOffline: number },
+  ): Promise<WhatsAppSendResult>;
 }
+
+export type IWhatsAppClient = IWhatsAppCloudApiClient;
 

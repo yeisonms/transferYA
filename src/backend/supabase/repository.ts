@@ -585,15 +585,19 @@ export class SupabaseRepository
 
     if (!res.ok) return [];
     const rows = (await res.json()) as any[];
-    return rows.map((r) => ({
-      deviceId: r.id,
-      lastSeenAt: new Date(r.last_heartbeat_at).getTime(),
-      batteryLevel: 0,
-      isCharging: false,
-      networkType: 'WIFI',
-      appVersion: '0.1.0',
-      status: 'OFFLINE',
-    }));
+    return rows
+      .filter((r) => !r.id.startsWith('cloud_email_'))
+      .map((r) => ({
+        deviceId: r.id,
+        merchantId: r.merchant_id,
+        label: r.label,
+        lastSeenAt: new Date(r.last_heartbeat_at).getTime(),
+        batteryLevel: 0,
+        isCharging: false,
+        networkType: 'WIFI',
+        appVersion: '0.1.0',
+        status: 'OFFLINE',
+      }));
   }
 
   // -------------------------------------------------------------

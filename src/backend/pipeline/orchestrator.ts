@@ -185,13 +185,38 @@ export class PaymentProcessingPipeline {
           );
 
     if (!parseResult.success) {
+      const isDaviplataLlaves = parseResult.error === 'DAVIPLATA_LLAVES_UNSPECIFIED_AMOUNT';
+
       await this.deps.notificationRepository.updateNotification(
         notificationId,
         {
           status: 'IGNORED_NON_PAYMENT',
           failureReason: parseResult.reason,
+          senderName: isDaviplataLlaves ? 'Cliente Bre-B (DaviPlata)' : undefined,
+          paymentReference: isDaviplataLlaves ? 'DAVIPLATA-BREB' : undefined,
         },
       );
+
+      if (isDaviplataLlaves && this.deps.routingService && this.deps.whatsappClient) {
+        try {
+          const route = await this.deps.routingService.resolveRoute(notification.deviceId);
+          if (route.success && route.recipients && route.recipients.length > 0) {
+            const warningText =
+              `⚠️ *Aviso DaviPlata (Transferencia por Llaves / Bre-B)*\n\n` +
+              `Se detectó una transferencia entrante por Llaves a DaviPlata en el mostrador.\n\n` +
+              `🔒 *Importante:* Por políticas de privacidad de DaviPlata, el valor viene *oculto* en la notificación push.\n\n` +
+              `👉 *Por favor solicita el comprobante al cliente o valida el valor en tu app DaviPlata antes de entregar la mercancía.*`;
+
+            for (const r of route.recipients) {
+              if (typeof this.deps.whatsappClient.sendTextMessage === 'function') {
+                await this.deps.whatsappClient.sendTextMessage(r.phoneNumber, warningText).catch(() => {});
+              }
+            }
+          }
+        } catch (warnErr) {
+          console.warn('[Pipeline] Error despachando alerta preventiva DaviPlata Bre-B:', warnErr);
+        }
+      }
 
       return {
         status: 'IGNORED_NON_PAYMENT',

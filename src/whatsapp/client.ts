@@ -492,4 +492,21 @@ export class WhatsAppCloudApiClient implements IWhatsAppCloudApiClient {
 
     return templateResult;
   }
+
+  async sendOfflineSentinelAlert(
+    to: string,
+    data: { deviceLabel: string; merchantName?: string; minutesOffline: number },
+  ): Promise<WhatsAppSendResult> {
+    const text =
+      `⚠️ *Alerta Celular Centinela Offline — TransferYA*\n\n` +
+      `Hola${data.merchantName ? ` ${data.merchantName}` : ''}, el celular de tu negocio en *"${data.deviceLabel}"* ` +
+      `no se ha comunicado con el servidor en los últimos ${data.minutesOffline} minutos.\n\n` +
+      `Posibles causas:\n` +
+      `• El teléfono se apagó o se quedó sin batería.\n` +
+      `• Se desconectó del Wi-Fi o datos móviles.\n` +
+      `• La aplicación Centinela fue cerrada o detenida.\n\n` +
+      `👉 *Por favor verifica el teléfono para que las alertas automáticas de Nequi y DaviPlata sigan funcionando normalmente.*`;
+
+    return this.sendTextMessage(to, text);
+  }
 }

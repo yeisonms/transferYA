@@ -22,6 +22,8 @@ export interface DeviceHealthRecord {
   networkType: 'WIFI' | 'CELLULAR';
   appVersion: string;
   status: DeviceHealthStatus;
+  merchantId?: string;
+  label?: string;
 }
 
 export interface HeartbeatBillingConfig {

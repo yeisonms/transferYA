@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DeviceEnrollmentHandler } from '../../../src/backend/enrollment/handler.js';
 import { DeviceHeartbeatHandler } from '../../../src/backend/heartbeat/handler.js';
+import { SentinelWatchdogService } from '../../../src/backend/heartbeat/watchdog.js';
 import { TrialNurtureService } from '../../../src/backend/billing/trial-nurture.js';
 import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
 import { requireMerchantOwner } from '../../../src/backend/auth/supabase-auth.js';
@@ -41,6 +42,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return handleHeartbeat(req, res);
   } else if (action === 'reset-test-data') {
     return handleResetTestData(req, res);
+  } else if (action === 'health-check' || action === 'watchdog') {
+    return handleHealthCheck(req, res);
   } else {
     res.statusCode = 404;
     res.end(JSON.stringify({ success: false, error: 'NOT_FOUND', message: `Acción desconocida en devices: ${action}` }));
@@ -196,6 +199,10 @@ async function handleHeartbeat(req: IncomingMessage, res: ServerResponse): Promi
       path: '/api/v1/devices/heartbeat',
     });
 
+    if (result.statusCode === 200 && body?.device_id) {
+      SentinelWatchdogService.resetCooldown(body.device_id);
+    }
+
     res.statusCode = result.statusCode;
     res.end(JSON.stringify(result.body));
   } catch (error: any) {
@@ -267,6 +274,43 @@ async function handleResetTestData(req: IncomingMessage, res: ServerResponse): P
         success: true,
         message: `Dispositivo ${deviceId} restablecido con éxito. Registros de prueba eliminados.`,
         data: resetSummary,
+      }),
+    );
+  } catch (error: any) {
+    res.statusCode = 500;
+    res.end(
+      JSON.stringify({
+        success: false,
+        error: 'INTERNAL_SERVER_ERROR',
+        message: error.message,
+      }),
+    );
+  }
+}
+
+async function handleHealthCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const repository = getSupabaseRepository();
+    const whatsappClient = new WhatsAppCloudApiClient({
+      accessToken:
+        process.env.META_WHATSAPP_TOKEN ||
+        'EAAalAQFm5uEBTF5PTndwu9EPvlVg4SAb6pFzXECWCCUKmSnafqr6UiA0KHZCfq9R5WjYIr0z3b7ZCUHu5EPeaja9xj87NZBjQsRdDm9tDBxqxkbx8t4nOauzAJdVsaMPIq9U4CKfxA9HGHQjCtOTMvCyoLNkX6FZCEVZAc6otELlUyGEczzZAqyoj0WYLspwZDZD',
+      phoneNumberId: process.env.META_PHONE_NUMBER_ID || '1541112255749953',
+    });
+
+    const watchdog = new SentinelWatchdogService({
+      repository,
+      whatsappClient,
+    });
+
+    const alerts = await watchdog.checkAndAlertOfflineDevices();
+    res.statusCode = 200;
+    res.end(
+      JSON.stringify({
+        success: true,
+        timestamp: Date.now(),
+        alertsCount: alerts.length,
+        alerts,
       }),
     );
   } catch (error: any) {

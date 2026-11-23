@@ -4679,6 +4679,19 @@
             <p id="txDrawerTimestamp" class="text-xs text-ty-muted pt-1">-</p>
           </div>
 
+          <!-- Alerta Informativa DaviPlata Bre-B -->
+          <div id="txDrawerDaviplataBreBAlert" class="hidden p-4 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs text-amber-200 space-y-1.5">
+            <div class="font-bold flex items-center gap-2 text-amber-300">
+              <span class="text-base">⚠️</span> Transferencia DaviPlata por Llaves (Bre-B)
+            </div>
+            <p class="leading-relaxed">
+              Por políticas de privacidad bancaria de DaviPlata, el banco omite el monto en las notificaciones push de transferencias por Llaves.
+            </p>
+            <p class="font-semibold text-amber-300">
+              👉 Solicita el comprobante en pantalla al cliente o verifica el valor en tu app DaviPlata antes de entregar la mercancía.
+            </p>
+          </div>
+
           <!-- Bloque 1: Resumen Comercial -->
           <div class="rounded-xl bg-ty-surface border border-ty-border p-4 space-y-3">
             <h4 class="text-xs font-mono uppercase tracking-wider text-ty-muted flex items-center gap-2">
@@ -5741,8 +5754,13 @@
           }
         });
 
+      let watchdogCycle = 0;
       deviceHealthTimer = setInterval(() => {
         evaluateDeviceHealthViews(true);
+        watchdogCycle++;
+        if (watchdogCycle % 4 === 0) {
+          fetch('/api/v1/devices/health-check').catch(() => {});
+        }
       }, 30000);
 
       // Respaldo incremental cada 15s por si el navegador suspendió el WebSocket en segundo plano
@@ -5811,13 +5829,18 @@
       else allTransactions.unshift(tx);
       allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
 
-      if (isLiveEvent && !wasCountableBefore && isCountableMoney(tx)) {
-        if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
-          flashPosGreenScreen(tx);
-        } else {
-          playChime();
+      if (isLiveEvent) {
+        if (isDaviplataBreB(tx)) {
+          flashPosYellowScreen(tx);
+          showToast(`[${getDeviceLabel(tx.device_id)}] ⚠️ DaviPlata Bre-B (Monto Oculto en push)`);
+        } else if (!wasCountableBefore && isCountableMoney(tx)) {
+          if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
+            flashPosGreenScreen(tx);
+          } else {
+            playChime();
+          }
+          showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
         }
-        showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
       }
 
       recomputeAllViews(tx.id);
@@ -5917,7 +5940,19 @@
       return new Date(tx.created_at || Date.now()).getTime();
     }
 
+    function isDaviplataBreB(tx) {
+      if (!tx) return false;
+      if (tx.payment_reference === 'DAVIPLATA-BREB') return true;
+      if (tx.sender_name === 'Cliente Bre-B (DaviPlata)') return true;
+      const failureReason = tx.failure_reason || tx.failureReason || '';
+      if (failureReason.includes('DAVIPLATA_LLAVES_UNSPECIFIED_AMOUNT') || failureReason.includes('Llaves omitió el monto')) return true;
+      const rawText = tx.raw_text || tx.rawText || '';
+      if (rawText.includes('Recibiste Plata de otra entidad usando Llaves') || rawText.includes('usando Llaves')) return true;
+      return false;
+    }
+
     function detectWallet(tx) {
+      if (isDaviplataBreB(tx)) return "DAVIPLATA";
       if (tx?.wallet === "BANCOLOMBIA") return "BANCOLOMBIA";
       if (tx?.wallet === "DAVIPLATA") return "DAVIPLATA";
       if (tx?.wallet === "NEQUI") return "NEQUI";
@@ -6166,6 +6201,9 @@
     }
 
     function getStatusBadgeHtml(tx) {
+      if (isDaviplataBreB(tx)) {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>🟡 DaviPlata Bre-B (Monto Oculto)</span>`;
+      }
       if (tx.status === "PROCESSED") {
         return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>✓ Confirmado</span>`;
       }
@@ -6194,9 +6232,12 @@
       const wallet = detectWallet(tx);
       const isNequi = wallet === "NEQUI";
       const isBancolombia = wallet === "BANCOLOMBIA";
+      const isBreB = isDaviplataBreB(tx);
       const countable = isCountableMoney(tx);
       const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
-      const amtFormatted = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
+      const amtFormatted = isBreB
+        ? "VALOR OCULTO"
+        : (tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--");
 
       // Wallet icon & badge
       const walletIconEl = document.getElementById("txDrawerWalletIcon");
@@ -6211,7 +6252,20 @@
 
       // Amounts and status
       const amtEl = document.getElementById("txDrawerAmount");
-      if (amtEl) amtEl.textContent = amtFormatted;
+      if (amtEl) {
+        amtEl.textContent = amtFormatted;
+        if (isBreB) {
+          amtEl.className = "text-2xl sm:text-3xl font-extrabold text-amber-400 tabular-nums";
+        } else {
+          amtEl.className = "text-3xl sm:text-4xl font-extrabold text-ty-emerald tabular-nums";
+        }
+      }
+
+      const breBAlertEl = document.getElementById("txDrawerDaviplataBreBAlert");
+      if (breBAlertEl) {
+        if (isBreB) breBAlertEl.classList.remove("hidden");
+        else breBAlertEl.classList.add("hidden");
+      }
 
       const statusEl = document.getElementById("txDrawerStatusBadge");
       if (statusEl) statusEl.innerHTML = getStatusBadgeHtml(tx);
@@ -6221,7 +6275,7 @@
 
       // Commercial info
       const senderEl = document.getElementById("txDrawerSender");
-      if (senderEl) senderEl.textContent = tx.sender_name || tx.raw_title || "Transferencia Recibida";
+      if (senderEl) senderEl.textContent = isBreB ? "Cliente Bre-B (DaviPlata)" : (tx.sender_name || tx.raw_title || "Transferencia Recibida");
 
       const walletEl = document.getElementById("txDrawerWallet");
       if (walletEl) {
@@ -6423,6 +6477,7 @@
         const wallet = detectWallet(tx);
         const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
+        const isBreB = isDaviplataBreB(tx);
         const avatarBg = isBancolombia
           ? "bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30"
           : isNequi
@@ -6430,7 +6485,9 @@
           : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
         const avatarLetter = isBancolombia ? "B" : isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
-        const amtText = tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--";
+        const amtText = isBreB
+          ? "VALOR OCULTO"
+          : (tx.amount ? `${countable ? "+ " : ""}$ ${Number(tx.amount).toLocaleString("es-CO")}` : "--");
         const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
         const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
@@ -6462,10 +6519,12 @@
               ${getStatusBadgeHtml(tx)}
             </td>
             <td class="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
-              <span class="text-base font-extrabold ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">
+              <span class="text-base font-extrabold ${isBreB ? "text-amber-400 text-xs sm:text-sm font-bold" : (countable ? "text-ty-emerald" : "text-ty-muted line-through")}">
                 ${amtText}
               </span>
-              <span class="text-[10px] text-ty-muted block font-mono">COP</span>
+              <span class="text-[10px] ${isBreB ? "text-amber-400/80 font-sans" : "text-ty-muted font-mono"} block">
+                ${isBreB ? "Ver app DaviPlata" : "COP"}
+              </span>
             </td>
             <td class="py-3.5 px-3 text-right whitespace-nowrap text-ty-muted group-hover:text-white transition-colors">
               <svg class="w-4 h-4 inline-block group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -6480,6 +6539,7 @@
         const wallet = detectWallet(tx);
         const isBancolombia = wallet === "BANCOLOMBIA";
         const isNequi = wallet === "NEQUI";
+        const isBreB = isDaviplataBreB(tx);
         const avatarBg = isBancolombia
           ? "bg-[#FDDA24]/15 text-[#D4A017] dark:text-[#FDDA24] border border-[#FDDA24]/30"
           : isNequi
@@ -6487,7 +6547,9 @@
           : "bg-[#ED1C24]/15 text-[#ED1C24] border border-[#ED1C24]/30";
         const avatarLetter = isBancolombia ? "B" : isNequi ? "N" : "D";
         const countable = isCountableMoney(tx);
-        const amtText = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--";
+        const amtText = isBreB
+          ? "VALOR OCULTO"
+          : (tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "--");
         const isCloud = tx.device_id?.startsWith("cloud_email_") || tx.wallet_package === "com.nequi.inbound.email" || tx.wallet_package === "com.bancolombia.inbound.email";
         const boxLabel = isCloud ? "✉️ Respaldo Gmail" : getDeviceLabel(tx.device_id);
         const anim = highlightId && tx.id === highlightId ? "animate-payment-in" : "";
@@ -6513,10 +6575,12 @@
               </div>
             </div>
             <div class="text-right shrink-0">
-              <div class="text-base font-extrabold tabular-nums ${countable ? "text-ty-emerald" : "text-ty-muted line-through"}">
+              <div class="text-base font-extrabold tabular-nums ${isBreB ? "text-amber-400 text-xs sm:text-sm font-bold" : (countable ? "text-ty-emerald" : "text-ty-muted line-through")}">
                 ${amtText}
               </div>
-              <span class="text-[10px] text-ty-muted font-mono block">COP</span>
+              <span class="text-[10px] ${isBreB ? "text-amber-400/80 font-sans" : "text-ty-muted font-mono"} block">
+                ${isBreB ? "Ver app DaviPlata" : "COP"}
+              </span>
             </div>
           </div>
         `;
@@ -7057,6 +7121,34 @@
       }
     });
 
+    function flashPosYellowScreen(tx) {
+      // 1. Destello amarillo preventivo de pantalla completa
+      const burst = document.createElement("div");
+      burst.className = "pos-screen-burst-flash";
+      burst.style.backgroundColor = "rgba(245, 158, 11, 0.35)";
+      document.body.appendChild(burst);
+      setTimeout(() => {
+        if (burst.parentNode) burst.parentNode.removeChild(burst);
+      }, 2300);
+
+      // 2. Iluminación ámbar en la tarjeta de mostrador
+      const hero = document.getElementById("posHeroCard");
+      if (hero) {
+        hero.classList.remove("pos-illuminated-active");
+        void hero.offsetWidth;
+        hero.classList.add("pos-illuminated-active");
+      }
+
+      // 3. Campana de aviso
+      playChime();
+
+      // 4. Anuncio en voz alta preventivo
+      speakPaymentAnnouncementText("¡Atención! Transferencia DaviPlata por Llaves Bre-B recibida. Por políticas del banco el valor está oculto. Valida el saldo en tu aplicación DaviPlata antes de entregar la mercancía.", 400);
+
+      // 5. Actualizar la vista con tarjeta amarilla y aviso de monto oculto
+      updatePosView(tx);
+    }
+
     function flashPosGreenScreen(tx) {
       // 1. Destello verde de pantalla completa instantáneo
       const burst = document.createElement("div");
@@ -7085,7 +7177,7 @@
     }
 
     function updatePosView(customPreviewTx = null) {
-      const validList = getScopedTransactions().filter(isCountableMoney);
+      const validList = getScopedTransactions().filter((t) => isCountableMoney(t) || isDaviplataBreB(t));
       const latest = customPreviewTx || validList[0] || null;
       const grid = document.getElementById("posRecentGrid");
       const heroAmount = document.getElementById("posHeroAmount");
@@ -7109,6 +7201,26 @@
         }
         if (tsBadge) tsBadge.textContent = "Mostrador en línea";
         if (latencyChip) latencyChip.textContent = "⚡ Mostrador en espera de pagos";
+      } else if (isDaviplataBreB(latest)) {
+        if (heroAmount) {
+          heroAmount.innerHTML = `<span class="text-2xl sm:text-4xl text-amber-300 font-bold">VALOR OCULTO</span> <span class="text-xs sm:text-sm text-amber-400/80 block mt-1 font-sans">(Revisa tu app DaviPlata)</span>`;
+          heroAmount.classList.remove("pos-amount-pop");
+          void heroAmount.offsetWidth;
+          heroAmount.classList.add("pos-amount-pop");
+        }
+        if (heroSender) heroSender.textContent = latest.sender_name || "Cliente Bre-B (DaviPlata)";
+        if (walletBadge) {
+          walletBadge.textContent = "🟡 DAVIPLATA • LLAVES (BRE-B)";
+          walletBadge.className = "px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase bg-amber-950/60 text-amber-300 border border-amber-500/40 shadow-sm";
+        }
+        if (alertStatus) alertStatus.textContent = "⚠️ ¡TRANSFERENCIA DAVIPLATA POR LLAVES (BRE-B)!";
+        if (statusBadge) {
+          statusBadge.className = "px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-wide bg-amber-500 text-black border border-amber-400 flex items-center gap-2 shadow-sm";
+        }
+        if (tsBadge) {
+          tsBadge.textContent = `${getDeviceLabel(latest.device_id)} • ${getColombiaDateTimeLabel(getTxTimestamp(latest))}`;
+        }
+        if (latencyChip) latencyChip.textContent = "⚡ Solicita comprobante o valida en DaviPlata";
       } else {
         const wallet = detectWallet(latest);
         const isBancolombia = wallet === "BANCOLOMBIA";
@@ -7149,14 +7261,23 @@
         grid.innerHTML = recent4.length === 0
           ? `<div class="col-span-4 text-center py-6 text-xs text-ty-muted">Sin transferencias registradas aún en este turno</div>`
           : recent4.map((tx) => {
-            const w = detectWallet(tx);
+            const isBreB = isDaviplataBreB(tx);
+            const w = isBreB ? "DAVIPLATA" : detectWallet(tx);
+            const badgeClass = isBreB
+              ? "bg-amber-950/60 text-amber-300 border border-amber-800/40"
+              : w === "NEQUI"
+              ? "bg-fuchsia-950/60 text-fuchsia-300 border border-fuchsia-800/40"
+              : "bg-rose-950/60 text-rose-300 border border-rose-800/40";
+            const amtDisplay = isBreB
+              ? `<span class="text-amber-400 text-xs sm:text-sm font-bold">VALOR OCULTO</span>`
+              : `$ ${Number(tx.amount).toLocaleString("es-CO")} <span class="text-[10px] font-normal text-ty-muted">COP</span>`;
             return `
               <div class="p-3.5 rounded-xl bg-ty-surface border border-ty-border flex flex-col justify-between hover:border-emerald-500/30 transition-all shadow-sm">
                 <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md ${w === "NEQUI" ? "bg-fuchsia-950/60 text-fuchsia-300 border border-fuchsia-800/40" : "bg-rose-950/60 text-rose-300 border border-rose-800/40"}">${w}</span>
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md ${badgeClass}">${isBreB ? "BRE-B (MONTO PRIVADO)" : w}</span>
                   <span class="text-[10px] text-ty-muted font-medium">${getDeviceLabel(tx.device_id)}</span>
                 </div>
-                <div class="text-base font-bold text-white tabular-nums tracking-tight">$ ${Number(tx.amount).toLocaleString("es-CO")} <span class="text-[10px] font-normal text-ty-muted">COP</span></div>
+                <div class="text-base font-bold text-white tabular-nums tracking-tight">${amtDisplay}</div>
                 <div class="text-xs text-ty-muted truncate mt-1">${escapeHtml(tx.sender_name || w)}</div>
               </div>
             `;
