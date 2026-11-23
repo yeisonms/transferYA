@@ -9623,6 +9623,18 @@
       }
     }
 
+    function setAdminFilter(filter) {
+      adminCurrentFilter = filter;
+      document.querySelectorAll(".admin-filter-btn").forEach((btn) => {
+        if (btn.getAttribute("data-filter") === filter) {
+          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono bg-ty-surface-high text-ty-amber font-bold border border-ty-amber/40";
+        } else {
+          btn.className = "admin-filter-btn px-2.5 py-1 rounded-lg text-xs font-mono text-ty-muted hover:text-white bg-ty-surface border border-ty-border";
+        }
+      });
+      renderAdminMerchantsList();
+    }
+
     async function loadAdminPendingInvoices() {
       const container = document.getElementById("adminPendingInvoicesList");
       const badge = document.getElementById("adminPendingCountBadge");
@@ -9736,33 +9748,35 @@
       return adminApprovePendingInvoice(ref, targetMerchantId, amount);
     }
 
-    async function loadAdminPendingInvoices() {
-      const container = document.getElementById("adminPendingInvoicesList");
-      const badge = document.getElementById("adminPendingCountBadge");
+    function renderAdminMerchantsList() {
+      const container = document.getElementById("adminMerchantsList");
       if (!container) return;
 
-      let remotePending = [];
-      if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from("billing_invoices")
-            .select("*")
-            .eq("status", "PENDING")
-            .order("created_at", { ascending: false });
-          if (!error && Array.isArray(data)) {
-            remotePending = data;
-          }
-        } catch (e) {
-          console.warn("Error consultando billing_invoices:", e);
+      const q = (document.getElementById("adminSearchInput")?.value || "").toLowerCase().trim();
+
+      const filtered = adminMerchants.filter((m) => {
+        if (adminCurrentFilter !== "ALL" && m.effectiveSubscriptionStatus !== adminCurrentFilter) {
+          return false;
         }
+        if (q) {
+          const matchName = m.name?.toLowerCase().includes(q);
+          const matchId = m.id?.toLowerCase().includes(q);
+          const matchPhone = m.billingPhone?.toLowerCase().includes(q);
+          if (!matchName && !matchId && !matchPhone) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-xs font-mono text-ty-muted">
+            No se encontraron comercios con los filtros actuales.
+          </div>
+        `;
+        return;
       }
 
-      // Escanear también órdenes pendientes almacenadas localmente
-      const localPending = [];
-      try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("ty_pending_orders_")) {
+      container.innerHTML = filtered.map((m) => {
         const badgeInfo = getAdminStatusBadge(m.effectiveSubscriptionStatus);
         const endsDateStr = m.subscriptionEndsAt ? new Date(m.subscriptionEndsAt).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "Sin fecha";
         const cleanPhone = m.billingPhone ? m.billingPhone.replace(/[^\d+]/g, "") : "";
