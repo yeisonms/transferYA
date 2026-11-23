@@ -2,6 +2,19 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "outputDirectory": "public",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.transferya.app"
+        }
+      ],
+      "destination": "https://transferya.app/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/api/v1/devices/:action", "destination": "/api/v1/devices/:action" },
     { "source": "/api/v1/merchants/:action", "destination": "/api/v1/merchants/:action" }

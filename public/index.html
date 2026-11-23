@@ -10,20 +10,20 @@
   <meta name="description"
     content="Verifica al instante transferencias de Nequi y DaviPlata en tu negocio. Notificaciones por WhatsApp a cajeros, pantalla mostrador con sonido de caja registradora y cierre de turno en 1 clic." />
   <meta name="keywords"
-    content="TransferYA, Nequi, DaviPlata, verificación de pagos, transferencias Colombia, comprobante Nequi, datáfono virtual, cierre de caja, cuadre de turno" />
-  <meta name="author" content="TransferYA • Mursat Solutions" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://www.transferya.app/" />
+    content="TransferYA, Nequi, DaviPlata, Bre-B, verificación de pagos, transferencias Colombia, comprobante Nequi, comprobantes falsos, datáfono virtual, notificaciones WhatsApp cajero, cierre de caja, cuadre de turno" />
+  <meta name="author" content="MurSat Solutions • TransferYA" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://transferya.app/" />
 
   <!-- Open Graph / Compartir en WhatsApp y Redes Sociales -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://www.transferya.app/" />
+  <meta property="og:url" content="https://transferya.app/" />
   <meta property="og:site_name" content="TransferYA" />
   <meta property="og:title" content="TransferYA — Verificación al Instante de Pagos Nequi y DaviPlata" />
   <meta property="og:description"
     content="Verifica al instante transferencias de Nequi y DaviPlata en tu negocio. Alertas por WhatsApp a cajeros, pantalla mostrador y cierre de turno en 1 clic." />
-  <meta property="og:image" content="https://www.transferya.app/images/og-share.jpg" />
-  <meta property="og:image:secure_url" content="https://www.transferya.app/images/og-share.jpg" />
+  <meta property="og:image" content="https://transferya.app/images/og-share.jpg" />
+  <meta property="og:image:secure_url" content="https://transferya.app/images/og-share.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -32,24 +32,123 @@
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://www.transferya.app/" />
-  <meta name="twitter:title" content="TransferYA — Verificación al Instante de Pagos" />
+  <meta name="twitter:url" content="https://transferya.app/" />
+  <meta name="twitter:title" content="TransferYA — Verificación al Instante de Pagos Nequi y DaviPlata" />
   <meta name="twitter:description"
     content="Verifica al instante transferencias de Nequi y DaviPlata en tu negocio sin pedir pantallazos." />
-  <meta name="twitter:image" content="https://www.transferya.app/images/og-share.jpg" />
+  <meta name="twitter:image" content="https://transferya.app/images/og-share.jpg" />
 
-  <!-- PWA Manifest & Favicons Oficiales -->
-  <link rel="manifest" href="/manifest.json?v=26" />
+  <!-- Favicons Oficiales Google-Compliant (Múltiplos de 48px requeridos por Google Search y Alta Resolución) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#060A13" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TransferYA" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=26" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=26" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=26" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png?v=26" />
-  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg?v=26" />
+
+  <!-- Datos Estructurados JSON-LD Schema.org para Google Search, Rich Snippets y AI Overview -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://transferya.app/#organization",
+        "name": "TransferYA",
+        "legalName": "MurSat Solutions",
+        "url": "https://transferya.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://transferya.app/icons/icon-512.png",
+          "width": "512",
+          "height": "512"
+        },
+        "description": "Plataforma tecnológica de verificación en tiempo real de pagos y transferencias Nequi, DaviPlata y Bre-B para puntos de venta y comercios en Colombia.",
+        "sameAs": [
+          "https://github.com/yeisonms/transferYA"
+        ]
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://transferya.app/#webapp",
+        "name": "TransferYA",
+        "url": "https://transferya.app",
+        "applicationCategory": "BusinessApplication, FinancialApplication",
+        "operatingSystem": "Android, Web, iOS",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "softwareVersion": "1.0.0",
+        "description": "Valida al instante transferencias bancarias de Nequi y DaviPlata en tu mostrador comercial. Notifica a tus cajeros por WhatsApp y emite anuncios de voz para evitar fraudes con comprobantes falsos.",
+        "publisher": {
+          "@id": "https://transferya.app/#organization"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "29900",
+          "priceCurrency": "COP",
+          "availability": "https://schema.org/InStock"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://transferya.app/#website",
+        "url": "https://transferya.app",
+        "name": "TransferYA",
+        "publisher": {
+          "@id": "https://transferya.app/#organization"
+        },
+        "inLanguage": "es-CO"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://transferya.app/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Cómo funciona TransferYA para verificar pagos de Nequi y DaviPlata?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TransferYA conecta de forma segura el teléfono del negocio con tus pantallas de mostrador y los WhatsApp de tus cajeros. Al recibir un pago real, el sistema canta en voz alta el monto recibido y notifica al cajero en menos de 1 segundo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cómo protege TransferYA contra las estafas de comprobantes o pantallazos falsos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "El sistema no depende de lo que el cliente muestre en su teléfono móvil. Valida la notificación push emitida directamente por la entidad financiera (Nequi, DaviPlata o Bre-B) o el correo bancario oficial, garantizando que el dinero ingresó a la cuenta antes de entregar los productos."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿TransferYA requiere comprar datáfonos o hardware costoso?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Funciona con cualquier celular secundario o de caja Android con conexión a internet Wi-Fi o datos móviles. No pagas comisiones por venta ni compras equipos propietarios."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Es compatible con transferencias por Llaves del sistema Bre-B?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí. TransferYA soporta pagos interbancarios en tiempo real a través de Llaves Bre-B, alertando inmediatamente al cajero en mostrador."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />

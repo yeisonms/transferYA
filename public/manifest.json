@@ -2,38 +2,50 @@
   "name": "TransferYA — Verificación al Instante",
   "short_name": "TransferYA",
   "description": "Verificación en tiempo real de pagos Nequi y DaviPlata para comercios en Colombia.",
-  "start_url": "/?v=26",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#060A13",
   "theme_color": "#060A13",
   "orientation": "any",
   "icons": [
     {
-      "src": "/icons/icon-maskable-512.png?v=26",
+      "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-maskable-192.png?v=26",
+      "src": "/icons/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png?v=26",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.png?v=26",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon.svg?v=26",
+      "src": "/icons/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/favicon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

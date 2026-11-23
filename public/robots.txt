@@ -1,3 +1,16 @@
 User-agent: *
 Allow: /
 
+# Sitemap oficial para indexación en Google, Bing y buscadores
+Sitemap: https://transferya.app/sitemap.xml
+
+# Permitir a Googlebot rastreo completo
+User-agent: Googlebot
+Allow: /
+
+# Permitir a Googlebot-Image rastreo sin restricciones de favicon y assets
+User-agent: Googlebot-Image
+Allow: /favicon.ico
+Allow: /apple-touch-icon.png
+Allow: /icons/
+Allow: /images/
