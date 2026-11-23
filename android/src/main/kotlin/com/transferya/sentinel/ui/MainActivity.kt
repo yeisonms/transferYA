@@ -215,6 +215,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
         updateUI()
+
+        // Si el listener del SO aún no ha completado el rebind asíncrono, programar reintentos automáticos
+        if (!SentinelNotificationListener.isConnected) {
+            window.decorView.postDelayed({
+                if (!SentinelNotificationListener.isConnected) {
+                    SentinelNotificationListener.forceRebind(this@MainActivity)
+                }
+                updateUI()
+            }, 1200)
+            window.decorView.postDelayed({
+                if (SentinelNotificationListener.isConnected) {
+                    SentinelNotificationListener.scanActiveNotifications()
+                }
+                updateUI()
+            }, 2500)
+        }
     }
 
     private fun dpToPx(dp: Float): Int {
