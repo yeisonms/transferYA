@@ -1536,6 +1536,17 @@
             <span id="audioBtnText">Sonido activo</span>
           </button>
 
+          <!-- Toggle Notificaciones Push en Segundo Plano (Fase 2) -->
+          <button id="pushToggleBtn" onclick="toggleWebPush()"
+            class="px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 shadow-sm"
+            title="Activar o pausar notificaciones push flotantes (segundo plano y pantalla bloqueada)">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="pushBtnText">Push activo</span>
+          </button>
+
           <button onclick="refreshMerchantData()"
             class="px-2.5 py-1.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-muted text-xs text-ty-muted hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
             title="Recargar datos">
@@ -2398,6 +2409,12 @@
                 title="Activar o desactivar anuncio en voz alta de pagos">
                 <span id="posVoiceIcon">🗣️</span>
                 <span id="posVoiceBtnText">Voz: Activada</span>
+              </button>
+              <button id="posPushToggleBtn" onclick="toggleWebPush()"
+                class="px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm"
+                title="Activar o pausar notificaciones push flotantes del sistema">
+                <span id="posPushIcon">📲</span>
+                <span id="posPushBtnText">Push: Activo</span>
               </button>
               <button onclick="triggerVisualSimulation()"
                 class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-semibold text-ty-midnight transition-all flex items-center gap-1.5 shadow-sm"
@@ -5047,6 +5064,7 @@
       updatePosVoiceButtonUI();
       bootstrapAuth();
       registerServiceWorker();
+      initWebPush();
       setupPwaPrompt();
     });
 
@@ -5174,6 +5192,7 @@
 
       await refreshMerchantData();
       setupRealtimeSubscription();
+      syncPushSubscription();
     }
 
     function renderCommercialSubscriptionState() {
@@ -5986,6 +6005,7 @@
             playChime();
           }
           showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
+          triggerLocalSystemNotification(tx);
         }
       }
 
@@ -7456,6 +7476,7 @@
       };
       flashPosGreenScreen(sample);
       showToast("¡Cha-ching! 🔔 Cobro de $ 25.000 verificado en vivo");
+      triggerLocalSystemNotification(sample);
     }
 
     // =========================================================================
@@ -10190,6 +10211,234 @@
         // Fallback didáctico para navegadores de escritorio (Chrome, Brave, Edge) o móviles
         showToast("Para instalar: haz clic en el icono 💻/📱 en la barra de direcciones de tu navegador o en el menú ⋮ > 'Instalar TransferYA'.");
       }
+    }
+
+    // =========================================================================
+    // 8. NOTIFICACIONES WEB PUSH EN SEGUNDO PLANO Y PANTALLA BLOQUEADA (FASE 2)
+    // =========================================================================
+    let isPushEnabled = localStorage.getItem("ty_push_enabled") !== "false";
+    let pushSubscription = null;
+
+    async function initWebPush() {
+      updatePushButtonUI();
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        const btn = document.getElementById("pushToggleBtn");
+        if (btn) btn.classList.add("hidden");
+        const posBtn = document.getElementById("posPushToggleBtn");
+        if (posBtn) posBtn.classList.add("hidden");
+        return;
+      }
+
+      if (isPushEnabled && Notification.permission === "granted") {
+        syncPushSubscription();
+      }
+    }
+
+    function updatePushButtonUI() {
+      const btn = document.getElementById("pushToggleBtn");
+      const text = document.getElementById("pushBtnText");
+      const posBtn = document.getElementById("posPushToggleBtn");
+      const posText = document.getElementById("posPushBtnText");
+      const posIcon = document.getElementById("posPushIcon");
+
+      if (!("Notification" in window)) {
+        if (btn) btn.classList.add("hidden");
+        if (posBtn) posBtn.classList.add("hidden");
+        return;
+      }
+
+      if (!isPushEnabled) {
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border text-xs font-medium flex items-center gap-1.5 transition-all text-ty-muted";
+          text.textContent = "Push pausado";
+          btn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border text-xs font-semibold text-ty-muted transition-all flex items-center gap-1.5 shadow-sm";
+          if (posText) posText.textContent = "Push: Pausado";
+          if (posIcon) posIcon.textContent = "🔕";
+          posBtn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
+        }
+      } else if (Notification.permission === "granted") {
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-sky-500/30 hover:border-sky-500/60 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 shadow-sm";
+          text.textContent = "Push activo";
+          btn.title = "Notificaciones push activas. Recibirás alertas con pantalla apagada o en otras apps. Toca para pausar.";
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm";
+          if (posText) posText.textContent = "Push: Activo";
+          if (posIcon) posIcon.textContent = "📲";
+          posBtn.title = "Notificaciones push activas. Recibirás alertas con pantalla apagada o en otras apps. Toca para pausar.";
+        }
+      } else if (Notification.permission === "denied") {
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-rose-400";
+          text.textContent = "Push bloqueado";
+          btn.title = "Notificaciones bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs font-semibold text-rose-400 transition-all flex items-center gap-1.5 shadow-sm";
+          if (posText) posText.textContent = "Push: Bloqueado";
+          if (posIcon) posIcon.textContent = "🚫";
+          posBtn.title = "Notificaciones bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
+        }
+      } else {
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 animate-pulse";
+          text.textContent = "Activar Push";
+          btn.title = "Toca para permitir alertas flotantes en pantalla bloqueada.";
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm animate-pulse";
+          if (posText) posText.textContent = "Activar Push";
+          if (posIcon) posIcon.textContent = "🔔";
+          posBtn.title = "Toca para permitir alertas flotantes en pantalla bloqueada.";
+        }
+      }
+    }
+
+    async function toggleWebPush() {
+      if (!("Notification" in window)) {
+        showToast("Tu navegador no soporta notificaciones de sistema.", true);
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        showToast("Las notificaciones están bloqueadas en tu navegador. Toca el candado en la barra de direcciones para permitirlas.", true);
+        updatePushButtonUI();
+        return;
+      }
+
+      if (isPushEnabled && Notification.permission === "granted") {
+        isPushEnabled = false;
+        localStorage.setItem("ty_push_enabled", "false");
+        updatePushButtonUI();
+        showToast("Notificaciones push pausadas en este dispositivo.");
+        try {
+          if (pushSubscription) {
+            await fetch("/api/v1/push/subscribe", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ endpoint: pushSubscription.endpoint }),
+            });
+          }
+        } catch { }
+        return;
+      }
+
+      let perm = Notification.permission;
+      if (perm !== "granted") {
+        perm = await Notification.requestPermission();
+      }
+
+      if (perm === "granted") {
+        isPushEnabled = true;
+        localStorage.setItem("ty_push_enabled", "true");
+        updatePushButtonUI();
+        showToast("🔔 ¡Notificaciones Push activadas!");
+        await syncPushSubscription();
+
+        try {
+          if ("serviceWorker" in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            reg.showNotification("⚡ TransferYA · Alertas Push Activas", {
+              body: "¡Listo! Recibirás avisos flotantes cuando recibas pagos, incluso con el celular bloqueado o en otra app.",
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon.svg",
+              tag: "ty-welcome-alert",
+              vibrate: [200, 100, 200],
+            });
+          }
+        } catch { }
+      } else {
+        isPushEnabled = false;
+        localStorage.setItem("ty_push_enabled", "false");
+        updatePushButtonUI();
+        showToast("Permiso de notificaciones no concedido.", true);
+      }
+    }
+
+    async function syncPushSubscription() {
+      try {
+        if (!currentMerchant || !currentMerchant.id) return;
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+
+        if (!sub) {
+          const res = await fetch("/api/v1/push/subscribe");
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data?.publicKey) return;
+
+          const appServerKey = urlBase64ToUint8Array(data.publicKey);
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: appServerKey,
+          });
+        }
+
+        pushSubscription = sub;
+
+        await fetch("/api/v1/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            merchantId: currentMerchant.id,
+            subscription: sub,
+            userAgent: navigator.userAgent,
+          }),
+        });
+      } catch (err) {
+        console.warn("Advertencia sincronizando suscripción push:", err);
+      }
+    }
+
+    function triggerLocalSystemNotification(tx) {
+      if (!isPushEnabled || !("Notification" in window) || Notification.permission !== "granted") return;
+      const label = (typeof getDeviceLabel === "function" && tx.device_id) ? getDeviceLabel(tx.device_id) : "Caja";
+      const wallet = tx.sender_name || (typeof detectWallet === "function" ? detectWallet(tx) : "Transferencia");
+      const amountStr = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "Pago recibido";
+      const title = `⚡ ¡Pago Verificado en ${label}! · TransferYA`;
+      const body = `${amountStr} (${wallet})\n¡Transferencia confirmada al instante!`;
+
+      try {
+        if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(title, {
+              body,
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon.svg",
+              tag: `tx-${tx.id || Date.now()}`,
+              renotify: true,
+              requireInteraction: true,
+              vibrate: [250, 100, 250, 100, 250],
+              data: { url: "/" },
+            });
+          }).catch(() => { });
+        } else {
+          new Notification(title, {
+            body,
+            icon: "/icons/icon-192.png",
+            tag: `tx-${tx.id || Date.now()}`,
+          });
+        }
+      } catch (e) {
+        console.warn("No se pudo proyectar notificación local:", e);
+      }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
     }
 
     function escapeHtml(str) {

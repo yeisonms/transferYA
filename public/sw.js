@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v42';
+const CACHE_NAME = 'transferya-cache-v43';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -110,6 +110,65 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
       );
+    })
+  );
+});
+
+// ==========================================
+// Web Push Notifications (Fase 2)
+// Despierta el dispositivo en segundo plano incluso con pantalla apagada
+// ==========================================
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch {
+      data = { title: '⚡ ¡Pago Verificado! · TransferYA', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || '⚡ ¡Pago Verificado! · TransferYA';
+  const options = {
+    body: data.body || 'Recibiste una nueva transferencia verificada.',
+    icon: data.icon || '/icons/icon-192.png',
+    badge: data.badge || '/icons/icon.svg',
+    image: data.image || undefined,
+    tag: data.tag || 'transferya-payment',
+    renotify: true,
+    requireInteraction: true,
+    vibrate: [250, 100, 250, 100, 250],
+    data: {
+      url: data.url || '/',
+      timestamp: data.timestamp || Date.now(),
+    },
+    actions: [
+      { action: 'open', title: '👁️ Ver en Pantalla Mostrador' }
+    ]
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Si la ventana de TransferYA ya está abierta, traerla al frente
+      for (const client of windowClients) {
+        if ('focus' in client) {
+          if (client.url.includes(self.location.origin)) {
+            return client.focus();
+          }
+        }
+      }
+      // Si está cerrada, abrir una nueva ventana
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });

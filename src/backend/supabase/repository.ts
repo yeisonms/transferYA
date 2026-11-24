@@ -1415,4 +1415,77 @@ export class SupabaseRepository
       extraCashiers: newExtraCashiers,
     };
   }
+
+  // ==========================================
+  // WEB PUSH SUBSCRIPTIONS (Fase 2)
+  // ==========================================
+
+  async saveSubscription(subscription: import('../push/types.js').WebPushSubscription): Promise<void> {
+    try {
+      const res = await fetch(`${this.baseUrl}/rest/v1/web_push_subscriptions`, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          Prefer: 'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify({
+          merchant_id: subscription.merchantId,
+          endpoint: subscription.endpoint,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+          user_agent: subscription.userAgent || null,
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.warn('Advertencia guardando web_push_subscription:', err);
+      }
+    } catch (e) {
+      console.warn('Fallo de red en saveSubscription:', e);
+    }
+  }
+
+  async deleteSubscription(endpoint: string): Promise<void> {
+    try {
+      await fetch(
+        `${this.baseUrl}/rest/v1/web_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`,
+        {
+          method: 'DELETE',
+          headers: this.headers,
+        },
+      );
+    } catch (e) {
+      console.warn('Fallo de red en deleteSubscription:', e);
+    }
+  }
+
+  async getSubscriptionsByMerchantId(
+    merchantId: string,
+  ): Promise<import('../push/types.js').WebPushSubscription[]> {
+    try {
+      const res = await fetch(
+        `${this.baseUrl}/rest/v1/web_push_subscriptions?merchant_id=eq.${encodeURIComponent(
+          merchantId,
+        )}&select=id,merchant_id,endpoint,p256dh,auth,user_agent,created_at`,
+        { headers: this.headers },
+      );
+      if (!res.ok) return [];
+      const rows = (await res.json()) as any[];
+      if (!Array.isArray(rows)) return [];
+      return rows.map((r) => ({
+        id: r.id,
+        merchantId: r.merchant_id,
+        endpoint: r.endpoint,
+        keys: {
+          p256dh: r.p256dh,
+          auth: r.auth,
+        },
+        userAgent: r.user_agent,
+        createdAt: r.created_at ? new Date(r.created_at).getTime() : undefined,
+      }));
+    } catch {
+      return [];
+    }
+  }
 }

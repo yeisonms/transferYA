@@ -5,6 +5,7 @@ import { MerchantRoutingService } from '../../../src/domain/routing/service.js';
 import { BillingReconciliationService } from '../../../src/backend/billing/reconciliation.js';
 import { getSupabaseRepository } from '../../../src/backend/supabase/client.js';
 import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
+import { WebPushService } from '../../../src/backend/push/service.js';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -68,6 +69,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             routingService,
             whatsappClient,
             billingReconciliationService,
+            webPushService: new WebPushService(repository),
           });
 
           const pipelineResult = await pipeline.processCapturedNotification(notificationId);

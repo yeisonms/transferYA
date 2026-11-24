@@ -1187,4 +1187,51 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
       expect(mockUsageRepo.recordQuotaWarningSent).toHaveBeenCalledWith(merchant.id, now);
     });
   });
+
+  describe('Despacho de Web Push en Segundo Plano (Fase 2)', () => {
+    it('debe disparar broadcastToMerchant cuando una notificación es procesada exitosamente', async () => {
+      vi.mocked(mockWhatsappClient.sendPaymentAlert).mockResolvedValue({
+        success: true,
+        messageId: 'wamid.web_push_123',
+      });
+
+      const mockPushService = {
+        broadcastToMerchant: vi.fn().mockResolvedValue({ total: 1, sent: 1, failed: 0 }),
+      } as any;
+
+      const pushPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        webPushService: mockPushService,
+        nowProvider: () => now,
+      });
+
+      const notification: StoredNotificationRecord & { id: string } = {
+        id: 'notif_web_push_test',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: '¡Plata recibida! Carlos te envió $45.000 a tu Nequi.',
+        capturedAt: now - 500,
+        dispatchedAt: now - 200,
+        receivedAt: now,
+        latencyMs: 500,
+        isStale: false,
+        status: 'RECEIVED',
+      };
+      notificationRepo.seed(notification);
+
+      const result = await pushPipeline.processCapturedNotification('notif_web_push_test');
+      expect(result.status).toBe('PROCESSED');
+
+      expect(mockPushService.broadcastToMerchant).toHaveBeenCalledTimes(1);
+      const [calledMerchantId, payload] = mockPushService.broadcastToMerchant.mock.calls[0];
+      expect(calledMerchantId).toBe(merchant.id);
+      expect(payload.title).toContain('¡Pago Verificado');
+      expect(payload.body).toContain('45.000');
+      expect(payload.body).toContain('Carlos');
+    });
+  });
 });

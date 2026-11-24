@@ -6,6 +6,7 @@ import { MerchantRoutingService } from '../../domain/routing/service.js';
 import { WhatsAppCloudApiClient } from '../../whatsapp/client.js';
 import { BillingReconciliationService } from '../billing/reconciliation.js';
 import { PaymentProcessingPipeline } from '../pipeline/orchestrator.js';
+import { WebPushService } from '../push/service.js';
 import type { StoredNotificationRecord } from './types.js';
 
 export interface InboundHandlerOptions {
@@ -361,6 +362,7 @@ export async function handleInboundEmail(
         whatsappClient,
         billingReconciliationService,
         usageRepository: repository,
+        webPushService: new WebPushService(repository),
         nowProvider: options.nowProvider,
       });
 

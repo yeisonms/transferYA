@@ -4,6 +4,7 @@ import { MerchantRoutingService } from '../../domain/routing/service.js';
 import { WhatsAppCloudApiClient } from '../../whatsapp/client.js';
 import { BillingReconciliationService } from '../billing/reconciliation.js';
 import { PaymentProcessingPipeline } from '../pipeline/orchestrator.js';
+import { WebPushService } from '../push/service.js';
 import { getSupabaseRepository } from '../supabase/client.js';
 import type { StoredNotificationRecord } from './types.js';
 
@@ -337,6 +338,7 @@ export async function handleIosShortcutWebhook(
       whatsappClient,
       billingReconciliationService,
       usageRepository: repository,
+      webPushService: new WebPushService(repository),
       nowProvider: options.nowProvider,
     });
 

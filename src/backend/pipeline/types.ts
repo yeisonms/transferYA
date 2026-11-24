@@ -10,6 +10,7 @@ import type { MerchantRoutingService } from '../../domain/routing/service.js';
 import type { IWhatsAppCloudApiClient } from '../../whatsapp/types.js';
 import type { StoredNotificationRecord } from '../webhook/types.js';
 import type { BillingReconciliationService } from '../billing/reconciliation.js';
+import type { WebPushService } from '../push/service.js';
 
 export type PipelineStatus =
   | 'PROCESSED'
@@ -151,5 +152,6 @@ export interface PaymentPipelineDependencies {
   billingNoticeCooldownMs?: number;
   renewalPriceCop?: number;
   trialNurtureService?: any;
+  webPushService?: WebPushService;
 }
 

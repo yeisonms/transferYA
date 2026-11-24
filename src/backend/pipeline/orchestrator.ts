@@ -399,6 +399,14 @@ export class PaymentProcessingPipeline {
             },
           );
 
+          // Despacho Web Push en segundo plano (Fase 2)
+          this.dispatchWebPush(
+            reconResult.matchedMerchant.id,
+            reconResult.matchedMerchant.name,
+            receipt,
+            notificationId,
+          ).catch(() => {});
+
           return {
             status: 'PROCESSED',
             notificationId,
@@ -520,6 +528,14 @@ export class PaymentProcessingPipeline {
             });
         }
 
+        // Despacho Web Push en segundo plano (Fase 2)
+        this.dispatchWebPush(
+          routeResult.merchant.id,
+          routeResult.merchant.name,
+          receipt,
+          notificationId,
+        ).catch(() => {});
+
         return {
           status: 'PROCESSED',
           notificationId,
@@ -625,6 +641,14 @@ export class PaymentProcessingPipeline {
             });
         }
 
+        // Despacho Web Push en segundo plano (Fase 2)
+        this.dispatchWebPush(
+          routeResult.merchant.id,
+          routeResult.merchant.name,
+          receipt,
+          notificationId,
+        ).catch(() => {});
+
         return {
           status: 'PROCESSED',
           notificationId,
@@ -662,6 +686,34 @@ export class PaymentProcessingPipeline {
       throw err;
     } finally {
       releaseLock();
+    }
+  }
+
+  private async dispatchWebPush(
+    merchantId: string,
+    merchantName: string,
+    receipt: ParsedPaymentReceipt,
+    notificationId: string,
+  ): Promise<void> {
+    if (!this.deps.webPushService) return;
+    try {
+      const formattedAmount = `$ ${Number(receipt.amount).toLocaleString('es-CO')} COP`;
+      const senderInfo = receipt.senderName ? ` de ${receipt.senderName}` : '';
+      await this.deps.webPushService.broadcastToMerchant(merchantId, {
+        title: `⚡ ¡Pago Verificado en ${merchantName}!`,
+        body: `${receipt.wallet} · Recibiste ${formattedAmount}${senderInfo}.`,
+        tag: `tx-${notificationId}`,
+        data: {
+          notificationId,
+          amount: receipt.amount,
+          wallet: receipt.wallet,
+          senderName: receipt.senderName,
+          reference: receipt.reference,
+          merchantName,
+        },
+      });
+    } catch (err) {
+      console.warn('Advertencia despachando Web Push en pipeline:', err);
     }
   }
 }
