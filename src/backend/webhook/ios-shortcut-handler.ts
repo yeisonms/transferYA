@@ -158,6 +158,17 @@ export async function handleIosShortcutWebhook(
       body.body ||
       (typeof body === 'string' ? body : '');
 
+    // Si iOS envió el objeto Mensaje estructurado dentro de body.text
+    if (typeof rawText === 'object' && rawText !== null) {
+      rawText =
+        rawText.content ||
+        rawText.body ||
+        rawText.text ||
+        rawText.message ||
+        rawText.value ||
+        '';
+    }
+
     // Fallback de tolerancia para Atajos de iOS:
     // Si el usuario colocó la variable del mensaje por error en la columna "Clave" en vez del campo "Valor",
     // el JSON enviado es { "<texto del sms>": "" }

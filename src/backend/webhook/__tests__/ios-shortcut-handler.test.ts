@@ -306,6 +306,31 @@ describe('Webhook de Atajos de iOS para iPhone (src/backend/webhook/ios-shortcut
       expect(payload.payment.senderName).toBe('Pedro Perez');
     });
 
+    it('debe tolerar si iOS envía text como objeto estructurado ({ text: { content: "..." } })', async () => {
+      const smsText =
+        'Bancolombia: recibiste una transferencia por $90.000 de ANA SILVA en tu cuenta *5871.';
+
+      const { req, res } = createMockReqRes(
+        'POST',
+        { text: { content: smsText, sender: '85566' } },
+        {},
+        `/api/v1/webhooks/ios-shortcut?token=${testMerchant.id}`,
+      );
+
+      await handleIosShortcutWebhook(req, res, {
+        repository,
+        whatsappClient: mockWhatsappClient,
+        nowProvider: () => now,
+      });
+
+      expect(res.statusCode).toBe(200);
+      const payload = JSON.parse(res.end.mock.calls[0][0]);
+      expect(payload.success).toBe(true);
+      expect(payload.status).toBe('PROCESSED');
+      expect(payload.payment.amount).toBe(90000);
+      expect(payload.payment.senderName).toBe('Ana Silva');
+    });
+
     it('debe soportar token en Authorization Bearer', async () => {
       const smsText =
         '¡Plata recibida! Carlos Ruiz te envió $20.000 a tu Nequi.';
