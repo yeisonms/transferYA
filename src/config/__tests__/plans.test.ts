@@ -3,6 +3,7 @@ import {
   calculateAlertConsumptionPercentage,
   calculateEffectiveMonthlyQuota,
   calculateMaxAllowedCashiers,
+  calculateMaxAllowedDevices,
   evaluateTrafficLightStatus,
   getAddonById,
   getPlanById,
@@ -35,8 +36,10 @@ describe('src/config/plans.ts — Especificación Comercial y Fuente de Verdad',
       expect(plan?.priceMonthlyCop).toBe(29900);
       expect(plan?.limits.maxWhatsappCashiers).toBe(1);
       expect(plan?.limits.monthlyAlertsCap).toBe(1500);
-      expect(plan?.limits.cloudEmailFallback).toBe(false);
-      expect(plan?.limits.webPosLiveScreen).toBe(false);
+      expect(plan?.limits.cloudEmailFallback).toBe(true);
+      expect(plan?.limits.webPosLiveScreen).toBe(true);
+      expect(plan?.limits.iosShortcutWebhook).toBe(true);
+      expect(plan?.limits.branchRouting).toBe(false);
     });
 
     it('Plan Negocio debe ser el plan ancla resaltado con Respaldo Cloud y 3.500 alertas', () => {
@@ -128,6 +131,13 @@ describe('src/config/plans.ts — Especificación Comercial y Fuente de Verdad',
         { addonId: 'extra_alerts_1000', quantity: 5 }, // no añade cajeros
       ]);
       expect(proWithExtra).toBe(6);
+    });
+
+    it('debe calcular cajas físicas permitidas según el plan', () => {
+      expect(calculateMaxAllowedDevices('emprendedor')).toBe(1);
+      expect(calculateMaxAllowedDevices('negocio')).toBe(1);
+      expect(calculateMaxAllowedDevices('pro')).toBe(3);
+      expect(calculateMaxAllowedDevices(undefined)).toBe(1);
     });
 
     it('debe usar el plan base por defecto ante un ID inexistente', () => {

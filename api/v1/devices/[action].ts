@@ -5,6 +5,7 @@ import { SentinelWatchdogService } from '../../../src/backend/heartbeat/watchdog
 import { TrialNurtureService } from '../../../src/backend/billing/trial-nurture.js';
 import { WhatsAppCloudApiClient } from '../../../src/whatsapp/client.js';
 import { requireMerchantOwner } from '../../../src/backend/auth/supabase-auth.js';
+import { calculateMaxAllowedDevices } from '../../../src/config/plans.js';
 import {
   createUserScopedRepository,
   getSupabaseEnvConfig,
@@ -150,6 +151,32 @@ async function handleEnrollmentTokens(req: IncomingMessage, res: ServerResponse)
     }
 
     const repository = getSupabaseRepository();
+
+    // Validar límite de cajas físicas si se está intentando enrolar un dispositivo NUEVO
+    const existingDevices = await repository.getMerchantDevices(merchantId);
+    const isExistingDevice = existingDevices.some((d) => d.id === deviceId);
+
+    if (!isExistingDevice) {
+      const activePhysicalDevices = existingDevices.filter(
+        (d) => !d.id.startsWith('cloud_email_') && d.status !== 'REVOKED',
+      );
+      const merchant = await repository.getMerchantWithOwner(merchantId);
+      const planId = merchant?.planId || 'emprendedor';
+      const maxAllowed = calculateMaxAllowedDevices(planId);
+
+      if (activePhysicalDevices.length >= maxAllowed) {
+        res.statusCode = 403;
+        res.end(
+          JSON.stringify({
+            success: false,
+            error: 'DEVICE_LIMIT_REACHED',
+            message: `Has alcanzado el límite de ${maxAllowed} caja(s) física(s) permitidas en tu plan actual. Actualiza al Plan Pro Multi-Caja para vincular cajas adicionales simultáneas.`,
+          }),
+        );
+        return;
+      }
+    }
+
     const enrollmentHandler = new DeviceEnrollmentHandler({
       enrollmentRepository: repository,
     });

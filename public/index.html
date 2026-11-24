@@ -3274,6 +3274,53 @@
     </div>
   </div>
 
+  <!-- MODAL: LÍMITE DE CAJAS ALCANZADO (UPGRADE A PLAN PRO MULTI-CAJA) -->
+  <div id="deviceLimitModal"
+    class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      class="bg-ty-surface-low border border-amber-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+      <button onclick="closeDeviceLimitModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1.5 rounded-lg bg-ty-surface hover:bg-ty-surface-high transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Límite de Cajas de tu Plan</span>
+          <h3 class="text-lg font-bold text-white tracking-tight" id="deviceLimitModalTitle">Límite de 1 Caja Alcanzado</h3>
+        </div>
+      </div>
+
+      <div class="bg-ty-surface border border-ty-border/70 rounded-xl p-4 text-xs text-ty-muted space-y-2.5">
+        <p class="text-slate-200" id="deviceLimitModalDesc">
+          Tu plan actual permite <strong>1 caja física activa</strong>. Para conectar una <strong>2.ª o 3.ª caja</strong> simultánea en tu mostrador o sucursales y activar el <strong>Enrutamiento Multi-Sede</strong>, actualiza al <strong>Plan Pro Multi-Caja</strong>.
+        </p>
+        <div class="border-t border-ty-border/60 pt-2 flex items-center justify-between text-[11px]">
+          <span class="text-ty-muted">¿Cambiaste de celular?</span>
+          <span class="text-emerald-400 font-semibold cursor-pointer hover:underline" onclick="closeDeviceLimitModal();">Usa "Ver QR" en tu Caja 1 actual</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-1">
+        <button onclick="closeDeviceLimitModal()"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-ty-surface border border-ty-border text-xs font-medium text-ty-muted hover:text-white transition-all text-center">
+          Entendido
+        </button>
+        <button onclick="closeDeviceLimitModal(); openPaySubscriptionModal('plan_pro');"
+          class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs hover:brightness-110 transition-all shadow-sm text-center">
+          Ver Plan Pro Multi-Caja ($89.900/mes)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PAGAR SUSCRIPCIÓN O ADD-ON (DOGFOODING MURSAT - FASE 5) -->
   <div id="paySubscriptionModal"
     class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
@@ -7725,8 +7772,23 @@
         `;
       }).join("");
 
-      const phoneCount = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_")).length;
-      const addSlot = `
+      const physicalDevices = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_") && d.status !== "REVOKED");
+      const phoneCount = physicalDevices.length;
+      const maxAllowed = getMaxAllowedDevicesForMerchant();
+      const isLimitReached = phoneCount >= maxAllowed;
+
+      const addSlot = isLimitReached
+        ? `
+        <div onclick="showDeviceLimitModal(${maxAllowed})" class="border-2 border-dashed border-amber-500/30 hover:border-amber-500/60 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[210px] bg-amber-500/5 hover:bg-amber-500/10">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider mb-1.5">Límite de Cajas (${phoneCount}/${maxAllowed})</span>
+          <h3 class="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">¿Conectar Caja #${phoneCount + 1}?</h3>
+          <p class="text-xs text-ty-muted mt-1 max-w-xs">Tu plan actual incluye <strong>${maxAllowed} caja</strong>. Actualiza a <strong>Plan Pro Multi-Caja</strong> para habilitar más cajas o sedes simultáneas.</p>
+        </div>
+      `
+        : `
         <div onclick="openPairingModal()" class="border-2 border-dashed border-ty-border hover:border-emerald-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all min-h-[210px] bg-ty-surface-low/30 hover:bg-ty-surface-low">
           <div class="w-12 h-12 rounded-2xl bg-ty-surface group-hover:bg-emerald-500/10 text-ty-muted group-hover:text-emerald-400 flex items-center justify-center transition-colors mb-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -7839,7 +7901,39 @@
       });
     }
 
+    function getMaxAllowedDevicesForMerchant() {
+      const planId = currentMerchant?.plan_id || "emprendedor";
+      if (planId === "pro") return 3;
+      return 1;
+    }
+
+    function showDeviceLimitModal(maxAllowed) {
+      const planName = currentMerchant?.plan_id === "pro" ? "Pro Multi-Caja" : (currentMerchant?.plan_id === "negocio" ? "Negocio" : "Emprendedor");
+      const title = document.getElementById("deviceLimitModalTitle");
+      const desc = document.getElementById("deviceLimitModalDesc");
+      if (title) title.textContent = `Límite de ${maxAllowed} Caja(s) Alcanzado`;
+      if (desc) {
+        desc.innerHTML = `Tu <strong>Plan ${planName}</strong> permite <strong>${maxAllowed} caja física activa</strong>.<br><br>` +
+          `Para conectar una <strong>2.ª o 3.ª caja</strong> simultánea en tu mostrador o sucursales y activar el <strong>Enrutamiento Multi-Sede</strong>, actualiza al <strong>Plan Pro Multi-Caja ($89.900 COP/mes)</strong>.`;
+      }
+      document.getElementById("deviceLimitModal").classList.remove("hidden");
+    }
+
+    function closeDeviceLimitModal() {
+      document.getElementById("deviceLimitModal").classList.add("hidden");
+    }
+
     function openPairingModal(presetDeviceId = null, presetLabel = null) {
+      // Si no es re-vinculación de una caja existente, validar cupo de cajas físicas del plan
+      if (!presetDeviceId) {
+        const physicalDevices = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_") && d.status !== "REVOKED");
+        const maxAllowed = getMaxAllowedDevicesForMerchant();
+        if (physicalDevices.length >= maxAllowed) {
+          showDeviceLimitModal(maxAllowed);
+          return;
+        }
+      }
+
       const nextNum = merchantDevices.length + 1;
       const defaultId = presetDeviceId || `dev_${currentMerchant.id.slice(0, 6)}_caja_${nextNum}`;
       const defaultLabel = presetLabel || `Caja ${nextNum}`;
@@ -7905,8 +7999,14 @@
         container.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
         startCountdown(300);
       } catch (err) {
-        container.innerHTML = `<span class="text-xs font-mono text-red-600 text-center px-3">${escapeHtml(err.message)}</span>`;
-        showToast("Error generando QR: " + err.message, true);
+        container.innerHTML = `<span class="text-xs font-mono text-red-400 text-center px-3">${escapeHtml(err.message)}</span>`;
+        showToast(err.message, true);
+        if (err.message && err.message.toLowerCase().includes("límite")) {
+          setTimeout(() => {
+            closePairingModal();
+            showDeviceLimitModal(getMaxAllowedDevicesForMerchant());
+          }, 1200);
+        }
       }
     }
 

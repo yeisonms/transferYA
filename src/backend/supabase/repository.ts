@@ -257,6 +257,18 @@ export class SupabaseRepository
     return status === 'ACTIVE' ? 'ACTIVE' : 'REVOKED';
   }
 
+  async getMerchantDevices(
+    merchantId: string,
+  ): Promise<Array<{ id: string; status: string; label?: string }>> {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/devices?merchant_id=eq.${encodeURIComponent(merchantId)}&select=id,status,label`,
+      { headers: this.headers },
+    );
+    if (!res.ok) return [];
+    const rows = (await res.json()) as any[];
+    return Array.isArray(rows) ? rows : [];
+  }
+
   // -------------------------------------------------------------
   // IDeviceRepository
   // -------------------------------------------------------------

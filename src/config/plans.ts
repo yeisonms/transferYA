@@ -83,9 +83,9 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
       maxWhatsappCashiers: 1,
       monthlyAlertsCap: 1500,
       maxBranchesOrDevices: 1,
-      cloudEmailFallback: false,
-      webPosLiveScreen: false,
-      iosShortcutWebhook: false,
+      cloudEmailFallback: true,
+      webPosLiveScreen: true,
+      iosShortcutWebhook: true,
       branchRouting: false,
     },
   },
@@ -186,6 +186,15 @@ export function calculateEffectiveMonthlyQuota(
   }, 0);
 
   return baseCap + extraAlerts;
+}
+
+/**
+ * Calcula el número máximo permitido de cajas físicas (celulares Centinela o Atajos iOS)
+ * según el plan contratado.
+ */
+export function calculateMaxAllowedDevices(planId: string | null | undefined): number {
+  const plan = getPlanById(planId) || SUBSCRIPTION_PLANS[0];
+  return plan.limits.maxBranchesOrDevices;
 }
 
 /**
