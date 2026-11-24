@@ -151,12 +151,22 @@ export async function handleIosShortcutWebhook(
     }
 
     // 2. Extraer el Texto del SMS / Mensaje
-    const rawText =
+    let rawText =
       body.text ||
       body.rawText ||
       body.message ||
       body.body ||
       (typeof body === 'string' ? body : '');
+
+    // Fallback de tolerancia para Atajos de iOS:
+    // Si el usuario colocó la variable del mensaje por error en la columna "Clave" en vez del campo "Valor",
+    // el JSON enviado es { "<texto del sms>": "" }
+    if (!rawText && typeof body === 'object' && body !== null) {
+      const keys = Object.keys(body);
+      if (keys.length === 1 && typeof keys[0] === 'string' && keys[0].trim().length > 10) {
+        rawText = keys[0];
+      }
+    }
 
     const text = typeof rawText === 'string' ? rawText.trim() : '';
 

@@ -280,6 +280,32 @@ describe('Webhook de Atajos de iOS para iPhone (src/backend/webhook/ios-shortcut
       expect(payload.payment.senderName).toBe('Maria Gomez');
     });
 
+    it('debe tolerar si el comerciante puso la variable en la clave JSON en Atajos ({ "<mensaje>": "" })', async () => {
+      const smsText =
+        'Bancolombia: recibiste una transferencia por $50.000 de PEDRO PEREZ en tu cuenta *5871.';
+
+      // Simula el error común en Atajos de iOS donde el texto del mensaje se asigna a la clave
+      const { req, res } = createMockReqRes(
+        'POST',
+        { [smsText]: '' },
+        {},
+        `/api/v1/webhooks/ios-shortcut?token=${testMerchant.id}`,
+      );
+
+      await handleIosShortcutWebhook(req, res, {
+        repository,
+        whatsappClient: mockWhatsappClient,
+        nowProvider: () => now,
+      });
+
+      expect(res.statusCode).toBe(200);
+      const payload = JSON.parse(res.end.mock.calls[0][0]);
+      expect(payload.success).toBe(true);
+      expect(payload.status).toBe('PROCESSED');
+      expect(payload.payment.amount).toBe(50000);
+      expect(payload.payment.senderName).toBe('Pedro Perez');
+    });
+
     it('debe soportar token en Authorization Bearer', async () => {
       const smsText =
         '¡Plata recibida! Carlos Ruiz te envió $20.000 a tu Nequi.';
