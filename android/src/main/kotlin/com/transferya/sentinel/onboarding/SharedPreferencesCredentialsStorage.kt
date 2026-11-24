@@ -68,5 +68,18 @@ class SharedPreferencesCredentialsStorage(context: Context) : IDeviceCredentials
     fun saveBillingAmountCop(amount: Long) {
         prefs.edit().putLong("billing_amount_cop", amount).apply()
     }
+
+    // =========================================================================
+    // Alertas Sonoras y Voz en Segundo Plano (Fase 1 - Soundbox Nativo)
+    // =========================================================================
+    fun isVoiceAlertsEnabled(): Boolean = prefs.getBoolean("voice_alerts_enabled", true)
+    fun saveVoiceAlertsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("voice_alerts_enabled", enabled).apply()
+    }
+
+    fun isChimeAlertsEnabled(): Boolean = prefs.getBoolean("chime_alerts_enabled", true)
+    fun saveChimeAlertsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("chime_alerts_enabled", enabled).apply()
+    }
 }
 

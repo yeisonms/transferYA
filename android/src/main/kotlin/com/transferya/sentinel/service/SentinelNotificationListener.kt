@@ -8,6 +8,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.transferya.sentinel.audio.VoiceAlertManager
 import com.transferya.sentinel.crypto.AndroidKeyStoreVault
 import com.transferya.sentinel.crypto.HmacSigner
 import com.transferya.sentinel.dispatcher.AndroidConnectivityProvider
@@ -117,6 +118,11 @@ class SentinelNotificationListener : NotificationListenerService() {
         super.onCreate()
         activeInstance = this
         ensurePipelineFresh()
+        try {
+            VoiceAlertManager.initialize(this)
+        } catch (e: Exception) {
+            Log.w(TAG, "Error inicializando VoiceAlertManager: ${e.message}")
+        }
     }
 
     override fun onDestroy() {
@@ -317,6 +323,13 @@ class SentinelNotificationListener : NotificationListenerService() {
         )
 
         ensurePipelineFresh()
+
+        // Fase 1: Anuncio sonoro y de voz en segundo plano (Soundbox nativo)
+        try {
+            VoiceAlertManager.handleIncomingNotification(this, effectivePackage, rawTitle, rawText)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error disparando alerta sonora de pago", e)
+        }
 
         val result = interceptor?.onNotificationReceived(event)
         Log.i(TAG, "Resultado de intercepción: $result")

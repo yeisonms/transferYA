@@ -23,6 +23,7 @@ import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import com.transferya.sentinel.audio.VoiceAlertManager
 import com.transferya.sentinel.crypto.AndroidKeyStoreVault
 import com.transferya.sentinel.crypto.HmacSigner
 import com.transferya.sentinel.dispatcher.AndroidConnectivityProvider
@@ -177,6 +178,11 @@ class MainActivity : AppCompatActivity() {
             keyStoreVault = keyStoreVault,
             credentialsStorage = credentialsStorage
         )
+
+        // Inicializar motor de sonido y voz nativo
+        try {
+            VoiceAlertManager.initialize(this)
+        } catch (_: Exception) {}
 
         // Solicitar permiso de notificaciones de sistema en Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -885,6 +891,133 @@ class MainActivity : AppCompatActivity() {
         sysStatusCard.addView(batteryRow)
 
         operationalContainer.addView(sysStatusCard)
+
+        // -------------------------------------------------------------
+        // TARJETA DE AUDIO: Alertas Sonoras y Voz TTS (Fase 1 - Soundbox)
+        // -------------------------------------------------------------
+        val audioHeader = TextView(this).apply {
+            text = "Alertas Sonoras y Voz de Cobro"
+            textSize = 14f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            setPadding(dpToPx(4f), 0, 0, dpToPx(10f))
+        }
+        operationalContainer.addView(audioHeader)
+
+        val audioCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dpToPx(18f)
+            }
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#152237"),
+                cornerRadiusDp = 14f,
+                strokeColor = Color.parseColor("#1E314F"),
+                strokeWidthDp = 1f
+            )
+            val pad = dpToPx(16f)
+            setPadding(pad, pad, pad, pad)
+        }
+
+        val audioSubtitle = TextView(this).apply {
+            text = "Anuncia en voz alta y timbra cada pago que entra por Nequi o DaviPlata, incluso con la pantalla apagada o estando en otra app."
+            textSize = 11.5f
+            setTextColor(Color.parseColor("#94A3B8"))
+            setPadding(0, 0, 0, dpToPx(12f))
+        }
+        audioCard.addView(audioSubtitle)
+
+        // Fila 1: Cantar pagos en voz alta (Voz TTS)
+        val voiceRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(6f), 0, dpToPx(10f))
+        }
+        val voiceLabel = TextView(this).apply {
+            text = "🗣️  Cantar pagos en voz alta (TTS)"
+            textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#E2E8F0"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        voiceRow.addView(voiceLabel)
+        val voiceSwitch = Switch(this).apply {
+            isChecked = credentialsStorage.isVoiceAlertsEnabled()
+            setOnCheckedChangeListener { _, isChecked ->
+                credentialsStorage.saveVoiceAlertsEnabled(isChecked)
+                Toast.makeText(
+                    this@MainActivity,
+                    if (isChecked) "Voz activada en segundo plano" else "Voz desactivada",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        voiceRow.addView(voiceSwitch)
+        audioCard.addView(voiceRow)
+
+        val dividerAudio1 = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1f))
+            setBackgroundColor(Color.parseColor("#1E314F"))
+        }
+        audioCard.addView(dividerAudio1)
+
+        // Fila 2: Timbre de caja registradora
+        val chimeRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10f), 0, dpToPx(12f))
+        }
+        val chimeLabel = TextView(this).apply {
+            text = "🔔  Timbre de cobro (Chime)"
+            textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#E2E8F0"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        chimeRow.addView(chimeLabel)
+        val chimeSwitch = Switch(this).apply {
+            isChecked = credentialsStorage.isChimeAlertsEnabled()
+            setOnCheckedChangeListener { _, isChecked ->
+                credentialsStorage.saveChimeAlertsEnabled(isChecked)
+                Toast.makeText(
+                    this@MainActivity,
+                    if (isChecked) "Timbre activado" else "Timbre desactivado",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        chimeRow.addView(chimeSwitch)
+        audioCard.addView(chimeRow)
+
+        // Botón: Probar alerta sonora
+        val testAudioButton = Button(this).apply {
+            text = "🔊 Probar sonido y voz en este celular"
+            textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#20D6BA"))
+            background = createRoundedDrawable(
+                bgColor = Color.parseColor("#0E2A27"),
+                cornerRadiusDp = 10f,
+                strokeColor = Color.parseColor("#20D6BA"),
+                strokeWidthDp = 1f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(42f)
+            ).apply {
+                topMargin = dpToPx(4f)
+            }
+            setOnClickListener {
+                VoiceAlertManager.playTestAlert(this@MainActivity)
+                Toast.makeText(this@MainActivity, "Reproduciendo prueba de sonido...", Toast.LENGTH_SHORT).show()
+            }
+        }
+        audioCard.addView(testAudioButton)
+
+        operationalContainer.addView(audioCard)
 
         // -------------------------------------------------------------
         // SECCIÓN: Acciones rápidas
