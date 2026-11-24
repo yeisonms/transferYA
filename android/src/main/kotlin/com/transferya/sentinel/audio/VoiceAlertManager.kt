@@ -104,6 +104,9 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
     @Volatile
     private var mainHandler: Handler? = null
 
+    // Cache de deduplicación en memoria para evitar repeticiones en ráfaga (< 15s)
+    private val recentAlerts = mutableMapOf<String, Long>()
+
     private fun getHandler(): Handler {
         if (mainHandler == null) {
             synchronized(this) {
@@ -223,8 +226,14 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
         context: Context,
         packageName: String,
         rawTitle: String,
-        rawText: String
+        rawText: String,
+        isLive: Boolean = true
     ) {
+        if (!isLive) {
+            Log.d(TAG, "Notificación histórica o represada omitida de alerta sonora")
+            return
+        }
+
         initialize(context)
         val storage = SharedPreferencesCredentialsStorage(context)
         val chimeEnabled = storage.isChimeAlertsEnabled()
@@ -236,6 +245,23 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
         }
 
         val alert = parseNotificationText(packageName, rawTitle, rawText)
+
+        // Ventana de deduplicación (15s): evitar que la misma alerta hable dos veces seguidas
+        val alertKey = "${alert.wallet}:${alert.amountClean ?: alert.payer ?: "gen"}"
+        val now = System.currentTimeMillis()
+        val isDuplicate = synchronized(recentAlerts) {
+            val last = recentAlerts[alertKey] ?: 0L
+            if (now - last < 15_000L) {
+                true
+            } else {
+                recentAlerts[alertKey] = now
+                false
+            }
+        }
+        if (isDuplicate) {
+            Log.d(TAG, "Alerta sonora descartada por deduplicación en ráfaga (< 15s): $alertKey")
+            return
+        }
 
         // 1. Timbre de cobro (suena primero)
         if (chimeEnabled) {

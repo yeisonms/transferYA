@@ -195,7 +195,7 @@ class SentinelNotificationListener : NotificationListenerService() {
                     }
 
                     Log.i(TAG, "Procesando retroactivamente notificación bancaria represada de [$effectivePackage] (origen: ${sbn.packageName}): $rawTitle | $rawText")
-                    onNotificationPosted(sbn)
+                    processNotification(sbn, isLiveEvent = false)
                 }
             }
         } catch (e: Exception) {
@@ -268,6 +268,10 @@ class SentinelNotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        processNotification(sbn, isLiveEvent = true)
+    }
+
+    private fun processNotification(sbn: StatusBarNotification?, isLiveEvent: Boolean) {
         if (sbn == null) return
 
         val packageName = sbn.packageName ?: return
@@ -325,10 +329,19 @@ class SentinelNotificationListener : NotificationListenerService() {
         ensurePipelineFresh()
 
         // Fase 1: Anuncio sonoro y de voz en segundo plano (Soundbox nativo)
-        try {
-            VoiceAlertManager.handleIncomingNotification(this, effectivePackage, rawTitle, rawText)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error disparando alerta sonora de pago", e)
+        // REGLA ESTRICTA: Solo sonar y cantar en voz alta si es un evento EN VIVO (< 90 segundos de antigüedad)
+        // Las notificaciones represadas o históricas se procesan silenciosamente hacia el backend.
+        val ageMs = System.currentTimeMillis() - sbn.postTime
+        val effectiveIsLive = isLiveEvent && (ageMs in -5_000L..90_000L)
+
+        if (effectiveIsLive) {
+            try {
+                VoiceAlertManager.handleIncomingNotification(this, effectivePackage, rawTitle, rawText, isLive = true)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error disparando alerta sonora de pago", e)
+            }
+        } else {
+            Log.d(TAG, "Notificación histórica o represada omitida de alerta sonora (antigüedad: ${ageMs / 1000}s, isLiveParam=$isLiveEvent)")
         }
 
         val result = interceptor?.onNotificationReceived(event)
