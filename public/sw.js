@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v47';
+const CACHE_NAME = 'transferya-cache-v48';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -148,7 +148,18 @@ self.addEventListener('push', (event) => {
     ]
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(title, options),
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+        windowClients.forEach((client) => {
+          try {
+            client.postMessage({ type: 'TRANSFERYA_PUSH_RECEIVED', data });
+          } catch { }
+        });
+      }),
+    ])
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {

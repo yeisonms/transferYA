@@ -1693,7 +1693,7 @@
               </div>
 
               <div class="space-y-1.5">
-                <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
+                <a href="/downloads/transferya-sentinel-v0.4.3-beta.apk" download="transferya-sentinel-v0.4.3-beta.apk"
                   class="w-full py-2 px-3 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2557,7 +2557,7 @@
                 title="Ver guía paso a paso para conectar">
                 <span>💡 Guía rápida</span>
               </button>
-              <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
+              <a href="/downloads/transferya-sentinel-v0.4.3-beta.apk" download="transferya-sentinel-v0.4.3-beta.apk"
                 class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-sky-400 font-semibold text-xs transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -3845,13 +3845,13 @@
       </details>
 
       <div class="pt-2 border-t border-ty-border/60 text-center space-y-1">
-        <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
+        <a href="/downloads/transferya-sentinel-v0.4.3-beta.apk" download="transferya-sentinel-v0.4.3-beta.apk"
           class="text-[11px] font-mono text-ty-cyan hover:underline flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          <span>¿Aún no tienes la app? Descargar TransferYA Centinela para Android (APK v0.4.2 con Voz)</span>
+          <span>¿Aún no tienes la app? Descargar TransferYA Centinela para Android (APK v0.4.3 con Voz)</span>
         </a>
         <button type="button" onclick="openSecurityPrivacyModal('apk-install')"
           class="text-[10px] font-mono text-ty-muted hover:text-ty-emerald flex items-center justify-center gap-1 mx-auto transition-colors">
@@ -5295,7 +5295,11 @@
 
       await refreshMerchantData();
       setupRealtimeSubscription();
-      syncPushSubscription();
+      if (isPushEnabled && "Notification" in window && Notification.permission === "granted") {
+        syncPushSubscription(false);
+      } else {
+        updatePushButtonUI();
+      }
     }
 
     function renderCommercialSubscriptionState() {
@@ -5876,6 +5880,7 @@
 
     async function signOutUser() {
       teardownRealtime();
+      announcedTxIds.clear();
       await supabaseClient.auth.signOut();
       showToast("Sesión cerrada");
     }
@@ -5935,6 +5940,11 @@
       }
 
       allTransactions = (notifData || []).sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
+      allTransactions.forEach((tx) => {
+        if (tx && tx.id && (isCountableMoney(tx) || isDaviplataBreB(tx))) {
+          announcedTxIds.add(tx.id);
+        }
+      });
       recomputeAllViews();
     }
 
@@ -6037,6 +6047,35 @@
       }, 15000);
     }
 
+    const announcedTxIds = new Set();
+
+    function announceNewPaymentTx(tx) {
+      if (!tx || !tx.id) return;
+      if (announcedTxIds.has(tx.id)) return;
+      announcedTxIds.add(tx.id);
+      if (announcedTxIds.size > 500) {
+        const oldestKey = announcedTxIds.values().next().value;
+        if (oldestKey) announcedTxIds.delete(oldestKey);
+      }
+
+      if (isDaviplataBreB(tx)) {
+        flashPosYellowScreen(tx);
+        showToast(`[${getDeviceLabel(tx.device_id)}] ⚠️ DaviPlata Bre-B (Monto Oculto en push)`);
+        triggerLocalSystemNotification(tx);
+        return;
+      }
+
+      if (isCountableMoney(tx)) {
+        if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
+          flashPosGreenScreen(tx);
+        } else {
+          playChime();
+        }
+        showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
+        triggerLocalSystemNotification(tx);
+      }
+    }
+
     async function syncLatestTransactions() {
       if (!supabaseClient || !currentMerchant || !merchantDevices.length) return;
       const deviceIds = merchantDevices.map((d) => d.id);
@@ -6049,27 +6088,60 @@
 
       if (error || !Array.isArray(latestRows) || !latestRows.length) return;
 
-      let newlyCounted = null;
+      const nowMs = Date.now();
+      const newlyArrived = [];
+      let changed = false;
+
       for (const tx of [...latestRows].reverse()) {
         const idx = allTransactions.findIndex((t) => t.id === tx.id);
-        const wasCountableBefore = idx !== -1 ? isCountableMoney(allTransactions[idx]) : false;
-        if (idx !== -1) allTransactions[idx] = tx;
-        else allTransactions.unshift(tx);
+        const wasCountableBefore = idx !== -1 ? (isCountableMoney(allTransactions[idx]) || isDaviplataBreB(allTransactions[idx])) : false;
+        const isAlertableNow = isCountableMoney(tx) || isDaviplataBreB(tx);
 
-        if (!wasCountableBefore && isCountableMoney(tx)) {
-          newlyCounted = tx;
+        if (idx !== -1) {
+          if (JSON.stringify(allTransactions[idx]) !== JSON.stringify(tx)) {
+            allTransactions[idx] = tx;
+            changed = true;
+          }
+        } else {
+          allTransactions.unshift(tx);
+          changed = true;
+        }
+
+        const txAgeMs = Math.abs(nowMs - getTxTimestamp(tx));
+        if (!wasCountableBefore && isAlertableNow && !announcedTxIds.has(tx.id) && txAgeMs <= 10 * 60 * 1000) {
+          newlyArrived.push(tx);
         }
       }
 
-      allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
-
-      if (newlyCounted) {
-        if (filterState.deviceId === "ALL" || filterState.deviceId === newlyCounted.device_id) {
-          playChime();
-        }
-        showToast(`[${getDeviceLabel(newlyCounted.device_id)}] $ ${Number(newlyCounted.amount).toLocaleString("es-CO")} COP (${newlyCounted.sender_name || detectWallet(newlyCounted)})`);
-        recomputeAllViews(newlyCounted.id);
+      if (changed) {
+        allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
       }
+
+      if (newlyArrived.length > 0) {
+        const latestNew = newlyArrived[newlyArrived.length - 1];
+        // Marcar anteriores del lote como anunciados para no solapar múltiples voces si llegaron varios juntos
+        for (let i = 0; i < newlyArrived.length - 1; i++) {
+          if (newlyArrived[i]?.id) announcedTxIds.add(newlyArrived[i].id);
+        }
+        announceNewPaymentTx(latestNew);
+        recomputeAllViews(latestNew.id);
+      } else if (changed) {
+        recomputeAllViews();
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && currentMerchant && merchantDevices.length > 0) {
+        syncLatestTransactions();
+      }
+    });
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        if (event.data && event.data.type === "TRANSFERYA_PUSH_RECEIVED") {
+          syncLatestTransactions();
+        }
+      });
     }
 
     function teardownRealtime() {
@@ -6091,25 +6163,14 @@
 
     function upsertRealtimeTx(tx, isLiveEvent) {
       const idx = allTransactions.findIndex((t) => t.id === tx.id);
-      const wasCountableBefore = idx !== -1 ? isCountableMoney(allTransactions[idx]) : false;
+      const wasCountableBefore = idx !== -1 ? (isCountableMoney(allTransactions[idx]) || isDaviplataBreB(allTransactions[idx])) : false;
 
       if (idx !== -1) allTransactions[idx] = tx;
       else allTransactions.unshift(tx);
       allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
 
-      if (isLiveEvent) {
-        if (isDaviplataBreB(tx)) {
-          flashPosYellowScreen(tx);
-          showToast(`[${getDeviceLabel(tx.device_id)}] ⚠️ DaviPlata Bre-B (Monto Oculto en push)`);
-        } else if (!wasCountableBefore && isCountableMoney(tx)) {
-          if (filterState.deviceId === "ALL" || filterState.deviceId === tx.device_id) {
-            flashPosGreenScreen(tx);
-          } else {
-            playChime();
-          }
-          showToast(`[${getDeviceLabel(tx.device_id)}] $ ${Number(tx.amount).toLocaleString("es-CO")} COP (${tx.sender_name || detectWallet(tx)})`);
-          triggerLocalSystemNotification(tx);
-        }
+      if (isLiveEvent && !wasCountableBefore && (isCountableMoney(tx) || isDaviplataBreB(tx))) {
+        announceNewPaymentTx(tx);
       }
 
       recomputeAllViews(tx.id);
@@ -10478,6 +10539,8 @@
     // =========================================================================
     let isPushEnabled = localStorage.getItem("ty_push_enabled") !== "false";
     let pushSubscription = null;
+    let pushSyncState = "idle"; // "idle" | "synced" | "error"
+    let pushSyncError = "";
 
     async function initWebPush() {
       updatePushButtonUI();
@@ -10490,7 +10553,7 @@
       }
 
       if (isPushEnabled && Notification.permission === "granted") {
-        syncPushSubscription();
+        await syncPushSubscription(false);
       }
     }
 
@@ -10518,6 +10581,19 @@
           if (posText) posText.textContent = "Push: Pausado";
           if (posIcon) posIcon.textContent = "🔕";
           posBtn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
+        }
+      } else if (Notification.permission === "granted" && pushSyncState === "error") {
+        const errTitle = pushSyncError || "No se pudo registrar el Push en el servidor. Toca para reintentar.";
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-400 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400";
+          text.textContent = "Reintentar Push";
+          btn.title = errTitle;
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs font-semibold text-amber-400 transition-all flex items-center gap-1.5 shadow-sm";
+          if (posText) posText.textContent = "Push: Reintentar";
+          if (posIcon) posIcon.textContent = "⚠️";
+          posBtn.title = errTitle;
         }
       } else if (Notification.permission === "granted") {
         if (btn) {
@@ -10570,8 +10646,19 @@
         return;
       }
 
+      // Si hubo un error previo sincronizando el push, tocar el botón reintenta el registro en lugar de pausar
+      if (isPushEnabled && Notification.permission === "granted" && pushSyncState === "error") {
+        const retryRes = await syncPushSubscription(true);
+        if (retryRes.ok) {
+          showToast("🔔 ¡Suscripción Push sincronizada correctamente!");
+        }
+        return;
+      }
+
       if (isPushEnabled && Notification.permission === "granted") {
         isPushEnabled = false;
+        pushSyncState = "idle";
+        pushSyncError = "";
         localStorage.setItem("ty_push_enabled", "false");
         updatePushButtonUI();
         showToast("Notificaciones push pausadas en este dispositivo.");
@@ -10595,9 +10682,14 @@
       if (perm === "granted") {
         isPushEnabled = true;
         localStorage.setItem("ty_push_enabled", "true");
+        const syncRes = await syncPushSubscription(true);
         updatePushButtonUI();
+
+        if (!syncRes.ok) {
+          return;
+        }
+
         showToast("🔔 ¡Notificaciones Push activadas!");
-        await syncPushSubscription();
 
         try {
           if ("serviceWorker" in navigator) {
@@ -10619,19 +10711,29 @@
       }
     }
 
-    async function syncPushSubscription() {
+    async function syncPushSubscription(showFeedback = false) {
       try {
-        if (!currentMerchant || !currentMerchant.id) return;
-        if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+        if (!currentMerchant || !currentMerchant.id) return { ok: false, reason: "NO_MERCHANT" };
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+          pushSyncState = "error";
+          pushSyncError = "Este navegador no soporta Push en segundo plano.";
+          updatePushButtonUI();
+          if (showFeedback) showToast(pushSyncError, true);
+          return { ok: false, reason: "UNSUPPORTED" };
+        }
 
         const reg = await navigator.serviceWorker.ready;
         let sub = await reg.pushManager.getSubscription();
 
         if (!sub) {
           const res = await fetch("/api/v1/push/subscribe");
-          if (!res.ok) return;
+          if (!res.ok) {
+            throw new Error(`No se pudo obtener la llave VAPID (HTTP ${res.status})`);
+          }
           const data = await res.json();
-          if (!data?.publicKey) return;
+          if (!data?.publicKey) {
+            throw new Error("El servidor no devolvió llave pública VAPID.");
+          }
 
           const appServerKey = urlBase64ToUint8Array(data.publicKey);
           sub = await reg.pushManager.subscribe({
@@ -10642,17 +10744,44 @@
 
         pushSubscription = sub;
 
-        await fetch("/api/v1/push/subscribe", {
+        const saveRes = await fetch("/api/v1/push/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             merchantId: currentMerchant.id,
-            subscription: sub,
+            subscription: sub.toJSON ? sub.toJSON() : sub,
             userAgent: navigator.userAgent,
           }),
         });
+
+        if (!saveRes.ok) {
+          let errMsg = `Error guardando Push en servidor (HTTP ${saveRes.status})`;
+          try {
+            const errBody = await saveRes.json();
+            if (errBody?.error) errMsg = `Error Push en servidor: ${errBody.error}`;
+          } catch { }
+          throw new Error(errMsg);
+        }
+
+        pushSyncState = "synced";
+        pushSyncError = "";
+        updatePushButtonUI();
+        return { ok: true };
       } catch (err) {
+        const rawMsg = err?.message || String(err);
+        const isBrowserPushBlocked =
+          err?.name === "AbortError" ||
+          /push service error/i.test(rawMsg);
+        pushSyncState = "error";
+        pushSyncError = isBrowserPushBlocked
+          ? "Este navegador bloqueó el servicio Google Push (en Brave activa 'Servicios de Google para mensajería push' o usa Chrome)."
+          : rawMsg;
         console.warn("Advertencia sincronizando suscripción push:", err);
+        updatePushButtonUI();
+        if (showFeedback) {
+          showToast(`⚠️ ${pushSyncError}`, true);
+        }
+        return { ok: false, error: pushSyncError };
       }
     }
 
@@ -10663,16 +10792,22 @@
       const amountStr = tx.amount ? `$ ${Number(tx.amount).toLocaleString("es-CO")} COP` : "Pago recibido";
       const title = `⚡ ¡Pago Verificado en ${label}! · TransferYA`;
       const body = `${amountStr} (${wallet})\n¡Transferencia confirmada al instante!`;
+      const notifTag = `tx-${tx.id || Date.now()}`;
 
       try {
         if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification(title, {
+          navigator.serviceWorker.ready.then(async (reg) => {
+            // Si el Web Push del servidor ya proyectó esta misma transacción, evitar duplicar la notificación
+            try {
+              const existing = await reg.getNotifications({ tag: notifTag });
+              if (existing && existing.length > 0) return;
+            } catch { }
+            return reg.showNotification(title, {
               body,
               icon: "/icons/icon-192.png",
               badge: "/icons/icon.svg",
-              tag: `tx-${tx.id || Date.now()}`,
-              renotify: true,
+              tag: notifTag,
+              renotify: false,
               requireInteraction: true,
               vibrate: [250, 100, 250, 100, 250],
               data: { url: "/" },
@@ -10682,7 +10817,7 @@
           new Notification(title, {
             body,
             icon: "/icons/icon-192.png",
-            tag: `tx-${tx.id || Date.now()}`,
+            tag: notifTag,
           });
         }
       } catch (e) {

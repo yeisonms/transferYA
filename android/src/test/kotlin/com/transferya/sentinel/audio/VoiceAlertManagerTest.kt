@@ -67,4 +67,34 @@ class VoiceAlertManagerTest {
         val phrase = PaymentNotificationParser.buildSpeechPhrase(alert)
         assertEquals("¡Pago confirmado por Nequi recibido con éxito!", phrase)
     }
+
+    @Test
+    fun `debe parsear montos de Nequi sin simbolo peso como te envio 150`() {
+        val alert = PaymentNotificationParser.parseNotificationText(
+            packageName = "com.nequi.MobileApp",
+            rawTitle = "Envío",
+            rawText = "KAROLL SIERRA te envió 150, ¡lo mejor!"
+        )
+
+        assertEquals("Nequi", alert.wallet)
+        assertEquals("150", alert.amountClean)
+        assertEquals("KAROLL SIERRA", alert.payer)
+
+        val phrase = PaymentNotificationParser.buildSpeechPhrase(alert)
+        assertEquals("¡Pago confirmado! Recibiste 150 pesos de KAROLL SIERRA por Nequi.", phrase)
+    }
+
+    @Test
+    fun `debe parsear montos pequenos de un solo digito con simbolo peso`() {
+        val alert = PaymentNotificationParser.parseNotificationText(
+            packageName = "com.nequi.MobileApp",
+            rawTitle = "Te enviaron plata por Bre-B",
+            rawText = "Te enviaron $3. Entra a tu app y revisa tu saldo."
+        )
+
+        assertEquals("Nequi", alert.wallet)
+        assertEquals("3", alert.amountClean)
+        val phrase = PaymentNotificationParser.buildSpeechPhrase(alert)
+        assertEquals("¡Pago confirmado! Recibiste 3 pesos por Nequi.", phrase)
+    }
 }

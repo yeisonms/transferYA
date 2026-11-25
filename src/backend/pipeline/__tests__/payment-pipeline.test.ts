@@ -1235,6 +1235,53 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
       expect(payload.body).toContain('45.000');
       expect(payload.body).toContain('Carlos');
     });
+
+    it('debe esperar (await) a que broadcastToMerchant termine antes de retornar del pipeline serverless', async () => {
+      vi.mocked(mockWhatsappClient.sendPaymentAlert).mockResolvedValue({
+        success: true,
+        messageId: 'wamid.push_await_test',
+      });
+
+      let pushCompleted = false;
+      const mockPushService = {
+        broadcastToMerchant: vi.fn().mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                pushCompleted = true;
+                resolve({ total: 1, sent: 1, failed: 0 });
+              }, 30);
+            }),
+        ),
+      } as any;
+
+      const pushPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        webPushService: mockPushService,
+        nowProvider: () => now,
+      });
+
+      notificationRepo.seed({
+        id: 'notif_web_push_await',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Laura te envió $25.000 a tu Nequi.',
+        capturedAt: now - 300,
+        dispatchedAt: now - 100,
+        receivedAt: now,
+        latencyMs: 300,
+        isStale: false,
+        status: 'RECEIVED',
+      });
+
+      const result = await pushPipeline.processCapturedNotification('notif_web_push_await');
+      expect(result.status).toBe('PROCESSED');
+      expect(pushCompleted).toBe(true);
+    });
   });
 
   describe('Protección Anti-Históricos (Capa 2: TTL máximo 30 minutos)', () => {

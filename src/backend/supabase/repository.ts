@@ -1600,8 +1600,9 @@ export class SupabaseRepository
   // ==========================================
 
   async saveSubscription(subscription: import('../push/types.js').WebPushSubscription): Promise<void> {
-    try {
-      const res = await fetch(`${this.baseUrl}/rest/v1/web_push_subscriptions`, {
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/web_push_subscriptions?on_conflict=endpoint`,
+      {
         method: 'POST',
         headers: {
           ...this.headers,
@@ -1615,27 +1616,26 @@ export class SupabaseRepository
           user_agent: subscription.userAgent || null,
           updated_at: new Date().toISOString(),
         }),
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        console.warn('Advertencia guardando web_push_subscription:', err);
-      }
-    } catch (e) {
-      console.warn('Fallo de red en saveSubscription:', e);
+      },
+    );
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Error guardando web_push_subscription:', res.status, err);
+      throw new Error(`Error guardando suscripción Web Push (${res.status}): ${err}`);
     }
   }
 
   async deleteSubscription(endpoint: string): Promise<void> {
-    try {
-      await fetch(
-        `${this.baseUrl}/rest/v1/web_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`,
-        {
-          method: 'DELETE',
-          headers: this.headers,
-        },
-      );
-    } catch (e) {
-      console.warn('Fallo de red en deleteSubscription:', e);
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/web_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`,
+      {
+        method: 'DELETE',
+        headers: this.headers,
+      },
+    );
+    if (!res.ok) {
+      const err = await res.text();
+      console.warn('Advertencia eliminando web_push_subscription:', res.status, err);
     }
   }
 
@@ -1649,7 +1649,11 @@ export class SupabaseRepository
         )}&select=id,merchant_id,endpoint,p256dh,auth,user_agent,created_at`,
         { headers: this.headers },
       );
-      if (!res.ok) return [];
+      if (!res.ok) {
+        const err = await res.text();
+        console.error('Error consultando web_push_subscriptions:', res.status, err);
+        return [];
+      }
       const rows = (await res.json()) as any[];
       if (!Array.isArray(rows)) return [];
       return rows.map((r) => ({
@@ -1663,7 +1667,8 @@ export class SupabaseRepository
         userAgent: r.user_agent,
         createdAt: r.created_at ? new Date(r.created_at).getTime() : undefined,
       }));
-    } catch {
+    } catch (err) {
+      console.error('Error de red consultando web_push_subscriptions:', err);
       return [];
     }
   }

@@ -2,6 +2,7 @@ package com.transferya.sentinel.audio
 
 import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.RingtoneManager
 import android.media.ToneGenerator
@@ -9,7 +10,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import com.transferya.sentinel.onboarding.SharedPreferencesCredentialsStorage
 import java.util.Locale
@@ -29,6 +32,16 @@ data class PaymentAlert(
  */
 object PaymentNotificationParser {
 
+    // 1. Monto con símbolo $: $50.000, $ 50.000, $50000, $150.000,00, $3
+    private val currencyAmountRegex = Regex("""\$\s*([\d\.\,]{1,12})""")
+
+    // 2. Respaldo sin símbolo $ tras verbos bancarios colombianos:
+    //    "KAROLL SIERRA te envió 150, ¡lo mejor!", "Recibiste 1.500 de Juan"
+    private val contextualAmountRegex = Regex(
+        """(?:te\s+envi[oó]|te\s+transfiri[oó]|recibiste|pago\s+por|transferencia\s+(?:de|por)|valor(?:\s+de)?|por)\s+(?:COP\s*)?([\d][\d\.\,]{0,11})(?=\s|$|[,\.!¡])""",
+        RegexOption.IGNORE_CASE
+    )
+
     fun parseNotificationText(packageName: String, rawTitle: String, rawText: String): PaymentAlert {
         val title = rawTitle.trim()
         val text = rawText.trim()
@@ -42,9 +55,7 @@ object PaymentNotificationParser {
             else -> "Transferencia"
         }
 
-        // Regex para detectar monto colombiano: $50.000, $ 50.000, $50000, $150.000,00
-        val amountRegex = Regex("""\$\s*([\d\.\,]{2,12})""")
-        val amountMatch = amountRegex.find(combined)
+        val amountMatch = currencyAmountRegex.find(combined) ?: contextualAmountRegex.find(combined)
         val rawAmount = amountMatch?.groups?.get(1)?.value?.trim()
         val cleanAmount = rawAmount?.trimEnd('.', ',')
 
@@ -86,11 +97,17 @@ object PaymentNotificationParser {
 
 /**
  * Gestor de Alertas Sonoras y Síntesis de Voz en Segundo Plano (Ticket Fase 1 - Soundbox Nativo).
- * Convierte el smartphone de cobro en una Caja Parlante: anuncia pagos en voz alta e instantáneamente
- * al recibir notificaciones de Nequi, DaviPlata o Bancolombia, incluso con la pantalla bloqueada.
+ * Blindado contra suspensión de CPU (PARTIAL_WAKE_LOCK dedicado), desconexión silenciosa
+ * del Binder de Google TTS en pantalla bloqueada y colisiones de canal de audio (AudioFocus + USAGE_MEDIA).
  */
 object VoiceAlertManager : TextToSpeech.OnInitListener {
     private const val TAG = "VoiceAlertManager"
+    private const val WAKE_LOCK_TAG = "TransferYA:VoiceAlertLock"
+    private const val MAX_WAKE_LOCK_MS = 15_000L
+    private const val SAFETY_CLEANUP_MS = 14_000L
+
+    @Volatile
+    private var appContext: Context? = null
 
     @Volatile
     private var tts: TextToSpeech? = null
@@ -99,10 +116,24 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
     private var isTtsReady = false
 
     @Volatile
+    private var isInitializing = false
+
+    @Volatile
     private var pendingPhrase: String? = null
 
     @Volatile
+    private var lastAttemptedPhrase: String? = null
+
+    @Volatile
+    private var retryCount = 0
+
+    @Volatile
     private var mainHandler: Handler? = null
+
+    private val lockGuard = Any()
+    private var alertWakeLock: PowerManager.WakeLock? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private var safetyCleanupRunnable: Runnable? = null
 
     // Cache de deduplicación en memoria para evitar repeticiones en ráfaga (< 15s)
     private val recentAlerts = mutableMapOf<String, Long>()
@@ -125,18 +156,167 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
         PaymentNotificationParser.buildSpeechPhrase(alert)
 
     fun initialize(context: Context) {
-        if (tts == null) {
+        val appCtx = context.applicationContext
+        appContext = appCtx
+        if (tts == null && !isInitializing) {
+            isInitializing = true
             getHandler().post {
                 try {
-                    tts = TextToSpeech(context.applicationContext, this)
+                    tts = TextToSpeech(appCtx, this)
                 } catch (e: Exception) {
+                    isInitializing = false
                     Log.e(TAG, "Error instanciando TextToSpeech nativo", e)
                 }
             }
         }
     }
 
+    private fun resetAndReinitializeTts(phraseToRetry: String) {
+        val ctx = appContext ?: return
+        pendingPhrase = phraseToRetry
+        isTtsReady = false
+        isInitializing = true
+        getHandler().post {
+            try {
+                tts?.stop()
+                tts?.shutdown()
+            } catch (e: Exception) {
+                Log.w(TAG, "Advertencia cerrando instancia TTS obsoleta: ${e.message}")
+            }
+            tts = null
+            try {
+                Log.i(TAG, "Reinicializando motor TextToSpeech para recuperar conexión en segundo plano")
+                tts = TextToSpeech(ctx, this)
+            } catch (e: Exception) {
+                isInitializing = false
+                Log.e(TAG, "Error reinstanciando TextToSpeech nativo", e)
+                releaseAudioResources()
+            }
+        }
+    }
+
+    private fun resolvePreferredStreamAndAttributes(context: Context?): Pair<Int, AudioAttributes> {
+        val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        val musicVolume = try {
+            audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 1
+        } catch (_: Exception) {
+            1
+        }
+        val notifVolume = try {
+            audioManager?.getStreamVolume(AudioManager.STREAM_NOTIFICATION) ?: 0
+        } catch (_: Exception) {
+            0
+        }
+
+        // Preferir STREAM_MUSIC / USAGE_MEDIA (inmune a colisión con Nequi y supresión OEM con pantalla bloqueada).
+        // Solo hacer fallback a STREAM_NOTIFICATION si el usuario tiene Multimedia en 0 y Notificaciones con volumen.
+        return if (musicVolume > 0 || notifVolume == 0) {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            Pair(AudioManager.STREAM_MUSIC, attrs)
+        } else {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            Pair(AudioManager.STREAM_NOTIFICATION, attrs)
+        }
+    }
+
+    private fun acquireAlertWakeLock(context: Context?, timeoutMs: Long = MAX_WAKE_LOCK_MS) {
+        val ctx = context?.applicationContext ?: appContext ?: return
+        synchronized(lockGuard) {
+            try {
+                val pm = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+                if (alertWakeLock == null) {
+                    alertWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG).apply {
+                        setReferenceCounted(false)
+                    }
+                }
+                alertWakeLock?.acquire(timeoutMs)
+            } catch (e: Exception) {
+                Log.w(TAG, "No se pudo adquirir WakeLock para alerta de voz: ${e.message}")
+            }
+        }
+        scheduleSafetyCleanup(SAFETY_CLEANUP_MS)
+    }
+
+    private fun scheduleSafetyCleanup(delayMs: Long) {
+        val handler = getHandler()
+        synchronized(lockGuard) {
+            safetyCleanupRunnable?.let { handler.removeCallbacks(it) }
+            val runnable = Runnable {
+                releaseAudioResources()
+            }
+            safetyCleanupRunnable = runnable
+            handler.postDelayed(runnable, delayMs)
+        }
+    }
+
+    private fun requestTransientAudioFocus(audioAttributes: AudioAttributes) {
+        val ctx = appContext ?: return
+        val audioManager = ctx.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
+        synchronized(lockGuard) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+                    val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                        .setAudioAttributes(audioAttributes)
+                        .setAcceptsDelayedFocusGain(false)
+                        .setWillPauseWhenDucked(false)
+                        .build()
+                    audioFocusRequest = req
+                    audioManager.requestAudioFocus(req)
+                } else {
+                    @Suppress("DEPRECATION")
+                    audioManager.requestAudioFocus(
+                        null,
+                        AudioManager.STREAM_MUSIC,
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                    )
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Advertencia solicitando AudioFocus: ${e.message}")
+            }
+        }
+    }
+
+    private fun releaseAudioResources() {
+        val handler = getHandler()
+        synchronized(lockGuard) {
+            safetyCleanupRunnable?.let { handler.removeCallbacks(it) }
+            safetyCleanupRunnable = null
+
+            try {
+                val ctx = appContext
+                val audioManager = ctx?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+                if (audioManager != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+                        audioFocusRequest = null
+                    } else {
+                        @Suppress("DEPRECATION")
+                        audioManager.abandonAudioFocus(null)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Advertencia liberando AudioFocus: ${e.message}")
+            }
+
+            try {
+                if (alertWakeLock?.isHeld == true) {
+                    alertWakeLock?.release()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Advertencia liberando WakeLock de voz: ${e.message}")
+            }
+        }
+    }
+
     override fun onInit(status: Int) {
+        isInitializing = false
         if (status == TextToSpeech.SUCCESS) {
             val currentTts = tts ?: return
             try {
@@ -148,13 +328,31 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
                 currentTts.setPitch(1.0f)
                 currentTts.setSpeechRate(1.05f)
 
+                val (_, attrs) = resolvePreferredStreamAndAttributes(appContext)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    val audioAttributes = AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
-                    currentTts.setAudioAttributes(audioAttributes)
+                    currentTts.setAudioAttributes(attrs)
                 }
+
+                currentTts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                        Log.d(TAG, "Reproducción TTS iniciada ($utteranceId)")
+                    }
+
+                    override fun onDone(utteranceId: String?) {
+                        retryCount = 0
+                        lastAttemptedPhrase = null
+                        releaseAudioResources()
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) {
+                        handleTtsUtteranceError(utteranceId, -1)
+                    }
+
+                    override fun onError(utteranceId: String?, errorCode: Int) {
+                        handleTtsUtteranceError(utteranceId, errorCode)
+                    }
+                })
 
                 isTtsReady = true
                 Log.i(TAG, "Motor TextToSpeech inicializado exitosamente en español")
@@ -166,20 +364,38 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error configurando idioma de TextToSpeech", e)
+                releaseAudioResources()
             }
         } else {
+            isTtsReady = false
             Log.w(TAG, "Fallo al inicializar TextToSpeech (status=$status)")
+            releaseAudioResources()
+        }
+    }
+
+    private fun handleTtsUtteranceError(utteranceId: String?, errorCode: Int) {
+        Log.w(TAG, "Error durante reproducción TTS (utterance=$utteranceId, code=$errorCode)")
+        val phraseToRetry = lastAttemptedPhrase
+        if (!phraseToRetry.isNullOrBlank() && retryCount < 1) {
+            retryCount += 1
+            resetAndReinitializeTts(phraseToRetry)
+        } else {
+            retryCount = 0
+            lastAttemptedPhrase = null
+            releaseAudioResources()
         }
     }
 
     fun playChime(context: Context) {
+        appContext = context.applicationContext
+        val (streamType, _) = resolvePreferredStreamAndAttributes(context)
         try {
-            val toneGen = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 95)
+            val toneGen = ToneGenerator(streamType, 95)
             toneGen.startTone(ToneGenerator.TONE_PROP_ACK, 250)
             getHandler().postDelayed({
                 try {
                     toneGen.release()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Ignorar liberación
                 }
             }, 400)
@@ -195,29 +411,66 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
     }
 
     fun speakText(phrase: String) {
-        if (!isTtsReady) {
+        acquireAlertWakeLock(appContext)
+        lastAttemptedPhrase = phrase
+
+        val currentTts = tts
+        if (!isTtsReady || currentTts == null) {
             pendingPhrase = phrase
+            if (!isInitializing) {
+                appContext?.let { initialize(it) }
+            }
             return
         }
-        val currentTts = tts ?: return
+
         getHandler().post {
             try {
+                val (streamType, audioAttributes) = resolvePreferredStreamAndAttributes(appContext)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    currentTts.setAudioAttributes(audioAttributes)
+                }
+                requestTransientAudioFocus(audioAttributes)
+
+                val utteranceId = "alert_${System.currentTimeMillis()}"
+                val speakResult = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     val params = Bundle().apply {
-                        putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_NOTIFICATION)
+                        putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, streamType)
+                        putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1.0f)
                     }
-                    currentTts.speak(phrase, TextToSpeech.QUEUE_FLUSH, params, "alert_${System.currentTimeMillis()}")
+                    currentTts.speak(phrase, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
                 } else {
                     @Suppress("DEPRECATION")
                     val map = HashMap<String, String>().apply {
-                        put(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_NOTIFICATION.toString())
+                        put(TextToSpeech.Engine.KEY_PARAM_STREAM, streamType.toString())
+                        put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
                     }
                     @Suppress("DEPRECATION")
                     currentTts.speak(phrase, TextToSpeech.QUEUE_FLUSH, map)
                 }
-                Log.i(TAG, "Enunciando alerta de voz: \"$phrase\"")
+
+                if (speakResult == TextToSpeech.ERROR) {
+                    Log.w(TAG, "tts.speak retornó ERROR (posible binder desconectado en pantalla bloqueada). Reintentando...")
+                    if (retryCount < 1) {
+                        retryCount += 1
+                        resetAndReinitializeTts(phrase)
+                    } else {
+                        retryCount = 0
+                        lastAttemptedPhrase = null
+                        releaseAudioResources()
+                    }
+                } else {
+                    Log.i(TAG, "Enunciando alerta de voz (stream=$streamType): \"$phrase\"")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error ejecutando tts.speak", e)
+                if (retryCount < 1) {
+                    retryCount += 1
+                    resetAndReinitializeTts(phrase)
+                } else {
+                    retryCount = 0
+                    lastAttemptedPhrase = null
+                    releaseAudioResources()
+                }
             }
         }
     }
@@ -234,6 +487,7 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
             return
         }
 
+        appContext = context.applicationContext
         initialize(context)
         val storage = SharedPreferencesCredentialsStorage(context)
         val chimeEnabled = storage.isChimeAlertsEnabled()
@@ -263,6 +517,10 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
             return
         }
 
+        // Mantener el CPU despierto desde t=0ms hasta que termine tanto el timbre como el dictado TTS
+        acquireAlertWakeLock(context)
+        retryCount = 0
+
         // 1. Timbre de cobro (suena primero)
         if (chimeEnabled) {
             playChime(context)
@@ -274,14 +532,21 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
             getHandler().postDelayed({
                 speakText(phrase)
             }, if (chimeEnabled) 450L else 0L)
+        } else {
+            // Solo timbre: liberar WakeLock apenas termina el tono
+            scheduleSafetyCleanup(1_200L)
         }
     }
 
     fun playTestAlert(context: Context) {
+        appContext = context.applicationContext
         initialize(context)
         val storage = SharedPreferencesCredentialsStorage(context)
         val chimeEnabled = storage.isChimeAlertsEnabled()
         val voiceEnabled = storage.isVoiceAlertsEnabled()
+
+        acquireAlertWakeLock(context)
+        retryCount = 0
 
         if (chimeEnabled) {
             playChime(context)
@@ -292,6 +557,8 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
             getHandler().postDelayed({
                 speakText(testPhrase)
             }, if (chimeEnabled) 450L else 0L)
+        } else {
+            scheduleSafetyCleanup(1_200L)
         }
     }
 }

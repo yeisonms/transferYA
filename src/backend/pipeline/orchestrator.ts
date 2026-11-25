@@ -439,13 +439,13 @@ export class PaymentProcessingPipeline {
             },
           );
 
-          // Despacho Web Push en segundo plano (Fase 2)
-          this.dispatchWebPush(
+          // Despacho Web Push con await acotado (evita que Vercel Serverless mate la promesa antes de enviar a FCM)
+          await this.dispatchWebPush(
             reconResult.matchedMerchant.id,
             reconResult.matchedMerchant.name,
             receipt,
             notificationId,
-          ).catch(() => {});
+          );
 
           return {
             status: 'PROCESSED',
@@ -568,13 +568,13 @@ export class PaymentProcessingPipeline {
             });
         }
 
-        // Despacho Web Push en segundo plano (Fase 2)
-        this.dispatchWebPush(
+        // Despacho Web Push con await acotado (evita que Vercel Serverless mate la promesa antes de enviar a FCM)
+        await this.dispatchWebPush(
           routeResult.merchant.id,
           routeResult.merchant.name,
           receipt,
           notificationId,
-        ).catch(() => {});
+        );
 
         return {
           status: 'PROCESSED',
@@ -681,13 +681,13 @@ export class PaymentProcessingPipeline {
             });
         }
 
-        // Despacho Web Push en segundo plano (Fase 2)
-        this.dispatchWebPush(
+        // Despacho Web Push con await acotado (evita que Vercel Serverless mate la promesa antes de enviar a FCM)
+        await this.dispatchWebPush(
           routeResult.merchant.id,
           routeResult.merchant.name,
           receipt,
           notificationId,
-        ).catch(() => {});
+        );
 
         return {
           status: 'PROCESSED',
@@ -736,10 +736,11 @@ export class PaymentProcessingPipeline {
     notificationId: string,
   ): Promise<void> {
     if (!this.deps.webPushService) return;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
     try {
       const formattedAmount = `$ ${Number(receipt.amount).toLocaleString('es-CO')} COP`;
       const senderInfo = receipt.senderName ? ` de ${receipt.senderName}` : '';
-      await this.deps.webPushService.broadcastToMerchant(merchantId, {
+      const pushPromise = this.deps.webPushService.broadcastToMerchant(merchantId, {
         title: `⚡ ¡Pago Verificado en ${merchantName}!`,
         body: `${receipt.wallet} · Recibiste ${formattedAmount}${senderInfo}.`,
         tag: `tx-${notificationId}`,
@@ -752,8 +753,23 @@ export class PaymentProcessingPipeline {
           merchantName,
         },
       });
+
+      const timeoutPromise = new Promise<'TIMEOUT'>((resolve) => {
+        timeoutHandle = setTimeout(() => resolve('TIMEOUT'), 4_000);
+      });
+
+      const outcome = await Promise.race([pushPromise, timeoutPromise]);
+      if (outcome === 'TIMEOUT') {
+        console.warn(`[WebPush] Timeout (>4s) esperando despacho push para comercio ${merchantId} (notif ${notificationId})`);
+      } else {
+        console.log(
+          `[WebPush] Comercio ${merchantId} (notif ${notificationId}): ${outcome.sent}/${outcome.total} enviados (fallidos: ${outcome.failed})`,
+        );
+      }
     } catch (err) {
       console.warn('Advertencia despachando Web Push en pipeline:', err);
+    } finally {
+      if (timeoutHandle) clearTimeout(timeoutHandle);
     }
   }
 }

@@ -20,6 +20,7 @@ CREATE INDEX IF NOT EXISTS idx_web_push_endpoint ON web_push_subscriptions(endpo
 ALTER TABLE web_push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Política para service_role (Backend / Servidor)
+DROP POLICY IF EXISTS "web_push_subscriptions_service_role" ON web_push_subscriptions;
 CREATE POLICY "web_push_subscriptions_service_role"
     ON web_push_subscriptions
     FOR ALL
@@ -28,6 +29,7 @@ CREATE POLICY "web_push_subscriptions_service_role"
     WITH CHECK (true);
 
 -- Política para usuarios autenticados (Dueños de comercios)
+DROP POLICY IF EXISTS "web_push_subscriptions_authenticated" ON web_push_subscriptions;
 CREATE POLICY "web_push_subscriptions_authenticated"
     ON web_push_subscriptions
     FOR ALL
@@ -42,3 +44,5 @@ CREATE POLICY "web_push_subscriptions_authenticated"
             SELECT id FROM merchants WHERE owner_id = auth.uid()
         )
     );
+
+NOTIFY pgrst, 'reload schema';

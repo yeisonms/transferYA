@@ -70,7 +70,10 @@ export class WebPushService {
     });
 
     try {
-      const res = await webpush.sendNotification(pushSubscription, payloadString);
+      const res = await webpush.sendNotification(pushSubscription, payloadString, {
+        TTL: 300,
+        urgency: 'high',
+      });
       return { success: true, statusCode: res.statusCode };
     } catch (err: any) {
       const statusCode = err?.statusCode;

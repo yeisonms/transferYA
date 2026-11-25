@@ -375,6 +375,41 @@ describe('SupabaseRepository REST Adapter', () => {
 
       fetchSpy.mockRestore();
     });
+
+    it('debe usar on_conflict=endpoint en saveSubscription y lanzar error si PostgREST devuelve 404/500', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          text: async () => '',
+        } as any)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          text: async () => '{"code":"PGRST205","message":"table not found"}',
+        } as any);
+
+      await repository.saveSubscription({
+        merchantId: 'm_123',
+        endpoint: 'https://fcm.googleapis.com/fcm/send/token-1',
+        keys: { p256dh: 'key-p256', auth: 'key-auth' },
+        userAgent: 'Chrome Android',
+      });
+
+      const okCallUrl = String(fetchSpy.mock.calls[0]?.[0]);
+      expect(okCallUrl).toContain('/rest/v1/web_push_subscriptions?on_conflict=endpoint');
+
+      await expect(
+        repository.saveSubscription({
+          merchantId: 'm_123',
+          endpoint: 'https://fcm.googleapis.com/fcm/send/token-2',
+          keys: { p256dh: 'key-p256', auth: 'key-auth' },
+        }),
+      ).rejects.toThrow(/Error guardando suscripción Web Push \(404\)/);
+
+      fetchSpy.mockRestore();
+    });
   });
 });
 
