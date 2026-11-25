@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v48';
+const CACHE_NAME = 'transferya-cache-v49';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   '/css/app.css',
   '/manifest.json',
   '/icons/icon.svg',
+  '/icons/favicon-96x96.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-192.png',
@@ -133,12 +134,12 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || 'Recibiste una nueva transferencia verificada.',
     icon: data.icon || '/icons/icon-192.png',
-    badge: data.badge || '/icons/icon.svg',
-    image: data.image || undefined,
+    badge: data.badge || '/icons/favicon-96x96.png',
     tag: data.tag || 'transferya-payment',
     renotify: true,
     requireInteraction: true,
-    vibrate: [250, 100, 250, 100, 250],
+    vibrate: [300, 120, 300, 120, 400],
+    timestamp: data.timestamp || Date.now(),
     data: {
       url: data.url || '/',
       timestamp: data.timestamp || Date.now(),
@@ -147,6 +148,9 @@ self.addEventListener('push', (event) => {
       { action: 'open', title: '👁️ Ver en Pantalla Mostrador' }
     ]
   };
+  if (data.image) {
+    options.image = data.image;
+  }
 
   event.waitUntil(
     Promise.all([

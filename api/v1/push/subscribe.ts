@@ -8,13 +8,35 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const repository = getSupabaseRepository();
   const pushService = new WebPushService(repository);
 
-  // GET: Obtener Llave Pública VAPID para que el cliente frontend pueda suscribirse
+  // GET: Obtener Llave Pública VAPID y opcionalmente verificar estado real en BD
   if (req.method === 'GET') {
+    const reqUrl = new URL(req.url || '/api/v1/push/subscribe', 'http://localhost');
+    const merchantId = reqUrl.searchParams.get('merchantId');
+    const endpoint = reqUrl.searchParams.get('endpoint');
+
+    let deviceCount: number | undefined;
+    let isEndpointRegistered: boolean | undefined;
+
+    if (merchantId) {
+      try {
+        const subs = await repository.getSubscriptionsByMerchantId(merchantId);
+        deviceCount = subs.length;
+        if (endpoint) {
+          isEndpointRegistered = subs.some((s) => s.endpoint === endpoint);
+        }
+      } catch {
+        deviceCount = 0;
+        if (endpoint) isEndpointRegistered = false;
+      }
+    }
+
     res.statusCode = 200;
     res.end(
       JSON.stringify({
         success: true,
         publicKey: pushService.getPublicKey(),
+        ...(deviceCount !== undefined ? { deviceCount } : {}),
+        ...(isEndpointRegistered !== undefined ? { isEndpointRegistered } : {}),
       }),
     );
     return;

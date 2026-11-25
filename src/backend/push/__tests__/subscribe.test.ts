@@ -65,6 +65,26 @@ describe('API: /api/v1/push/subscribe', () => {
     expect(typeof data.publicKey).toBe('string');
   });
 
+  it('GET con merchantId y endpoint debe verificar si el endpoint sigue registrado en BD', async () => {
+    const { getSupabaseRepository } = await import('../../../../src/backend/supabase/client.js');
+    vi.mocked(getSupabaseRepository().getSubscriptionsByMerchantId).mockResolvedValueOnce([
+      {
+        merchantId: 'm-check-1',
+        endpoint: 'https://fcm.googleapis.com/fcm/send/live-token',
+        keys: { p256dh: 'k1', auth: 'k2' },
+      },
+    ]);
+
+    const { req, res } = createMockReqRes('GET');
+    req.url = '/api/v1/push/subscribe?merchantId=m-check-1&endpoint=' + encodeURIComponent('https://fcm.googleapis.com/fcm/send/dead-token');
+    await handler(req, res);
+
+    expect(res.statusCode).toBe(200);
+    const data = (res as any)._getData();
+    expect(data.deviceCount).toBe(1);
+    expect(data.isEndpointRegistered).toBe(false);
+  });
+
   it('POST debe rechazar payload incompleto con 400', async () => {
     const { req, res } = createMockReqRes('POST', { merchantId: 'm1' }); // falta subscription
     await handler(req, res);

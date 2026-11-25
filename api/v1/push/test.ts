@@ -26,13 +26,23 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return;
     }
 
+    // Permite esperar unos segundos en servidor para que el usuario bloquee la pantalla del celular antes de disparar FCM
+    const requestedDelay = Number(body.delayMs || 0);
+    const safeDelayMs = Number.isFinite(requestedDelay)
+      ? Math.max(0, Math.min(6000, Math.round(requestedDelay)))
+      : 0;
+
+    if (safeDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, safeDelayMs));
+    }
+
     const repository = getSupabaseRepository();
     const pushService = new WebPushService(repository);
 
     const result = await pushService.broadcastToMerchant(merchantId, {
-      title: '🔔 ¡Prueba de Alerta Web Push!',
-      body: 'TransferYA: Las notificaciones del sistema en segundo plano están funcionando perfectamente.',
-      tag: 'transferya-test-alert',
+      title: '⚡ ¡Prueba en Pantalla Bloqueada Exitosa! · TransferYA',
+      body: 'Las alertas Web Push en segundo plano están conectadas con Google FCM y listas para tus cobros.',
+      tag: `ty-lockscreen-test-${Date.now()}`,
       url: '/',
     });
 

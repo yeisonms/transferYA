@@ -1544,7 +1544,14 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-            <span id="pushBtnText">Push activo</span>
+            <span id="pushBtnText">Activar Push</span>
+          </button>
+
+          <button id="pushTestBtn" onclick="sendLockscreenTestPush()"
+            class="hidden px-2.5 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-xs font-medium text-sky-300 transition-all items-center gap-1 shadow-sm"
+            title="Enviar un Push real del servidor en 4 segundos: tócalo y bloquea tu celular enseguida para verificar">
+            <span>🧪</span>
+            <span id="pushTestBtnText">Probar Push (4s)</span>
           </button>
 
           <button onclick="refreshMerchantData()"
@@ -2414,7 +2421,13 @@
                 class="px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm"
                 title="Activar o pausar notificaciones push flotantes del sistema">
                 <span id="posPushIcon">📲</span>
-                <span id="posPushBtnText">Push: Activo</span>
+                <span id="posPushBtnText">Activar Push</span>
+              </button>
+              <button id="posPushTestBtn" onclick="sendLockscreenTestPush()"
+                class="hidden px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-xs font-semibold text-sky-300 transition-all items-center gap-1 shadow-sm"
+                title="Enviar Push real del servidor en 4s: tócalo y bloquea tu celular enseguida">
+                <span>🧪</span>
+                <span id="posPushTestBtnText">Probar Push (4s)</span>
               </button>
               <button onclick="triggerVisualSimulation()"
                 class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-semibold text-ty-midnight transition-all flex items-center gap-1.5 shadow-sm"
@@ -6048,6 +6061,7 @@
     }
 
     const announcedTxIds = new Set();
+    let lastPageHiddenAt = 0;
 
     function announceNewPaymentTx(tx) {
       if (!tx || !tx.id) return;
@@ -6076,7 +6090,8 @@
       }
     }
 
-    async function syncLatestTransactions() {
+    async function syncLatestTransactions(options = {}) {
+      const silentCatchUp = Boolean(options && options.silentCatchUp);
       if (!supabaseClient || !currentMerchant || !merchantDevices.length) return;
       const deviceIds = merchantDevices.map((d) => d.id);
       const { data: latestRows, error } = await supabaseClient
@@ -6089,8 +6104,16 @@
       if (error || !Array.isArray(latestRows) || !latestRows.length) return;
 
       const nowMs = Date.now();
-      const newlyArrived = [];
+      const newlyArrivedLive = [];
+      let latestAddedId = null;
       let changed = false;
+
+      // Solo disparar sonido/voz/notificación local desde el polling si la pantalla ha estado abierta en primer plano
+      // (evita que al desbloquear o entrar a la app vuelva a cantar pagos viejos o lance un push tardío)
+      const isActivelyWatchingScreen =
+        !silentCatchUp &&
+        document.visibilityState === "visible" &&
+        nowMs - lastPageHiddenAt >= 4000;
 
       for (const tx of [...latestRows].reverse()) {
         const idx = allTransactions.findIndex((t) => t.id === tx.id);
@@ -6107,9 +6130,15 @@
           changed = true;
         }
 
-        const txAgeMs = Math.abs(nowMs - getTxTimestamp(tx));
-        if (!wasCountableBefore && isAlertableNow && !announcedTxIds.has(tx.id) && txAgeMs <= 10 * 60 * 1000) {
-          newlyArrived.push(tx);
+        if (!wasCountableBefore && isAlertableNow && !announcedTxIds.has(tx.id)) {
+          latestAddedId = tx.id;
+          const txAgeMs = Math.abs(nowMs - getTxTimestamp(tx));
+          if (isActivelyWatchingScreen && txAgeMs <= 25 * 1000) {
+            newlyArrivedLive.push(tx);
+          } else {
+            // Sincronización silenciosa al abrir la app: registrar como visto para no volver a cantarlo
+            announcedTxIds.add(tx.id);
+          }
         }
       }
 
@@ -6117,29 +6146,40 @@
         allTransactions.sort((a, b) => getTxTimestamp(b) - getTxTimestamp(a));
       }
 
-      if (newlyArrived.length > 0) {
-        const latestNew = newlyArrived[newlyArrived.length - 1];
-        // Marcar anteriores del lote como anunciados para no solapar múltiples voces si llegaron varios juntos
-        for (let i = 0; i < newlyArrived.length - 1; i++) {
-          if (newlyArrived[i]?.id) announcedTxIds.add(newlyArrived[i].id);
+      if (newlyArrivedLive.length > 0) {
+        const latestNew = newlyArrivedLive[newlyArrivedLive.length - 1];
+        for (let i = 0; i < newlyArrivedLive.length - 1; i++) {
+          if (newlyArrivedLive[i]?.id) announcedTxIds.add(newlyArrivedLive[i].id);
         }
         announceNewPaymentTx(latestNew);
         recomputeAllViews(latestNew.id);
       } else if (changed) {
-        recomputeAllViews();
+        recomputeAllViews(latestAddedId);
       }
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && currentMerchant && merchantDevices.length > 0) {
-        syncLatestTransactions();
+      if (document.visibilityState === "hidden") {
+        lastPageHiddenAt = Date.now();
+        return;
+      }
+      if (document.visibilityState === "visible") {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistration().then((r) => r?.update()).catch(() => {});
+        }
+        if (currentMerchant && merchantDevices.length > 0) {
+          syncLatestTransactions({ silentCatchUp: true });
+        }
+        if (currentMerchant && isPushEnabled && "Notification" in window && Notification.permission === "granted" && pushSyncState !== "synced") {
+          syncPushSubscription(false, false);
+        }
       }
     });
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("message", (event) => {
         if (event.data && event.data.type === "TRANSFERYA_PUSH_RECEIVED") {
-          syncLatestTransactions();
+          syncLatestTransactions({ silentCatchUp: true });
         }
       });
     }
@@ -10484,8 +10524,19 @@
     }
 
     function registerServiceWorker() {
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => { }));
+      if (!("serviceWorker" in navigator)) return;
+      const doRegister = () => {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) => {
+            reg.update().catch(() => {});
+          })
+          .catch(() => {});
+      };
+      if (document.readyState === "complete" || document.readyState === "interactive") {
+        doRegister();
+      } else {
+        window.addEventListener("load", doRegister);
       }
     }
 
@@ -10539,8 +10590,9 @@
     // =========================================================================
     let isPushEnabled = localStorage.getItem("ty_push_enabled") !== "false";
     let pushSubscription = null;
-    let pushSyncState = "idle"; // "idle" | "synced" | "error"
+    let pushSyncState = "checking"; // "checking" | "synced" | "error"
     let pushSyncError = "";
+    let isTestingPush = false;
 
     async function initWebPush() {
       updatePushButtonUI();
@@ -10552,25 +10604,43 @@
         return;
       }
 
-      if (isPushEnabled && Notification.permission === "granted") {
-        await syncPushSubscription(false);
+      if (isPushEnabled && Notification.permission === "granted" && currentMerchant?.id) {
+        await syncPushSubscription(false, false);
       }
     }
 
     function updatePushButtonUI() {
       const btn = document.getElementById("pushToggleBtn");
       const text = document.getElementById("pushBtnText");
+      const testBtn = document.getElementById("pushTestBtn");
       const posBtn = document.getElementById("posPushToggleBtn");
       const posText = document.getElementById("posPushBtnText");
       const posIcon = document.getElementById("posPushIcon");
+      const posTestBtn = document.getElementById("posPushTestBtn");
 
       if (!("Notification" in window)) {
         if (btn) btn.classList.add("hidden");
         if (posBtn) posBtn.classList.add("hidden");
+        if (testBtn) testBtn.classList.add("hidden");
+        if (posTestBtn) posTestBtn.classList.add("hidden");
         return;
       }
 
+      const setTestButtonsVisible = (visible) => {
+        [testBtn, posTestBtn].forEach((el) => {
+          if (!el) return;
+          if (visible) {
+            el.classList.remove("hidden");
+            el.classList.add("flex");
+          } else {
+            el.classList.add("hidden");
+            el.classList.remove("flex");
+          }
+        });
+      };
+
       if (!isPushEnabled) {
+        setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border text-xs font-medium flex items-center gap-1.5 transition-all text-ty-muted";
           text.textContent = "Push pausado";
@@ -10583,31 +10653,47 @@
           posBtn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
         }
       } else if (Notification.permission === "granted" && pushSyncState === "error") {
+        setTestButtonsVisible(false);
         const errTitle = pushSyncError || "No se pudo registrar el Push en el servidor. Toca para reintentar.";
         if (btn) {
-          btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-400 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400";
+          btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-400 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400 animate-pulse";
           text.textContent = "Reintentar Push";
           btn.title = errTitle;
         }
         if (posBtn) {
-          posBtn.className = "px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs font-semibold text-amber-400 transition-all flex items-center gap-1.5 shadow-sm";
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs font-semibold text-amber-400 transition-all flex items-center gap-1.5 shadow-sm animate-pulse";
           if (posText) posText.textContent = "Push: Reintentar";
           if (posIcon) posIcon.textContent = "⚠️";
           posBtn.title = errTitle;
         }
-      } else if (Notification.permission === "granted") {
+      } else if (Notification.permission === "granted" && pushSyncState === "synced") {
+        setTestButtonsVisible(true);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-sky-500/30 hover:border-sky-500/60 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 shadow-sm";
           text.textContent = "Push activo";
-          btn.title = "Notificaciones push activas. Recibirás alertas con pantalla apagada o en otras apps. Toca para pausar.";
+          btn.title = "Notificaciones push conectadas con Google FCM. Recibirás alertas con pantalla bloqueada. Toca para pausar.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm";
           if (posText) posText.textContent = "Push: Activo";
           if (posIcon) posIcon.textContent = "📲";
-          posBtn.title = "Notificaciones push activas. Recibirás alertas con pantalla apagada o en otras apps. Toca para pausar.";
+          posBtn.title = "Notificaciones push conectadas con Google FCM. Recibirás alertas con pantalla bloqueada. Toca para pausar.";
+        }
+      } else if (Notification.permission === "granted") {
+        setTestButtonsVisible(false);
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-300";
+          text.textContent = "Conectando Push...";
+          btn.title = "Toca para sincronizar las alertas Push con el servidor.";
+        }
+        if (posBtn) {
+          posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-semibold text-sky-300 transition-all flex items-center gap-1.5 shadow-sm";
+          if (posText) posText.textContent = "Conectando Push...";
+          if (posIcon) posIcon.textContent = "🔄";
+          posBtn.title = "Toca para sincronizar las alertas Push con el servidor.";
         }
       } else if (Notification.permission === "denied") {
+        setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-rose-400";
           text.textContent = "Push bloqueado";
@@ -10620,6 +10706,7 @@
           posBtn.title = "Notificaciones bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
         }
       } else {
+        setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 animate-pulse";
           text.textContent = "Activar Push";
@@ -10646,28 +10733,31 @@
         return;
       }
 
-      // Si hubo un error previo sincronizando el push, tocar el botón reintenta el registro en lugar de pausar
-      if (isPushEnabled && Notification.permission === "granted" && pushSyncState === "error") {
-        const retryRes = await syncPushSubscription(true);
+      // Si aún no está sincronizado o tuvo error, tocar el botón fuerza una suscripción FCM fresca en lugar de pausar
+      if (isPushEnabled && Notification.permission === "granted" && pushSyncState !== "synced") {
+        const retryRes = await syncPushSubscription(true, true);
         if (retryRes.ok) {
-          showToast("🔔 ¡Suscripción Push sincronizada correctamente!");
+          showToast("🔔 ¡Push conectado con Google FCM para pantalla bloqueada!");
         }
         return;
       }
 
       if (isPushEnabled && Notification.permission === "granted") {
         isPushEnabled = false;
-        pushSyncState = "idle";
+        pushSyncState = "checking";
         pushSyncError = "";
         localStorage.setItem("ty_push_enabled", "false");
+        localStorage.removeItem("ty_push_last_endpoint");
         updatePushButtonUI();
         showToast("Notificaciones push pausadas en este dispositivo.");
         try {
-          if (pushSubscription) {
+          const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.ready : null;
+          const activeSub = pushSubscription || (reg ? await reg.pushManager.getSubscription() : null);
+          if (activeSub?.endpoint) {
             await fetch("/api/v1/push/subscribe", {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ endpoint: pushSubscription.endpoint }),
+              body: JSON.stringify({ endpoint: activeSub.endpoint }),
             });
           }
         } catch { }
@@ -10682,22 +10772,26 @@
       if (perm === "granted") {
         isPushEnabled = true;
         localStorage.setItem("ty_push_enabled", "true");
-        const syncRes = await syncPushSubscription(true);
+        pushSyncState = "checking";
+        updatePushButtonUI();
+
+        // Forzar token nuevo en activación explícita para evitar tokens FCM vencidos/revocados
+        const syncRes = await syncPushSubscription(true, true);
         updatePushButtonUI();
 
         if (!syncRes.ok) {
           return;
         }
 
-        showToast("🔔 ¡Notificaciones Push activadas!");
+        showToast("🔔 ¡Push conectado! Toca '🧪 Probar Push (4s)' y bloquea tu celular para verificar.");
 
         try {
           if ("serviceWorker" in navigator) {
             const reg = await navigator.serviceWorker.ready;
-            reg.showNotification("⚡ TransferYA · Alertas Push Activas", {
-              body: "¡Listo! Recibirás avisos flotantes cuando recibas pagos, incluso con el celular bloqueado o en otra app.",
+            reg.showNotification("⚡ TransferYA · Push Conectado", {
+              body: "¡Listo! Tu celular quedó registrado en el servidor para recibir alertas en pantalla bloqueada.",
               icon: "/icons/icon-192.png",
-              badge: "/icons/icon.svg",
+              badge: "/icons/favicon-96x96.png",
               tag: "ty-welcome-alert",
               vibrate: [200, 100, 200],
             });
@@ -10711,7 +10805,7 @@
       }
     }
 
-    async function syncPushSubscription(showFeedback = false) {
+    async function syncPushSubscription(showFeedback = false, forceFreshToken = false) {
       try {
         if (!currentMerchant || !currentMerchant.id) return { ok: false, reason: "NO_MERCHANT" };
         if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -10723,19 +10817,50 @@
         }
 
         const reg = await navigator.serviceWorker.ready;
+        try { await reg.update(); } catch { }
+
         let sub = await reg.pushManager.getSubscription();
+        const lastSavedEndpoint = localStorage.getItem("ty_push_last_endpoint");
+
+        // Verificar contra el servidor: si teníamos un endpoint previo pero FCM lo eliminó (410), renovar token
+        let publicKey = null;
+        if (sub && !forceFreshToken && lastSavedEndpoint && lastSavedEndpoint === sub.endpoint) {
+          try {
+            const checkRes = await fetch(
+              `/api/v1/push/subscribe?merchantId=${encodeURIComponent(currentMerchant.id)}&endpoint=${encodeURIComponent(sub.endpoint)}`
+            );
+            if (checkRes.ok) {
+              const checkData = await checkRes.json();
+              publicKey = checkData?.publicKey || null;
+              if (checkData?.isEndpointRegistered === false) {
+                console.info("[WebPush] Suscripción previa expiró en servidor (410). Renovando token FCM...");
+                forceFreshToken = true;
+              }
+            }
+          } catch { }
+        }
+
+        if (sub && forceFreshToken) {
+          try {
+            await sub.unsubscribe();
+          } catch { }
+          sub = null;
+        }
 
         if (!sub) {
-          const res = await fetch("/api/v1/push/subscribe");
-          if (!res.ok) {
-            throw new Error(`No se pudo obtener la llave VAPID (HTTP ${res.status})`);
+          if (!publicKey) {
+            const res = await fetch("/api/v1/push/subscribe");
+            if (!res.ok) {
+              throw new Error(`No se pudo obtener la llave VAPID (HTTP ${res.status})`);
+            }
+            const data = await res.json();
+            publicKey = data?.publicKey || null;
           }
-          const data = await res.json();
-          if (!data?.publicKey) {
+          if (!publicKey) {
             throw new Error("El servidor no devolvió llave pública VAPID.");
           }
 
-          const appServerKey = urlBase64ToUint8Array(data.publicKey);
+          const appServerKey = urlBase64ToUint8Array(publicKey);
           sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: appServerKey,
@@ -10763,6 +10888,7 @@
           throw new Error(errMsg);
         }
 
+        localStorage.setItem("ty_push_last_endpoint", sub.endpoint);
         pushSyncState = "synced";
         pushSyncError = "";
         updatePushButtonUI();
@@ -10774,7 +10900,7 @@
           /push service error/i.test(rawMsg);
         pushSyncState = "error";
         pushSyncError = isBrowserPushBlocked
-          ? "Este navegador bloqueó el servicio Google Push (en Brave activa 'Servicios de Google para mensajería push' o usa Chrome)."
+          ? "Este navegador bloqueó Google Push. Usa Google Chrome en tu celular (o en Brave activa 'Servicios de Google para mensajería push')."
           : rawMsg;
         console.warn("Advertencia sincronizando suscripción push:", err);
         updatePushButtonUI();
@@ -10782,6 +10908,67 @@
           showToast(`⚠️ ${pushSyncError}`, true);
         }
         return { ok: false, error: pushSyncError };
+      }
+    }
+
+    async function sendLockscreenTestPush() {
+      if (isTestingPush) return;
+      if (!currentMerchant?.id) {
+        showToast("Inicia sesión primero para probar las alertas Push.", true);
+        return;
+      }
+
+      isTestingPush = true;
+      const t1 = document.getElementById("pushTestBtnText");
+      const t2 = document.getElementById("posPushTestBtnText");
+      if (t1) t1.textContent = "Enviando en 4s...";
+      if (t2) t2.textContent = "Enviando en 4s...";
+
+      try {
+        const syncRes = await syncPushSubscription(true, false);
+        if (!syncRes.ok) return;
+
+        showToast("🔒 ¡Bloquea tu celular AHORA! En 4 segundos el servidor enviará una alerta Push real...");
+
+        const res = await fetch("/api/v1/push/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            merchantId: currentMerchant.id,
+            delayMs: 4000,
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data?.success) {
+          showToast(`Error enviando prueba Push: ${data?.error || res.status}`, true);
+          return;
+        }
+
+        const total = data.result?.total || 0;
+        const sent = data.result?.sent || 0;
+        if (sent > 0) {
+          showToast(`✅ Push real enviado por Google FCM (${sent}/${total} dispositivos).`);
+        } else if (total === 0) {
+          pushSyncState = "error";
+          pushSyncError = "El servidor no encontró suscripción activa. Toca 'Reintentar Push'.";
+          updatePushButtonUI();
+          showToast("⚠️ El servidor tenía 0 dispositivos registrados. Toca 'Reintentar Push' para renovar.", true);
+        } else {
+          // Si FCM rechazó el token (ej. 410), renovar inmediatamente
+          await syncPushSubscription(false, true);
+          const firstErr = data.result?.details?.[0];
+          showToast(
+            `⚠️ FCM rechazó el token anterior (${firstErr?.statusCode || "error"}). Se renovó automáticamente; prueba otra vez.`,
+            true
+          );
+        }
+      } catch (err) {
+        showToast(`Error de red en prueba Push: ${err?.message || err}`, true);
+      } finally {
+        isTestingPush = false;
+        if (t1) t1.textContent = "Probar Push (4s)";
+        if (t2) t2.textContent = "Probar Push (4s)";
       }
     }
 
@@ -10805,7 +10992,7 @@
             return reg.showNotification(title, {
               body,
               icon: "/icons/icon-192.png",
-              badge: "/icons/icon.svg",
+              badge: "/icons/favicon-96x96.png",
               tag: notifTag,
               renotify: false,
               requireInteraction: true,

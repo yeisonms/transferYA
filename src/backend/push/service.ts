@@ -62,7 +62,7 @@ export class WebPushService {
       title: payload.title,
       body: payload.body,
       icon: payload.icon || '/icons/icon-192.png',
-      badge: payload.badge || '/icons/icon.svg',
+      badge: payload.badge || '/icons/favicon-96x96.png',
       tag: payload.tag || 'transferya-payment',
       url: payload.url || '/',
       data: payload.data || {},
@@ -71,7 +71,7 @@ export class WebPushService {
 
     try {
       const res = await webpush.sendNotification(pushSubscription, payloadString, {
-        TTL: 300,
+        TTL: 3600,
         urgency: 'high',
       });
       return { success: true, statusCode: res.statusCode };
@@ -96,27 +96,39 @@ export class WebPushService {
   async broadcastToMerchant(
     merchantId: string,
     payload: PushNotificationPayload,
-  ): Promise<{ total: number; sent: number; failed: number }> {
+  ): Promise<{
+    total: number;
+    sent: number;
+    failed: number;
+    details?: Array<{ endpointSuffix: string; success: boolean; statusCode?: number; error?: string }>;
+  }> {
     if (!this.repository || typeof this.repository.getSubscriptionsByMerchantId !== 'function') {
-      return { total: 0, sent: 0, failed: 0 };
+      return { total: 0, sent: 0, failed: 0, details: [] };
     }
 
     const subscriptions = await this.repository.getSubscriptionsByMerchantId(merchantId);
     if (!subscriptions || subscriptions.length === 0) {
-      return { total: 0, sent: 0, failed: 0 };
+      return { total: 0, sent: 0, failed: 0, details: [] };
     }
 
     let sent = 0;
     let failed = 0;
+    const details: Array<{ endpointSuffix: string; success: boolean; statusCode?: number; error?: string }> = [];
 
     await Promise.all(
       subscriptions.map(async (sub) => {
         const result = await this.sendToSubscription(sub, payload);
         if (result.success) sent++;
         else failed++;
+        details.push({
+          endpointSuffix: sub.endpoint.slice(-16),
+          success: result.success,
+          statusCode: result.statusCode,
+          error: result.error,
+        });
       }),
     );
 
-    return { total: subscriptions.length, sent, failed };
+    return { total: subscriptions.length, sent, failed, details };
   }
 }

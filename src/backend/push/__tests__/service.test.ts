@@ -67,7 +67,8 @@ describe('WebPushService (Fase 2 - Notificaciones Web Push)', () => {
     expect(parsedPayload.title).toBe('⚡ ¡Pago Verificado en Caja 1!');
     expect(parsedPayload.body).toContain('$50.000 COP');
     expect(parsedPayload.icon).toBe('/icons/icon-192.png');
-    expect(callArgs[2]).toEqual({ TTL: 300, urgency: 'high' });
+    expect(parsedPayload.badge).toBe('/icons/favicon-96x96.png');
+    expect(callArgs[2]).toEqual({ TTL: 3600, urgency: 'high' });
   });
 
   it('debe eliminar automáticamente suscripciones caducadas cuando el push service retorna 410 Gone o 404', async () => {
