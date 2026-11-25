@@ -69,6 +69,7 @@ function mapRowToSummary(
     name: row.name,
     ownerId: row.owner_id,
     status: row.status,
+    planId: row.plan_id || 'emprendedor',
     subscriptionStatus: rawSubStatus,
     subscriptionEndsAt: resolvedEndsAt,
     subscriptionEndsAtIso: resolvedEndsAt ? new Date(resolvedEndsAt).toISOString() : null,
@@ -159,6 +160,7 @@ export async function applySubscriptionAction(
 
     case 'EXTEND_30_DAYS': {
       const days = payload.days ?? 30;
+      const targetPlanId = payload.planId || merchant.plan_id || 'emprendedor';
       // Si la cuenta aún está vigente, extiende sumando a la fecha actual de corte.
       // Si ya venció o no tiene fecha, fija los días a partir de ahora.
       const baseMs = currentEndsAtMs && currentEndsAtMs > nowMs ? currentEndsAtMs : nowMs;
@@ -169,7 +171,28 @@ export async function applySubscriptionAction(
       updates.subscription_ends_at = iso;
       updates.subscription_expires_at = iso;
       updates.status = 'ACTIVE';
-      message = `Plan Pro extendido +${days} días con éxito (nuevo vencimiento: ${iso.split('T')[0]}).`;
+      updates.plan_id = targetPlanId;
+
+      const planName =
+        targetPlanId === 'pro'
+          ? 'Pro Multi-Caja'
+          : targetPlanId === 'negocio'
+            ? 'Negocio'
+            : 'Emprendedor';
+      message = `Plan ${planName} extendido +${days} días con éxito (nuevo vencimiento: ${iso.split('T')[0]}).`;
+      break;
+    }
+
+    case 'CHANGE_PLAN': {
+      const targetPlanId = payload.planId || 'emprendedor';
+      updates.plan_id = targetPlanId;
+      const planName =
+        targetPlanId === 'pro'
+          ? 'Pro Multi-Caja'
+          : targetPlanId === 'negocio'
+            ? 'Negocio'
+            : 'Emprendedor';
+      message = `Plan actualizado a ${planName} con éxito.`;
       break;
     }
 
@@ -199,6 +222,7 @@ export async function applySubscriptionAction(
 
     case 'APPROVE_INVOICE': {
       const days = payload.days ?? 30;
+      const targetPlanId = payload.planId || merchant.plan_id || 'emprendedor';
       const ref = payload.referenceCode?.trim() || '';
 
       if (ref && typeof repo.updateInvoiceStatusByReference === 'function') {
@@ -218,9 +242,17 @@ export async function applySubscriptionAction(
       updates.subscription_ends_at = iso;
       updates.subscription_expires_at = iso;
       updates.status = 'ACTIVE';
+      updates.plan_id = targetPlanId;
+
+      const planName =
+        targetPlanId === 'pro'
+          ? 'Pro Multi-Caja'
+          : targetPlanId === 'negocio'
+            ? 'Negocio'
+            : 'Emprendedor';
       message = ref
-        ? `Factura ${ref} aprobada con éxito. Plan Pro extendido +${days} días (nuevo corte: ${iso.split('T')[0]}).`
-        : `Pago aprobado. Plan Pro extendido +${days} días con éxito.`;
+        ? `Factura ${ref} aprobada con éxito. Plan ${planName} extendido +${days} días (nuevo corte: ${iso.split('T')[0]}).`
+        : `Pago aprobado. Plan ${planName} extendido +${days} días con éxito.`;
       break;
     }
 

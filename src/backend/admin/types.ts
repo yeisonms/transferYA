@@ -7,12 +7,14 @@ export type AdminSubscriptionAction =
   | 'RESUME'
   | 'UPDATE_BILLING_PHONE'
   | 'APPROVE_INVOICE'
+  | 'CHANGE_PLAN'
   | 'DELETE_MERCHANT';
 
 export interface AdminSubscriptionActionPayload {
   merchantId: string;
   action: AdminSubscriptionAction;
   days?: number;
+  planId?: string;
   billingPhone?: string;
   referenceCode?: string;
   invoiceId?: string;
@@ -23,6 +25,7 @@ export interface AdminMerchantSummary {
   name: string;
   ownerId: string;
   status: string;
+  planId: string;
   subscriptionStatus: SubscriptionStatus;
   subscriptionEndsAt: number | null;
   subscriptionEndsAtIso: string | null;
@@ -40,6 +43,7 @@ export interface AdminMerchantRow {
   name: string;
   owner_id: string;
   status: string;
+  plan_id?: string | null;
   subscription_status?: string | null;
   subscription_ends_at?: string | null;
   subscription_expires_at?: string | null;
@@ -68,6 +72,7 @@ export interface IAdminSubscriptionsRepository {
       subscription_expires_at?: string;
       status?: string;
       billing_phone?: string;
+      plan_id?: string;
       updated_at?: string;
     },
   ): Promise<AdminMerchantRow | null>;

@@ -1043,6 +1043,7 @@ export class SupabaseRepository
       subscription_expires_at?: string;
       status?: string;
       billing_phone?: string;
+      plan_id?: string;
       updated_at?: string;
     },
   ): Promise<AdminMerchantRow | null> {

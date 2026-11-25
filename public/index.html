@@ -3898,6 +3898,104 @@
   </div>
 
   <!-- ================================================================== -->
+  <!-- MODAL: APROBAR / GESTIONAR PLAN DE SUSCRIPCIÓN (SUPER-ADMIN) -->
+  <!-- ================================================================== -->
+  <div id="adminPlanModal"
+    class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      class="bg-ty-surface-low border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 relative shadow-2xl my-auto">
+      <button onclick="closeAdminPlanModal()"
+        class="absolute top-4 right-4 text-ty-muted hover:text-white p-1 rounded-lg bg-ty-surface">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Aprobar / Modificar Plan de Suscripción</span>
+        </h3>
+        <p class="text-xs text-ty-muted mt-1" id="adminPlanModalStoreName">Comercio</p>
+      </div>
+
+      <!-- Selector de Plan Oficial -->
+      <div class="space-y-2">
+        <label class="text-[11px] font-mono text-ty-muted uppercase font-bold">Selecciona el Plan Oficial</label>
+        <div class="grid grid-cols-1 gap-2" id="adminPlanRadioGroup">
+          <!-- Plan Emprendedor -->
+          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="adminPlanSelect" value="emprendedor" class="text-emerald-500 focus:ring-0" />
+              <div>
+                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>🌱 Plan Emprendedor</span>
+                  <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-1.5 py-0.2 rounded font-bold">$29.900/m</span>
+                </div>
+                <div class="text-[10px] text-ty-muted">1 Celular · 1 Cajero WhatsApp · 1.500 alertas/m</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Plan Negocio -->
+          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-sky-500/50 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-500/10">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="adminPlanSelect" value="negocio" class="text-sky-500 focus:ring-0" />
+              <div>
+                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>💼 Plan Negocio</span>
+                  <span class="text-[10px] font-mono text-sky-400 bg-sky-500/15 px-1.5 py-0.2 rounded font-bold">$49.900/m</span>
+                </div>
+                <div class="text-[10px] text-ty-muted">1 Celular · 2 Cajeros WhatsApp · 3.500 alertas/m</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Plan Pro Multi-Caja -->
+          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-purple-500/50 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-500/10">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="adminPlanSelect" value="pro" class="text-purple-500 focus:ring-0" />
+              <div>
+                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>👑 Plan Pro Multi-Caja</span>
+                  <span class="text-[10px] font-mono text-purple-400 bg-purple-500/15 px-1.5 py-0.2 rounded font-bold">$89.900/m</span>
+                </div>
+                <div class="text-[10px] text-ty-muted">3 Celulares (Multi-Sede) · 4 Cajeros WA · 7.500 alertas/m</div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Selector de Vigencia a Acreditar -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-mono text-ty-muted uppercase font-bold">Vigencia a Acreditar</label>
+        <select id="adminPlanModalDays"
+          class="w-full bg-ty-surface border border-ty-border rounded-xl px-3 py-2 text-xs font-mono text-white focus:border-emerald-500 focus:ring-0">
+          <option value="30" selected>+30 días (1 Mes estándar)</option>
+          <option value="60">+60 días (2 Meses)</option>
+          <option value="90">+90 días (3 Meses)</option>
+          <option value="180">+180 días (6 Meses)</option>
+          <option value="365">+365 días (1 Año)</option>
+          <option value="0">Solo cambiar plan (conservar días actuales)</option>
+        </select>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="closeAdminPlanModal()"
+          class="flex-1 py-2 rounded-xl bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white transition-all">
+          Cancelar
+        </button>
+        <button onclick="saveAdminPlanModal()" id="adminPlanModalSaveBtn"
+          class="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase transition-all shadow-sm">
+          ✓ Guardar y Activar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <!-- MODAL: CIERRE DE TURNO Y CUADRE DE CAJA EN 1 CLIC -->
   <!-- ================================================================== -->
   <div id="turnClosingModal"
@@ -8731,7 +8829,9 @@
     }
 
     async function adminApprovePendingInvoice(ref, merchantId, amount = 29900) {
-      if (!confirm(`¿Confirmas APROBAR el pago de la orden ${ref} y acreditar +30 Días Pro al comercio?`)) return;
+      const targetPlanId = amount >= 80000 ? 'pro' : (amount >= 40000 ? 'negocio' : 'emprendedor');
+      const planLabel = targetPlanId === 'pro' ? 'Pro Multi-Caja' : (targetPlanId === 'negocio' ? 'Negocio' : 'Emprendedor');
+      if (!confirm(`¿Confirmas APROBAR el pago de la orden ${ref} y acreditar +30 Días (${planLabel}) al comercio?`)) return;
 
       const targetMerchantId = merchantId || currentMerchant?.id;
       if (!targetMerchantId) {
@@ -8751,6 +8851,7 @@
             merchantId: targetMerchantId,
             action: "APPROVE_INVOICE",
             referenceCode: ref,
+            planId: targetPlanId,
             days: 30,
           }),
         });
@@ -9270,45 +9371,6 @@
         text.textContent = "Sonido activo";
         btn.title = "Alerta sonora activa (campana de cobro). Toca para silenciar.";
       } else {
-        btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-500 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400 animate-pulse";
-        text.textContent = "Activar sonido";
-        btn.title = "El navegador requiere 1 clic para reproducir alertas sonoras.";
-      }
-    }
-
-    async function playChime(fromUserGesture = false) {
-      if (!isAudioEnabled) return false;
-      if (!audioCtx) initAudio();
-
-      if (audioCtx && audioCtx.state === "suspended") {
-        try { await audioCtx.resume(); } catch { }
-      }
-      updateAudioButtonUI();
-      updatePosVoiceButtonUI();
-
-      if (audioCtx && audioCtx.state === "running") {
-        const start = audioCtx.currentTime + 0.015;
-
-        // "Cha-" Mecánico de gaveta / monedas de caja registradora
-        const c1 = audioCtx.createOscillator(), gc1 = audioCtx.createGain();
-        c1.type = "sine";
-        c1.frequency.setValueAtTime(2400, start);
-        gc1.gain.setValueAtTime(0.35, start);
-        gc1.gain.exponentialRampToValueAtTime(0.001, start + 0.035);
-        c1.connect(gc1); gc1.connect(audioCtx.destination);
-        c1.start(start); c1.stop(start + 0.04);
-
-        const c2 = audioCtx.createOscillator(), gc2 = audioCtx.createGain();
-        c2.type = "sine";
-        c2.frequency.setValueAtTime(3200, start + 0.025);
-        gc2.gain.setValueAtTime(0.30, start + 0.025);
-        gc2.gain.exponentialRampToValueAtTime(0.001, start + 0.06);
-        c2.connect(gc2); gc2.connect(audioCtx.destination);
-        c2.start(start + 0.025); c2.stop(start + 0.065);
-
-        // "-Ching! 🔔" Campana de bronce de caja registradora
-        const bellStart = start + 0.055;
-
         // Armónico fundamental: 1568 Hz (Sol6)
         const b1 = audioCtx.createOscillator(), gb1 = audioCtx.createGain();
         b1.type = "sine";
@@ -9939,12 +10001,13 @@
               </button>
             </div>
 
-            <!-- Estado Suscripción -->
-            <div class="md:col-span-2">
+            <!-- Estado Suscripción & Plan -->
+            <div class="md:col-span-2 flex flex-col items-start gap-1">
               <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono uppercase border ${badgeInfo.className}">
                 <span class="w-1.5 h-1.5 rounded-full ${badgeInfo.dotColor}"></span>
                 <span>${badgeInfo.label}</span>
               </span>
+              ${getAdminPlanBadgeHtml(m.planId, m.id, m.name)}
             </div>
 
             <!-- Vigencia -->
@@ -9957,7 +10020,7 @@
 
             <!-- Acciones -->
             <div class="md:col-span-3 flex flex-wrap items-center justify-end gap-1.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-ty-border">
-              <button onclick="executeAdminAction('${m.id}', 'EXTEND_30_DAYS')" class="px-2.5 py-1.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all inline-flex items-center gap-1 shadow-sm" title="Aprobar pago y sumar +30 días Pro al comercio">
+              <button onclick="openAdminPlanModal('${m.id}', '${escapeJsString(m.name)}', '${m.planId || 'emprendedor'}')" class="px-2.5 py-1.5 rounded-lg bg-ty-emerald/15 border border-ty-emerald/40 hover:bg-ty-emerald hover:text-black text-ty-emerald text-xs font-mono font-bold transition-all inline-flex items-center gap-1 shadow-sm" title="Aprobar pago y asignar Plan (+30d, +60d...)">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>✓ Aprobar (+30d)</span>
               </button>
@@ -9991,18 +10054,19 @@
       }
     }
 
-    async function executeAdminAction(merchantId, action, extraPayload = {}) {
+    async function executeAdminAction(merchantId, action, extraPayload = {}, skipConfirm = false) {
       if (!isSuperAdmin() || !currentSession?.access_token) return;
 
       const actionLabels = {
-        EXTEND_30_DAYS: "¿Confirmas extender +30 Días Pro a este comercio?",
+        EXTEND_30_DAYS: "¿Confirmas extender la suscripción de este comercio?",
+        CHANGE_PLAN: "¿Confirmas actualizar el plan de suscripción de este comercio?",
         ACTIVATE_TRIAL: "¿Confirmas activar 7 días de Trial a este comercio?",
         PAUSE: "⚠️ ¿Confirmas pausar este comercio? Sus cajeros dejarán de recibir confirmaciones de cobro de inmediato.",
         RESUME: "¿Confirmas reanudar este comercio?",
         DELETE_MERCHANT: `⚠️ ¿ESTÁS SEGURO de eliminar definitivamente el comercio "${extraPayload.name || merchantId}"?\n\nEsta acción eliminará todas sus cajas vinculadas y es IRREVERSIBLE.`,
       };
 
-      if (actionLabels[action] && !confirm(actionLabels[action])) {
+      if (!skipConfirm && actionLabels[action] && !confirm(actionLabels[action])) {
         return;
       }
 
@@ -10044,6 +10108,7 @@
             currentMerchant.subscription_ends_at = data.merchant.subscriptionEndsAtIso;
             currentMerchant.status = data.merchant.status;
             currentMerchant.billing_phone = data.merchant.billingPhone;
+            currentMerchant.plan_id = data.merchant.planId;
             renderCommercialSubscriptionState();
           }
 
@@ -10150,6 +10215,94 @@
       } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = "Guardar";
+      }
+    }
+
+    // =========================================================================
+    // MODAL: SELECCIÓN Y ASIGNACIÓN DE PLANES DE SUSCRIPCIÓN (SUPER-ADMIN)
+    // =========================================================================
+    let adminEditingPlanMerchantId = null;
+
+    function getAdminPlanBadgeHtml(planId, merchantId, merchantName) {
+      const p = (planId || "emprendedor").toLowerCase();
+      let label = "🌱 Emprendedor";
+      let style = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20";
+      if (p === "negocio") {
+        label = "💼 Negocio";
+        style = "bg-sky-500/10 text-sky-400 border-sky-500/30 hover:bg-sky-500/20";
+      } else if (p === "pro") {
+        label = "👑 Pro Multi-Caja";
+        style = "bg-purple-500/10 text-purple-400 border-purple-500/30 hover:bg-purple-500/20";
+      }
+
+      const safeName = escapeJsString(merchantName);
+      return `
+        <button onclick="openAdminPlanModal('${merchantId}', '${safeName}', '${p}')" 
+          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono border ${style} transition-all cursor-pointer" 
+          title="Hacer clic para cambiar Plan oficial o Vigencia">
+          <span>${label}</span>
+          <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </button>
+      `;
+    }
+
+    function openAdminPlanModal(merchantId, name, currentPlanId) {
+      adminEditingPlanMerchantId = merchantId;
+      const safePlan = (currentPlanId || "emprendedor").toLowerCase();
+
+      const titleEl = document.getElementById("adminPlanModalStoreName");
+      if (titleEl) titleEl.textContent = name || "Comercio";
+
+      const radios = document.querySelectorAll('input[name="adminPlanSelect"]');
+      radios.forEach((r) => {
+        r.checked = (r.value === safePlan);
+      });
+
+      const selectDays = document.getElementById("adminPlanModalDays");
+      if (selectDays) selectDays.value = "30";
+
+      const modal = document.getElementById("adminPlanModal");
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function closeAdminPlanModal() {
+      adminEditingPlanMerchantId = null;
+      const modal = document.getElementById("adminPlanModal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    async function saveAdminPlanModal() {
+      if (!adminEditingPlanMerchantId) return;
+
+      const selectedRadio = document.querySelector('input[name="adminPlanSelect"]:checked');
+      const targetPlan = selectedRadio ? selectedRadio.value : "emprendedor";
+      const daysVal = parseInt(document.getElementById("adminPlanModalDays")?.value || "30", 10);
+
+      const saveBtn = document.getElementById("adminPlanModalSaveBtn");
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Guardando...";
+      }
+
+      try {
+        if (daysVal === 0) {
+          await executeAdminAction(adminEditingPlanMerchantId, "CHANGE_PLAN", {
+            planId: targetPlan,
+          }, true);
+        } else {
+          await executeAdminAction(adminEditingPlanMerchantId, "EXTEND_30_DAYS", {
+            planId: targetPlan,
+            days: daysVal,
+          }, true);
+        }
+        closeAdminPlanModal();
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "✓ Guardar y Activar";
+        }
       }
     }
 

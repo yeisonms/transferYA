@@ -319,6 +319,66 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
     expect(summary!.subscriptionEndsAt).toBe(baseTime + 30 * 86_400_000);
   });
 
+  it('ejecuta EXTEND_30_DAYS permitiendo asignar un plan específico (Emprendedor, Negocio o Pro)', async () => {
+    const repo = new InMemoryAdminRepository();
+    repo.merchants = [
+      {
+        id: 'm1',
+        name: 'Tienda Plan Emprendedor',
+        owner_id: 'o1',
+        status: 'ACTIVE',
+        subscription_status: 'TRIAL',
+        plan_id: 'emprendedor',
+        created_at: new Date(baseTime).toISOString(),
+      },
+    ];
+
+    // Extender con Plan Negocio
+    const resNegocio = await applySubscriptionAction(
+      repo,
+      { merchantId: 'm1', action: 'EXTEND_30_DAYS', planId: 'negocio' },
+      baseTime,
+    );
+    expect(resNegocio.summary?.planId).toBe('negocio');
+    expect(resNegocio.message).toContain('Plan Negocio');
+
+    // Extender con Plan Pro Multi-Caja
+    const resPro = await applySubscriptionAction(
+      repo,
+      { merchantId: 'm1', action: 'EXTEND_30_DAYS', planId: 'pro' },
+      baseTime,
+    );
+    expect(resPro.summary?.planId).toBe('pro');
+    expect(resPro.message).toContain('Plan Pro Multi-Caja');
+  });
+
+  it('ejecuta CHANGE_PLAN actualizando el plan_id sin modificar la fecha de vigencia', async () => {
+    const repo = new InMemoryAdminRepository();
+    const currentEndsAtIso = new Date(baseTime + 20 * 86_400_000).toISOString();
+    repo.merchants = [
+      {
+        id: 'm1',
+        name: 'Tienda Plan Switch',
+        owner_id: 'o1',
+        status: 'ACTIVE',
+        subscription_status: 'ACTIVE',
+        subscription_ends_at: currentEndsAtIso,
+        plan_id: 'emprendedor',
+        created_at: new Date(baseTime).toISOString(),
+      },
+    ];
+
+    const res = await applySubscriptionAction(
+      repo,
+      { merchantId: 'm1', action: 'CHANGE_PLAN', planId: 'pro' },
+      baseTime,
+    );
+
+    expect(res.summary?.planId).toBe('pro');
+    expect(res.summary?.subscriptionEndsAtIso).toBe(currentEndsAtIso); // Vigencia intacta
+    expect(res.message).toContain('Plan actualizado a Pro Multi-Caja');
+  });
+
   it('ejecuta PAUSE activando el estado SUSPENDED sin alterar la fecha de corte', async () => {
     const repo = new InMemoryAdminRepository();
     const currentEndsAtIso = new Date(baseTime + 15 * 86_400_000).toISOString();
