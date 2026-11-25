@@ -1058,6 +1058,30 @@ export class SupabaseRepository
 
     if (!res.ok) {
       const errText = await res.text();
+      // Si la columna plan_id aún no existe en Supabase (PGRST204), reintentamos sin plan_id
+      // para no romper la operación administrativa ni causar error 500 en la UI.
+      if (updates.plan_id && errText.includes('plan_id')) {
+        const fallbackUpdates = { ...updates };
+        delete fallbackUpdates.plan_id;
+        const retryRes = await fetch(
+          `${this.baseUrl}/rest/v1/merchants?id=eq.${encodeURIComponent(merchantId)}`,
+          {
+            method: 'PATCH',
+            headers: this.headers,
+            body: JSON.stringify(fallbackUpdates),
+          },
+        );
+        if (retryRes.ok) {
+          const retryUpdated = (await retryRes.json()) as any[];
+          if (Array.isArray(retryUpdated) && retryUpdated.length > 0) {
+            return {
+              ...retryUpdated[0],
+              plan_id: updates.plan_id,
+            } as AdminMerchantRow;
+          }
+        }
+      }
+
       throw new Error(
         `Error actualizando suscripción de comercio ${merchantId} (${res.status}): ${errText}`,
       );

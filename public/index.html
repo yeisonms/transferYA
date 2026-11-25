@@ -9831,6 +9831,14 @@
 
         const data = await res.json();
         adminMerchants = data.merchants || [];
+        try {
+          const overrides = JSON.parse(localStorage.getItem('ty_admin_plan_overrides') || '{}');
+          adminMerchants.forEach((m) => {
+            if (overrides[m.id] && (!m.planId || m.planId === 'emprendedor')) {
+              m.planId = overrides[m.id];
+            }
+          });
+        } catch {}
         updateAdminMetrics();
         renderAdminMerchantsList();
         loadAdminPendingInvoices();
@@ -10141,6 +10149,13 @@
           const idx = adminMerchants.findIndex((m) => m.id === merchantId);
           if (idx !== -1) {
             adminMerchants[idx] = data.merchant;
+          }
+          if (data.merchant.planId) {
+            try {
+              const overrides = JSON.parse(localStorage.getItem('ty_admin_plan_overrides') || '{}');
+              overrides[merchantId] = data.merchant.planId;
+              localStorage.setItem('ty_admin_plan_overrides', JSON.stringify(overrides));
+            } catch {}
           }
           if (currentMerchant && currentMerchant.id === merchantId) {
             currentMerchant.subscription_status = data.merchant.subscriptionStatus;
