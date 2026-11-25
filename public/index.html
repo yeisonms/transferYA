@@ -9371,6 +9371,45 @@
         text.textContent = "Sonido activo";
         btn.title = "Alerta sonora activa (campana de cobro). Toca para silenciar.";
       } else {
+        btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-500 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400 animate-pulse";
+        text.textContent = "Activar sonido";
+        btn.title = "El navegador requiere 1 clic para reproducir alertas sonoras.";
+      }
+    }
+
+    async function playChime(fromUserGesture = false) {
+      if (!isAudioEnabled) return false;
+      if (!audioCtx) initAudio();
+
+      if (audioCtx && audioCtx.state === "suspended") {
+        try { await audioCtx.resume(); } catch { }
+      }
+      updateAudioButtonUI();
+      updatePosVoiceButtonUI();
+
+      if (audioCtx && audioCtx.state === "running") {
+        const start = audioCtx.currentTime + 0.015;
+
+        // "Cha-" Mecánico de gaveta / monedas de caja registradora
+        const c1 = audioCtx.createOscillator(), gc1 = audioCtx.createGain();
+        c1.type = "sine";
+        c1.frequency.setValueAtTime(2400, start);
+        gc1.gain.setValueAtTime(0.35, start);
+        gc1.gain.exponentialRampToValueAtTime(0.001, start + 0.035);
+        c1.connect(gc1); gc1.connect(audioCtx.destination);
+        c1.start(start); c1.stop(start + 0.04);
+
+        const c2 = audioCtx.createOscillator(), gc2 = audioCtx.createGain();
+        c2.type = "sine";
+        c2.frequency.setValueAtTime(3200, start + 0.025);
+        gc2.gain.setValueAtTime(0.30, start + 0.025);
+        gc2.gain.exponentialRampToValueAtTime(0.001, start + 0.06);
+        c2.connect(gc2); gc2.connect(audioCtx.destination);
+        c2.start(start + 0.025); c2.stop(start + 0.065);
+
+        // "-Ching! 🔔" Campana de bronce de caja registradora
+        const bellStart = start + 0.055;
+
         // Armónico fundamental: 1568 Hz (Sol6)
         const b1 = audioCtx.createOscillator(), gb1 = audioCtx.createGain();
         b1.type = "sine";
