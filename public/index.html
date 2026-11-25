@@ -10102,7 +10102,14 @@
     }
 
     async function executeAdminAction(merchantId, action, extraPayload = {}, skipConfirm = false) {
-      if (!isSuperAdmin() || !currentSession?.access_token) return;
+      if (!isSuperAdmin()) {
+        showToast("Esta acción requiere iniciar sesión como Super-Admin (yeisonm@unicauca.edu.co)", true);
+        return;
+      }
+      if (!currentSession?.access_token) {
+        showToast("Sesión expirada o no autenticada. Inicia sesión de nuevo.", true);
+        return;
+      }
 
       const actionLabels = {
         EXTEND_30_DAYS: "¿Confirmas extender la suscripción de este comercio?",
