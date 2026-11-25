@@ -239,6 +239,55 @@ export class SupabaseRepository
     return Array.isArray(updated) && updated.length > 0;
   }
 
+  async deleteDevice(deviceId: string, merchantId: string): Promise<boolean> {
+    // 1. Invalida tokens de enrolamiento asociados a esta caja
+    await fetch(
+      `${this.baseUrl}/rest/v1/enrollment_tokens?device_id=eq.${encodeURIComponent(deviceId)}`,
+      { method: 'DELETE', headers: this.headers },
+    ).catch(() => null);
+
+    // 2. Desvincula cajeros asignados exclusivamente a esta caja para que pasen a nivel global
+    await fetch(
+      `${this.baseUrl}/rest/v1/cashier_recipients?device_id=eq.${encodeURIComponent(deviceId)}`,
+      {
+        method: 'PATCH',
+        headers: this.headers,
+        body: JSON.stringify({ device_id: null }),
+      },
+    ).catch(() => null);
+
+    // 3. Limpia huellas de pago y notificaciones capturadas por esta caja
+    await fetch(
+      `${this.baseUrl}/rest/v1/payment_fingerprints?device_id=eq.${encodeURIComponent(deviceId)}`,
+      { method: 'DELETE', headers: this.headers },
+    ).catch(() => null);
+
+    await fetch(
+      `${this.baseUrl}/rest/v1/captured_notifications?device_id=eq.${encodeURIComponent(deviceId)}`,
+      { method: 'DELETE', headers: this.headers },
+    ).catch(() => null);
+
+    // 4. Elimina el dispositivo de la tabla devices
+    const res = await fetch(
+      `${this.baseUrl}/rest/v1/devices?id=eq.${encodeURIComponent(deviceId)}&merchant_id=eq.${encodeURIComponent(merchantId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          ...this.headers,
+          Prefer: 'return=representation',
+        },
+      },
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Error eliminando dispositivo ${deviceId}: ${errText}`);
+    }
+
+    const deleted = (await res.json()) as any[];
+    return Array.isArray(deleted) && deleted.length > 0;
+  }
+
   async getDeviceStatus(
     deviceId: string,
   ): Promise<'ACTIVE' | 'REVOKED' | 'NOT_FOUND'> {

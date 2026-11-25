@@ -263,6 +263,30 @@ describe('SupabaseRepository REST Adapter', () => {
 
       fetchSpy.mockRestore();
     });
+
+    it('debe eliminar un dispositivo y desvincular sus recursos asociados', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        // 1. DELETE enrollment_tokens
+        .mockResolvedValueOnce({ ok: true, json: async () => [] } as any)
+        // 2. PATCH cashier_recipients
+        .mockResolvedValueOnce({ ok: true, json: async () => [] } as any)
+        // 3. DELETE payment_fingerprints
+        .mockResolvedValueOnce({ ok: true, json: async () => [] } as any)
+        // 4. DELETE captured_notifications
+        .mockResolvedValueOnce({ ok: true, json: async () => [] } as any)
+        // 5. DELETE devices
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [{ id: 'dev_caja_3', merchant_id: 'm_123' }],
+        } as any);
+
+      const deleted = await repository.deleteDevice('dev_caja_3', 'm_123');
+      expect(deleted).toBe(true);
+      expect(fetchSpy).toHaveBeenCalledTimes(5);
+
+      fetchSpy.mockRestore();
+    });
   });
 });
 

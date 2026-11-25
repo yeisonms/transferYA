@@ -43,6 +43,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return handleHeartbeat(req, res);
   } else if (action === 'reset-test-data') {
     return handleResetTestData(req, res);
+  } else if (action === 'delete') {
+    return handleDeleteDevice(req, res);
   } else if (action === 'health-check' || action === 'watchdog') {
     return handleHealthCheck(req, res);
   } else {
@@ -301,6 +303,91 @@ async function handleResetTestData(req: IncomingMessage, res: ServerResponse): P
         success: true,
         message: `Dispositivo ${deviceId} restablecido con éxito. Registros de prueba eliminados.`,
         data: resetSummary,
+      }),
+    );
+  } catch (error: any) {
+    res.statusCode = 500;
+    res.end(
+      JSON.stringify({
+        success: false,
+        error: 'INTERNAL_SERVER_ERROR',
+        message: error.message,
+      }),
+    );
+  }
+}
+
+async function handleDeleteDevice(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  if (req.method !== 'POST' && req.method !== 'DELETE') {
+    res.statusCode = 405;
+    res.end(JSON.stringify({ success: false, error: 'METHOD_NOT_ALLOWED' }));
+    return;
+  }
+
+  try {
+    const body = await parseJsonBody(req);
+    const deviceId = typeof body.deviceId === 'string' ? body.deviceId.trim() : '';
+    const merchantId = typeof body.merchantId === 'string' ? body.merchantId.trim() : '';
+
+    if (!deviceId || !merchantId) {
+      res.statusCode = 400;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: 'MISSING_FIELDS',
+          message: 'Se requiere deviceId y merchantId para eliminar la caja.',
+        }),
+      );
+      return;
+    }
+
+    const { supabaseUrl, anonKey } = getSupabaseEnvConfig();
+    const ownership = await requireMerchantOwner(
+      { headers: req.headers as Record<string, string | undefined> },
+      { supabaseUrl, supabaseKey: anonKey },
+      async (accessToken) => {
+        const userRepo = createUserScopedRepository(accessToken);
+        return userRepo.getMerchantWithOwner(merchantId);
+      },
+      merchantId,
+    );
+
+    if (!ownership.authorized) {
+      res.statusCode = ownership.statusCode;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: ownership.error,
+          message: ownership.message,
+        }),
+      );
+      return;
+    }
+
+    const serviceRepo = getSupabaseRepository();
+    const merchantDevices = await serviceRepo.getMerchantDevices(merchantId);
+    const deviceExists = merchantDevices.some((d) => d.id === deviceId);
+    if (!deviceExists) {
+      res.statusCode = 404;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: 'DEVICE_NOT_FOUND',
+          message: 'La caja indicada no existe o no pertenece a este comercio.',
+        }),
+      );
+      return;
+    }
+
+    await serviceRepo.deleteDevice(deviceId, merchantId);
+    SentinelWatchdogService.resetCooldown(deviceId);
+
+    res.statusCode = 200;
+    res.end(
+      JSON.stringify({
+        success: true,
+        message: `Caja ${deviceId} eliminada definitivamente del comercio.`,
+        data: { deviceId, merchantId },
       }),
     );
   } catch (error: any) {
