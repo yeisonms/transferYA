@@ -208,5 +208,21 @@ describe('Validación de Migraciones Supabase DDL y Políticas de Aislamiento RL
       expect(sql).toMatch(/prevent_merchant_addons_tampering/i);
     });
   });
+
+  describe('8. Migración de Idempotencia Multicanal a Nivel Comercio (Anti-Duplicados)', () => {
+    it('debe extender payment_fingerprints con merchant_id, índice único por comercio y recarga PostgREST', () => {
+      const dedupMigrationPath = resolve(
+        migrationsDir,
+        '20261125000001_merchant_fingerprint_dedup.sql',
+      );
+      expect(existsSync(dedupMigrationPath)).toBe(true);
+      const sql = readFileSync(dedupMigrationPath, 'utf-8');
+
+      expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS\s+merchant_id/i);
+      expect(sql).toMatch(/uq_merchant_payment_fingerprint/i);
+      expect(sql).toMatch(/idx_captured_notifications_device_amount_captured/i);
+      expect(sql).toMatch(/NOTIFY\s+pgrst/i);
+    });
+  });
 });
 

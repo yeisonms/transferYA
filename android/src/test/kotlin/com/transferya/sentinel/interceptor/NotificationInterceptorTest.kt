@@ -62,7 +62,8 @@ class NotificationInterceptorTest {
             dispatcher = null,
             wakeLockManager = mockWakeLock,
             foregroundController = mockForeground,
-            deviceId = testDeviceId
+            deviceId = testDeviceId,
+            nowProvider = { fixedNow }
         )
     }
 
@@ -177,7 +178,8 @@ class NotificationInterceptorTest {
             dispatcher = null,
             wakeLockManager = mockWakeLock,
             foregroundController = mockForeground,
-            deviceId = testDeviceId
+            deviceId = testDeviceId,
+            nowProvider = { fixedNow }
         )
 
         val nequiEvent = RawNotificationEvent(
@@ -208,6 +210,60 @@ class NotificationInterceptorTest {
 
         assertTrue(mockForeground.isRunning(), "El Foreground Service debe permanecer en ejecución")
         assertEquals("TransferYA Centinela Activo", mockForeground.lastTitle)
+    }
+
+    @Test
+    fun `6 debe ignorar notificaciones historicas mayores a 15 min o anteriores al enrolamiento sin activar WakeLock`() {
+        val enrolledAt = fixedNow - 60_000L
+        val guardedInterceptor = NotificationInterceptor(
+            dao = dao,
+            dispatcher = null,
+            wakeLockManager = mockWakeLock,
+            foregroundController = mockForeground,
+            deviceId = testDeviceId,
+            enrolledAtProvider = { enrolledAt },
+            nowProvider = { fixedNow }
+        )
+
+        // Notificación de ayer (16 horas atrás)
+        val oldEvent = RawNotificationEvent(
+            packageName = "com.nequi.MobileApp",
+            title = "Te enviaron plata por Bre-B",
+            text = "Te enviaron $1.000. Entra a tu app y revisa tu saldo.",
+            postTime = fixedNow - 58_253_000L
+        )
+        val resOld = guardedInterceptor.onNotificationReceived(oldEvent)
+        assertTrue(resOld is InterceptionResult.Ignored)
+
+        // Notificación de hace 2 minutos (previa a la vinculación QR)
+        val preEnrollEvent = RawNotificationEvent(
+            packageName = "com.nequi.MobileApp",
+            title = "Te enviaron plata por Bre-B",
+            text = "Te enviaron $3. Entra a tu app y revisa tu saldo.",
+            postTime = enrolledAt - 120_000L
+        )
+        val resPre = guardedInterceptor.onNotificationReceived(preEnrollEvent)
+        assertTrue(resPre is InterceptionResult.Ignored)
+
+        assertEquals(0, mockWakeLock.acquiredCalls.size)
+        assertEquals(0, dao.getCountByStatus(NotificationStatus.PENDING))
+    }
+
+    @Test
+    fun `7 debe bloquear re-publicaciones duplicadas en SQLite local`() {
+        val nequiEvent = RawNotificationEvent(
+            packageName = "com.nequi.MobileApp",
+            title = "Nequi",
+            text = "Laura te envió $10.000",
+            postTime = fixedNow
+        )
+
+        val first = interceptor.onNotificationReceived(nequiEvent)
+        assertTrue(first is InterceptionResult.Accepted)
+
+        val second = interceptor.onNotificationReceived(nequiEvent)
+        assertTrue(second is InterceptionResult.Ignored)
+        assertEquals(1, dao.getCountByStatus(NotificationStatus.PENDING))
     }
 }
 

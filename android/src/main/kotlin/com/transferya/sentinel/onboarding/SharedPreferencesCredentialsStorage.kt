@@ -13,12 +13,20 @@ class SharedPreferencesCredentialsStorage(context: Context) : IDeviceCredentials
         prefs.edit().putString("device_id", deviceId).apply()
     }
     override fun clearDeviceId() {
-        prefs.edit().remove("device_id").remove("last_heartbeat_at").apply()
+        prefs.edit().remove("device_id").remove("last_heartbeat_at").remove("enrolled_at_ms").apply()
     }
 
     fun getLastHeartbeatAt(): Long = prefs.getLong("last_heartbeat_at", 0L)
     fun saveLastHeartbeatAt(timestampMs: Long) {
         prefs.edit().putLong("last_heartbeat_at", timestampMs).apply()
+    }
+
+    override fun getEnrolledAt(): Long = prefs.getLong("enrolled_at_ms", 0L)
+    override fun saveEnrolledAt(timestampMs: Long) {
+        prefs.edit().putLong("enrolled_at_ms", timestampMs).apply()
+    }
+    override fun clearEnrolledAt() {
+        prefs.edit().remove("enrolled_at_ms").apply()
     }
 
     override fun getMerchantId(): String? = prefs.getString("merchant_id", null)

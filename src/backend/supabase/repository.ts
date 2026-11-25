@@ -404,14 +404,14 @@ export class SupabaseRepository
     id: string,
     update: PipelineNotificationUpdate,
   ): Promise<void> {
-    const body: Record<string, any> = {
-      status: update.status,
-    };
+    const body: Record<string, any> = {};
+    if (update.status !== undefined) body.status = update.status;
     if (update.amount !== undefined) body.amount = update.amount;
     if (update.senderName !== undefined) body.sender_name = update.senderName;
     if (update.paymentReference !== undefined) body.payment_reference = update.paymentReference;
     if (update.whatsappMessageIds !== undefined) body.whatsapp_message_ids = update.whatsappMessageIds;
     if (update.processedAt !== undefined) body.processed_at = update.processedAt;
+    if (Object.keys(body).length === 0) return;
     // Nota: `captured_notifications` no tiene columna `failure_reason` en el esquema actual;
     // evitamos enviarla para que PostgREST no rechace el PATCH con 400 y deje el estado en PROCESSING.
 
@@ -439,6 +439,7 @@ export class SupabaseRepository
     reference?: string | null;
     senderName?: string;
     rawTitle?: string;
+    rawText?: string;
   }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null; senderName?: string | null } | null> {
     try {
       // 1. Obtener los IDs de todos los dispositivos de este comercio
@@ -451,18 +452,69 @@ export class SupabaseRepository
       const deviceIds = new Set(devRows.map((d) => d.id));
       deviceIds.add(params.currentDeviceId);
 
-      // 2. Buscar notificaciones activas o procesadas con el mismo monto o en procesamiento
+      const deviceIdInFilter = Array.from(deviceIds)
+        .map((id) => `"${encodeURIComponent(id.replace(/"/g, ''))}"`)
+        .join(',');
+
+      const isOfficialBankRef = Boolean(
+        params.reference && isUniqueBankTransactionReference(params.reference),
+      );
+
+      // 2a. Búsqueda exacta por referencia bancaria oficial única dentro del comercio (sin límite temporal)
+      if (isOfficialBankRef && params.reference) {
+        const cleanRef = params.reference.trim().toUpperCase();
+        const refRes = await fetch(
+          `${this.baseUrl}/rest/v1/captured_notifications?device_id=in.(${deviceIdInFilter})&status=in.(PROCESSED,PROCESSING,RECEIVED)&payment_reference=eq.${encodeURIComponent(cleanRef)}&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,raw_text,wallet_package&limit=5`,
+          { headers: this.headers }
+        );
+        if (refRes.ok) {
+          const refRows = (await refRes.json()) as any[];
+          for (const row of refRows) {
+            if (row.id === params.currentNotificationId) continue;
+            if (!deviceIds.has(row.device_id)) continue;
+            const rowAmount = row.amount != null ? Number(row.amount) : params.amount;
+            if (rowAmount === params.amount) {
+              return {
+                id: row.id,
+                deviceId: row.device_id,
+                capturedAt: Number(row.captured_at),
+                amount: Number(rowAmount),
+                paymentReference: row.payment_reference,
+                senderName: row.sender_name ?? null,
+              };
+            }
+          }
+        }
+      }
+
+      // 2b. Buscar notificaciones del MISMO COMERCIO en una ventana ±3 min alrededor de capturedAt
+      //     (filtradas directamente en SQL por device_id para no perder candidatos por tráfico global)
+      const windowStart = Math.max(0, params.capturedAt - 180_000);
+      const windowEnd = params.capturedAt + 180_000;
       const notifRes = await fetch(
-        `${this.baseUrl}/rest/v1/captured_notifications?status=in.(PROCESSED,PROCESSING,RECEIVED)&or=(amount.eq.${params.amount},amount.is.null)&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,raw_text,wallet_package&order=captured_at.desc&limit=25`,
+        `${this.baseUrl}/rest/v1/captured_notifications?device_id=in.(${deviceIdInFilter})&status=in.(PROCESSED,PROCESSING,RECEIVED)&or=(amount.eq.${params.amount},amount.is.null)&captured_at=gte.${windowStart}&captured_at=lte.${windowEnd}&select=id,device_id,amount,sender_name,payment_reference,captured_at,raw_title,raw_text,wallet_package&order=captured_at.desc&limit=25`,
         { headers: this.headers }
       );
       if (!notifRes.ok) return null;
       const candidates = (await notifRes.json()) as any[];
 
+      const GENERIC_SENDERS = new Set([
+        'transferencia bre b',
+        'daviplata',
+        'bancolombia',
+        'nequi',
+        'cliente',
+        'cliente nequi',
+        'cliente daviplata',
+        'cliente bancolombia',
+      ]);
+
       let cleanSender = '';
       try {
         if (params.senderName) cleanSender = normalizeSenderForFingerprint(params.senderName);
       } catch {}
+
+      const cleanRawText = (params.rawText || '').trim().toLowerCase();
 
       for (const row of candidates) {
         if (row.id === params.currentNotificationId) continue;
@@ -478,9 +530,6 @@ export class SupabaseRepository
         if (rowAmount !== params.amount) continue;
 
         // Criterio 1: Misma referencia bancaria explícita de la entidad financiera
-        const isOfficialBankRef =
-          Boolean(params.reference && isUniqueBankTransactionReference(params.reference));
-
         if (
           isOfficialBankRef &&
           params.reference &&
@@ -500,17 +549,27 @@ export class SupabaseRepository
         const rowTime = Number(row.captured_at);
         const timeDiff = Math.abs(rowTime - params.capturedAt);
 
+        let rowSender = '';
+        try {
+          if (row.sender_name) rowSender = normalizeSenderForFingerprint(row.sender_name);
+        } catch {}
+
+        const isCompatibleSender =
+          !cleanSender ||
+          !rowSender ||
+          cleanSender === rowSender ||
+          GENERIC_SENDERS.has(cleanSender) ||
+          GENERIC_SENDERS.has(rowSender);
+
+        const rowRawText = (row.raw_text || '').trim().toLowerCase();
+        const isIdenticalRawText = Boolean(cleanRawText && rowRawText && cleanRawText === rowRawText);
+
         // Criterio 2: Cruce multicanal (Centinela vs Gmail) para el mismo pago (ventana de 2 minutos)
         const isCrossChannel =
           (row.device_id.startsWith('cloud_email_') && !params.currentDeviceId.startsWith('cloud_email_')) ||
           (!row.device_id.startsWith('cloud_email_') && params.currentDeviceId.startsWith('cloud_email_'));
 
         if (isCrossChannel && timeDiff <= 120_000) {
-          let rowSender = '';
-          try {
-            if (row.sender_name) rowSender = normalizeSenderForFingerprint(row.sender_name);
-          } catch {}
-
           const isBreB =
             /bre-b/i.test(row.raw_title || '') ||
             /bre-b/i.test(params.rawTitle || '') ||
@@ -519,7 +578,7 @@ export class SupabaseRepository
             row.sender_name === 'Transferencia Bre-B' ||
             params.senderName === 'Transferencia Bre-B';
 
-          if (isBreB || (cleanSender && rowSender && cleanSender === rowSender) || !cleanSender || !rowSender) {
+          if (isBreB || isCompatibleSender) {
             return {
               id: row.id,
               deviceId: row.device_id,
@@ -531,14 +590,10 @@ export class SupabaseRepository
           }
         }
 
-        // Criterio 3: Re-envío duplicado del mismo dispositivo
+        // Criterio 3: Re-envío duplicado del mismo dispositivo (ventana de 15s)
+        // Tolera enriquecimiento previo de nombre genérico (ej. "Transferencia Bre-B" -> nombre real)
         if (row.device_id === params.currentDeviceId && timeDiff <= 15_000) {
-          let rowSender = '';
-          try {
-            if (row.sender_name) rowSender = normalizeSenderForFingerprint(row.sender_name);
-          } catch {}
-
-          if (!cleanSender || !rowSender || cleanSender === rowSender) {
+          if (isIdenticalRawText || isCompatibleSender) {
             return {
               id: row.id,
               deviceId: row.device_id,
@@ -548,6 +603,24 @@ export class SupabaseRepository
               senderName: row.sender_name ?? null,
             };
           }
+        }
+
+        // Criterio 4: Mismo pago re-enviado desde otra caja física del mismo comercio
+        // (ej. reinstalación de Centinela vinculada a otro device_id leyendo notificaciones previas)
+        if (
+          row.device_id !== params.currentDeviceId &&
+          !isCrossChannel &&
+          timeDiff <= 5_000 &&
+          (isIdenticalRawText || isCompatibleSender)
+        ) {
+          return {
+            id: row.id,
+            deviceId: row.device_id,
+            capturedAt: rowTime,
+            amount: Number(rowAmount),
+            paymentReference: row.payment_reference ?? null,
+            senderName: row.sender_name ?? null,
+          };
         }
       }
 
@@ -809,21 +882,53 @@ export class SupabaseRepository
       },
     );
 
-    if (!res.ok) return null;
-    const rows = (await res.json()) as any[];
-    if (!rows || rows.length === 0) return null;
+    if (res.ok) {
+      const rows = (await res.json()) as any[];
+      if (!rows || rows.length === 0) return null;
 
-    const r = rows[0];
-    return {
-      id: r.id,
-      deviceId: r.device_id,
-      merchantId: r.merchant_id,
-      fingerprint: r.payment_fingerprint,
-      wallet: r.wallet,
-      amount: Number(r.amount),
-      senderName: r.sender_name,
-      capturedAt: Number(r.captured_at),
-    };
+      const r = rows[0];
+      return {
+        id: r.id,
+        deviceId: r.device_id,
+        merchantId: r.merchant_id ?? merchantId,
+        fingerprint: r.payment_fingerprint,
+        wallet: r.wallet,
+        amount: Number(r.amount),
+        senderName: r.sender_name,
+        capturedAt: Number(r.captured_at),
+      };
+    }
+
+    // Fallback de alta resiliencia: si la columna merchant_id aún no ha sido migrada (HTTP 400),
+    // consulta payment_fingerprints across TODOS los dispositivos del comercio.
+    if (res.status === 400) {
+      const merchantDevices = await this.getMerchantDevices(merchantId);
+      if (merchantDevices.length === 0) return null;
+      const inList = merchantDevices
+        .map((d) => `"${encodeURIComponent(d.id.replace(/"/g, ''))}"`)
+        .join(',');
+      const fallbackRes = await fetch(
+        `${this.baseUrl}/rest/v1/payment_fingerprints?device_id=in.(${inList})&payment_fingerprint=eq.${encodeURIComponent(fingerprint)}&select=*&limit=1`,
+        { headers: this.headers },
+      );
+      if (!fallbackRes.ok) return null;
+      const rows = (await fallbackRes.json()) as any[];
+      if (!rows || rows.length === 0) return null;
+
+      const r = rows[0];
+      return {
+        id: r.id,
+        deviceId: r.device_id,
+        merchantId,
+        fingerprint: r.payment_fingerprint,
+        wallet: r.wallet,
+        amount: Number(r.amount),
+        senderName: r.sender_name,
+        capturedAt: Number(r.captured_at),
+      };
+    }
+
+    return null;
   }
 
   // -------------------------------------------------------------

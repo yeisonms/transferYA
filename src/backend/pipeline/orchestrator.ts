@@ -52,6 +52,13 @@ async function acquireDeduplicationLock(key: string): Promise<() => void> {
  * 5. Despachar la plantilla de WhatsApp correspondiente (regular o Stale Alert).
  * 6. Actualizar el estado en base de datos (`PROCESSED`, etc.) para auditoría.
  */
+/**
+ * Techo máximo de antigüedad permitido para procesar y despachar una notificación bancaria (30 minutos).
+ * - Entre 90s y 30 min: se procesa como Stale Alert (corte breve de Wi-Fi/datos).
+ * - Mayor a 30 min: se descarta como IGNORED_EXPIRED para evitar notificaciones históricas/zombis.
+ */
+export const DEFAULT_MAX_PAYMENT_AGE_MS = 30 * 60 * 1000;
+
 export class PaymentProcessingPipeline {
   private readonly parser: (
     rawText: string,
@@ -63,6 +70,7 @@ export class PaymentProcessingPipeline {
     captureTimestamp: number,
   ) => string;
   private readonly nowProvider: () => number;
+  private readonly maxPaymentAgeMs: number;
   private readonly billingNoticeCooldownMs: number;
   private readonly renewalPriceCop: number;
   private readonly billingNoticeTimestamps = new Map<string, number>();
@@ -72,6 +80,8 @@ export class PaymentProcessingPipeline {
     this.fingerprintGenerator =
       deps.fingerprintGenerator ?? generateCanonicalPaymentFingerprint;
     this.nowProvider = deps.nowProvider ?? (() => Date.now());
+    this.maxPaymentAgeMs =
+      deps.maxPaymentAgeMs ?? DEFAULT_MAX_PAYMENT_AGE_MS;
     this.billingNoticeCooldownMs =
       deps.billingNoticeCooldownMs ?? 6 * 60 * 60 * 1000;
     this.renewalPriceCop = deps.renewalPriceCop ?? 49_900;
@@ -285,6 +295,7 @@ export class PaymentProcessingPipeline {
           reference: isOfficialUniqueRef ? finalReference : null,
           senderName: receipt.senderName,
           rawTitle: notification.rawTitle,
+          rawText: notification.rawText,
         });
 
         if (recentDup) {
@@ -300,7 +311,8 @@ export class PaymentProcessingPipeline {
             },
           );
 
-          // Si el registro original tenía nombre genérico 'Transferencia Bre-B' y el nuevo tiene nombre real, enriquecer
+          // Si el registro original tenía nombre genérico 'Transferencia Bre-B' y el nuevo tiene nombre real,
+          // enriquecer ÚNICAMENTE senderName (sin sobrescribir status para evitar condiciones de carrera con PROCESSING)
           if (
             recentDup.senderName === 'Transferencia Bre-B' &&
             receipt.senderName &&
@@ -308,7 +320,6 @@ export class PaymentProcessingPipeline {
           ) {
             try {
               await this.deps.notificationRepository.updateNotification(recentDup.id, {
-                status: 'PROCESSED',
                 senderName: receipt.senderName,
               });
             } catch { }
@@ -329,6 +340,35 @@ export class PaymentProcessingPipeline {
             },
           };
         }
+      }
+
+      // 3.2. Techo máximo de antigüedad (TTL Anti-Históricos / Zombis):
+      // Protege incluso a celulares con APKs antiguas contra notificaciones viejas de ayer/días atrás.
+      const effectiveAgeMs = Math.max(
+        notification.latencyMs ?? 0,
+        notification.capturedAt > 0 ? now - notification.capturedAt : 0,
+      );
+      if (effectiveAgeMs > this.maxPaymentAgeMs) {
+        const ageMinutes = Math.round(effectiveAgeMs / 60_000);
+        const maxMinutes = Math.round(this.maxPaymentAgeMs / 60_000);
+        const reason = `Notificación histórica expirada (${ageMinutes} min de antigüedad > límite máximo de ${maxMinutes} min)`;
+
+        await this.deps.notificationRepository.updateNotification(notificationId, {
+          status: 'IGNORED_EXPIRED',
+          amount: receipt.amount,
+          senderName: receipt.senderName,
+          paymentReference: finalReference,
+          failureReason: reason,
+          processedAt: now,
+        });
+
+        return {
+          status: 'IGNORED_EXPIRED',
+          notificationId,
+          receipt,
+          latencyMs: effectiveAgeMs,
+          reason,
+        };
       }
 
       // 4. Generar y evaluar Huella de Idempotencia estándar

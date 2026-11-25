@@ -41,10 +41,12 @@ class InMemoryPipelineNotificationRepository
   ): Promise<void> {
     const existing = this.notifications.get(id);
     if (existing) {
-      this.notifications.set(id, {
+      const merged: StoredNotificationRecord = {
         ...existing,
         ...update,
-      });
+        status: update.status ?? existing.status,
+      };
+      this.notifications.set(id, merged);
     }
     this.updates.push({ id, update });
   }
@@ -1232,6 +1234,73 @@ describe('Orquestador de Procesamiento de Pagos y Despacho WhatsApp (Ticket 12)'
       expect(payload.title).toContain('¡Pago Verificado');
       expect(payload.body).toContain('45.000');
       expect(payload.body).toContain('Carlos');
+    });
+  });
+
+  describe('Protección Anti-Históricos (Capa 2: TTL máximo 30 minutos)', () => {
+    it('debe descartar como IGNORED_EXPIRED pagos de ayer (> 30 min) sin enviar WhatsApp ni Web Push', async () => {
+      const sendSpy = vi.spyOn(mockWhatsappClient, 'sendPaymentAlert');
+      const mockPushService = {
+        broadcastToMerchant: vi.fn().mockResolvedValue({ total: 1, sent: 1, failed: 0 }),
+      } as any;
+
+      const guardedPipeline = new PaymentProcessingPipeline({
+        notificationRepository: notificationRepo,
+        fingerprintRepository: fingerprintRepo,
+        routingService,
+        whatsappClient: mockWhatsappClient,
+        webPushService: mockPushService,
+        nowProvider: () => now,
+      });
+
+      const yesterdayAgeMs = 58_253_000; // ~16 horas atrás (caso real de reinstalación)
+      notificationRepo.seed({
+        id: 'notif_expired_yesterday',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Te enviaron plata por Bre-B',
+        rawText: 'Te enviaron $1.000. Entra a tu app y revisa tu saldo.',
+        capturedAt: now - yesterdayAgeMs,
+        dispatchedAt: now - 500,
+        receivedAt: now,
+        latencyMs: yesterdayAgeMs,
+        isStale: true,
+        status: 'RECEIVED',
+      });
+
+      const result = await guardedPipeline.processCapturedNotification('notif_expired_yesterday');
+      expect(result.status).toBe('IGNORED_EXPIRED');
+      expect(sendSpy).not.toHaveBeenCalled();
+      expect(mockPushService.broadcastToMerchant).not.toHaveBeenCalled();
+
+      const updated = await notificationRepo.getNotificationById('notif_expired_yesterday');
+      expect(updated?.status).toBe('IGNORED_EXPIRED');
+    });
+
+    it('debe seguir procesando Stale Alerts legítimas dentro de los 30 minutos (ej. 10 min de corte Wi-Fi)', async () => {
+      vi.mocked(mockWhatsappClient.sendPaymentAlert).mockResolvedValue({
+        success: true,
+        messageId: 'wamid.stale_10m',
+      });
+
+      const tenMinMs = 10 * 60 * 1000;
+      notificationRepo.seed({
+        id: 'notif_stale_10m_valid',
+        deviceId,
+        walletPackage: 'com.nequi.MobileApp',
+        rawTitle: 'Nequi',
+        rawText: 'Laura Restrepo te envió 15.000, ¡lo mejor!',
+        capturedAt: now - tenMinMs,
+        dispatchedAt: now - 500,
+        receivedAt: now,
+        latencyMs: tenMinMs,
+        isStale: true,
+        status: 'RECEIVED',
+      });
+
+      const result = await pipeline.processCapturedNotification('notif_stale_10m_valid');
+      expect(result.status).toBe('PROCESSED');
+      expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(2);
     });
   });
 });

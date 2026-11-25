@@ -23,7 +23,10 @@ class NotificationInterceptor(
         "com.davivienda.bancamovil",
         "com.bancolombia.personas",
         "com.bancolombia.mimovil"
-    )
+    ),
+    private val enrolledAtProvider: () -> Long = { 0L },
+    private val nowProvider: () -> Long = System::currentTimeMillis,
+    private val maxNotificationAgeMs: Long = NotificationFilter.MAX_NOTIFICATION_AGE_MS
 ) {
     companion object {
         const val WAKE_LOCK_TAG = "TransferYA:Interception"
@@ -44,6 +47,25 @@ class NotificationInterceptor(
         if (!isPackageSupported(event.packageName)) {
             return InterceptionResult.Ignored(
                 reason = "Paquete no soportado",
+                packageName = event.packageName
+            )
+        }
+
+        // 1.5. Barrera anti-históricos y anti-pre-enrolamiento (Capa 1):
+        // Nunca procesar notificaciones previas al enrolamiento o mayores a 15 minutos
+        val nowMs = nowProvider()
+        val enrolledAtMs = enrolledAtProvider()
+        if (!NotificationFilter.isWithinFreshnessWindow(event.postTime, nowMs, enrolledAtMs, maxNotificationAgeMs)) {
+            return InterceptionResult.Ignored(
+                reason = "Notificación histórica o anterior al enrolamiento",
+                packageName = event.packageName
+            )
+        }
+
+        // 1.6. Deduplicación local en SQLite antes de adquirir WakeLock o insertar duplicados
+        if (dao.exists(event.packageName, event.title, event.text, event.postTime)) {
+            return InterceptionResult.Ignored(
+                reason = "Notificación ya registrada en SQLite local",
                 packageName = event.packageName
             )
         }

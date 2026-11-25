@@ -287,6 +287,94 @@ describe('SupabaseRepository REST Adapter', () => {
 
       fetchSpy.mockRestore();
     });
+
+    it('debe hacer fallback multi-caja en findByMerchantFingerprint cuando merchant_id no existe aún (HTTP 400)', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        // 1. Consulta por merchant_id falla con 400 (columna aún no migrada)
+        .mockResolvedValueOnce({ ok: false, status: 400, text: async () => 'column merchant_id does not exist' } as any)
+        // 2. getMerchantDevices devuelve las cajas del comercio
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            { id: 'dev_bc8b5b_caja_1', status: 'ACTIVE', label: 'Caja 1' },
+            { id: 'dev_bc8b5b_caja_2', status: 'ACTIVE', label: 'Caja 2' },
+          ],
+        } as any)
+        // 3. Consulta fallback por device_id=in.(...) encuentra la huella de Caja 1
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'fp_caja_1',
+              device_id: 'dev_bc8b5b_caja_1',
+              payment_fingerprint: 'abc123fp',
+              wallet: 'NEQUI',
+              amount: 1000,
+              sender_name: 'Transferencia Bre-B',
+              captured_at: 1795561863802,
+            },
+          ],
+        } as any);
+
+      const found = await repository.findByMerchantFingerprint('m_pruebas', 'abc123fp');
+      expect(found).not.toBeNull();
+      expect(found?.deviceId).toBe('dev_bc8b5b_caja_1');
+      expect(found?.amount).toBe(1000);
+
+      fetchSpy.mockRestore();
+    });
+
+    it('debe detectar duplicados entre dos cajas físicas distintas del mismo comercio e incluso con nombre Bre-B enriquecido', async () => {
+      const baseTime = 1795564633822;
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        // 1. devices del comercio
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            { id: 'dev_bc8b5b_caja_1' },
+            { id: 'dev_bc8b5b_caja_3' },
+          ],
+        } as any)
+        // 2. captured_notifications filtradas por device_id=in.(...) y ventana de captured_at
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'orig_4d50bc10',
+              device_id: 'dev_bc8b5b_caja_1',
+              amount: 1000,
+              sender_name: 'Yeison Stiven Murcia Calvo', // Enriquecido desde Gmail!
+              payment_reference: 'BREB-9C04698E',
+              captured_at: baseTime,
+              raw_title: 'Te enviaron plata por Bre-B',
+              raw_text: 'Te enviaron $1.000. Entra a tu app y revisa tu saldo.',
+              wallet_package: 'com.nequi.MobileApp',
+            },
+          ],
+        } as any);
+
+      const dup = await repository.findRecentDuplicatePayment({
+        merchantId: 'bc8b5b58-1514-4daf-836f-3bc36a9f61b1',
+        amount: 1000,
+        capturedAt: baseTime,
+        currentDeviceId: 'dev_bc8b5b_caja_3', // Otra caja física del mismo comercio!
+        currentNotificationId: 'new_dup_id',
+        senderName: 'Transferencia Bre-B', // Nombre genérico del push original!
+        rawTitle: 'Te enviaron plata por Bre-B',
+        rawText: 'Te enviaron $1.000. Entra a tu app y revisa tu saldo.',
+      });
+
+      expect(dup).not.toBeNull();
+      expect(dup?.id).toBe('orig_4d50bc10');
+      // Verificar que el query SQL filtró directamente por device_id=in.(...) y captured_at
+      const secondCallUrl = String(fetchSpy.mock.calls[1][0]);
+      expect(secondCallUrl).toContain('device_id=in.');
+      expect(secondCallUrl).toContain('captured_at=gte.');
+
+      fetchSpy.mockRestore();
+    });
   });
 });
 

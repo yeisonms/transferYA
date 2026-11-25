@@ -41,7 +41,8 @@ class DeviceEnrollmentManager(
     private val qrParser: IQrPayloadParser = TransferYaQrParser(),
     private val httpClient: IEnrollmentHttpClient,
     private val keyStoreVault: IKeyStoreVault,
-    private val credentialsStorage: IDeviceCredentialsStorage
+    private val credentialsStorage: IDeviceCredentialsStorage,
+    private val nowProvider: () -> Long = System::currentTimeMillis
 ) {
     companion object {
         const val KEYSTORE_ALIAS_SECRET = "sentinel_hmac_secret"
@@ -93,6 +94,7 @@ class DeviceEnrollmentManager(
             keyStoreVault.storeSecret(KEYSTORE_ALIAS_SECRET, secretBytes)
             credentialsStorage.saveDeviceId(response.deviceId)
             response.merchantId?.let { credentialsStorage.saveMerchantId(it) }
+            credentialsStorage.saveEnrolledAt(nowProvider())
 
             EnrollmentResult(
                 isSuccess = true,
@@ -114,6 +116,7 @@ class DeviceEnrollmentManager(
         keyStoreVault.removeSecret(KEYSTORE_ALIAS_SECRET)
         credentialsStorage.clearDeviceId()
         credentialsStorage.clearMerchantId()
+        credentialsStorage.clearEnrolledAt()
     }
 
     private fun hexToByteArray(hex: String): ByteArray {

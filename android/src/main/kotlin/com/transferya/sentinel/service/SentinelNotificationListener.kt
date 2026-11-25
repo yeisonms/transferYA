@@ -159,8 +159,17 @@ class SentinelNotificationListener : NotificationListenerService() {
             val activeNotifications = getActiveNotifications() ?: return
             Log.i(TAG, "Escaneando ${activeNotifications.size} notificaciones activas en el sistema...")
             val dao = AndroidSqliteNotificationDao(this)
+            val enrolledAtMs = SharedPreferencesCredentialsStorage(this).getEnrolledAt()
+            val nowMs = System.currentTimeMillis()
             for (sbn in activeNotifications) {
                 if (sbn != null && isSupportedPackage(sbn.packageName)) {
+                    // Barrera anti-históricos y anti-pre-enrolamiento (Capa 1):
+                    // Nunca rescatar notificaciones previas al emparejamiento ni mayores a 15 minutos
+                    if (!NotificationFilter.isWithinFreshnessWindow(sbn.postTime, nowMs, enrolledAtMs)) {
+                        Log.d(TAG, "Notificación activa histórica/pre-enrolamiento omitida (postTime=${sbn.postTime}, enrolledAt=$enrolledAtMs, ageSec=${(nowMs - sbn.postTime) / 1000})")
+                        continue
+                    }
+
                     val notification = sbn.notification ?: continue
                     val extras = notification.extras ?: continue
                     val rawTitle = (extras.getCharSequence(Notification.EXTRA_TITLE)
@@ -258,7 +267,8 @@ class SentinelNotificationListener : NotificationListenerService() {
                 dispatcher = null,
                 wakeLockManager = wakeLockManager,
                 foregroundController = foregroundController,
-                deviceId = deviceId
+                deviceId = deviceId,
+                enrolledAtProvider = { SharedPreferencesCredentialsStorage(this).getEnrolledAt() }
             )
             initializedDeviceId = deviceId
             Log.i(TAG, "Pipeline Centinela inicializado exitosamente para caja: $deviceId hacia $webhookUrl")
@@ -317,6 +327,21 @@ class SentinelNotificationListener : NotificationListenerService() {
             return
         }
 
+        // Capa 1: Barrera anti-históricos y anti-pre-enrolamiento
+        val nowMs = System.currentTimeMillis()
+        val enrolledAtMs = credentials.getEnrolledAt()
+        if (!NotificationFilter.isWithinFreshnessWindow(sbn.postTime, nowMs, enrolledAtMs)) {
+            Log.i(TAG, "Notificación bancaria histórica/pre-enrolamiento descartada (antigüedad=${(nowMs - sbn.postTime) / 1000}s, postTime=${sbn.postTime}, enrolledAt=$enrolledAtMs)")
+            return
+        }
+
+        // Deduplicación local en SQLite también para eventos onNotificationPosted (evita re-publicaciones de Android)
+        val localDao = AndroidSqliteNotificationDao(this)
+        if (localDao.exists(effectivePackage, rawTitle, rawText, sbn.postTime)) {
+            Log.d(TAG, "Notificación duplicada ya existente en SQLite local; ignorando re-publicación de Android: $rawTitle")
+            return
+        }
+
         Log.i(TAG, "Notificación bancaria detectada de [$effectivePackage] (origen: $packageName): $rawTitle | $rawText")
 
         val event = RawNotificationEvent(
@@ -331,7 +356,7 @@ class SentinelNotificationListener : NotificationListenerService() {
         // Fase 1: Anuncio sonoro y de voz en segundo plano (Soundbox nativo)
         // REGLA ESTRICTA: Solo sonar y cantar en voz alta si es un evento EN VIVO (< 90 segundos de antigüedad)
         // Las notificaciones represadas o históricas se procesan silenciosamente hacia el backend.
-        val ageMs = System.currentTimeMillis() - sbn.postTime
+        val ageMs = nowMs - sbn.postTime
         val effectiveIsLive = isLiveEvent && (ageMs in -5_000L..90_000L)
 
         if (effectiveIsLive) {

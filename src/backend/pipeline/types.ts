@@ -15,6 +15,7 @@ import type { WebPushService } from '../push/service.js';
 export type PipelineStatus =
   | 'PROCESSED'
   | 'IGNORED_NON_PAYMENT'
+  | 'IGNORED_EXPIRED'
   | 'IGNORED_SUSPENDED_ACCOUNT'
   | 'DUPLICATE_PAYMENT'
   | 'ROUTING_FAILED'
@@ -49,10 +50,11 @@ export interface IUsageTrackingRepository {
 }
 
 export interface PipelineNotificationUpdate {
-  status:
+  status?:
     | 'PROCESSING'
     | 'PROCESSED'
     | 'IGNORED_NON_PAYMENT'
+    | 'IGNORED_EXPIRED'
     | 'IGNORED_SUSPENDED_ACCOUNT'
     | 'DUPLICATE_PAYMENT'
     | 'ROUTING_FAILED'
@@ -81,6 +83,7 @@ export interface IPipelineNotificationRepository {
     reference?: string | null;
     senderName?: string;
     rawTitle?: string;
+    rawText?: string;
   }): Promise<{ id: string; deviceId?: string; capturedAt?: number; amount?: number; paymentReference?: string | null; senderName?: string | null } | null>;
 }
 
@@ -101,6 +104,13 @@ export type PipelineResult =
   | {
       status: 'IGNORED_NON_PAYMENT';
       notificationId: string;
+      reason: string;
+    }
+  | {
+      status: 'IGNORED_EXPIRED';
+      notificationId: string;
+      receipt: ParsedPaymentReceipt;
+      latencyMs: number;
       reason: string;
     }
   | {
@@ -149,6 +159,7 @@ export interface PaymentPipelineDependencies {
     captureTimestamp: number,
   ) => string;
   nowProvider?: () => number;
+  maxPaymentAgeMs?: number;
   billingNoticeCooldownMs?: number;
   renewalPriceCop?: number;
   trialNurtureService?: any;

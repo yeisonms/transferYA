@@ -1693,7 +1693,7 @@
               </div>
 
               <div class="space-y-1.5">
-                <a href="/downloads/transferya-sentinel-v0.4.1-beta.apk" download="transferya-sentinel-v0.4.1-beta.apk"
+                <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
                   class="w-full py-2 px-3 rounded-lg bg-ty-surface border border-ty-cyan/40 hover:bg-ty-cyan hover:text-black text-ty-cyan font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2557,7 +2557,7 @@
                 title="Ver guía paso a paso para conectar">
                 <span>💡 Guía rápida</span>
               </button>
-              <a href="/downloads/transferya-sentinel-v0.4.1-beta.apk" download="transferya-sentinel-v0.4.1-beta.apk"
+              <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
                 class="px-3.5 py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/50 text-sky-400 font-semibold text-xs transition-all flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -3845,13 +3845,13 @@
       </details>
 
       <div class="pt-2 border-t border-ty-border/60 text-center space-y-1">
-        <a href="/downloads/transferya-sentinel-v0.4.1-beta.apk" download="transferya-sentinel-v0.4.1-beta.apk"
+        <a href="/downloads/transferya-sentinel-v0.4.2-beta.apk" download="transferya-sentinel-v0.4.2-beta.apk"
           class="text-[11px] font-mono text-ty-cyan hover:underline flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          <span>¿Aún no tienes la app? Descargar TransferYA Centinela para Android (APK v0.4.1 con Voz)</span>
+          <span>¿Aún no tienes la app? Descargar TransferYA Centinela para Android (APK v0.4.2 con Voz)</span>
         </a>
         <button type="button" onclick="openSecurityPrivacyModal('apk-install')"
           class="text-[10px] font-mono text-ty-muted hover:text-ty-emerald flex items-center justify-center gap-1 mx-auto transition-colors">
@@ -6484,6 +6484,9 @@
       }
       if (tx.status === "DUPLICATE_PAYMENT") {
         return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-muted border border-ty-border">Duplicado</span>`;
+      }
+      if (tx.status === "IGNORED_EXPIRED") {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-muted border border-ty-border">Histórico expirado</span>`;
       }
       if (tx.status === "IGNORED_NON_PAYMENT") {
         return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-ty-surface-highest text-ty-muted border border-ty-border">No transaccional</span>`;

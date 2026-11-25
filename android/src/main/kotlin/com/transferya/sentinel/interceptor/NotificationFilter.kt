@@ -10,6 +10,35 @@ object NotificationFilter {
     /** Bitmask estándar de Android para `Notification.FLAG_GROUP_SUMMARY` (0x00000200). */
     const val FLAG_GROUP_SUMMARY = 0x00000200
 
+    /** Ventana máxima de antigüedad (15 minutos) para procesar o rescatar una notificación bancaria en Node A. */
+    const val MAX_NOTIFICATION_AGE_MS: Long = 15L * 60L * 1000L
+
+    /** Tolerancia de reloj (10 segundos) antes del enrolamiento para pagos que ocurren al instante de vincular. */
+    const val ENROLLMENT_GRACE_MS: Long = 10_000L
+
+    /**
+     * Evalúa si una notificación bancaria es temporalmente vigente para capturarse y enviarse al backend:
+     * 1. Bloquea cualquier notificación cuyo `postTimeMs` sea anterior a la fecha de enrolamiento (`enrolledAtMs - 10s`),
+     *    impidiendo que una reinstalación o vinculación nueva reenvíe pagos históricos de la cortina de Android.
+     * 2. Bloquea notificaciones con más de `maxAgeMs` (15 minutos por defecto) de antigüedad.
+     */
+    fun isWithinFreshnessWindow(
+        postTimeMs: Long,
+        nowMs: Long,
+        enrolledAtMs: Long,
+        maxAgeMs: Long = MAX_NOTIFICATION_AGE_MS
+    ): Boolean {
+        if (postTimeMs <= 0L) return false
+        if (enrolledAtMs > 0L && postTimeMs < (enrolledAtMs - ENROLLMENT_GRACE_MS)) {
+            return false
+        }
+        val ageMs = nowMs - postTimeMs
+        if (ageMs > maxAgeMs) {
+            return false
+        }
+        return true
+    }
+
     /** Paquetes conocidos de aplicaciones de Mensajes SMS en Colombia / Android. */
     val SMS_PACKAGES = setOf(
         "com.google.android.apps.messaging",

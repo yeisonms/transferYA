@@ -59,6 +59,10 @@ interface IDeviceCredentialsStorage {
     fun getMerchantId(): String?
     fun saveMerchantId(merchantId: String)
     fun clearMerchantId()
+
+    fun getEnrolledAt(): Long = 0L
+    fun saveEnrolledAt(timestampMs: Long) {}
+    fun clearEnrolledAt() {}
 }
 
 /**

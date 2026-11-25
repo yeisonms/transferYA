@@ -20,6 +20,7 @@ export interface StoredNotificationRecord {
     | 'PROCESSING'
     | 'PROCESSED'
     | 'IGNORED_NON_PAYMENT'
+    | 'IGNORED_EXPIRED'
     | 'IGNORED_SUSPENDED_ACCOUNT'
     | 'DUPLICATE_PAYMENT'
     | 'ROUTING_FAILED'

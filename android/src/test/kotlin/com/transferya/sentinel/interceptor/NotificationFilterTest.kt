@@ -163,5 +163,56 @@ class NotificationFilterTest {
             )
         )
     }
+
+    @Test
+    fun `8 debe rechazar notificaciones historicas mayores a 15 minutos o anteriores al enrolamiento`() {
+        val now = 1_795_618_000_000L
+        val enrolledAt = now - 60_000L // Enrolado hace 1 minuto
+
+        // Caso A: Notificación de ayer (16 horas = 58253s atrás) -> RECHAZADA
+        assertFalse(
+            NotificationFilter.isWithinFreshnessWindow(
+                postTimeMs = now - 58_253_000L,
+                nowMs = now,
+                enrolledAtMs = enrolledAt
+            )
+        )
+
+        // Caso B: Notificación de hace 5 minutos, pero ANTERIOR al enrolamiento (reinstalación) -> RECHAZADA
+        assertFalse(
+            NotificationFilter.isWithinFreshnessWindow(
+                postTimeMs = enrolledAt - 5 * 60_000L,
+                nowMs = now,
+                enrolledAtMs = enrolledAt
+            )
+        )
+
+        // Caso C: Notificación legítima después del enrolamiento (hace 30s) -> ACEPTADA
+        assertTrue(
+            NotificationFilter.isWithinFreshnessWindow(
+                postTimeMs = now - 30_000L,
+                nowMs = now,
+                enrolledAtMs = enrolledAt
+            )
+        )
+
+        // Caso D: Dispositivo sin enrolledAt legacy (0L), corte de red de 10 minutos -> ACEPTADA
+        assertTrue(
+            NotificationFilter.isWithinFreshnessWindow(
+                postTimeMs = now - 10 * 60_000L,
+                nowMs = now,
+                enrolledAtMs = 0L
+            )
+        )
+
+        // Caso E: Dispositivo sin enrolledAt legacy (0L), notificación de hace 20 minutos (> 15 min) -> RECHAZADA
+        assertFalse(
+            NotificationFilter.isWithinFreshnessWindow(
+                postTimeMs = now - 20 * 60_000L,
+                nowMs = now,
+                enrolledAtMs = 0L
+            )
+        )
+    }
 }
 

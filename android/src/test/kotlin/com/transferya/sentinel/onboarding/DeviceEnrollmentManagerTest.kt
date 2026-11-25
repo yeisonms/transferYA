@@ -24,6 +24,7 @@ class DeviceEnrollmentManagerTest {
     class MockCredentialsStorage : IDeviceCredentialsStorage {
         var storedDeviceId: String? = null
         var storedMerchantId: String? = null
+        var storedEnrolledAt: Long = 0L
 
         override fun getDeviceId(): String? = storedDeviceId
         override fun saveDeviceId(deviceId: String) { storedDeviceId = deviceId }
@@ -32,6 +33,10 @@ class DeviceEnrollmentManagerTest {
         override fun getMerchantId(): String? = storedMerchantId
         override fun saveMerchantId(merchantId: String) { storedMerchantId = merchantId }
         override fun clearMerchantId() { storedMerchantId = null }
+
+        override fun getEnrolledAt(): Long = storedEnrolledAt
+        override fun saveEnrolledAt(timestampMs: Long) { storedEnrolledAt = timestampMs }
+        override fun clearEnrolledAt() { storedEnrolledAt = 0L }
     }
 
     class MockEnrollmentHttpClient : IEnrollmentHttpClient {
@@ -112,9 +117,10 @@ class DeviceEnrollmentManagerTest {
         assertNotNull(storedSecret)
         assertEquals(32, storedSecret?.size) // 32 bytes binarios
 
-        // Verificar persistencia de IDs
+        // Verificar persistencia de IDs y sello temporal de enrolamiento
         assertEquals("dev_centinela_caja_1", mockStorage.getDeviceId())
         assertEquals("merchant_el_sol", mockStorage.getMerchantId())
+        assertTrue(mockStorage.getEnrolledAt() > 0L, "Debe registrar enrolled_at_ms al vincular QR")
 
         // El estado ahora debe ser ACTIVE_SENTINEL
         assertEquals(SentinelState.ACTIVE_SENTINEL, manager.getSentinelState())
@@ -163,6 +169,7 @@ class DeviceEnrollmentManagerTest {
         assertFalse(mockKeyStoreVault.hasSecret(DeviceEnrollmentManager.KEYSTORE_ALIAS_SECRET))
         assertNull(mockStorage.getDeviceId())
         assertNull(mockStorage.getMerchantId())
+        assertEquals(0L, mockStorage.getEnrolledAt())
         assertEquals(SentinelState.UNENROLLED, manager.getSentinelState())
     }
 
