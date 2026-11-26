@@ -1536,22 +1536,22 @@
             <span id="audioBtnText">Sonido activo</span>
           </button>
 
-          <!-- Toggle Notificaciones Push en Segundo Plano (Fase 2) -->
+          <!-- Toggle Alertas en Segundo Plano y Pantalla Bloqueada (Fase 2) -->
           <button id="pushToggleBtn" onclick="toggleWebPush()"
             class="px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border hover:border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 shadow-sm"
-            title="Activar o pausar notificaciones push flotantes (segundo plano y pantalla bloqueada)">
+            title="Activar o pausar alertas flotantes en segundo plano y pantalla bloqueada">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-            <span id="pushBtnText">Activar Push</span>
+            <span id="pushBtnText">Activar alertas</span>
           </button>
 
           <button id="pushTestBtn" onclick="sendLockscreenTestPush()"
             class="hidden px-2.5 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-xs font-medium text-sky-300 transition-all items-center gap-1 shadow-sm"
-            title="Enviar un Push real del servidor en 4 segundos: tócalo y bloquea tu celular enseguida para verificar">
+            title="Enviar una alerta de prueba en 4 segundos: tócalo y bloquea tu celular enseguida para verificar">
             <span>🧪</span>
-            <span id="pushTestBtnText">Probar Push (4s)</span>
+            <span id="pushTestBtnText">Probar alerta (4s)</span>
           </button>
 
           <button onclick="refreshMerchantData()"
@@ -2419,15 +2419,15 @@
               </button>
               <button id="posPushToggleBtn" onclick="toggleWebPush()"
                 class="px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm"
-                title="Activar o pausar notificaciones push flotantes del sistema">
+                title="Activar o pausar alertas flotantes en pantalla bloqueada">
                 <span id="posPushIcon">📲</span>
-                <span id="posPushBtnText">Activar Push</span>
+                <span id="posPushBtnText">Activar alertas</span>
               </button>
               <button id="posPushTestBtn" onclick="sendLockscreenTestPush()"
                 class="hidden px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-xs font-semibold text-sky-300 transition-all items-center gap-1 shadow-sm"
-                title="Enviar Push real del servidor en 4s: tócalo y bloquea tu celular enseguida">
+                title="Enviar alerta de prueba en 4s: tócalo y bloquea tu celular enseguida">
                 <span>🧪</span>
-                <span id="posPushTestBtnText">Probar Push (4s)</span>
+                <span id="posPushTestBtnText">Probar alerta (4s)</span>
               </button>
               <button onclick="triggerVisualSimulation()"
                 class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-semibold text-ty-midnight transition-all flex items-center gap-1.5 shadow-sm"
@@ -10643,26 +10643,26 @@
         setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-ty-border text-xs font-medium flex items-center gap-1.5 transition-all text-ty-muted";
-          text.textContent = "Push pausado";
-          btn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
+          text.textContent = "Alertas pausadas";
+          btn.title = "Alertas pausadas en este dispositivo. Toca para activar.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-ty-surface border border-ty-border text-xs font-semibold text-ty-muted transition-all flex items-center gap-1.5 shadow-sm";
-          if (posText) posText.textContent = "Push: Pausado";
+          if (posText) posText.textContent = "Alertas: Pausadas";
           if (posIcon) posIcon.textContent = "🔕";
-          posBtn.title = "Notificaciones push pausadas en este dispositivo. Toca para activar.";
+          posBtn.title = "Alertas pausadas en este dispositivo. Toca para activar.";
         }
       } else if (Notification.permission === "granted" && pushSyncState === "error") {
         setTestButtonsVisible(false);
-        const errTitle = pushSyncError || "No se pudo registrar el Push en el servidor. Toca para reintentar.";
+        const errTitle = pushSyncError || "No se pudieron activar las alertas en el servidor. Toca para reintentar.";
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:border-amber-400 text-xs font-medium flex items-center gap-1.5 transition-all text-amber-400 animate-pulse";
-          text.textContent = "Reintentar Push";
+          text.textContent = "Reintentar alertas";
           btn.title = errTitle;
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs font-semibold text-amber-400 transition-all flex items-center gap-1.5 shadow-sm animate-pulse";
-          if (posText) posText.textContent = "Push: Reintentar";
+          if (posText) posText.textContent = "Alertas: Reintentar";
           if (posIcon) posIcon.textContent = "⚠️";
           posBtn.title = errTitle;
         }
@@ -10670,65 +10670,65 @@
         setTestButtonsVisible(true);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-ty-surface border border-sky-500/30 hover:border-sky-500/60 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 shadow-sm";
-          text.textContent = "Push activo";
-          btn.title = "Notificaciones push conectadas con Google FCM. Recibirás alertas con pantalla bloqueada. Toca para pausar.";
+          text.textContent = "Alertas activas";
+          btn.title = "Alertas activas en este celular. Recibirás avisos con pantalla bloqueada. Toca para pausar.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm";
-          if (posText) posText.textContent = "Push: Activo";
+          if (posText) posText.textContent = "Alertas: Activas";
           if (posIcon) posIcon.textContent = "📲";
-          posBtn.title = "Notificaciones push conectadas con Google FCM. Recibirás alertas con pantalla bloqueada. Toca para pausar.";
+          posBtn.title = "Alertas activas en este celular. Recibirás avisos con pantalla bloqueada. Toca para pausar.";
         }
       } else if (Notification.permission === "granted") {
         setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-300";
-          text.textContent = "Conectando Push...";
-          btn.title = "Toca para sincronizar las alertas Push con el servidor.";
+          text.textContent = "Conectando alertas...";
+          btn.title = "Toca para sincronizar las alertas de pago con el servidor.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-semibold text-sky-300 transition-all flex items-center gap-1.5 shadow-sm";
-          if (posText) posText.textContent = "Conectando Push...";
+          if (posText) posText.textContent = "Conectando alertas...";
           if (posIcon) posIcon.textContent = "🔄";
-          posBtn.title = "Toca para sincronizar las alertas Push con el servidor.";
+          posBtn.title = "Toca para sincronizar las alertas de pago con el servidor.";
         }
       } else if (Notification.permission === "denied") {
         setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-rose-400";
-          text.textContent = "Push bloqueado";
-          btn.title = "Notificaciones bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
+          text.textContent = "Alertas bloqueadas";
+          btn.title = "Alertas bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs font-semibold text-rose-400 transition-all flex items-center gap-1.5 shadow-sm";
-          if (posText) posText.textContent = "Push: Bloqueado";
+          if (posText) posText.textContent = "Alertas: Bloqueadas";
           if (posIcon) posIcon.textContent = "🚫";
-          posBtn.title = "Notificaciones bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
+          posBtn.title = "Alertas bloqueadas por el navegador. Habilítalas en el candado de la barra de direcciones.";
         }
       } else {
         setTestButtonsVisible(false);
         if (btn) {
           btn.className = "px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-medium flex items-center gap-1.5 transition-all text-sky-400 animate-pulse";
-          text.textContent = "Activar Push";
-          btn.title = "Toca para permitir alertas flotantes en pantalla bloqueada.";
+          text.textContent = "Activar alertas";
+          btn.title = "Toca para recibir avisos flotantes de pagos en pantalla bloqueada.";
         }
         if (posBtn) {
           posBtn.className = "px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40 text-xs font-semibold text-sky-400 transition-all flex items-center gap-1.5 shadow-sm animate-pulse";
-          if (posText) posText.textContent = "Activar Push";
+          if (posText) posText.textContent = "Activar alertas";
           if (posIcon) posIcon.textContent = "🔔";
-          posBtn.title = "Toca para permitir alertas flotantes en pantalla bloqueada.";
+          posBtn.title = "Toca para recibir avisos flotantes de pagos en pantalla bloqueada.";
         }
       }
     }
 
     async function toggleWebPush() {
       if (!("Notification" in window)) {
-        showToast("Tu navegador no soporta notificaciones de sistema.", true);
+        showToast("Tu navegador no soporta alertas de sistema.", true);
         return;
       }
 
       if (Notification.permission === "denied") {
-        showToast("Las notificaciones están bloqueadas en tu navegador. Toca el candado en la barra de direcciones para permitirlas.", true);
+        showToast("Las alertas están bloqueadas en tu navegador. Toca el candado en la barra de direcciones para permitirlas.", true);
         updatePushButtonUI();
         return;
       }
@@ -10737,7 +10737,7 @@
       if (isPushEnabled && Notification.permission === "granted" && pushSyncState !== "synced") {
         const retryRes = await syncPushSubscription(true, true);
         if (retryRes.ok) {
-          showToast("🔔 ¡Push conectado con Google FCM para pantalla bloqueada!");
+          showToast("🔔 ¡Alertas activadas para pantalla bloqueada!");
         }
         return;
       }
@@ -10749,7 +10749,7 @@
         localStorage.setItem("ty_push_enabled", "false");
         localStorage.removeItem("ty_push_last_endpoint");
         updatePushButtonUI();
-        showToast("Notificaciones push pausadas en este dispositivo.");
+        showToast("Alertas pausadas en este dispositivo.");
         try {
           const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.ready : null;
           const activeSub = pushSubscription || (reg ? await reg.pushManager.getSubscription() : null);
@@ -10783,13 +10783,13 @@
           return;
         }
 
-        showToast("🔔 ¡Push conectado! Toca '🧪 Probar Push (4s)' y bloquea tu celular para verificar.");
+        showToast("🔔 ¡Alertas activadas! Toca '🧪 Probar alerta (4s)' y bloquea tu celular para verificar.");
 
         try {
           if ("serviceWorker" in navigator) {
             const reg = await navigator.serviceWorker.ready;
-            reg.showNotification("⚡ TransferYA · Push Conectado", {
-              body: "¡Listo! Tu celular quedó registrado en el servidor para recibir alertas en pantalla bloqueada.",
+            reg.showNotification("⚡ TransferYA · Alertas Activas", {
+              body: "¡Listo! Tu celular quedó registrado para recibir avisos de pago incluso con pantalla bloqueada.",
               icon: "/icons/icon-192.png",
               badge: "/icons/favicon-96x96.png",
               tag: "ty-welcome-alert",
@@ -10801,7 +10801,7 @@
         isPushEnabled = false;
         localStorage.setItem("ty_push_enabled", "false");
         updatePushButtonUI();
-        showToast("Permiso de notificaciones no concedido.", true);
+        showToast("Permiso de alertas no concedido.", true);
       }
     }
 
@@ -10880,10 +10880,10 @@
         });
 
         if (!saveRes.ok) {
-          let errMsg = `Error guardando Push en servidor (HTTP ${saveRes.status})`;
+          let errMsg = `Error activando alertas en servidor (HTTP ${saveRes.status})`;
           try {
             const errBody = await saveRes.json();
-            if (errBody?.error) errMsg = `Error Push en servidor: ${errBody.error}`;
+            if (errBody?.error) errMsg = `Error activando alertas: ${errBody.error}`;
           } catch { }
           throw new Error(errMsg);
         }
@@ -10900,7 +10900,7 @@
           /push service error/i.test(rawMsg);
         pushSyncState = "error";
         pushSyncError = isBrowserPushBlocked
-          ? "Este navegador bloqueó Google Push. Usa Google Chrome en tu celular (o en Brave activa 'Servicios de Google para mensajería push')."
+          ? "Este navegador bloqueó las alertas en segundo plano. Usa Google Chrome en tu celular (o en Brave activa 'Servicios de Google para mensajería push')."
           : rawMsg;
         console.warn("Advertencia sincronizando suscripción push:", err);
         updatePushButtonUI();
@@ -10914,7 +10914,7 @@
     async function sendLockscreenTestPush() {
       if (isTestingPush) return;
       if (!currentMerchant?.id) {
-        showToast("Inicia sesión primero para probar las alertas Push.", true);
+        showToast("Inicia sesión primero para probar las alertas.", true);
         return;
       }
 
@@ -10928,7 +10928,7 @@
         const syncRes = await syncPushSubscription(true, false);
         if (!syncRes.ok) return;
 
-        showToast("🔒 ¡Bloquea tu celular AHORA! En 4 segundos el servidor enviará una alerta Push real...");
+        showToast("🔒 ¡Bloquea tu celular AHORA! En 4 segundos te llegará una alerta de prueba...");
 
         const res = await fetch("/api/v1/push/test", {
           method: "POST",
@@ -10941,34 +10941,34 @@
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data?.success) {
-          showToast(`Error enviando prueba Push: ${data?.error || res.status}`, true);
+          showToast(`Error enviando alerta de prueba: ${data?.error || res.status}`, true);
           return;
         }
 
         const total = data.result?.total || 0;
         const sent = data.result?.sent || 0;
         if (sent > 0) {
-          showToast(`✅ Push real enviado por Google FCM (${sent}/${total} dispositivos).`);
+          showToast(`✅ Alerta de prueba enviada con éxito (${sent}/${total} dispositivos).`);
         } else if (total === 0) {
           pushSyncState = "error";
-          pushSyncError = "El servidor no encontró suscripción activa. Toca 'Reintentar Push'.";
+          pushSyncError = "Este celular no está registrado aún. Toca 'Reintentar alertas'.";
           updatePushButtonUI();
-          showToast("⚠️ El servidor tenía 0 dispositivos registrados. Toca 'Reintentar Push' para renovar.", true);
+          showToast("⚠️ No hay dispositivos registrados. Toca 'Reintentar alertas' para activar.", true);
         } else {
           // Si FCM rechazó el token (ej. 410), renovar inmediatamente
           await syncPushSubscription(false, true);
           const firstErr = data.result?.details?.[0];
           showToast(
-            `⚠️ FCM rechazó el token anterior (${firstErr?.statusCode || "error"}). Se renovó automáticamente; prueba otra vez.`,
+            `⚠️ La conexión anterior expiró (${firstErr?.statusCode || "error"}). Ya se renovó automáticamente; prueba otra vez.`,
             true
           );
         }
       } catch (err) {
-        showToast(`Error de red en prueba Push: ${err?.message || err}`, true);
+        showToast(`Error de red probando alertas: ${err?.message || err}`, true);
       } finally {
         isTestingPush = false;
-        if (t1) t1.textContent = "Probar Push (4s)";
-        if (t2) t2.textContent = "Probar Push (4s)";
+        if (t1) t1.textContent = "Probar alerta (4s)";
+        if (t2) t2.textContent = "Probar alerta (4s)";
       }
     }
 

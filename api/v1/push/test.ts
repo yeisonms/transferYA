@@ -40,8 +40,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const pushService = new WebPushService(repository);
 
     const result = await pushService.broadcastToMerchant(merchantId, {
-      title: '⚡ ¡Prueba en Pantalla Bloqueada Exitosa! · TransferYA',
-      body: 'Las alertas Web Push en segundo plano están conectadas con Google FCM y listas para tus cobros.',
+      title: '⚡ ¡Alerta en Pantalla Bloqueada Exitosa! · TransferYA',
+      body: 'Tus alertas de pago en segundo plano están activas y listas para avisarte cada cobro.',
       tag: `ty-lockscreen-test-${Date.now()}`,
       url: '/',
     });
