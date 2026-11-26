@@ -150,11 +150,11 @@
   }
   </script>
 
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <!-- Google Fonts: Plus Jakarta Sans, Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <!-- Script anti-FOUC para tema visual inicial (Light Premium por defecto) -->
@@ -887,6 +887,41 @@
       color: #334155 !important;
     }
 
+    /* ========================================================================= */
+    /* PANTALLA DE ACCESO FINTECH INSTITUCIONAL (DISEÑO STITCH)                  */
+    /* ========================================================================= */
+    .auth-navy-panel {
+      background-color: #0F1C2E;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #F8FAFC;
+    }
+    .auth-navy-panel .auth-accent-emerald {
+      color: #34D399 !important;
+    }
+    .auth-navy-panel .auth-accent-emerald-hover:hover {
+      color: #6EE7B7 !important;
+    }
+    .auth-navy-panel .auth-icon-badge {
+      background-color: rgba(16, 185, 129, 0.14) !important;
+      border-color: rgba(52, 211, 153, 0.28) !important;
+      color: #34D399 !important;
+    }
+    .auth-navy-panel .auth-breb-pill {
+      background-color: rgba(16, 185, 129, 0.16) !important;
+      border-color: rgba(52, 211, 153, 0.30) !important;
+      color: #6EE7B7 !important;
+    }
+    .auth-card-shadow {
+      box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.10), 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+    }
+    html.dark .auth-card-shadow {
+      box-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.55);
+    }
+    #authScreen, #onboardingScreen {
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
     #qrCodeContainer svg {
       width: 100%;
       height: 100%;
@@ -1083,209 +1118,326 @@
   <!-- ================================================================== -->
   <!-- PANTALLA DE CARGA INICIAL -->
   <!-- ================================================================== -->
-  <div id="loadingScreen" class="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
+  <div id="loadingScreen" class="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-4 bg-[#F8FAFC] dark:bg-[#0B101C]">
     <div
-      class="w-16 h-16 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(25,195,125,0.35)] border border-ty-border bg-white/5 p-2.5 flex items-center justify-center animate-pulse">
+      class="w-14 h-14 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F1C2E] p-2.5 flex items-center justify-center shadow-sm animate-pulse">
       <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
     </div>
-    <p class="text-xs font-mono text-ty-muted tracking-wider uppercase">Verificando sesión segura...</p>
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Verificando sesión segura...</p>
   </div>
 
   <!-- ================================================================== -->
   <!-- PANTALLA DE AUTENTICACIÓN MULTI-COMERCIO (SUPABASE AUTH) -->
   <!-- ================================================================== -->
-  <section id="authScreen" class="hidden min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-      <!-- Brand & Commercial Badges -->
-      <div class="space-y-3">
-        <div class="flex items-center gap-3.5">
-          <div class="w-14 h-14 rounded-2xl bg-white/5 border border-ty-border p-2 shadow-[0_0_20px_rgba(25,195,125,0.25)] shrink-0 flex items-center justify-center">
-            <img src="/icons/logo-sound-check.svg" alt="TransferYA Logo" class="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-2xl font-black tracking-tight text-white block leading-tight">transfer<span
-                  class="text-ty-green">YA</span></span>
-              <span
-                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-ty-green/15 text-ty-green border border-ty-green/30">En
-                Línea</span>
-            </div>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-[11px] font-mono uppercase tracking-wider text-ty-muted">Verificación al Instante</span>
-              <span class="text-ty-border text-[10px]">•</span>
-              <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer"
-                class="text-[11px] font-mono text-ty-muted hover:text-white transition-colors inline-flex items-center gap-1 group"
-                title="Conoce a MurSat Solutions — Empresa Creadora">
-                <span>por</span>
-                <span class="text-ty-cyan font-bold group-hover:underline flex items-center gap-0.5">
-                  MurSat Solutions
-                  <svg class="w-2.5 h-2.5 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </span>
-              </a>
-            </div>
-          </div>
+  <section id="authScreen" class="hidden min-h-[100dvh] flex flex-col justify-between bg-[#F8FAFC] dark:bg-[#0B101C]">
+    <!-- Barra superior institucional minimalista -->
+    <div class="w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-[#0F172A]/80 backdrop-blur-sm px-4 sm:px-6 py-3">
+      <div class="max-w-5xl mx-auto flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <span class="text-slate-700 dark:text-slate-200 truncate">Verificación de Pagos para Comercios · Colombia</span>
         </div>
-
-        <!-- Badges Comerciales de Pagos Soportados -->
-        <div class="flex flex-wrap items-center gap-1.5 pt-1">
-          <span
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#260026] border border-[#E01E5A]/40 text-[#FF4B81]">
-            <span class="w-2 h-2 rounded-full bg-[#E01E5A] animate-pulse"></span>
-            Nequi
-          </span>
-          <span
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#260505] border border-[#ED1C24]/40 text-[#FF5A5F]">
-            <span class="w-2 h-2 rounded-full bg-[#ED1C24] animate-pulse"></span>
-            DaviPlata
-          </span>
-          <span
-            class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono text-ty-emerald bg-ty-emerald/10 border border-ty-emerald/30">
-            ⚡ 0% comisión
-          </span>
-        </div>
-
-        <!-- Banner Conoce Cómo Funciona (Página Pública Explicativa) -->
-        <a href="/landing"
-          class="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-ty-surface to-ty-surface-high border border-ty-emerald/30 hover:border-ty-emerald text-xs text-white transition-all group shadow-sm mt-1">
-          <div class="flex items-center gap-2.5">
-            <span class="text-base">📢</span>
-            <div class="text-left">
-              <span class="font-bold text-ty-emerald block">¿Cómo funciona TransferYA?</span>
-              <span class="text-[11px] text-ty-muted">Ver explicación paso a paso, audio en vivo y planes</span>
-            </div>
-          </div>
-          <span class="text-ty-emerald group-hover:translate-x-1 transition-transform font-mono font-bold text-sm">➜</span>
-        </a>
-      </div>
-
-      <!-- Mode Switch -->
-      <div class="grid grid-cols-2 gap-1.5 bg-ty-surface p-1 rounded-xl border border-ty-border">
-        <button id="authTabLogin" onclick="setAuthMode('login')"
-          class="py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm">Iniciar
-          Sesión</button>
-        <button id="authTabSignup" onclick="setAuthMode('signup')"
-          class="py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all">Registrar mi
-          Negocio</button>
-      </div>
-
-      <!-- Form -->
-      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-        <div id="signupStoreField" class="hidden">
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Negocio</label>
-          <input type="text" id="authStoreName" placeholder="Ej: Minimarket La 14, Panadería San Pedro"
-            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Correo Electrónico</label>
-          <input type="email" id="authEmail" required placeholder="tucorreo@ejemplo.com"
-            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
-        </div>
-
-        <div id="authPasswordGroup">
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-mono text-ty-muted">Contraseña</label>
-            <button type="button" onclick="openForgotPasswordModal()" id="forgotPasswordLinkBtn"
-              class="text-[11px] font-mono text-ty-cyan hover:underline">
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
-          <input type="password" id="authPassword" minlength="6" placeholder="Tu contraseña de acceso"
-            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-ty-muted focus:border-ty-emerald focus:ring-0" />
-        </div>
-
-        <div id="authFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
-
-        <button id="authSubmitBtn" type="submit"
-          class="w-full py-3.5 rounded-xl bg-ty-emerald text-black font-bold text-sm tracking-wide uppercase hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.3)] transition-all flex items-center justify-center gap-2">
-          <span>Ingresar a mi Negocio</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </button>
-      </form>
-
-      <div class="pt-3 border-t border-ty-border flex flex-col gap-2.5 text-center">
-        <button id="authMagicLinkBtn" onclick="sendMagicLink()" type="button"
-          class="w-full py-2.5 rounded-xl bg-ty-surface border border-ty-border hover:border-ty-cyan text-xs font-mono text-ty-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-          Ingresar con enlace al correo (sin contraseña)
-        </button>
-        <p class="text-[11px] font-mono text-ty-muted flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-ty-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-          <span>Pagos verificados en tiempo real • Datos 100% seguros y protegidos</span>
-        </p>
-
-        <!-- Garantía de Seguridad & Habeas Data en Login -->
-        <div class="mt-2 pt-2.5 border-t border-ty-border/50 text-center space-y-1">
-          <button type="button" onclick="openSecurityPrivacyModal()"
-            class="text-xs font-mono text-ty-cyan hover:underline inline-flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-ty-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <span class="font-bold">Garantía de Seguridad, Privacidad y Habeas Data</span>
-          </button>
-          <p class="text-[11px] text-ty-muted/80 leading-relaxed max-w-sm mx-auto">
-            "TransferYA Centinela únicamente lee las alertas de pago emitidas por Nequi y DaviPlata. Jamás tiene acceso
-            a tus claves, saldos de cuenta ni conversaciones personales."
-          </p>
-        </div>
-
-        <!-- Elaborado por MurSat Solutions en Login -->
-        <div class="mt-2 pt-2.5 border-t border-ty-border/40 text-center">
+        <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+          <a href="/landing" class="hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:inline">Cómo funciona</a>
+          <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+          <button type="button" onclick="openSecurityPrivacyModal()" class="hover:text-slate-900 dark:hover:text-white transition-colors">Seguridad</button>
+          <span class="text-slate-300 dark:text-slate-700">·</span>
           <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer"
-            class="text-xs font-mono text-ty-muted hover:text-white transition-colors inline-flex items-center gap-1.5 group"
-            title="Visitar MurSat Solutions">
-            <span>Elaborado por</span>
-            <span class="text-ty-cyan font-bold group-hover:underline inline-flex items-center gap-1">
-              MurSat Solutions
-              <svg class="w-3.5 h-3.5 text-ty-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </span>
-          </a>
+            class="text-emerald-700 dark:text-emerald-400 font-semibold hover:underline">MurSat Solutions</a>
         </div>
       </div>
     </div>
+
+    <!-- Contenedor principal Split Fintech -->
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-10">
+      <div class="w-full max-w-5xl rounded-2xl bg-white dark:bg-[#111B2E] border border-slate-200 dark:border-slate-800 auth-card-shadow overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+
+        <!-- Columna Izquierda: Panel Institucional Azul Marino (5 cols en Desktop, debajo en móvil) -->
+        <div class="order-2 lg:order-1 lg:col-span-5 auth-navy-panel p-7 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -top-28 -left-28 w-72 h-72 bg-emerald-900/20 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10">
+            <!-- Marca TransferYA -->
+            <div class="hidden lg:flex items-center gap-3 mb-9">
+              <div class="w-11 h-11 rounded-xl auth-icon-badge border p-2 flex items-center justify-center shrink-0">
+                <img src="/icons/logo-sound-check.svg" alt="TransferYA Logo" class="w-full h-full object-contain" />
+              </div>
+              <div>
+                <div class="flex items-center leading-none">
+                  <span class="text-2xl font-extrabold tracking-tight text-white">transfer</span>
+                  <span class="text-2xl font-extrabold tracking-tight auth-accent-emerald">YA</span>
+                </div>
+                <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider mt-1">Verificación al Instante</p>
+              </div>
+            </div>
+
+            <!-- Propuesta de valor sobria y confiable -->
+            <div class="space-y-3 mb-8">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/10 border border-white/10 text-[11px] font-medium text-slate-200">
+                <svg class="w-3.5 h-3.5 auth-accent-emerald shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Verificación segura para puntos de venta</span>
+              </div>
+              <h1 class="text-2xl sm:text-[26px] font-bold text-white leading-tight tracking-tight">
+                Verifica cada transferencia en tu negocio al instante
+              </h1>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                Confirma pagos reales en tu mostrador en tiempo real y evita fraudes por comprobantes falsos sin compartir tu celular.
+              </p>
+            </div>
+
+            <!-- 3 Pilares Institucionales -->
+            <div class="space-y-4 mb-8">
+              <div class="flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center auth-accent-emerald shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-xs font-semibold text-white">Confirmación automática por voz y WhatsApp</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Tus cajeros reciben la validación al instante en pantalla, parlante o WhatsApp.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center auth-accent-emerald shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-xs font-semibold text-white">0% comisión sobre tus ventas</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">El dinero entra directamente a tus cuentas bancarias oficiales, sin intermediarios.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center auth-accent-emerald shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-xs font-semibold text-white">Solo lectura de alertas bancarias</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Jamás solicitamos contraseñas, saldos de cuenta ni conversaciones personales.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Billeteras compatibles y link a landing -->
+          <div class="relative z-10 pt-5 border-t border-white/10">
+            <p class="text-[11px] font-medium text-slate-400 mb-2.5">Compatible con las principales billeteras en Colombia:</p>
+            <div class="flex flex-wrap items-center gap-1.5 mb-5">
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white/10 text-white border border-white/10">Nequi</span>
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white/10 text-white border border-white/10">DaviPlata</span>
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white/10 text-white border border-white/10">Bancolombia</span>
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold auth-breb-pill border">Llaves Bre-B</span>
+            </div>
+
+            <a href="/landing" class="inline-flex items-center text-xs font-semibold auth-accent-emerald auth-accent-emerald-hover transition-colors group">
+              <span>¿Cómo funciona TransferYA? Ver planes y demostración</span>
+              <svg class="w-3.5 h-3.5 ml-1.5 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Formulario Limpio de Autenticación (7 cols en Desktop, primero en móvil) -->
+        <div class="order-1 lg:order-2 lg:col-span-7 bg-white dark:bg-[#111B2E] p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
+          <div class="max-w-md mx-auto w-full">
+
+            <!-- Cabecera compacta solo visible en móvil -->
+            <div class="flex lg:hidden items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-100 dark:border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-[#0F1C2E] p-2 flex items-center justify-center shrink-0">
+                  <img src="/icons/logo-sound-check.svg" alt="TransferYA Logo" class="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <div class="flex items-center leading-none">
+                    <span class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">transfer</span>
+                    <span class="text-xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">YA</span>
+                  </div>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium block mt-0.5">Verificación al Instante</span>
+                </div>
+              </div>
+              <a href="/landing" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0">¿Cómo funciona?</a>
+            </div>
+
+            <!-- Control Segmentado de Pestañas -->
+            <div class="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl mb-7 border border-slate-200/80 dark:border-slate-700/70">
+              <button id="authTabLogin" type="button" onclick="setAuthMode('login')"
+                class="py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/60 dark:border-slate-700 transition-all text-center">
+                Iniciar sesión
+              </button>
+              <button id="authTabSignup" type="button" onclick="setAuthMode('signup')"
+                class="py-2.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all text-center">
+                Registrar mi negocio
+              </button>
+            </div>
+
+            <!-- Título del Formulario -->
+            <div class="mb-6">
+              <h2 id="authModeHeading" class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Acceso a tu comercio</h2>
+              <p id="authModeSubtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ingresa las credenciales de tu cuenta para administrar tus cajas y pagos.</p>
+            </div>
+
+            <!-- Formulario -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+              <div id="signupStoreField" class="hidden">
+                <label for="authStoreName" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nombre de tu negocio</label>
+                <input type="text" id="authStoreName" placeholder="Ej: Minimarket La 14, Panadería San Pedro"
+                  class="w-full bg-slate-50/70 dark:bg-slate-900/70 border border-slate-300 dark:border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all" />
+              </div>
+
+              <div>
+                <label for="authEmail" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Correo electrónico</label>
+                <div class="relative">
+                  <input type="email" id="authEmail" required placeholder="tucorreo@tunegocio.com"
+                    class="w-full bg-slate-50/70 dark:bg-slate-900/70 border border-slate-300 dark:border-slate-700 rounded-lg pl-3.5 pr-10 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all" />
+                  <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="2"/>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div id="authPasswordGroup">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="authPassword" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Contraseña</label>
+                  <button type="button" onclick="openForgotPasswordModal()" id="forgotPasswordLinkBtn"
+                    class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 hover:underline transition-colors">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+                <div class="relative">
+                  <input type="password" id="authPassword" minlength="6" placeholder="Tu contraseña de acceso"
+                    class="w-full bg-slate-50/70 dark:bg-slate-900/70 border border-slate-300 dark:border-slate-700 rounded-lg pl-3.5 pr-10 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all" />
+                  <button type="button" onclick="toggleAuthPasswordVisibility()" aria-label="Mostrar u ocultar contraseña"
+                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg id="authPasswordEyeIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div id="authFeedbackBox" class="hidden p-3 rounded-lg text-xs font-medium border leading-relaxed"></div>
+
+              <div class="pt-1">
+                <button id="authSubmitBtn" type="submit"
+                  class="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                  <span id="authSubmitBtnLabel">Ingresar a mi Negocio</span>
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+
+            <!-- Separador -->
+            <div class="relative my-5 text-center">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+              </div>
+              <div class="relative inline-block px-3 bg-white dark:bg-[#111B2E] text-xs text-slate-400 font-medium">
+                o accede sin contraseña
+              </div>
+            </div>
+
+            <!-- Botón Secundario: Enlace al correo -->
+            <button id="authMagicLinkBtn" onclick="sendMagicLink()" type="button"
+              class="w-full py-2.5 px-4 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              <span id="authMagicLinkBtnLabel">Ingresar con enlace al correo (sin contraseña)</span>
+            </button>
+          </div>
+
+          <!-- Pie de Confianza Institucional -->
+          <div class="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800 max-w-md mx-auto w-full text-center space-y-2">
+            <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+              <button type="button" onclick="openSecurityPrivacyModal()"
+                class="inline-flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
+                <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>Garantía de Seguridad, Privacidad y Habeas Data</span>
+              </button>
+              <span class="text-slate-300 dark:text-slate-700">·</span>
+              <a href="/terminos.html" class="hover:text-slate-900 dark:hover:text-white transition-colors">Términos</a>
+            </div>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+              TransferYA Centinela únicamente lee alertas de pago de Nequi, DaviPlata y Bancolombia. Jamás accede a claves, saldos ni conversaciones personales.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pie de página global sobrio -->
+    <footer class="w-full py-4 px-6 text-center text-xs text-slate-400 dark:text-slate-500">
+      <span>Elaborado por </span>
+      <a href="https://mursatsolutions.com/" target="_blank" rel="noopener noreferrer"
+        class="font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors inline-flex items-center gap-1">
+        <span>MurSat Solutions</span>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </a>
+    </footer>
   </section>
 
   <!-- ================================================================== -->
   <!-- PANTALLA ONBOARDING (SI EL USUARIO AUTENTICADO AÚN NO TIENE COMERCIO) -->
   <!-- ================================================================== -->
-  <section id="onboardingScreen" class="hidden min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-ty-surface-low border border-ty-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <div>
-          <span class="text-xs font-mono uppercase tracking-wider text-ty-emerald font-bold">Bienvenido a
-            TransferYA</span>
-          <h2 class="text-xl font-bold text-white mt-1">Registra tu Negocio</h2>
+  <section id="onboardingScreen" class="hidden min-h-[100dvh] flex items-center justify-center p-4 bg-[#F8FAFC] dark:bg-[#0B101C]">
+    <div class="w-full max-w-lg bg-white dark:bg-[#111B2E] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 auth-card-shadow">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#0F1C2E] p-2 flex items-center justify-center shrink-0">
+            <img src="/icons/logo-sound-check.svg" alt="TransferYA" class="w-full h-full object-contain" />
+          </div>
+          <div>
+            <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Bienvenido a TransferYA</span>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Registra tu negocio</h2>
+          </div>
         </div>
         <button onclick="signOutUser()"
-          class="px-3 py-1.5 rounded-lg bg-ty-surface border border-ty-border text-xs font-mono text-ty-muted hover:text-white">Cerrar
-          Sesión</button>
+          class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">
+          Cerrar sesión
+        </button>
       </div>
 
-      <p class="text-xs text-ty-muted leading-relaxed">
-        Tu cuenta (<span id="onboardingUserEmail" class="font-mono text-white"></span>) está lista. Solo ingresa el
-        nombre de tu establecimiento para empezar a verificar pagos de Nequi y DaviPlata.
+      <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        Tu cuenta (<span id="onboardingUserEmail" class="font-semibold text-slate-900 dark:text-white"></span>) está lista. Ingresa el nombre de tu establecimiento para empezar a verificar pagos de Nequi, DaviPlata y Bancolombia.
       </p>
 
       <form onsubmit="handleProvisionMerchant(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-mono text-ty-muted mb-1.5">Nombre de tu Negocio o Establecimiento</label>
+          <label for="provisionStoreName" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nombre de tu negocio o establecimiento</label>
           <input type="text" id="provisionStoreName" required minlength="2" maxlength="80"
             placeholder="Ej: Droguería Central, Restaurante El Buen Sabor"
-            class="w-full bg-ty-surface border border-ty-border rounded-lg px-3.5 py-2.5 text-sm text-white focus:border-ty-emerald focus:ring-0" />
+            class="w-full bg-slate-50/70 dark:bg-slate-900/70 border border-slate-300 dark:border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all" />
         </div>
-        <div id="onboardingFeedbackBox" class="hidden p-3 rounded-lg text-xs font-mono border break-words"></div>
+        <div id="onboardingFeedbackBox" class="hidden p-3 rounded-lg text-xs font-medium border break-words"></div>
         <button id="provisionBtn" type="submit"
-          class="w-full py-3.5 rounded-xl bg-ty-emerald text-black font-bold text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(0,210,106,0.3)] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-          Comenzar y Entrar a mi Panel
+          class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+          Comenzar y entrar a mi panel
         </button>
       </form>
     </div>
@@ -5513,29 +5665,54 @@
       await loadAuthenticatedMerchant();
     }
 
+    function toggleAuthPasswordVisibility() {
+      const input = document.getElementById("authPassword");
+      const icon = document.getElementById("authPasswordEyeIcon");
+      if (!input) return;
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      if (icon) {
+        icon.innerHTML = isPassword
+          ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+          : `<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`;
+      }
+    }
+
     function updateAuthModeUI(mode, preserveFeedback = false) {
       authMode = mode;
       const loginBtn = document.getElementById("authTabLogin");
       const signupBtn = document.getElementById("authTabSignup");
       const storeField = document.getElementById("signupStoreField");
       const submitBtn = document.getElementById("authSubmitBtn");
+      const submitLabel = document.getElementById("authSubmitBtnLabel");
+      const heading = document.getElementById("authModeHeading");
+      const subtitle = document.getElementById("authModeSubtitle");
 
       if (!preserveFeedback) {
         clearAuthFeedback();
       }
 
+      const activeTabClasses = "py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/60 dark:border-slate-700 transition-all text-center";
+      const inactiveTabClasses = "py-2.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all text-center";
+
       const forgotLink = document.getElementById("forgotPasswordLinkBtn");
       if (mode === "signup") {
-        signupBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
-        loginBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        signupBtn.className = activeTabClasses;
+        loginBtn.className = inactiveTabClasses;
         storeField.classList.remove("hidden");
-        submitBtn.textContent = "Registrar mi Negocio";
+        if (submitLabel) submitLabel.textContent = "Registrar mi Negocio";
+        else submitBtn.textContent = "Registrar mi Negocio";
+        if (heading) heading.textContent = "Crea tu cuenta comercial";
+        if (subtitle) subtitle.textContent = "Registra tu establecimiento para empezar a verificar pagos al instante.";
         if (forgotLink) forgotLink.classList.add("hidden");
       } else {
-        loginBtn.className = "py-2.5 rounded-lg text-xs font-mono font-bold bg-ty-surface-highest text-white transition-all shadow-sm";
-        signupBtn.className = "py-2.5 rounded-lg text-xs font-mono text-ty-muted hover:text-white transition-all";
+        loginBtn.className = activeTabClasses;
+        signupBtn.className = inactiveTabClasses;
         storeField.classList.add("hidden");
-        submitBtn.textContent = "Ingresar a mi Negocio";
+        if (submitLabel) submitLabel.textContent = "Ingresar a mi Negocio";
+        else submitBtn.textContent = "Ingresar a mi Negocio";
+        if (heading) heading.textContent = "Acceso a tu comercio";
+        if (subtitle) subtitle.textContent = "Ingresa las credenciales de tu cuenta para administrar tus cajas y pagos.";
         if (forgotLink) forgotLink.classList.remove("hidden");
       }
     }
@@ -5561,7 +5738,7 @@
         return "Demasiadas solicitudes en poco tiempo. Por favor espera 2 minutos y vuelve a intentarlo.";
       }
       if (/user already registered|already been registered/i.test(raw)) {
-        return "Este correo ya está registrado. Cambia a la pestaña 'Iniciar Sesión' para entrar con tu contraseña.";
+        return "Este correo ya está registrado. Cambia a la pestaña 'Iniciar sesión' para entrar con tu contraseña.";
       }
       if (/email not confirmed/i.test(raw)) {
         return "Tu cuenta existe pero falta confirmar el correo. Revisa tu bandeja de entrada o spam.";
@@ -5578,7 +5755,11 @@
     function showAuthFeedback(msg, isError = false) {
       const box = document.getElementById("authFeedbackBox");
       box.textContent = msg;
-      box.className = `p-3 rounded-lg text-xs font-mono border ${isError ? "bg-ty-rose/10 border-ty-rose/40 text-ty-rose" : "bg-ty-emerald/10 border-ty-emerald/40 text-ty-emerald"}`;
+      box.className = `p-3 rounded-lg text-xs font-medium border leading-relaxed ${
+        isError
+          ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300"
+          : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+      }`;
       box.classList.remove("hidden");
     }
 
@@ -5597,6 +5778,7 @@
       const password = document.getElementById("authPassword").value;
       const storeName = document.getElementById("authStoreName").value.trim();
       const btn = document.getElementById("authSubmitBtn");
+      const btnLabel = document.getElementById("authSubmitBtnLabel");
 
       if (!email || !password || password.length < 6) {
         showAuthFeedback("Ingresa correo y contraseña (mínimo 6 caracteres).", true);
@@ -5609,7 +5791,8 @@
       }
 
       btn.disabled = true;
-      btn.textContent = "Validando...";
+      if (btnLabel) btnLabel.textContent = "Validando...";
+      else btn.textContent = "Validando...";
 
       try {
         if (authMode === "signup") {
@@ -5653,9 +5836,11 @@
         return;
       }
       const btn = document.getElementById("authMagicLinkBtn");
-      const originalText = btn.textContent;
+      const btnLabel = document.getElementById("authMagicLinkBtnLabel");
+      const originalText = btnLabel ? btnLabel.textContent : btn.textContent;
       btn.disabled = true;
-      btn.textContent = "Enviando enlace...";
+      if (btnLabel) btnLabel.textContent = "Enviando enlace...";
+      else btn.textContent = "Enviando enlace...";
 
       try {
         const { error } = await supabaseClient.auth.signInWithOtp({
@@ -5671,7 +5856,8 @@
         showAuthFeedback(formatAuthErrorMessage(err), true);
       } finally {
         btn.disabled = false;
-        btn.textContent = originalText;
+        if (btnLabel) btnLabel.textContent = originalText;
+        else btn.textContent = originalText;
       }
     }
 
