@@ -173,7 +173,7 @@
   </script>
 
   <!-- Tailwind CSS Compilado Localmente -->
-  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/app.css?v=53" />
 
   <!-- Supabase JS Client, SheetJS Excel Engine & Local QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -920,6 +920,19 @@
     }
     #authScreen, #onboardingScreen {
       font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    #authSubmitBtn,
+    #provisionBtn {
+      background-color: #059669 !important;
+      color: #FFFFFF !important;
+    }
+    #authSubmitBtn:hover:not(:disabled),
+    #provisionBtn:hover:not(:disabled) {
+      background-color: #047857 !important;
+    }
+    #authSubmitBtn:active:not(:disabled),
+    #provisionBtn:active:not(:disabled) {
+      background-color: #065F46 !important;
     }
 
     #qrCodeContainer svg {

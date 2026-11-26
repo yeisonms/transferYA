@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v52';
+const CACHE_NAME = 'transferya-cache-v53';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -76,11 +76,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-First para documentos HTML / navegación principal (garantiza ver siempre la última versión)
+  // Network-First para documentos HTML y hojas de estilo locales (garantiza que CSS e HTML siempre coincidan)
   const isNavigationOrHtml =
     event.request.mode === 'navigate' ||
     url.pathname === '/' ||
-    url.pathname === '/index.html';
+    url.pathname === '/index.html' ||
+    url.pathname.startsWith('/css/');
 
   if (isNavigationOrHtml) {
     event.respondWith(
