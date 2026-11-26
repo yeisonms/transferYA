@@ -23,7 +23,8 @@ import java.util.Locale
 data class PaymentAlert(
     val wallet: String,
     val amountClean: String?,
-    val payer: String?
+    val payer: String?,
+    val isBreBHiddenAmount: Boolean = false
 )
 
 /**
@@ -41,6 +42,48 @@ object PaymentNotificationParser {
         """(?:te\s+envi[oó]|te\s+transfiri[oó]|recibiste|pago\s+por|transferencia\s+(?:de|por)|valor(?:\s+de)?|por)\s+(?:COP\s*)?([\d][\d\.\,]{0,11})(?=\s|$|[,\.!¡])""",
         RegexOption.IGNORE_CASE
     )
+
+    // Barrera 1 (Negativa): descarta publicidad, promociones, pagos salientes, retiros y avisos de seguridad
+    private val nonPaymentPatterns = listOf(
+        Regex(
+            """\b(black\s+friday|activa\s+tu\s+tarjeta|pide\s+tu\s+tarjeta|tarjeta\s+d[eé]bito|tarjeta\s+de\s+cr[eé]dito|disfruta\s+de\s+descuentos|descuentos?|promoci[oó]n|ofertas?|cashback|cup[oó]n|sorteo|concurso|cr[eé]dito\s+salvavidas|conoce\s+el\s+nuevo\s+cr[eé]dito|desbloqueaste|bolsillos\s+interesantes|haz\s+crecer\s+tu\s+plata|aplican\s+tyc|t[eé]rminos\s+y\s+condiciones|tus\s+favoritos|financia\s+tu\s+compra|invita\s+a\s+tus\s+amigos)\b""",
+            RegexOption.IGNORE_CASE
+        ),
+        Regex(
+            """\b(retiro\s+exitoso|sacaste\s+\$|retiro\s+en\s+cajero|en\s+cajero\s+bancolombia|retiro\s+por\s+\$)\b""",
+            RegexOption.IGNORE_CASE
+        ),
+        Regex(
+            """\b(enviaste\s+plata|pagaste\s+\$|enviaste\s+\$|compraste\s+\$|compra\s+por\s+\$|transferiste\s+\$|env[ií]o\s+de\s+plata(?:\s+exitoso|\s+por)|el\s+env[ií]o\s+de\s+plata\s+por|detalle\s+del\s+env[ií]o)\b""",
+            RegexOption.IGNORE_CASE
+        ),
+        Regex(
+            """\b(clave\s+din[aá]mica|c[oó]digo\s+de\s+verificaci[oó]n|nuevo\s+inicio\s+de\s+sesi[oó]n|detectamos\s+un\s+nuevo|informaci[oó]n\s+de\s+tus\s+llaves)\b""",
+            RegexOption.IGNORE_CASE
+        )
+    )
+
+    // Barrera 2 (Positiva obligatoria): evidencia explícita de dinero ENTRANTE
+    private val incomingPaymentRegex = Regex(
+        """\b(recibiste|recibi[oó]|ha\s+recibido|te\s+envi[oó]|te\s+enviaron|te\s+acaban\s+de\s+enviar|te\s+transfiri[oó]|te\s+transfirieron|le\s+transfirieron|te\s+pasaron|plata\s+recibida|te\s+lleg[oó]\s+plata|recepci[oó]n\s+de\s+pago|recepcion\s+de\s+pago|pago\s+recibido|transferencia\s+recibida|abono\s+por|ingreso\s+de\s+dinero|lleg[oó]\s+un\s+pago)\b""",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * Valida de forma estricta si una notificación bancaria corresponde a un PAGO ENTRANTE real
+     * antes de emitir timbre o síntesis de voz. Evita cantar publicidad (ej. Black Friday DaviPlata),
+     * compras salientes, retiros o códigos de seguridad.
+     */
+    fun isIncomingPayment(rawTitle: String, rawText: String): Boolean {
+        val combined = "${rawTitle.trim()} ${rawText.trim()}".trim()
+        if (combined.isBlank()) return false
+
+        if (nonPaymentPatterns.any { it.containsMatchIn(combined) }) {
+            return false
+        }
+
+        return incomingPaymentRegex.containsMatchIn(combined)
+    }
 
     fun parseNotificationText(packageName: String, rawTitle: String, rawText: String): PaymentAlert {
         val title = rawTitle.trim()
@@ -79,7 +122,8 @@ object PaymentNotificationParser {
             rawPayer
         } else null
 
-        return PaymentAlert(wallet, cleanAmount, cleanPayer)
+        val isBreBHidden = cleanAmount.isNullOrBlank() && (lower.contains("bre-b") || lower.contains("breb"))
+        return PaymentAlert(wallet, cleanAmount, cleanPayer, isBreBHidden)
     }
 
     fun buildSpeechPhrase(alert: PaymentAlert): String {
@@ -89,6 +133,8 @@ object PaymentNotificationParser {
             } else {
                 "¡Pago confirmado! Recibiste ${alert.amountClean} pesos por ${alert.wallet}."
             }
+        } else if (alert.isBreBHiddenAmount) {
+            "¡Atención! Recibiste una transferencia por Bre-B en ${alert.wallet}. Verifica el valor en tu aplicación."
         } else {
             "¡Pago confirmado por ${alert.wallet} recibido con éxito!"
         }
@@ -495,6 +541,12 @@ object VoiceAlertManager : TextToSpeech.OnInitListener {
 
         if (!chimeEnabled && !voiceEnabled) {
             Log.d(TAG, "Alertas sonoras y voz desactivadas por el usuario en Centinela")
+            return
+        }
+
+        // Filtro anti-publicidad / no-pago: jamás sonar ni cantar promociones, compras salientes ni OTP
+        if (!PaymentNotificationParser.isIncomingPayment(rawTitle, rawText)) {
+            Log.d(TAG, "Notificación descartada por filtro anti-publicidad/no-pago en voz: $rawTitle | $rawText")
             return
         }
 

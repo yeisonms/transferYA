@@ -97,4 +97,67 @@ class VoiceAlertManagerTest {
         val phrase = PaymentNotificationParser.buildSpeechPhrase(alert)
         assertEquals("¡Pago confirmado! Recibiste 3 pesos por Nequi.", phrase)
     }
+
+    @Test
+    fun `debe descartar publicidad Black Friday de DaviPlata y no cantarla como pago`() {
+        assertFalse(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "Cuidado personal en Bellapiel con..",
+                rawText = "¡En Black Friday activa tu Tarjeta Débito DaviPlata hoy! Llegan tus favoritos en cuidado personal"
+            )
+        )
+    }
+
+    @Test
+    fun `debe descartar promociones, pagos salientes, retiros y claves dinamicas`() {
+        assertFalse(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "Nequi",
+                rawText = "¡Pide tu tarjeta de crédito Nequi sin cuota de manejo hoy!"
+            )
+        )
+        assertFalse(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "Nequi",
+                rawText = "Enviaste $50.000 a Carlos Perez"
+            )
+        )
+        assertFalse(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "Bancolombia",
+                rawText = "Retiro exitoso por $200.000 en cajero Bancolombia"
+            )
+        )
+        assertFalse(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "DaviPlata",
+                rawText = "Tu clave dinámica es 482910. No la compartas."
+            )
+        )
+    }
+
+    @Test
+    fun `debe aceptar pagos entrantes reales y enunciar alerta preventiva en DaviPlata Bre-B sin monto`() {
+        assertTrue(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "Te enviaron plata por Bre-B",
+                rawText = "Te enviaron $100.000. Entra a tu app y revisa tu saldo."
+            )
+        )
+        assertTrue(
+            PaymentNotificationParser.isIncomingPayment(
+                rawTitle = "DaviPlata",
+                rawText = "Recibiste una transferencia por Bre-B. Entra a la app para ver el detalle."
+            )
+        )
+
+        val brebAlert = PaymentNotificationParser.parseNotificationText(
+            packageName = "com.davivienda.daviplataapp",
+            rawTitle = "DaviPlata",
+            rawText = "Recibiste una transferencia por Bre-B. Entra a la app para ver el detalle."
+        )
+        assertTrue(brebAlert.isBreBHiddenAmount)
+        val phrase = PaymentNotificationParser.buildSpeechPhrase(brebAlert)
+        assertTrue(phrase.contains("Bre-B") && phrase.contains("Verifica el valor"))
+    }
 }

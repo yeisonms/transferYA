@@ -42,7 +42,7 @@ export function normalizeSenderName(rawName: string): string {
 // Patrones de descarte para evitar falsos positivos
 const NEGATIVE_PATTERNS = [
   // Promociones y publicidad
-  /\b(pide tu tarjeta|disfruta de descuentos|cr[eé]dito salvavidas|conoce el nuevo cr[eé]dito|desbloqueaste|bolsillos interesantes|haz crecer tu plata|aplican tyc)\b/i,
+  /\b(black\s+friday|activa\s+tu\s+tarjeta|pide\s+tu\s+tarjeta|tarjeta\s+d[eé]bito|tarjeta\s+de\s+cr[eé]dito|disfruta\s+de\s+descuentos|cashback|tus\s+favoritos|financia\s+tu\s+compra|cr[eé]dito\s+salvavidas|conoce\s+el\s+nuevo\s+cr[eé]dito|desbloqueaste|bolsillos\s+interesantes|haz\s+crecer\s+tu\s+plata|aplican\s+tyc)\b/i,
   // Retiros de efectivo
   /\b(retiro exitoso|sacaste\s+\$|retiro en cajero|en cajero bancolombia|retiro por\s+\$)\b/i,
   // Pagos salientes / débitos / compras
