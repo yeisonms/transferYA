@@ -70,25 +70,25 @@
     <!-- ========================================== -->
     <section class="space-y-3 sm:space-y-3.5 my-auto py-3">
 
-      <!-- Opción 1: Botón Principal Destacado (CTA 15 minutos) -->
-      <a id="btnOptInstall"
-         href="https://wa.me/573144886484?text=Hola%2C%20escane%C3%A9%20el%20QR%20de%20transferYA%20y%20quiero%20configurar%20la%20instalaci%C3%B3n%20en%2015%20minutos%20con%20los%207%20d%C3%ADas%20gratis."
-         onclick="trackQrAction('click_install')"
+      <!-- Opción 1: Botón Principal Destacado (Habla con un asesor por WhatsApp) -->
+      <a id="btnOptAdvisor"
+         href="https://wa.me/573144886484?text=Hola%2C%20escane%C3%A9%20el%20QR%20de%20transferYA%20y%20quiero%20hablar%20con%20un%20asesor%20para%20conocer%20m%C3%A1s."
+         onclick="trackQrAction('click_advisor')"
          class="group block w-full p-3.5 sm:p-4 rounded-2xl bg-[#19C37D] hover:bg-[#18b876] text-[#07131A] shadow-[0_8px_24px_rgba(25,195,125,0.28)] active:scale-[0.98] transition-all border border-[#20E292]/40 text-left cursor-pointer">
         <div class="flex items-center justify-between gap-3">
-          <!-- Ícono Izquierda -->
+          <!-- Logo Oficial de WhatsApp -->
           <div class="w-10 h-10 rounded-xl bg-[#07131A]/10 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-[#07131A]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            <svg class="w-5 h-5 text-[#07131A]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.766.469 3.484 1.344 5l-1.406 5.156 5.281-1.375c1.469.797 3.109 1.219 4.75 1.219 5.516 0 9.969-4.453 9.969-9.969S17.547 2 12.031 2zm5.813 14.125c-.25.703-1.438 1.344-2 1.422-.516.078-1.172.109-1.891-.125-.438-.141-1-.328-1.719-.641-3.031-1.313-5-4.375-5.156-4.578-.156-.203-1.234-1.641-1.234-3.125s.781-2.219 1.063-2.516c.281-.297.609-.375.813-.375.203 0 .406.016.578.016.188 0 .438-.078.688.516.25.609.859 2.094.938 2.25.078.156.125.344.016.547-.109.203-.156.328-.313.5-.156.172-.328.391-.469.516-.156.156-.313.328-.141.641.172.313.781 1.297 1.688 2.109 1.156 1.031 2.141 1.359 2.453 1.516.313.156.484.125.672-.078.188-.203.781-.906.984-1.219.203-.313.406-.266.688-.156.281.109 1.797.844 2.109 1 .313.156.516.234.594.359.078.125.078.734-.172 1.438z"/>
             </svg>
           </div>
           <!-- Texto Central -->
           <div class="flex-1 min-w-0">
             <div class="font-extrabold text-sm sm:text-[15px] text-[#07131A] leading-tight">
-              Instálalo en 15 minutos
+              Habla con un asesor
             </div>
             <div class="text-[11px] sm:text-xs text-[#07131A]/85 font-medium leading-tight mt-0.5">
-              Activa 7 días gratis sin tarjeta por WhatsApp
+              Resuelve tus dudas por WhatsApp ahora mismo
             </div>
           </div>
           <!-- Flecha Derecha -->
@@ -96,25 +96,26 @@
         </div>
       </a>
 
-      <!-- Opción 2: Botón Secundario Destacado (Habla con un asesor) -->
-      <a id="btnOptAdvisor"
-         href="https://wa.me/573144886484?text=Hola%2C%20escane%C3%A9%20el%20QR%20de%20transferYA%20y%20quiero%20hablar%20con%20un%20asesor%20para%20conocer%20m%C3%A1s."
-         onclick="trackQrAction('click_advisor')"
+      <!-- Opción 2: Botón Secundario Destacado (Instálalo en 15 minutos con ícono de celular) -->
+      <a id="btnOptInstall"
+         href="https://wa.me/573144886484?text=Hola%2C%20escane%C3%A9%20el%20QR%20de%20transferYA%20y%20quiero%20configurar%20la%20instalaci%C3%B3n%20en%2015%20minutos%20con%20los%207%20d%C3%ADas%20gratis."
+         onclick="trackQrAction('click_install')"
          class="group block w-full p-3.5 sm:p-4 rounded-2xl bg-[#0E2230] hover:bg-[#132d40] text-white border border-[#19C37D]/50 shadow-sm active:scale-[0.98] transition-all text-left cursor-pointer">
         <div class="flex items-center justify-between gap-3">
-          <!-- Ícono Izquierda -->
+          <!-- Ícono Celular Izquierda -->
           <div class="w-10 h-10 rounded-xl bg-[#19C37D]/15 border border-[#19C37D]/30 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-[#19C37D]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z" />
+            <svg class="w-5 h-5 text-[#19C37D]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="2" width="12" height="20" rx="2.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M12 18h.01" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
           <!-- Texto Central -->
           <div class="flex-1 min-w-0">
             <div class="font-bold text-sm sm:text-[15px] text-white leading-tight">
-              Habla con un asesor
+              Instálalo en 15 minutos
             </div>
             <div class="text-[11px] sm:text-xs text-slate-300 leading-tight mt-0.5">
-              Resuelve tus dudas por WhatsApp ahora mismo
+              Activa 7 días gratis sin tarjeta por WhatsApp
             </div>
           </div>
           <!-- Flecha Derecha -->
