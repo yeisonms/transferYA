@@ -51,6 +51,18 @@ export interface SupabaseConfig {
   bearerToken?: string;
 }
 
+/**
+ * Calcula el inicio exacto del mes calendario actual en Hora Colombia (America/Bogota, UTC-5)
+ * retornado en formato ISO UTC (ej. 2026-11-01T05:00:00.000Z).
+ */
+export function getColombiaMonthStartIso(nowMs: number = Date.now()): string {
+  const bogotaOffsetMs = 5 * 3600_000;
+  const bogotaDate = new Date(nowMs - bogotaOffsetMs);
+  return new Date(
+    Date.UTC(bogotaDate.getUTCFullYear(), bogotaDate.getUTCMonth(), 1, 5, 0, 0, 0),
+  ).toISOString();
+}
+
 export interface OwnedMerchantRecord {
   id: string;
   owner_id: string;
@@ -1593,6 +1605,147 @@ export class SupabaseRepository
       extraAlerts: newExtraAlerts,
       extraCashiers: newExtraCashiers,
     };
+  }
+
+  // ==========================================
+  // WHATSAPP USAGE & QUOTA TRACKING (Fase 4)
+  // ==========================================
+
+  async getMerchantUsage(
+    merchantId: string,
+    nowMs: number = Date.now(),
+  ): Promise<import('../pipeline/types.js').MerchantUsageRecord> {
+    const merchant = await this.getMerchantById(merchantId);
+    const planId = merchant?.plan_id || 'emprendedor';
+    let baseCap = 1500;
+    if (planId === 'pro') baseCap = 7500;
+    else if (planId === 'negocio') baseCap = 3500;
+    if ((merchant as any)?.monthly_alerts_cap && Number((merchant as any).monthly_alerts_cap) > 0) {
+      baseCap = Number((merchant as any).monthly_alerts_cap);
+    }
+    const extraAlerts = Number((merchant as any)?.extra_alerts_quota || 0);
+    const quotaAlerts = baseCap + extraAlerts;
+
+    let countedAlerts = 0;
+    try {
+      const devRes = await fetch(
+        `${this.baseUrl}/rest/v1/devices?merchant_id=eq.${encodeURIComponent(merchantId)}&select=id`,
+        { headers: this.headers },
+      );
+      if (devRes.ok) {
+        const devRows = (await devRes.json()) as Array<{ id: string }>;
+        if (Array.isArray(devRows) && devRows.length > 0) {
+          const inList = devRows.map((d) => `"${String(d.id).replace(/"/g, '')}"`).join(',');
+          const monthStartIso = getColombiaMonthStartIso(nowMs);
+          const notifRes = await fetch(
+            `${this.baseUrl}/rest/v1/captured_notifications?device_id=in.(${encodeURIComponent(
+              inList,
+            )})&whatsapp_message_ids=not.is.null&created_at=gte.${encodeURIComponent(
+              monthStartIso,
+            )}&select=whatsapp_message_ids&limit=10000`,
+            { headers: this.headers },
+          );
+          if (notifRes.ok) {
+            const notifRows = (await notifRes.json()) as Array<{ whatsapp_message_ids?: unknown }>;
+            if (Array.isArray(notifRows)) {
+              for (const row of notifRows) {
+                if (Array.isArray(row.whatsapp_message_ids)) {
+                  countedAlerts += row.whatsapp_message_ids.length;
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Advertencia calculando alertas mensuales desde captured_notifications:', err);
+    }
+
+    const storedUsed = Number((merchant as any)?.monthly_alerts_used || 0);
+    return {
+      usedAlerts: Math.max(countedAlerts, storedUsed),
+      quotaAlerts,
+      planId,
+    };
+  }
+
+  async recordWhatsAppDispatch(params: {
+    merchantId: string;
+    cashierPhone: string;
+    wamid?: string;
+    category?: string;
+    estimatedCostCop?: number;
+    notificationId?: string;
+  }): Promise<void> {
+    // El conteo oficial se consolida de forma exacta en captured_notifications.whatsapp_message_ids.
+    // Adicionalmente intentamos registrar en whatsapp_usage_logs si la tabla opcional está activa.
+    try {
+      await fetch(`${this.baseUrl}/rest/v1/whatsapp_usage_logs`, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          merchant_id: params.merchantId,
+          cashier_phone: params.cashierPhone,
+          wamid: params.wamid || null,
+          category: params.category || 'utility',
+          estimated_cost_cop: params.estimatedCostCop ?? 2.95,
+          status: 'sent',
+          notification_id: params.notificationId || null,
+        }),
+      });
+    } catch {
+      // No bloquear despacho si whatsapp_usage_logs no existe en el entorno
+    }
+  }
+
+  async getMonthlyWhatsAppUsageByMerchant(
+    nowMs: number = Date.now(),
+    preloadedDevices?: AdminDeviceRow[],
+  ): Promise<Map<string, { alertsUsed: number; paymentsNotified: number }>> {
+    const result = new Map<string, { alertsUsed: number; paymentsNotified: number }>();
+    try {
+      const devices = preloadedDevices ?? (await this.getAllDevices());
+      if (!devices || devices.length === 0) return result;
+
+      const devToMerchant = new Map<string, string>();
+      for (const d of devices) {
+        if (d.id && d.merchant_id) devToMerchant.set(d.id, d.merchant_id);
+      }
+
+      const monthStartIso = getColombiaMonthStartIso(nowMs);
+      const res = await fetch(
+        `${this.baseUrl}/rest/v1/captured_notifications?whatsapp_message_ids=not.is.null&created_at=gte.${encodeURIComponent(
+          monthStartIso,
+        )}&select=device_id,whatsapp_message_ids&limit=20000`,
+        { headers: this.headers },
+      );
+      if (!res.ok) return result;
+
+      const rows = (await res.json()) as Array<{
+        device_id?: string;
+        whatsapp_message_ids?: unknown;
+      }>;
+      if (!Array.isArray(rows)) return result;
+
+      for (const row of rows) {
+        if (!row.device_id || !Array.isArray(row.whatsapp_message_ids)) continue;
+        const count = row.whatsapp_message_ids.length;
+        if (count <= 0) continue;
+        const merchantId = devToMerchant.get(row.device_id);
+        if (!merchantId) continue;
+
+        const current = result.get(merchantId) ?? { alertsUsed: 0, paymentsNotified: 0 };
+        current.alertsUsed += count;
+        current.paymentsNotified += 1;
+        result.set(merchantId, current);
+      }
+    } catch (err) {
+      console.warn('Advertencia agregando consumo mensual WhatsApp para Admin:', err);
+    }
+    return result;
   }
 
   // ==========================================

@@ -410,6 +410,52 @@ describe('SupabaseRepository REST Adapter', () => {
 
       fetchSpy.mockRestore();
     });
+
+    it('debe contabilizar alertas WhatsApp reales del mes desde captured_notifications.whatsapp_message_ids en getMerchantUsage', async () => {
+      const nowMs = Date.UTC(2026, 10, 27, 16, 0, 0); // 27 Nov 2026 11:00 AM Bogota
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        // 1. getMerchantById
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: 'bc8b5b58-1514-4daf-836f-3bc36a9f61b1',
+              name: 'pruebas',
+              plan_id: 'pro',
+            },
+          ],
+        } as any)
+        // 2. devices del comercio
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            { id: 'dev_bc8b5b_caja_1' },
+            { id: 'cloud_email_bc8b5b58-1514-4daf-836f-3bc36a9f61b1' },
+          ],
+        } as any)
+        // 3. captured_notifications con whatsapp_message_ids en el mes actual
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            { whatsapp_message_ids: ['wamid.1', 'wamid.2'] },
+            { whatsapp_message_ids: ['wamid.3', 'wamid.4'] },
+            { whatsapp_message_ids: ['wamid.5'] },
+          ],
+        } as any);
+
+      const usage = await repository.getMerchantUsage(
+        'bc8b5b58-1514-4daf-836f-3bc36a9f61b1',
+        nowMs,
+      );
+
+      expect(usage.planId).toBe('pro');
+      expect(usage.quotaAlerts).toBe(7500);
+      expect(usage.usedAlerts).toBe(5);
+      expect(String(fetchSpy.mock.calls[2][0])).toContain('2026-11-01T05%3A00%3A00.000Z');
+
+      fetchSpy.mockRestore();
+    });
   });
 });
 

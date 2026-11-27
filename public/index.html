@@ -5484,6 +5484,7 @@
     let merchantDevices = [];
     let cashierRecords = [];
     let allTransactions = [];
+    let monthlyWhatsAppStats = { usedAlerts: 0, paymentsNotified: 0 };
     let filteredTransactions = [];
     let realtimeChannel = null;
     let deviceHealthTimer = null;
@@ -5565,6 +5566,7 @@
         currentMerchant = null;
         merchantDevices = [];
         allTransactions = [];
+        monthlyWhatsAppStats = { usedAlerts: 0, paymentsNotified: 0 };
         renderAdminNavVisibility();
         document.getElementById("appShell").classList.add("hidden");
         document.getElementById("onboardingScreen").classList.add("hidden");
@@ -6308,12 +6310,14 @@
       if (merchantDevices.length === 0) {
         noDevicesBanner.classList.remove("hidden");
         allTransactions = [];
+        monthlyWhatsAppStats = { usedAlerts: 0, paymentsNotified: 0 };
         recomputeAllViews();
         return;
       }
       noDevicesBanner.classList.add("hidden");
 
       const deviceIds = merchantDevices.map((d) => d.id);
+      loadMonthlyWhatsAppUsage(deviceIds);
       const { data: notifData, error: notifErr } = await supabaseClient
         .from("captured_notifications")
         .select("*")
@@ -6596,6 +6600,60 @@
       applyFiltersAndRender(highlightId);
       renderDailyClosingTable();
       updatePosView();
+      updateCashiersQuotaUI();
+    }
+
+    function getColombiaMonthStartIso(nowMs = Date.now()) {
+      const bogotaOffsetMs = 5 * 3600000;
+      const bogotaDate = new Date(nowMs - bogotaOffsetMs);
+      return new Date(Date.UTC(bogotaDate.getUTCFullYear(), bogotaDate.getUTCMonth(), 1, 5, 0, 0, 0)).toISOString();
+    }
+
+    function computeLiveMonthWhatsAppStats() {
+      const monthStartMs = new Date(getColombiaMonthStartIso()).getTime();
+      let usedAlerts = 0;
+      let paymentsNotified = 0;
+      for (const tx of (allTransactions || [])) {
+        if (!tx || !Array.isArray(tx.whatsapp_message_ids) || tx.whatsapp_message_ids.length === 0) continue;
+        const ts = tx.created_at ? new Date(tx.created_at).getTime() : getTxTimestamp(tx);
+        if (ts >= monthStartMs) {
+          usedAlerts += tx.whatsapp_message_ids.length;
+          paymentsNotified += 1;
+        }
+      }
+      return { usedAlerts, paymentsNotified };
+    }
+
+    async function loadMonthlyWhatsAppUsage(deviceIds) {
+      if (!supabaseClient || !Array.isArray(deviceIds) || deviceIds.length === 0) {
+        monthlyWhatsAppStats = { usedAlerts: 0, paymentsNotified: 0 };
+        updateCashiersQuotaUI();
+        return;
+      }
+      try {
+        const monthStartIso = getColombiaMonthStartIso();
+        const { data, error } = await supabaseClient
+          .from("captured_notifications")
+          .select("whatsapp_message_ids,created_at")
+          .in("device_id", deviceIds)
+          .not("whatsapp_message_ids", "is", null)
+          .gte("created_at", monthStartIso)
+          .limit(10000);
+        if (!error && Array.isArray(data)) {
+          let usedAlerts = 0;
+          let paymentsNotified = 0;
+          for (const row of data) {
+            if (Array.isArray(row.whatsapp_message_ids) && row.whatsapp_message_ids.length > 0) {
+              usedAlerts += row.whatsapp_message_ids.length;
+              paymentsNotified += 1;
+            }
+          }
+          monthlyWhatsAppStats = { usedAlerts, paymentsNotified };
+          updateCashiersQuotaUI();
+        }
+      } catch (err) {
+        console.warn("Advertencia consultando consumo mensual de alertas WhatsApp:", err);
+      }
     }
 
     // =========================================================================
@@ -9700,8 +9758,19 @@
 
       const extraAlerts = currentMerchant.extra_alerts_quota || 0;
       const totalCap = baseCap + extraAlerts;
-      const usedAlerts = currentMerchant.monthly_alerts_used || 0;
-      const pct = Math.min(100, Math.round((usedAlerts / totalCap) * 100));
+      const liveWa = computeLiveMonthWhatsAppStats();
+      const usedAlerts = Math.max(
+        Number(currentMerchant.monthly_alerts_used || 0),
+        liveWa.usedAlerts,
+        monthlyWhatsAppStats.usedAlerts || 0
+      );
+      const paymentsNotified = Math.max(
+        liveWa.paymentsNotified,
+        monthlyWhatsAppStats.paymentsNotified || 0
+      );
+      const pct = totalCap > 0
+        ? Math.min(100, usedAlerts > 0 ? Math.max(1, Math.round((usedAlerts / totalCap) * 100)) : 0)
+        : 0;
 
       const numEl = document.getElementById("quotaAlertsNumbers");
       const pctEl = document.getElementById("quotaAlertsPercentage");
@@ -9710,13 +9779,13 @@
       const badgeEl = document.getElementById("quotaStatusBadge");
       const msgEl = document.getElementById("quotaMessageText");
 
-      if (numEl) numEl.textContent = `${usedAlerts.toLocaleString()} / ${totalCap.toLocaleString()}`;
-      if (pctEl) pctEl.textContent = `${pct}%`;
+      if (numEl) numEl.textContent = `${usedAlerts.toLocaleString("es-CO")} / ${totalCap.toLocaleString("es-CO")}`;
+      if (pctEl) pctEl.textContent = `${Math.min(100, Math.round((usedAlerts / totalCap) * 100))}%`;
       if (barEl) {
         barEl.style.width = `${pct}%`;
-        if (pct >= 100) {
+        if (usedAlerts >= totalCap) {
           barEl.className = "h-full bg-rose-500 transition-all duration-500";
-        } else if (pct >= 80) {
+        } else if (usedAlerts >= totalCap * 0.8) {
           barEl.className = "h-full bg-amber-500 transition-all duration-500";
         } else {
           barEl.className = "h-full bg-emerald-500 transition-all duration-500";
@@ -9724,21 +9793,23 @@
       }
 
       if (dotEl && badgeEl && msgEl) {
-        if (pct >= 100) {
+        if (usedAlerts >= totalCap) {
           dotEl.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping";
           badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
           badgeEl.textContent = "WhatsApp Pausado (100%)";
           msgEl.innerHTML = `<strong class="text-rose-400">Cupo mensual alcanzado:</strong> Para proteger tu presupuesto, los avisos a WhatsApp están pausados. La voz en vivo y el panel web siguen funcionando normalmente.`;
-        } else if (pct >= 80) {
+        } else if (usedAlerts >= totalCap * 0.8) {
           dotEl.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
           badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20";
           badgeEl.textContent = "Alerta 80% Consumido";
-          msgEl.innerHTML = `<strong class="text-amber-400">Atención:</strong> Has utilizado más del 80% de tus alertas. Adquiere un paquete extra de 1.000 alertas ($7.900 COP) para no interrumpir el servicio de tus cajeros.`;
+          msgEl.innerHTML = `<strong class="text-amber-400">Atención:</strong> Has utilizado ${usedAlerts.toLocaleString("es-CO")} de ${totalCap.toLocaleString("es-CO")} alertas este mes. Adquiere un paquete extra de 1.000 alertas ($7.900 COP) para no interrumpir el servicio de tus cajeros.`;
         } else {
           dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
           badgeEl.className = "px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
           badgeEl.textContent = "Consumo Normal";
-          msgEl.textContent = "Cada pago confirmado se envía de inmediato a los celulares de tus cajeros vía Meta WhatsApp API.";
+          msgEl.textContent = usedAlerts > 0
+            ? `Has consumido ${usedAlerts.toLocaleString("es-CO")} alertas este mes (${paymentsNotified.toLocaleString("es-CO")} ${paymentsNotified === 1 ? "pago notificado" : "pagos notificados"} a tus cajeros vía Meta WhatsApp API). Se reinicia el día 1 de cada mes.`
+            : "Cada pago confirmado se envía de inmediato a los celulares de tus cajeros vía Meta WhatsApp API. Se reinicia el día 1 de cada mes.";
         }
       }
 
@@ -10658,6 +10729,9 @@
                 <span>${badgeInfo.label}</span>
               </span>
               ${getAdminPlanBadgeHtml(m.planId, m.id, m.name)}
+              <span class="text-[10px] font-mono ${(m.monthlyAlertsUsed || 0) >= (m.monthlyAlertsQuota || 1500) ? 'text-ty-rose font-bold' : (m.monthlyAlertsUsed || 0) >= (m.monthlyAlertsQuota || 1500) * 0.8 ? 'text-ty-amber font-bold' : 'text-ty-muted'}" title="Alertas WhatsApp enviadas en el mes actual">
+                💬 ${(m.monthlyAlertsUsed || 0).toLocaleString("es-CO")} / ${(m.monthlyAlertsQuota || 1500).toLocaleString("es-CO")} alertas
+              </span>
             </div>
 
             <!-- Vigencia -->

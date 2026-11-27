@@ -561,6 +561,31 @@ describe('Ticket 20 — Admin Subscriptions Service Logic', () => {
     const exists = await repo.getMerchantById('m-ghost');
     expect(exists).toBeNull();
   });
+
+  it('incluye monthlyAlertsUsed y monthlyAlertsQuota por comercio en listAdminMerchants', async () => {
+    const repo = new InMemoryAdminRepository() as InMemoryAdminRepository & {
+      getMonthlyWhatsAppUsageByMerchant?: any;
+    };
+    repo.merchants = [
+      {
+        id: 'm-pruebas',
+        name: 'pruebas',
+        owner_id: 'o-pruebas',
+        status: 'ACTIVE',
+        plan_id: 'pro',
+        subscription_status: 'ACTIVE',
+        created_at: new Date(baseTime).toISOString(),
+      },
+    ];
+    repo.getMonthlyWhatsAppUsageByMerchant = async () =>
+      new Map([['m-pruebas', { alertsUsed: 106, paymentsNotified: 53 }]]);
+
+    const list = await listAdminMerchants(repo, baseTime);
+    expect(list).toHaveLength(1);
+    expect(list[0].monthlyAlertsUsed).toBe(106);
+    expect(list[0].monthlyAlertsQuota).toBe(7500);
+    expect(list[0].monthlyPaymentsNotified).toBe(53);
+  });
 });
 
 describe('Ticket 20 — api/v1/admin/subscriptions Handler HTTP Unit Tests', () => {

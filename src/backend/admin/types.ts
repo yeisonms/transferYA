@@ -35,6 +35,9 @@ export interface AdminMerchantSummary {
   totalDevices: number;
   onlineDevices: number;
   lastHeartbeatAt: number | null;
+  monthlyAlertsUsed: number;
+  monthlyAlertsQuota: number;
+  monthlyPaymentsNotified: number;
   createdAt: number;
 }
 
@@ -48,6 +51,9 @@ export interface AdminMerchantRow {
   subscription_ends_at?: string | null;
   subscription_expires_at?: string | null;
   billing_phone?: string | null;
+  monthly_alerts_used?: number | null;
+  monthly_alerts_cap?: number | null;
+  extra_alerts_quota?: number | null;
   created_at: string;
   updated_at?: string;
 }
@@ -82,4 +88,8 @@ export interface IAdminSubscriptionsRepository {
     status?: string,
     paidAtMs?: number,
   ): Promise<any>;
+  getMonthlyWhatsAppUsageByMerchant?(
+    nowMs?: number,
+    preloadedDevices?: AdminDeviceRow[],
+  ): Promise<Map<string, { alertsUsed: number; paymentsNotified: number }>>;
 }

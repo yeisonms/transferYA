@@ -14,10 +14,22 @@ import type {
 
 const ONLINE_HEARTBEAT_THRESHOLD_MS = 300_000; // 5 minutos
 
+function resolveMerchantMonthlyQuota(row: AdminMerchantRow): number {
+  const planId = row.plan_id || 'emprendedor';
+  let baseCap = 1500;
+  if (planId === 'pro') baseCap = 7500;
+  else if (planId === 'negocio') baseCap = 3500;
+  if (row.monthly_alerts_cap && Number(row.monthly_alerts_cap) > 0) {
+    baseCap = Number(row.monthly_alerts_cap);
+  }
+  return baseCap + Number(row.extra_alerts_quota || 0);
+}
+
 function mapRowToSummary(
   row: AdminMerchantRow,
   devices: AdminDeviceRow[],
   nowMs: number,
+  usageStats?: { alertsUsed: number; paymentsNotified: number },
 ): AdminMerchantSummary {
   const merchantDevices = devices.filter((d) => d.merchant_id === row.id);
   const totalDevices = merchantDevices.length;
@@ -79,6 +91,9 @@ function mapRowToSummary(
     totalDevices,
     onlineDevices,
     lastHeartbeatAt,
+    monthlyAlertsUsed: Math.max(Number(row.monthly_alerts_used || 0), usageStats?.alertsUsed ?? 0),
+    monthlyAlertsQuota: resolveMerchantMonthlyQuota(row),
+    monthlyPaymentsNotified: usageStats?.paymentsNotified ?? 0,
     createdAt: new Date(row.created_at).getTime(),
   };
 }
@@ -96,8 +111,15 @@ export async function listAdminMerchants(
     repo.getAllDevices(),
   ]);
 
+  let usageMap = new Map<string, { alertsUsed: number; paymentsNotified: number }>();
+  if (typeof repo.getMonthlyWhatsAppUsageByMerchant === 'function') {
+    try {
+      usageMap = await repo.getMonthlyWhatsAppUsageByMerchant(nowMs, devices);
+    } catch {}
+  }
+
   return merchants
-    .map((m) => mapRowToSummary(m, devices, nowMs))
+    .map((m) => mapRowToSummary(m, devices, nowMs, usageMap.get(m.id)))
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
@@ -279,7 +301,14 @@ export async function applySubscriptionAction(
   }
 
   const allDevices = await repo.getAllDevices();
-  const summary = mapRowToSummary(updatedRow, allDevices, nowMs);
+  let usageStats: { alertsUsed: number; paymentsNotified: number } | undefined;
+  if (typeof repo.getMonthlyWhatsAppUsageByMerchant === 'function') {
+    try {
+      const usageMap = await repo.getMonthlyWhatsAppUsageByMerchant(nowMs, allDevices);
+      usageStats = usageMap.get(updatedRow.id);
+    } catch {}
+  }
+  const summary = mapRowToSummary(updatedRow, allDevices, nowMs, usageStats);
 
   return { summary, message };
 }

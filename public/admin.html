@@ -348,10 +348,13 @@
               </button>
             </div>
 
-            <div class="md:col-span-2">
+            <div class="md:col-span-2 flex flex-col items-start gap-1">
               <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono uppercase border ${badgeInfo.className}">
                 <span class="w-1.5 h-1.5 rounded-full ${badgeInfo.dotColor}"></span>
                 <span>${badgeInfo.label}</span>
+              </span>
+              <span class="text-[10px] font-mono ${(m.monthlyAlertsUsed || 0) >= (m.monthlyAlertsQuota || 1500) ? 'text-ty-rose font-bold' : (m.monthlyAlertsUsed || 0) >= (m.monthlyAlertsQuota || 1500) * 0.8 ? 'text-ty-amber font-bold' : 'text-ty-muted'}">
+                💬 ${(m.monthlyAlertsUsed || 0).toLocaleString("es-CO")} / ${(m.monthlyAlertsQuota || 1500).toLocaleString("es-CO")} alertas
               </span>
             </div>
 
