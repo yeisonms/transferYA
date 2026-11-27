@@ -413,5 +413,49 @@ describe('Webhook de Atajos de iOS para iPhone (src/backend/webhook/ios-shortcut
       // No debe volver a disparar WhatsApp
       expect(mockWhatsappClient.sendPaymentAlert).toHaveBeenCalledTimes(1);
     });
+
+    it('debe procesar SMS de Nequi Negocios o DaviPlata cuando Atajos solo envía { text } sin campo sender', async () => {
+      const smsDaviplata = 'Recibiste una transferencia de $50.000 de MARIA GOMEZ';
+      const { req, res } = createMockReqRes(
+        'POST',
+        { text: smsDaviplata },
+        {},
+        `/api/v1/webhooks/ios-shortcut?token=${testMerchant.id}`,
+      );
+
+      await handleIosShortcutWebhook(req, res, {
+        repository,
+        whatsappClient: mockWhatsappClient,
+        nowProvider: () => now,
+      });
+
+      expect(res.statusCode).toBe(200);
+      const payload = JSON.parse(res.end.mock.calls[0][0]);
+      expect(payload.success).toBe(true);
+      expect(payload.status).toBe('PROCESSED');
+      expect(payload.payment.amount).toBe(50000);
+      expect(payload.payment.wallet).toBe('DAVIPLATA');
+    });
+
+    it('debe responder CONNECTION_OK ante PING_PRUEBA_CONEXION_TRANSFERYA sin disparar WhatsApp', async () => {
+      const { req, res } = createMockReqRes(
+        'POST',
+        { text: 'PING_PRUEBA_CONEXION_TRANSFERYA' },
+        {},
+        `/api/v1/webhooks/ios-shortcut?token=${testMerchant.id}`,
+      );
+
+      await handleIosShortcutWebhook(req, res, {
+        repository,
+        whatsappClient: mockWhatsappClient,
+        nowProvider: () => now,
+      });
+
+      expect(res.statusCode).toBe(200);
+      const payload = JSON.parse(res.end.mock.calls[0][0]);
+      expect(payload.success).toBe(true);
+      expect(payload.status).toBe('CONNECTION_OK');
+      expect(mockWhatsappClient.sendPaymentAlert).not.toHaveBeenCalled();
+    });
   });
 });

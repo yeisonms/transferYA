@@ -4037,7 +4037,7 @@
         </div>
       </div>
 
-      <!-- PANEL C: VINCULACIÓN CON IPHONE (AUTOMATIZACIÓN DE ATAJOS / SMS) -->
+      <!-- PANEL C: VINCULACIÓN CON IPHONE (AUTOMATIZACIÓN DE ATAJOS / SMS + GMAIL) -->
       <div id="panelPairingIphone" class="hidden space-y-3.5">
         <div class="p-3.5 rounded-xl bg-gradient-to-r from-orange-500/10 via-ty-surface to-amber-500/10 border border-orange-500/30 space-y-3">
           <div class="flex items-start gap-2.5">
@@ -4046,19 +4046,27 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <h4 class="text-xs sm:text-sm font-bold text-white">¿Tu equipo de cobro usa iPhone?</h4>
+                <h4 class="text-xs sm:text-sm font-bold text-white">Configuración completa en iPhone (iOS 17 / 18)</h4>
                 <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/30 uppercase font-bold">Sin instalar APK</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-1 leading-relaxed">
-                Apple restringe la lectura de notificaciones en apps de terceros. En iPhone usamos la app nativa <strong>Atajos de iOS</strong> para capturar los SMS bancarios (Bancolombia, Nequi y DaviPlata) y notificarlos a tus cajeros por WhatsApp de forma 100% automática.
+                Por seguridad de Apple, iOS <strong>no permite leer notificaciones Push de apps</strong> (como la app Nequi). En iPhone combinamos <strong>2 canales automáticos</strong>:
               </p>
+              <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10.5px]">
+                <div class="p-2 rounded-lg bg-sky-500/10 border border-sky-500/25 text-sky-200 leading-snug">
+                  <strong>1. Nequi Personal y Correos:</strong> Activa <strong>Respaldo Gmail</strong> (en Mis Cajas) + agrega esta web a <em>Pantalla de Inicio</em> y toca <strong>Activar alertas</strong>. Llega en ~2s.
+                </div>
+                <div class="p-2 rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-200 leading-snug">
+                  <strong>2. SMS Bancarios (Atajos):</strong> Captura mensajes de texto SMS reales de <strong>Bancolombia</strong>, <strong>Nequi Negocios (890806)</strong> y <strong>DaviPlata (85888)</strong>.
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- URL Personalizada del Webhook -->
-          <div class="p-2.5 rounded-lg bg-ty-bg border border-ty-border space-y-1.5">
+          <div class="p-2.5 rounded-lg bg-ty-bg border border-ty-border space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono uppercase tracking-wider text-ty-muted font-bold">URL del Webhook para tu Atajo:</span>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-ty-muted font-bold">1. Copia tu URL única de Webhook:</span>
               <span class="text-[9px] font-mono text-ty-emerald">Token vinculado</span>
             </div>
             <div class="flex items-center gap-2">
@@ -4074,23 +4082,30 @@
                 <span>Copiar URL</span>
               </button>
             </div>
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+              <span class="text-[10px] text-ty-muted">¿Quieres confirmar que tu enlace está activo?</span>
+              <button type="button" onclick="testIosWebhookConnection()" id="testIosWebhookBtn"
+                class="px-2.5 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[10.5px] font-semibold text-emerald-300 transition-all shrink-0">
+                🧪 Verificar enlace
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- 4 Pasos Rápidos de Configuración en iPhone -->
+        <!-- 4 Pasos Exactos de Configuración en iOS 17 / 18 -->
         <div class="space-y-2">
           <div class="text-[11px] font-mono font-bold text-ty-muted uppercase tracking-wider flex items-center gap-1.5">
-            <span>⚡ Configuración en 4 Pasos (Se hace una sola vez)</span>
+            <span>⚡ 2. Configura la app "Atajos" en tu iPhone (Paso a paso iOS 18)</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div class="p-2.5 rounded-xl bg-ty-surface border border-ty-border space-y-1">
               <div class="flex items-center gap-1.5 font-bold text-white">
                 <span class="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-[10px] font-mono font-bold">1</span>
-                <span>Elige "Mensaje" y el filtro</span>
+                <span>Mensaje contiene "recib"</span>
               </div>
               <p class="text-[11px] text-ty-muted leading-tight">
-                En la app <strong>Atajos</strong> &rarr; pestaña <strong>Automatización</strong> &rarr; <strong>Nueva Automatización</strong>. Selecciona <strong>"Mensaje"</strong>. En remitente pon <code class="text-orange-300">Bancolombia</code>, <code class="text-orange-300">85566</code> o <code class="text-orange-300">Nequi</code>.
+                Abre <strong>Atajos</strong> &rarr; pestaña <strong>Automatización</strong> &rarr; toca <strong>+</strong> &rarr; elige <strong>Mensaje</strong>. Deja <em>Remitente</em> vacío y en <strong>Mensaje contiene</strong> escribe <code class="text-orange-300 font-bold">recib</code>.
               </p>
             </div>
 
@@ -4100,29 +4115,34 @@
                 <span>Ejecutar inmediatamente</span>
               </div>
               <p class="text-[11px] text-ty-muted leading-tight">
-                Marca <strong>"Ejecutar inmediatamente"</strong> y apaga la opción "Preguntar antes de ejecutar" para que corra 100% en segundo plano sin confirmación manual.
+                Marca <strong>"Ejecutar inmediatamente"</strong> (no "Ejecutar tras confirmar") &rarr; toca <strong>Siguiente</strong> &rarr; elige <strong>Crear automatización en blanco</strong>.
               </p>
             </div>
 
             <div class="p-2.5 rounded-xl bg-ty-surface border border-ty-border space-y-1">
               <div class="flex items-center gap-1.5 font-bold text-white">
                 <span class="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
-                <span>Conecta el webhook</span>
+                <span>Obtener contenido de URL (POST)</span>
               </div>
               <p class="text-[11px] text-ty-muted leading-tight">
-                Añade acción <strong>"Obtener contenido de URL"</strong>. Pega la URL del webhook de arriba (Método <strong>POST</strong>, Request Body: JSON con <code class="text-orange-300">text</code> = Texto de entrada).
+                Busca <strong>"Obtener contenido de URL"</strong>. Pega tu URL donde dice <em>URL</em>, despliega la flecha <strong>(&gt;)</strong>, cambia <em>Método</em> a <strong>POST</strong> y <em>Cuerpo de solicitud</em> a <strong>JSON</strong>.
               </p>
             </div>
 
             <div class="p-2.5 rounded-xl bg-ty-surface border border-ty-border space-y-1">
               <div class="flex items-center gap-1.5 font-bold text-white">
                 <span class="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-[10px] font-mono font-bold">4</span>
-                <span>Guarda con "Listo"</span>
+                <span>Clave "text" = Entrada de atajo</span>
               </div>
               <p class="text-[11px] text-ty-muted leading-tight">
-                Toca <strong>Listo</strong>. Desde ese instante, cada pago por SMS recibido en tu iPhone alertará a tus cajeros por WhatsApp al instante.
+                Toca <strong>Agregar campo nuevo &rarr; Texto</strong>. En Clave pon <code class="text-orange-300 font-bold">text</code>. En Texto toca arriba del teclado <strong>Entrada de atajo</strong> (verifica que diga <strong>Contenido</strong>) y toca <strong>Listo</strong>.
               </p>
             </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-200 leading-snug">
+            <strong>✅ Prueba real en 10 segundos:</strong> Desde otro celular envíale un SMS normal a tu iPhone con este texto exacto:<br>
+            <code class="text-white font-mono text-[10.5px] select-all">Bancolombia: recibiste una transferencia por $1.000 de PRUEBA IPHONE en tu cuenta *1234.</code>
           </div>
         </div>
       </div>
@@ -8066,6 +8086,19 @@
         };
       }
 
+      if (device?.id?.startsWith("ios_shortcut_") && device.status === "ACTIVE") {
+        const hasPing = Boolean(device.last_heartbeat_at);
+        return {
+          state: "ONLINE",
+          badgeLabel: "ATAJO iOS ACTIVO",
+          dotClass: "bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]",
+          badgeClass: "bg-orange-500/15 text-orange-300 border border-orange-500/30",
+          cardBorderClass: "border-orange-500/35",
+          relativeText: hasPing ? "Disparo por SMS activo (Atajos iOS)" : "Listo para recibir SMS (Atajos iOS)",
+          pingColorClass: "text-orange-300"
+        };
+      }
+
       if (!device || device.status !== "ACTIVE") {
         const isRevoked = device?.status === "REVOKED";
         return {
@@ -8285,8 +8318,13 @@
         const health = getDeviceConnectionHealth(d, nowMs);
         const exactPing = d.last_heartbeat_at ? getColombiaDateTimeLabel(d.last_heartbeat_at) : "Sin registros aún";
         const isCloud = d.id.startsWith("cloud_email_");
+        const isIosShortcut = d.id.startsWith("ios_shortcut_");
         const deviceName = isCloud ? "Respaldo Gmail" : (d.label || d.id);
-        const deviceType = isCloud ? "Ruta Cloud (Reenvío automático)" : "Celular de mostrador";
+        const deviceType = isCloud
+          ? "Ruta Cloud (Reenvío automático)"
+          : isIosShortcut
+            ? "Automatización SMS nativa (iPhone)"
+            : "Celular de mostrador";
 
         return `
           <div class="bg-ty-surface-low border ${health.cardBorderClass} rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all hover:border-ty-border-strong shadow-sm">
@@ -8341,7 +8379,9 @@
               <div class="flex items-center gap-1.5">
                 ${d.id.startsWith("cloud_email_")
                   ? `<button onclick="openGmailGuideModal()" class="px-3 py-1.5 rounded-xl bg-sky-500/15 border border-sky-500/30 text-xs font-semibold text-sky-400 hover:bg-sky-500/25 transition-all">Guía Gmail</button>`
-                  : `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/25 transition-all">Ver QR</button>`}
+                  : d.id.startsWith("ios_shortcut_")
+                    ? `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "iPhone Atajos (SMS)")}')" class="px-3 py-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 text-xs font-semibold text-orange-300 hover:bg-orange-500/25 transition-all">Guía iPhone</button>`
+                    : `<button onclick="openPairingModal('${escapeHtml(d.id)}', '${escapeHtml(d.label || "Caja")}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/25 transition-all">Ver QR</button>`}
                 <button onclick="openResetModal('${escapeHtml(d.id)}')" class="p-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-400 hover:bg-amber-500/20 transition-all" title="Formatear historial de pruebas (volver a $0 COP)">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 </button>
@@ -8518,6 +8558,38 @@
       });
     }
 
+    async function testIosWebhookConnection() {
+      const input = document.getElementById("iosWebhookUrlInput");
+      const btn = document.getElementById("testIosWebhookBtn");
+      if (!input || !input.value) return;
+      const prevText = btn ? btn.textContent : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Verificando...";
+      }
+      try {
+        const res = await fetch(input.value, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: "PING_PRUEBA_CONEXION_TRANSFERYA" })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast("✅ Enlace Webhook de tu iPhone activo y verificado.");
+          if (typeof loadDevices === "function") loadDevices();
+        } else {
+          showToast("⚠️ Error verificando enlace: " + (data.message || res.status), "error");
+        }
+      } catch (err) {
+        showToast("⚠️ No se pudo conectar al webhook: " + err.message, "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = prevText || "🧪 Verificar enlace";
+        }
+      }
+    }
+
     function getMaxAllowedDevicesForMerchant() {
       const planId = currentMerchant?.plan_id || "emprendedor";
       if (planId === "pro") return 3;
@@ -8541,6 +8613,13 @@
     }
 
     function openPairingModal(presetDeviceId = null, presetLabel = null) {
+      const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const existingIos = merchantDevices.find((d) => d.id.startsWith("ios_shortcut_") && d.status !== "REVOKED");
+      if (!presetDeviceId && isIos && existingIos) {
+        presetDeviceId = existingIos.id;
+        presetLabel = existingIos.label || "iPhone Atajos (SMS)";
+      }
+
       // Si no es re-vinculación de una caja existente, validar cupo de cajas físicas del plan
       if (!presetDeviceId) {
         const physicalDevices = merchantDevices.filter((d) => !d.id.startsWith("cloud_email_") && d.status !== "REVOKED");
@@ -8564,9 +8643,9 @@
         iosInput.value = `${origin}/api/v1/webhooks/ios-shortcut?token=${currentMerchant.id}`;
       }
 
-      const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const forceIphoneTab = isIos || Boolean(presetDeviceId && presetDeviceId.startsWith("ios_shortcut_"));
       const isMobileDevice = isIos || /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      setPairingTab(isIos ? "iphone" : isMobileDevice ? "samePhone" : "qr");
+      setPairingTab(forceIphoneTab ? "iphone" : isMobileDevice ? "samePhone" : "qr");
 
       document.getElementById("pairingModal").classList.remove("hidden");
       generatePairingQrNow();

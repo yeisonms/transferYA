@@ -156,6 +156,10 @@ export async function handleIosShortcutWebhook(
       body.text ||
       body.rawText ||
       body.message ||
+      body.mensaje ||
+      body.contenido ||
+      body.sms ||
+      body.input ||
       body.body ||
       (typeof body === 'string' ? body : '');
 
@@ -163,6 +167,7 @@ export async function handleIosShortcutWebhook(
     if (typeof rawText === 'object' && rawText !== null) {
       rawText =
         rawText.content ||
+        rawText.contenido ||
         rawText.body ||
         rawText.text ||
         rawText.message ||
@@ -194,7 +199,13 @@ export async function handleIosShortcutWebhook(
       return;
     }
 
-    const sender = (typeof body.sender === 'string' ? body.sender : body.from) || 'Bancolombia';
+    const explicitSender =
+      typeof body.sender === 'string'
+        ? body.sender.trim()
+        : typeof body.from === 'string'
+          ? body.from.trim()
+          : '';
+    const senderForDisplay = explicitSender || 'SMS iPhone';
 
     // 3. Resolver el Comercio Suscriptor en la Base de Datos
     const repository = options.repository ?? getSupabaseRepository();
@@ -263,10 +274,61 @@ export async function handleIosShortcutWebhook(
       } catch {}
     }
 
+    try {
+      if (repository.upsertDeviceHeartbeat) {
+        await repository.upsertDeviceHeartbeat({
+          deviceId: effectiveDeviceId,
+          merchantId,
+          label: 'iPhone Atajos (SMS)',
+          lastSeenAt: now,
+          batteryLevel: 100,
+          isCharging: false,
+          networkType: 'WIFI',
+          appVersion: 'ios-shortcut',
+          status: 'ONLINE',
+        });
+      }
+    } catch {}
+
+    // Ping de verificación de conectividad desde el panel sin contaminar el historial de pagos
+    if (text === 'PING_PRUEBA_CONEXION_TRANSFERYA') {
+      res.statusCode = 200;
+      res.end(
+        JSON.stringify({
+          success: true,
+          status: 'CONNECTION_OK',
+          deviceId: effectiveDeviceId,
+          message: 'Enlace del webhook para Atajos de iPhone verificado y activo',
+        }),
+      );
+      return;
+    }
+
     // 4. Parsear Notificación Bancaria con el motor determinista de TransferYA
-    const parseResult = parseBankingNotification(text, sender);
+    // Pasamos explicitSender (vacío si iOS solo envió { text }) para no forzar una billetera fija
+    const parseResult = parseBankingNotification(text, explicitSender);
 
     if (!parseResult.success) {
+      try {
+        if (repository.saveReceivedNotification) {
+          await repository.saveReceivedNotification({
+            deviceId: effectiveDeviceId,
+            walletPackage: 'com.apple.shortcuts.sms',
+            rawTitle: senderForDisplay,
+            rawText: text,
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 0,
+            isStale: false,
+            status: 'IGNORED_NON_PAYMENT',
+            amount: null,
+            senderName: null,
+            paymentReference: null,
+          });
+        }
+      } catch {}
+
       res.statusCode = 200;
       res.end(
         JSON.stringify({
@@ -290,7 +352,7 @@ export async function handleIosShortcutWebhook(
           : payment.wallet === 'DAVIPLATA'
             ? 'com.daviplata.sms'
             : 'com.nequi.sms',
-      rawTitle: sender,
+      rawTitle: senderForDisplay,
       rawText: text,
       capturedAt: now,
       dispatchedAt: now,

@@ -122,9 +122,10 @@ const PARSING_RULES: RegexRule[] = [
   },
   // Nequi Negocios / Bre-B SMS oficial (890806):
   // "Nequi: Tu negocio LA SINVERGUECERIA BURGUER recibio $110 de YEISON MURCIA el 15/11/2026 a las 10:25 p.m. a través de Bre-B - Vende mas con Nequi Negocios."
+  // "Notificacion Nequi: el negocio LA SINVERGUECERIA BURGUER  recibio $55.000 de EDSON VANEGAS el 26/11/2026 a las 09:29 p.m. a través de Bre-B."
   {
     wallet: 'NEQUI',
-    pattern: /Nequi:\s*(?:Tu negocio\s+(.+?)\s+)?recibi(?:ste|[oó])\s+([\$\d.,\s]+?)\s+de\s+(.+?)(?:\s+el\s+[\d/]+|\s+a trav[eé]s de Bre-B|\.|$)/i,
+    pattern: /Nequi:\s*(?:(?:Tu|el)\s+negocio\s+(.+?)\s+)?recibi(?:ste|[oó])\s+([\$\d.,\s]+?)\s+de\s+(.+?)(?:\s+el\s+[\d/]+|\s+a trav[eé]s de Bre-B|\.|$)/i,
     amountGroup: 2,
     senderGroup: 3,
   },

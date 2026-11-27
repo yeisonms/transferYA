@@ -112,6 +112,19 @@ describe('Motor de Parsing de Notificaciones Bancarias (Ticket 08)', () => {
       }
     });
 
+    it('debe parsear nuevo formato SMS Nequi Negocios (890806): "Notificacion Nequi: el negocio ... recibio ..."', () => {
+      const rawText =
+        'Notificacion Nequi: el negocio LA SINVERGUECERIA BURGUER  recibio $55.000 de EDSON VANEGAS el 26/11/2026 a las 09:29 p.m. a través de Bre-B.';
+      const res = parseBankingNotification(rawText, '890806');
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.payment.wallet).toBe('NEQUI');
+        expect(res.payment.amount).toBe(55000);
+        expect(res.payment.senderName).toBe('Edson Vanegas');
+      }
+    });
+
     it('debe parsear SMS oficial de Nequi Bre-B directo sin prefijo de negocio', () => {
       const rawText =
         'Nequi: Recibiste $50.000 de PEDRO PEREZ el 15/11/2026 a través de Bre-B';

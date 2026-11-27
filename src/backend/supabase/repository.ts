@@ -720,7 +720,7 @@ export class SupabaseRepository
     if (!res.ok) return [];
     const rows = (await res.json()) as any[];
     return rows
-      .filter((r) => !r.id.startsWith('cloud_email_'))
+      .filter((r) => !r.id.startsWith('cloud_email_') && !r.id.startsWith('ios_shortcut_'))
       .map((r) => ({
         deviceId: r.id,
         merchantId: r.merchant_id,
