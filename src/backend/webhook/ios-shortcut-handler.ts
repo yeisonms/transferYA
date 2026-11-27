@@ -187,18 +187,6 @@ export async function handleIosShortcutWebhook(
 
     const text = typeof rawText === 'string' ? rawText.trim() : '';
 
-    if (!text) {
-      res.statusCode = 400;
-      res.end(
-        JSON.stringify({
-          success: false,
-          error: 'BAD_REQUEST',
-          message: 'El texto del mensaje no puede estar vacío (campo text o message requerido)',
-        }),
-      );
-      return;
-    }
-
     const explicitSender =
       typeof body.sender === 'string'
         ? body.sender.trim()
@@ -207,7 +195,7 @@ export async function handleIosShortcutWebhook(
           : '';
     const senderForDisplay = explicitSender || 'SMS iPhone';
 
-    // 3. Resolver el Comercio Suscriptor en la Base de Datos
+    // 3. Resolver el Comercio Suscriptor en la Base de Datos (antes de validar text vacío para registrar diagnóstico)
     const repository = options.repository ?? getSupabaseRepository();
 
     let merchant: any = null;
@@ -289,6 +277,38 @@ export async function handleIosShortcutWebhook(
         });
       }
     } catch {}
+
+    if (!text) {
+      try {
+        if (repository.saveReceivedNotification) {
+          await repository.saveReceivedNotification({
+            deviceId: effectiveDeviceId,
+            walletPackage: 'com.apple.shortcuts.sms',
+            rawTitle: 'DIAGNOSTICO_TEXTO_VACIO',
+            rawText: `[EMPTY_TEXT] body=${JSON.stringify(body).slice(0, 400)}`,
+            capturedAt: now,
+            dispatchedAt: now,
+            receivedAt: now,
+            latencyMs: 0,
+            isStale: false,
+            status: 'IGNORED_NON_PAYMENT',
+            amount: null,
+            senderName: null,
+            paymentReference: null,
+          });
+        }
+      } catch {}
+
+      res.statusCode = 400;
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: 'BAD_REQUEST',
+          message: 'El texto del mensaje no puede estar vacío (campo text o message requerido)',
+        }),
+      );
+      return;
+    }
 
     // Ping de verificación de conectividad desde el panel sin contaminar el historial de pagos
     if (text === 'PING_PRUEBA_CONEXION_TRANSFERYA') {
