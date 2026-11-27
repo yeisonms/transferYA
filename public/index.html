@@ -548,11 +548,70 @@
       background-color: #F8FAFC !important;
       border-color: #E2E8F0 !important;
     }
-    html:not(.dark) [id$="Modal"] input,
+    html:not(.dark) [id$="Modal"] input:not([type="radio"]):not([type="checkbox"]),
     html:not(.dark) [id$="Modal"] select {
       background-color: #FFFFFF !important;
       color: #101C2D !important;
       border-color: #CBD5E1 !important;
+    }
+
+    /* Selector de Planes/Add-ons (iOS Safari + Android Chrome + Desktop) */
+    #paySubscriptionModal .pay-option-card {
+      border-width: 1.5px;
+      transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    }
+    html:not(.dark) #paySubscriptionModal .pay-option-card {
+      background-color: #F8FAFC !important;
+      border-color: #E2E8F0 !important;
+    }
+    html:not(.dark) #paySubscriptionModal .pay-option-card.is-selected {
+      background-color: #ECFDF5 !important;
+      border-color: #059669 !important;
+      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.25) !important;
+    }
+    html.dark #paySubscriptionModal .pay-option-card.is-selected {
+      background-color: rgba(16, 185, 129, 0.14) !important;
+      border-color: #10B981 !important;
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35) !important;
+    }
+    #paySubscriptionModal input[type="radio"][name="payOption"] {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      border-radius: 9999px !important;
+      border: 2px solid #94A3B8 !important;
+      background-color: #FFFFFF !important;
+      background-image: none !important;
+      display: inline-grid;
+      place-content: center;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    html.dark #paySubscriptionModal input[type="radio"][name="payOption"] {
+      background-color: #0F172A !important;
+      border-color: #475569 !important;
+    }
+    #paySubscriptionModal input[type="radio"][name="payOption"]:checked {
+      border-color: #059669 !important;
+      background-color: #059669 !important;
+      box-shadow: inset 0 0 0 3.5px #059669, 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    }
+    #paySubscriptionModal input[type="radio"][name="payOption"]:checked::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background-color: #FFFFFF;
+      display: block;
+    }
+    /* Asegurar contraste nítido del monto en el cuadro oscuro de transferencia */
+    #paySubscriptionModal #payModalExactAmount {
+      color: #FFFFFF !important;
+    }
+    #paySubscriptionModal .pay-amount-label {
+      color: #CBD5E1 !important;
     }
 
     /* Eliminación de franjas y gradientes oscuros en Modales y Banners */
@@ -3548,8 +3607,8 @@
         <label class="block text-xs font-semibold text-ty-muted">Selecciona lo que deseas pagar:</label>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <!-- Opción 1: Plan Negocio (Destacado) -->
-          <label class="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_negocio" onchange="updatePayModalDetails()" checked class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+          <label class="pay-option-card is-selected p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_negocio" onchange="updatePayModalDetails()" checked class="mt-0.5 shrink-0" />
             <div class="flex-1">
               <div class="font-bold text-white flex items-center justify-between">
                 <span>Plan Negocio</span>
@@ -3560,8 +3619,8 @@
           </label>
 
           <!-- Opción 2: Plan Emprendedor -->
-          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_emprendedor" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_emprendedor" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
             <div class="flex-1">
               <div class="font-bold text-white flex items-center justify-between">
                 <span>Plan Emprendedor</span>
@@ -3572,8 +3631,8 @@
           </label>
 
           <!-- Opción 3: Plan Pro Multi-Caja -->
-          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_pro" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_pro" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
             <div class="flex-1">
               <div class="font-bold text-white flex items-center justify-between">
                 <span>Pro Multi-Caja</span>
@@ -3584,8 +3643,8 @@
           </label>
 
           <!-- Opción 4: Add-on 1.000 Alertas -->
-          <label class="p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="addon_alerts" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_alerts" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
             <div class="flex-1">
               <div class="font-bold text-white flex items-center justify-between">
                 <span>+1,000 Alertas</span>
@@ -3596,8 +3655,8 @@
           </label>
 
           <!-- Opción 5: Add-on Cajero Extra -->
-          <label class="col-span-1 sm:col-span-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="addon_cashier" onchange="updatePayModalDetails()" class="mt-0.5 text-emerald-500 focus:ring-emerald-500" />
+          <label class="pay-option-card col-span-1 sm:col-span-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_cashier" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
             <div class="flex-1">
               <div class="font-bold text-white flex items-center justify-between">
                 <span>+1 Cajero WhatsApp Extra</span>
@@ -3622,7 +3681,7 @@
       <div class="p-4 rounded-xl bg-gradient-to-b from-ty-surface to-ty-surface-low border border-ty-border space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-ty-border">
           <div>
-            <span class="text-[11px] text-ty-muted block">Monto exacto a transferir:</span>
+            <span class="pay-amount-label text-[11px] text-ty-muted block">Monto exacto a transferir:</span>
             <span id="payModalExactAmount" class="text-2xl font-black text-white font-mono tracking-tight">$49.900 COP</span>
           </div>
           <button type="button" onclick="copyPayModalAmount()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high hover:bg-ty-surface-highest text-emerald-400 text-xs font-semibold border border-ty-border flex items-center gap-1.5">
@@ -8968,6 +9027,12 @@
     function updatePayModalDetails() {
       const selected = document.querySelector('input[name="payOption"]:checked')?.value || 'plan_negocio';
       currentPayModalOption = selected;
+
+      // Resaltar visualmente la tarjeta seleccionada (compatible con iPhone Safari y Android Chrome)
+      document.querySelectorAll('#paySubscriptionModal .pay-option-card').forEach((card) => {
+        const radio = card.querySelector('input[name="payOption"]');
+        card.classList.toggle('is-selected', Boolean(radio && radio.checked));
+      });
       const isPlan = selected.startsWith('plan_');
       const cycleContainer = document.getElementById("payCycleSelectorContainer");
       if (cycleContainer) {
