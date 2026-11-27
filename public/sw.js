@@ -1,5 +1,5 @@
 // TransferYA Service Worker
-const CACHE_NAME = 'transferya-cache-v58';
+const CACHE_NAME = 'transferya-cache-v59';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -44,9 +44,18 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('TransferYA SW: Some initial assets failed to cache:', err);
-      });
+      return Promise.all(
+        STATIC_ASSETS.map((assetUrl) => {
+          const req = assetUrl.startsWith('http')
+            ? new Request(assetUrl)
+            : new Request(assetUrl, { cache: 'reload' });
+          return fetch(req)
+            .then((res) => {
+              if (res && res.status === 200) return cache.put(assetUrl, res);
+            })
+            .catch(() => {});
+        })
+      );
     })
   );
   self.skipWaiting();
@@ -85,7 +94,7 @@ self.addEventListener('fetch', (event) => {
 
   if (isNavigationOrHtml) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
@@ -93,7 +102,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match(event.request).then((m) => m || caches.match('/index.html')))
     );
     return;
   }

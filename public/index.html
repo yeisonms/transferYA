@@ -173,7 +173,7 @@
   </script>
 
   <!-- Tailwind CSS Compilado Localmente -->
-  <link rel="stylesheet" href="/css/app.css?v=53" />
+  <link rel="stylesheet" href="/css/app.css?v=59" />
 
   <!-- Supabase JS Client, SheetJS Excel Engine & Local QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -555,10 +555,48 @@
       border-color: #CBD5E1 !important;
     }
 
-    /* Selector de Planes/Add-ons (iOS Safari + Android Chrome + Desktop) */
+    /* Selector de Planes/Add-ons (100% idéntico en iPhone Safari, Android Chrome y PC) */
+    .ty-radio-sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .ty-radio-circle {
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      border-radius: 9999px;
+      border: 2px solid #94A3B8;
+      background-color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 150ms ease;
+      box-sizing: border-box;
+    }
+    html.dark .ty-radio-circle {
+      background-color: #0F172A;
+      border-color: #475569;
+    }
+    .ty-radio-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background-color: #FFFFFF;
+      transform: scale(0);
+      transition: transform 150ms ease;
+    }
     #paySubscriptionModal .pay-option-card {
       border-width: 1.5px;
       transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+      -webkit-user-select: none;
+      user-select: none;
     }
     html:not(.dark) #paySubscriptionModal .pay-option-card {
       background-color: #F8FAFC !important;
@@ -567,46 +605,27 @@
     html:not(.dark) #paySubscriptionModal .pay-option-card.is-selected {
       background-color: #ECFDF5 !important;
       border-color: #059669 !important;
-      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.25) !important;
+      box-shadow: 0 0 0 1.5px rgba(5, 150, 105, 0.25) !important;
     }
     html.dark #paySubscriptionModal .pay-option-card.is-selected {
-      background-color: rgba(16, 185, 129, 0.14) !important;
+      background-color: rgba(16, 185, 129, 0.16) !important;
       border-color: #10B981 !important;
-      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35) !important;
+      box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.35) !important;
     }
-    #paySubscriptionModal input[type="radio"][name="payOption"] {
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      width: 18px !important;
-      height: 18px !important;
-      min-width: 18px !important;
-      border-radius: 9999px !important;
-      border: 2px solid #94A3B8 !important;
-      background-color: #FFFFFF !important;
-      background-image: none !important;
-      display: inline-grid;
-      place-content: center;
-      cursor: pointer;
-      transition: all 150ms ease;
-    }
-    html.dark #paySubscriptionModal input[type="radio"][name="payOption"] {
-      background-color: #0F172A !important;
-      border-color: #475569 !important;
-    }
-    #paySubscriptionModal input[type="radio"][name="payOption"]:checked {
+    #paySubscriptionModal .pay-option-card.is-selected .ty-radio-circle {
       border-color: #059669 !important;
       background-color: #059669 !important;
-      box-shadow: inset 0 0 0 3.5px #059669, 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.22) !important;
     }
-    #paySubscriptionModal input[type="radio"][name="payOption"]:checked::after {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 9999px;
-      background-color: #FFFFFF;
-      display: block;
+    #paySubscriptionModal .pay-option-card.is-selected .ty-radio-dot,
+    #adminPlanRadioGroup .admin-plan-card.is-selected .ty-radio-dot {
+      transform: scale(1);
     }
-    /* Asegurar contraste nítido del monto en el cuadro oscuro de transferencia */
+    /* Asegurar contraste nítido del cuadro oscuro de transferencia en PC, Android y iPhone */
+    #paySubscriptionModal .pay-transfer-summary-box {
+      background: linear-gradient(180deg, #0F1C2E 0%, #0B1320 100%) !important;
+      border-color: #1E293B !important;
+    }
     #paySubscriptionModal #payModalExactAmount {
       color: #FFFFFF !important;
     }
@@ -618,6 +637,8 @@
     #adminPlanRadioGroup .admin-plan-card {
       border-width: 1.5px;
       transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+      -webkit-user-select: none;
+      user-select: none;
     }
     html:not(.dark) #adminPlanRadioGroup .admin-plan-card {
       background-color: #F8FAFC !important;
@@ -653,44 +674,17 @@
       border-color: #A855F7 !important;
       box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.28) !important;
     }
-    #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"] {
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      width: 18px !important;
-      height: 18px !important;
-      min-width: 18px !important;
-      border-radius: 9999px !important;
-      border: 2px solid #94A3B8 !important;
-      background-color: #FFFFFF !important;
-      background-image: none !important;
-      display: inline-grid;
-      place-content: center;
-      cursor: pointer;
-      transition: all 150ms ease;
-    }
-    html.dark #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"] {
-      background-color: #0F172A !important;
-      border-color: #475569 !important;
-    }
-    #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"]:checked::after {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 9999px;
-      background-color: #FFFFFF;
-      display: block;
-    }
-    #adminPlanRadioGroup input[type="radio"][value="emprendedor"]:checked {
+    #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="emprendedor"] .ty-radio-circle {
       border-color: #059669 !important;
       background-color: #059669 !important;
       box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
     }
-    #adminPlanRadioGroup input[type="radio"][value="negocio"]:checked {
+    #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="negocio"] .ty-radio-circle {
       border-color: #0284C7 !important;
       background-color: #0284C7 !important;
       box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25) !important;
     }
-    #adminPlanRadioGroup input[type="radio"][value="pro"]:checked {
+    #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="pro"] .ty-radio-circle {
       border-color: #7C3AED !important;
       background-color: #7C3AED !important;
       box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
@@ -3695,60 +3689,65 @@
         <label class="block text-xs font-semibold text-ty-muted">Selecciona lo que deseas pagar:</label>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <!-- Opción 1: Plan Negocio (Destacado) -->
-          <label class="pay-option-card is-selected p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_negocio" onchange="updatePayModalDetails()" checked class="mt-0.5 shrink-0" />
-            <div class="flex-1">
-              <div class="font-bold text-white flex items-center justify-between">
+          <label onclick="selectPayModalOption('plan_negocio')" class="pay-option-card is-selected p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_negocio" onchange="updatePayModalDetails()" checked class="ty-radio-sr-only" />
+            <span class="ty-radio-circle mt-0.5 shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-white flex items-center justify-between gap-2">
                 <span>Plan Negocio</span>
-                <span class="text-emerald-400 font-mono" id="payOptPriceNegocio">$49.900</span>
+                <span class="text-emerald-400 font-mono shrink-0" id="payOptPriceNegocio">$49.900</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-0.5">2 cajeros · 3.500 alertas/mes</p>
             </div>
           </label>
 
           <!-- Opción 2: Plan Emprendedor -->
-          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_emprendedor" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
-            <div class="flex-1">
-              <div class="font-bold text-white flex items-center justify-between">
+          <label onclick="selectPayModalOption('plan_emprendedor')" class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_emprendedor" onchange="updatePayModalDetails()" class="ty-radio-sr-only" />
+            <span class="ty-radio-circle mt-0.5 shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-white flex items-center justify-between gap-2">
                 <span>Plan Emprendedor</span>
-                <span class="text-emerald-400 font-mono" id="payOptPriceEmprendedor">$29.900</span>
+                <span class="text-emerald-400 font-mono shrink-0" id="payOptPriceEmprendedor">$29.900</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-0.5">1 cajero · 1.500 alertas/mes</p>
             </div>
           </label>
 
           <!-- Opción 3: Plan Pro Multi-Caja -->
-          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="plan_pro" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
-            <div class="flex-1">
-              <div class="font-bold text-white flex items-center justify-between">
+          <label onclick="selectPayModalOption('plan_pro')" class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="plan_pro" onchange="updatePayModalDetails()" class="ty-radio-sr-only" />
+            <span class="ty-radio-circle mt-0.5 shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-white flex items-center justify-between gap-2">
                 <span>Pro Multi-Caja</span>
-                <span class="text-emerald-400 font-mono" id="payOptPricePro">$89.900</span>
+                <span class="text-emerald-400 font-mono shrink-0" id="payOptPricePro">$89.900</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-0.5">4 cajeros · 7.500 alertas/mes</p>
             </div>
           </label>
 
           <!-- Opción 4: Add-on 1.000 Alertas -->
-          <label class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="addon_alerts" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
-            <div class="flex-1">
-              <div class="font-bold text-white flex items-center justify-between">
+          <label onclick="selectPayModalOption('addon_alerts')" class="pay-option-card p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_alerts" onchange="updatePayModalDetails()" class="ty-radio-sr-only" />
+            <span class="ty-radio-circle mt-0.5 shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-white flex items-center justify-between gap-2">
                 <span>+1,000 Alertas</span>
-                <span class="text-emerald-400 font-mono">$7.900</span>
+                <span class="text-emerald-400 font-mono shrink-0">$7.900</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-0.5">Sin vencimiento mensual</p>
             </div>
           </label>
 
           <!-- Opción 5: Add-on Cajero Extra -->
-          <label class="pay-option-card col-span-1 sm:col-span-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
-            <input type="radio" name="payOption" value="addon_cashier" onchange="updatePayModalDetails()" class="mt-0.5 shrink-0" />
-            <div class="flex-1">
-              <div class="font-bold text-white flex items-center justify-between">
+          <label onclick="selectPayModalOption('addon_cashier')" class="pay-option-card col-span-1 sm:col-span-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/30 cursor-pointer flex items-start gap-2.5 transition-all">
+            <input type="radio" name="payOption" value="addon_cashier" onchange="updatePayModalDetails()" class="ty-radio-sr-only" />
+            <span class="ty-radio-circle mt-0.5 shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-white flex items-center justify-between gap-2">
                 <span>+1 Cajero WhatsApp Extra</span>
-                <span class="text-emerald-400 font-mono">$12.900 / mes</span>
+                <span class="text-emerald-400 font-mono shrink-0">$12.900 / mes</span>
               </div>
               <p class="text-[11px] text-ty-muted mt-0.5">Incluye +1.200 alertas adicionales cada mes</p>
             </div>
@@ -3766,13 +3765,13 @@
       </div>
 
       <!-- Cuadro de Datos de Pago Directo -->
-      <div class="p-4 rounded-xl bg-gradient-to-b from-ty-surface to-ty-surface-low border border-ty-border space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-ty-border">
-          <div>
+      <div class="pay-transfer-summary-box p-4 rounded-xl bg-gradient-to-b from-ty-surface to-ty-surface-low border border-ty-border space-y-4">
+        <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-700/70">
+          <div class="min-w-0">
             <span class="pay-amount-label text-[11px] text-ty-muted block">Monto exacto a transferir:</span>
-            <span id="payModalExactAmount" class="text-2xl font-black text-white font-mono tracking-tight">$49.900 COP</span>
+            <span id="payModalExactAmount" class="text-xl sm:text-2xl font-black text-white font-mono tracking-tight whitespace-nowrap">$49.900 COP</span>
           </div>
-          <button type="button" onclick="copyPayModalAmount()" class="px-3 py-1.5 rounded-lg bg-ty-surface-high hover:bg-ty-surface-highest text-emerald-400 text-xs font-semibold border border-ty-border flex items-center gap-1.5">
+          <button type="button" onclick="copyPayModalAmount()" class="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-ty-surface-high hover:bg-ty-surface-highest text-emerald-400 text-xs font-semibold border border-ty-border flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             <span>Copiar Monto</span>
           </button>
@@ -4254,9 +4253,10 @@
         <label class="text-[11px] font-mono text-ty-muted uppercase font-bold">Selecciona el Plan Oficial</label>
         <div class="grid grid-cols-1 gap-2" id="adminPlanRadioGroup">
           <!-- Plan Emprendedor -->
-          <label data-plan="emprendedor" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer transition-all">
+          <label onclick="selectAdminPlanOption('emprendedor')" data-plan="emprendedor" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer transition-all">
             <div class="flex items-center gap-2.5 min-w-0">
-              <input type="radio" name="adminPlanSelect" value="emprendedor" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <input type="radio" name="adminPlanSelect" value="emprendedor" onchange="updateAdminPlanSelectionUI()" class="ty-radio-sr-only" />
+              <span class="ty-radio-circle shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
               <div class="min-w-0">
                 <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>🌱 Plan Emprendedor</span>
@@ -4269,9 +4269,10 @@
           </label>
 
           <!-- Plan Negocio -->
-          <label data-plan="negocio" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-sky-500/50 cursor-pointer transition-all">
+          <label onclick="selectAdminPlanOption('negocio')" data-plan="negocio" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-sky-500/50 cursor-pointer transition-all">
             <div class="flex items-center gap-2.5 min-w-0">
-              <input type="radio" name="adminPlanSelect" value="negocio" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <input type="radio" name="adminPlanSelect" value="negocio" onchange="updateAdminPlanSelectionUI()" class="ty-radio-sr-only" />
+              <span class="ty-radio-circle shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
               <div class="min-w-0">
                 <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>💼 Plan Negocio</span>
@@ -4284,9 +4285,10 @@
           </label>
 
           <!-- Plan Pro Multi-Caja -->
-          <label data-plan="pro" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-purple-500/50 cursor-pointer transition-all">
+          <label onclick="selectAdminPlanOption('pro')" data-plan="pro" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-purple-500/50 cursor-pointer transition-all">
             <div class="flex items-center gap-2.5 min-w-0">
-              <input type="radio" name="adminPlanSelect" value="pro" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <input type="radio" name="adminPlanSelect" value="pro" onchange="updateAdminPlanSelectionUI()" class="ty-radio-sr-only" />
+              <span class="ty-radio-circle shrink-0" aria-hidden="true"><span class="ty-radio-dot"></span></span>
               <div class="min-w-0">
                 <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>👑 Plan Pro Multi-Caja</span>
@@ -9115,6 +9117,14 @@
       updatePayModalDetails();
     }
 
+    function selectPayModalOption(optionValue) {
+      const targetRadio = document.querySelector(`#paySubscriptionModal input[name="payOption"][value="${optionValue}"]`);
+      if (targetRadio) {
+        targetRadio.checked = true;
+      }
+      updatePayModalDetails();
+    }
+
     function updatePayModalDetails() {
       const selected = document.querySelector('input[name="payOption"]:checked')?.value || 'plan_negocio';
       currentPayModalOption = selected;
@@ -10811,6 +10821,14 @@
       `;
     }
 
+    function selectAdminPlanOption(planValue) {
+      const targetRadio = document.querySelector(`#adminPlanRadioGroup input[name="adminPlanSelect"][value="${planValue}"]`);
+      if (targetRadio) {
+        targetRadio.checked = true;
+      }
+      updateAdminPlanSelectionUI();
+    }
+
     function updateAdminPlanSelectionUI() {
       document.querySelectorAll('#adminPlanRadioGroup .admin-plan-card').forEach((card) => {
         const radio = card.querySelector('input[name="adminPlanSelect"]');
@@ -10886,11 +10904,25 @@
       toastTimer = setTimeout(() => banner.classList.add("hidden"), 4000);
     }
 
+    let swRefreshing = false;
+
     function registerServiceWorker() {
       if (!("serviceWorker" in navigator)) return;
+
+      // Cuando una nueva versión del Service Worker toma el control en una PWA instalada (iOS/Android),
+      // recargar una vez automáticamente si había un controlador previo para mostrar la versión nueva sin depender de botón F5
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!hadController || swRefreshing) return;
+        const activeTag = document.activeElement?.tagName;
+        if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+        swRefreshing = true;
+        window.location.reload();
+      });
+
       const doRegister = () => {
         navigator.serviceWorker
-          .register("/sw.js")
+          .register("/sw.js", { updateViaCache: "none" })
           .then((reg) => {
             reg.update().catch(() => {});
           })
