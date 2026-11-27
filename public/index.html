@@ -614,6 +614,94 @@
       color: #CBD5E1 !important;
     }
 
+    /* Selector de Plan Oficial en Modal Admin (iPhone, Android y Desktop) */
+    #adminPlanRadioGroup .admin-plan-card {
+      border-width: 1.5px;
+      transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    }
+    html:not(.dark) #adminPlanRadioGroup .admin-plan-card {
+      background-color: #F8FAFC !important;
+      border-color: #E2E8F0 !important;
+    }
+    html:not(.dark) #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="emprendedor"] {
+      background-color: #ECFDF5 !important;
+      border-color: #059669 !important;
+      box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.22) !important;
+    }
+    html:not(.dark) #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="negocio"] {
+      background-color: #F0F9FF !important;
+      border-color: #0284C7 !important;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.22) !important;
+    }
+    html:not(.dark) #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="pro"] {
+      background-color: #F5F3FF !important;
+      border-color: #7C3AED !important;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.22) !important;
+    }
+    html.dark #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="emprendedor"] {
+      background-color: rgba(16, 185, 129, 0.16) !important;
+      border-color: #10B981 !important;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.28) !important;
+    }
+    html.dark #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="negocio"] {
+      background-color: rgba(14, 165, 233, 0.16) !important;
+      border-color: #38BDF8 !important;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.28) !important;
+    }
+    html.dark #adminPlanRadioGroup .admin-plan-card.is-selected[data-plan="pro"] {
+      background-color: rgba(168, 85, 247, 0.16) !important;
+      border-color: #A855F7 !important;
+      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.28) !important;
+    }
+    #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"] {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      border-radius: 9999px !important;
+      border: 2px solid #94A3B8 !important;
+      background-color: #FFFFFF !important;
+      background-image: none !important;
+      display: inline-grid;
+      place-content: center;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    html.dark #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"] {
+      background-color: #0F172A !important;
+      border-color: #475569 !important;
+    }
+    #adminPlanRadioGroup input[type="radio"][name="adminPlanSelect"]:checked::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background-color: #FFFFFF;
+      display: block;
+    }
+    #adminPlanRadioGroup input[type="radio"][value="emprendedor"]:checked {
+      border-color: #059669 !important;
+      background-color: #059669 !important;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    }
+    #adminPlanRadioGroup input[type="radio"][value="negocio"]:checked {
+      border-color: #0284C7 !important;
+      background-color: #0284C7 !important;
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25) !important;
+    }
+    #adminPlanRadioGroup input[type="radio"][value="pro"]:checked {
+      border-color: #7C3AED !important;
+      background-color: #7C3AED !important;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+    }
+    #adminPlanRadioGroup .admin-plan-selected-pill {
+      display: none;
+    }
+    #adminPlanRadioGroup .admin-plan-card.is-selected .admin-plan-selected-pill {
+      display: inline-flex;
+    }
+
     /* Eliminación de franjas y gradientes oscuros en Modales y Banners */
     html:not(.dark) #panelPairingSamePhone > div:first-child,
     html:not(.dark) [id$="Modal"] .bg-gradient-to-r {
@@ -4166,45 +4254,48 @@
         <label class="text-[11px] font-mono text-ty-muted uppercase font-bold">Selecciona el Plan Oficial</label>
         <div class="grid grid-cols-1 gap-2" id="adminPlanRadioGroup">
           <!-- Plan Emprendedor -->
-          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
-            <div class="flex items-center gap-2.5">
-              <input type="radio" name="adminPlanSelect" value="emprendedor" class="text-emerald-500 focus:ring-0" />
-              <div>
-                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+          <label data-plan="emprendedor" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-emerald-500/50 cursor-pointer transition-all">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <input type="radio" name="adminPlanSelect" value="emprendedor" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>🌱 Plan Emprendedor</span>
                   <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-1.5 py-0.2 rounded font-bold">$29.900/m</span>
                 </div>
                 <div class="text-[10px] text-ty-muted">1 Celular · 1 Cajero WhatsApp · 1.500 alertas/m</div>
               </div>
             </div>
+            <span class="admin-plan-selected-pill shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white">✓ Elegido</span>
           </label>
 
           <!-- Plan Negocio -->
-          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-sky-500/50 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-500/10">
-            <div class="flex items-center gap-2.5">
-              <input type="radio" name="adminPlanSelect" value="negocio" class="text-sky-500 focus:ring-0" />
-              <div>
-                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+          <label data-plan="negocio" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-sky-500/50 cursor-pointer transition-all">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <input type="radio" name="adminPlanSelect" value="negocio" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>💼 Plan Negocio</span>
                   <span class="text-[10px] font-mono text-sky-400 bg-sky-500/15 px-1.5 py-0.2 rounded font-bold">$49.900/m</span>
                 </div>
                 <div class="text-[10px] text-ty-muted">1 Celular · 2 Cajeros WhatsApp · 3.500 alertas/m</div>
               </div>
             </div>
+            <span class="admin-plan-selected-pill shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-600 text-white">✓ Elegido</span>
           </label>
 
           <!-- Plan Pro Multi-Caja -->
-          <label class="flex items-center justify-between p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-purple-500/50 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-500/10">
-            <div class="flex items-center gap-2.5">
-              <input type="radio" name="adminPlanSelect" value="pro" class="text-purple-500 focus:ring-0" />
-              <div>
-                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+          <label data-plan="pro" class="admin-plan-card flex items-center justify-between gap-2 p-3 rounded-xl border border-ty-border bg-ty-surface hover:border-purple-500/50 cursor-pointer transition-all">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <input type="radio" name="adminPlanSelect" value="pro" onchange="updateAdminPlanSelectionUI()" class="shrink-0" />
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                   <span>👑 Plan Pro Multi-Caja</span>
                   <span class="text-[10px] font-mono text-purple-400 bg-purple-500/15 px-1.5 py-0.2 rounded font-bold">$89.900/m</span>
                 </div>
                 <div class="text-[10px] text-ty-muted">3 Celulares (Multi-Sede) · 4 Cajeros WA · 7.500 alertas/m</div>
               </div>
             </div>
+            <span class="admin-plan-selected-pill shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-600 text-white">✓ Elegido</span>
           </label>
         </div>
       </div>
@@ -10720,6 +10811,13 @@
       `;
     }
 
+    function updateAdminPlanSelectionUI() {
+      document.querySelectorAll('#adminPlanRadioGroup .admin-plan-card').forEach((card) => {
+        const radio = card.querySelector('input[name="adminPlanSelect"]');
+        card.classList.toggle('is-selected', Boolean(radio && radio.checked));
+      });
+    }
+
     function openAdminPlanModal(merchantId, name, currentPlanId) {
       adminEditingPlanMerchantId = merchantId;
       const safePlan = (currentPlanId || "emprendedor").toLowerCase();
@@ -10731,6 +10829,7 @@
       radios.forEach((r) => {
         r.checked = (r.value === safePlan);
       });
+      updateAdminPlanSelectionUI();
 
       const selectDays = document.getElementById("adminPlanModalDays");
       if (selectDays) selectDays.value = "30";
